@@ -140,15 +140,14 @@ extension RemoteDataX<T> on RemoteData<T> {
     required R Function() orElse,
   }) {
     return switch (this) {
-      Initial() => onInitial?.call() ?? orElse(),
-      Loading() => onLoading?.call() ?? orElse(),
-      Refreshing(value: final v) => onRefreshing?.call(v) ?? orElse(),
-      Success(value: final v) => onSuccess?.call(v) ?? orElse(),
-      Failure(error: final e) => onFailure?.call(e) ?? orElse(),
+      Initial() => onInitial != null ? onInitial() : orElse(),
+      Loading() => onLoading != null ? onLoading() : orElse(),
+      Refreshing(value: final v) =>
+        onRefreshing != null ? onRefreshing(v) : orElse(),
+      Success(value: final v) => onSuccess != null ? onSuccess(v) : orElse(),
+      Failure(error: final e) => onFailure != null ? onFailure(e) : orElse(),
     };
   }
-
-  // chat help me with this
 }
 
 extension RemoteDataCombineX<A> on RemoteData<A> {

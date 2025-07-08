@@ -1,6 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import "package:fpdart/fpdart.dart" hide Order;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:horizon/domain/entities/http_config.dart';
@@ -11,6 +12,28 @@ import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/presentation/forms/swap_order_form/bloc/swap_order_form_bloc.dart';
 import 'package:horizon/domain/repositories/order_repository.dart';
 import 'package:mocktail/mocktail.dart';
+
+Matcher equalsSimulatedOrders(List<SimulatedOrder> expected) {
+  return predicate<List<SimulatedOrder>>(
+    (actual) => _equalsByValue(expected, actual),
+    'equalsSimulatedOrders($expected)',
+  );
+}
+
+bool _equalsByValue(
+    List<SimulatedOrder> expected, List<SimulatedOrder> actual) {
+  if (expected.length != actual.length) return false;
+
+  for (int i = 0; i < expected.length; i++) {
+    if (expected[i] != actual[i]) {
+      print('❌ Mismatch at index $i:');
+      print('   expected: ${expected[i]}');
+      print('   actual:   ${actual[i]}');
+      return false;
+    }
+  }
+  return true;
+}
 
 class MockOrderRepository implements OrderRepository {
   final List<Order> buys;
@@ -63,9 +86,9 @@ class TestCase {
   final List<Order> sellOrders;
   final String amountInput;
   final String priceInput;
-  final bool expectMatch;
-  final bool expectCreate;
   final String? description;
+
+  final List<SimulatedOrder> expectedOrders;
 
   const TestCase({
     required this.priceType,
@@ -76,8 +99,7 @@ class TestCase {
     required this.sellOrders,
     required this.amountInput,
     required this.priceInput,
-    required this.expectMatch,
-    required this.expectCreate,
+    required this.expectedOrders,
     this.description,
   });
 
@@ -92,8 +114,6 @@ class TestCase {
     sellOrders: $sellOrders,
     amountInput: "$amountInput",
     priceInput: "$priceInput",
-    expectMatch: $expectMatch,
-    expectCreate: $expectCreate
   )""";
 }
 
@@ -108,16 +128,23 @@ List<TestCase> generateTestCases() {
         getDivisible: true,
         buyOrders: [
           FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
+              giveQuantity: 200 * TenToTheEigth.value,
+              getQuantity: 100 * TenToTheEigth.value,
+              giveRemaining: 200 * TenToTheEigth.value,
+              getRemaining: 100 * TenToTheEigth.value)
         ],
         sellOrders: [],
         amountInput: "100",
         priceInput: "0.5",
-        expectMatch: true,
-        expectCreate: false),
+        expectedOrders: [
+          SimulatedOrderMatch(
+              give: AssetQuantity(
+                  divisible: true,
+                  quantity: BigInt.from(100 * TenToTheEigth.value)),
+              get: AssetQuantity(
+                  divisible: true,
+                  quantity: BigInt.from(200 * TenToTheEigth.value)))
+        ]),
     TestCase(
         description:
             "AmountType.give-PriceType.give create-only giveDiv=true getDiv=true",
@@ -129,8 +156,15 @@ List<TestCase> generateTestCases() {
         sellOrders: [],
         amountInput: "100",
         priceInput: "0.5",
-        expectMatch: false,
-        expectCreate: true),
+        expectedOrders: [
+          SimulatedOrderCreate(
+              give: AssetQuantity(
+                  divisible: true,
+                  quantity: BigInt.from(100 * TenToTheEigth.value)),
+              get: AssetQuantity(
+                  divisible: true,
+                  quantity: BigInt.from(200 * TenToTheEigth.value)))
+        ]),
     TestCase(
         description:
             "AmountType.give-PriceType.give match and create giveDiv=true getDiv=true",
@@ -140,16 +174,114 @@ List<TestCase> generateTestCases() {
         getDivisible: true,
         buyOrders: [
           FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
+              giveQuantity: 200 * TenToTheEigth.value,
+              getQuantity: 100 * TenToTheEigth.value,
+              giveRemaining: 200 * TenToTheEigth.value,
+              getRemaining: 100 * TenToTheEigth.value)
         ],
         sellOrders: [],
-        amountInput: "100",
+        amountInput: "150",
         priceInput: "0.5",
-        expectMatch: true,
-        expectCreate: false),
+        expectedOrders: [
+          SimulatedOrderMatch(
+              give: AssetQuantity(
+                  divisible: true,
+                  quantity: BigInt.from(100 * TenToTheEigth.value)),
+              get: AssetQuantity(
+                  divisible: true,
+                  quantity: BigInt.from(200 * TenToTheEigth.value))),
+          SimulatedOrderCreate(
+              give: AssetQuantity(
+                  divisible: true,
+                  quantity: BigInt.from(50 * TenToTheEigth.value)),
+              get: AssetQuantity(
+                  divisible: true,
+                  quantity: BigInt.from(100 * TenToTheEigth.value)))
+        ]),
+    TestCase(
+        description:
+            "AmountType.give-PriceType.give match-many giveDiv=true getDiv=true",
+        priceType: PriceType.give,
+        amountType: AmountType.give,
+        giveDivisible: true,
+        getDivisible: true,
+        buyOrders: [
+          FakeOrder(
+              giveQuantity: 200 * TenToTheEigth.value,
+              getQuantity: 100 * TenToTheEigth.value,
+              giveRemaining: 200 * TenToTheEigth.value,
+              getRemaining: 100 * TenToTheEigth.value),
+          FakeOrder(
+              giveQuantity: 50 * TenToTheEigth.value,
+              getQuantity: 50 * TenToTheEigth.value,
+              giveRemaining: 50 * TenToTheEigth.value,
+              getRemaining: 50 * TenToTheEigth.value),
+        ],
+        sellOrders: [],
+        amountInput: "150",
+        priceInput: "1.0",
+        expectedOrders: [
+          SimulatedOrderMatch(
+              give: AssetQuantity(
+                  divisible: true,
+                  quantity: BigInt.from(100 * TenToTheEigth.value)),
+              get: AssetQuantity(
+                  divisible: true,
+                  quantity: BigInt.from(200 * TenToTheEigth.value))),
+          SimulatedOrderMatch(
+              give: AssetQuantity(
+                  divisible: true,
+                  quantity: BigInt.from(50 * TenToTheEigth.value)),
+              get: AssetQuantity(
+                  divisible: true,
+                  quantity: BigInt.from(50 * TenToTheEigth.value)))
+        ]),
+    //
+    TestCase(
+        description:
+            "AmountType.give-PriceType.give match-many-and-create giveDiv=true getDiv=true",
+        priceType: PriceType.give,
+        amountType: AmountType.give,
+        giveDivisible: true,
+        getDivisible: true,
+        buyOrders: [
+          FakeOrder(
+              giveQuantity: 200 * TenToTheEigth.value,
+              getQuantity: 100 * TenToTheEigth.value,
+              giveRemaining: 200 * TenToTheEigth.value,
+              getRemaining: 100 * TenToTheEigth.value),
+          FakeOrder(
+              giveQuantity: 50 * TenToTheEigth.value,
+              getQuantity: 50 * TenToTheEigth.value,
+              giveRemaining: 50 * TenToTheEigth.value,
+              getRemaining: 50 * TenToTheEigth.value),
+        ],
+        sellOrders: [],
+        amountInput: "200",
+        priceInput: "1.0",
+        expectedOrders: [
+          SimulatedOrderMatch(
+              give: AssetQuantity(
+                  divisible: true,
+                  quantity: BigInt.from(100 * TenToTheEigth.value)),
+              get: AssetQuantity(
+                  divisible: true,
+                  quantity: BigInt.from(200 * TenToTheEigth.value))),
+          SimulatedOrderMatch(
+              give: AssetQuantity(
+                  divisible: true,
+                  quantity: BigInt.from(50 * TenToTheEigth.value)),
+              get: AssetQuantity(
+                  divisible: true,
+                  quantity: BigInt.from(50 * TenToTheEigth.value))),
+          SimulatedOrderCreate(
+              give: AssetQuantity(
+                  divisible: true,
+                  quantity: BigInt.from(50 * TenToTheEigth.value)),
+              get: AssetQuantity(
+                  divisible: true,
+                  quantity: BigInt.from(50 * TenToTheEigth.value)))
+        ]),
     TestCase(
         description:
             "AmountType.give-PriceType.give match-only giveDiv=true getDiv=false",
@@ -159,16 +291,21 @@ List<TestCase> generateTestCases() {
         getDivisible: false,
         buyOrders: [
           FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
+              giveQuantity: 200,
+              getQuantity: 100,
+              giveRemaining: 200,
+              getRemaining: 100)
         ],
         sellOrders: [],
         amountInput: "100",
         priceInput: "0.5",
-        expectMatch: true,
-        expectCreate: false),
+        expectedOrders: [
+          SimulatedOrderMatch(
+              give: AssetQuantity(
+                  divisible: true,
+                  quantity: BigInt.from(100 * TenToTheEigth.value)),
+              get: AssetQuantity(divisible: false, quantity: BigInt.from(200))),
+        ]),
     TestCase(
         description:
             "AmountType.give-PriceType.give create-only giveDiv=true getDiv=false",
@@ -180,741 +317,746 @@ List<TestCase> generateTestCases() {
         sellOrders: [],
         amountInput: "100",
         priceInput: "0.5",
-        expectMatch: false,
-        expectCreate: true),
-    TestCase(
-        description:
-            "AmountType.give-PriceType.give match and create giveDiv=true getDiv=false",
-        priceType: PriceType.give,
-        amountType: AmountType.give,
-        giveDivisible: true,
-        getDivisible: false,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "100",
-        priceInput: "0.5",
-        expectMatch: true,
-        expectCreate: false),
-    TestCase(
-        description:
-            "AmountType.give-PriceType.give match-only giveDiv=false getDiv=true",
-        priceType: PriceType.give,
-        amountType: AmountType.give,
-        giveDivisible: false,
-        getDivisible: true,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "100",
-        priceInput: "0.5",
-        expectMatch: true,
-        expectCreate: false),
-    TestCase(
-        description:
-            "AmountType.give-PriceType.give create-only giveDiv=false getDiv=true",
-        priceType: PriceType.give,
-        amountType: AmountType.give,
-        giveDivisible: false,
-        getDivisible: true,
-        buyOrders: [],
-        sellOrders: [],
-        amountInput: "100",
-        priceInput: "0.5",
-        expectMatch: false,
-        expectCreate: true),
-    TestCase(
-        description:
-            "AmountType.give-PriceType.give match and create giveDiv=false getDiv=true",
-        priceType: PriceType.give,
-        amountType: AmountType.give,
-        giveDivisible: false,
-        getDivisible: true,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "100",
-        priceInput: "0.5",
-        expectMatch: true,
-        expectCreate: false),
-    TestCase(
-        description:
-            "AmountType.give-PriceType.give match-only giveDiv=false getDiv=false",
-        priceType: PriceType.give,
-        amountType: AmountType.give,
-        giveDivisible: false,
-        getDivisible: false,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "100",
-        priceInput: "0.5",
-        expectMatch: true,
-        expectCreate: false),
-    TestCase(
-        description:
-            "AmountType.give-PriceType.give create-only giveDiv=false getDiv=false",
-        priceType: PriceType.give,
-        amountType: AmountType.give,
-        giveDivisible: false,
-        getDivisible: false,
-        buyOrders: [],
-        sellOrders: [],
-        amountInput: "100",
-        priceInput: "0.5",
-        expectMatch: false,
-        expectCreate: true),
-    TestCase(
-        description:
-            "AmountType.give-PriceType.give match and create giveDiv=false getDiv=false",
-        priceType: PriceType.give,
-        amountType: AmountType.give,
-        giveDivisible: false,
-        getDivisible: false,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "100",
-        priceInput: "0.5",
-        expectMatch: true,
-        expectCreate: false),
-    TestCase(
-        description:
-            "AmountType.give-PriceType.get match-only giveDiv=true getDiv=true",
-        priceType: PriceType.get,
-        amountType: AmountType.give,
-        giveDivisible: true,
-        getDivisible: true,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "100",
-        priceInput: "2.0",
-        expectMatch: true,
-        expectCreate: false),
-    TestCase(
-        description:
-            "AmountType.give-PriceType.get create-only giveDiv=true getDiv=true",
-        priceType: PriceType.get,
-        amountType: AmountType.give,
-        giveDivisible: true,
-        getDivisible: true,
-        buyOrders: [],
-        sellOrders: [],
-        amountInput: "100",
-        priceInput: "2.0",
-        expectMatch: false,
-        expectCreate: true),
-    TestCase(
-        description:
-            "AmountType.give-PriceType.get match and create giveDiv=true getDiv=true",
-        priceType: PriceType.get,
-        amountType: AmountType.give,
-        giveDivisible: true,
-        getDivisible: true,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "100",
-        priceInput: "2.0",
-        expectMatch: true,
-        expectCreate: false),
-    TestCase(
-        description:
-            "AmountType.give-PriceType.get match-only giveDiv=true getDiv=false",
-        priceType: PriceType.get,
-        amountType: AmountType.give,
-        giveDivisible: true,
-        getDivisible: false,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "100",
-        priceInput: "2.0",
-        expectMatch: true,
-        expectCreate: false),
-    TestCase(
-        description:
-            "AmountType.give-PriceType.get create-only giveDiv=true getDiv=false",
-        priceType: PriceType.get,
-        amountType: AmountType.give,
-        giveDivisible: true,
-        getDivisible: false,
-        buyOrders: [],
-        sellOrders: [],
-        amountInput: "100",
-        priceInput: "2.0",
-        expectMatch: false,
-        expectCreate: true),
-    TestCase(
-        description:
-            "AmountType.give-PriceType.get match and create giveDiv=true getDiv=false",
-        priceType: PriceType.get,
-        amountType: AmountType.give,
-        giveDivisible: true,
-        getDivisible: false,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "100",
-        priceInput: "2.0",
-        expectMatch: true,
-        expectCreate: false),
-    TestCase(
-        description:
-            "AmountType.give-PriceType.get match-only giveDiv=false getDiv=true",
-        priceType: PriceType.get,
-        amountType: AmountType.give,
-        giveDivisible: false,
-        getDivisible: true,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "100",
-        priceInput: "2.0",
-        expectMatch: true,
-        expectCreate: false),
-    TestCase(
-        description:
-            "AmountType.give-PriceType.get create-only giveDiv=false getDiv=true",
-        priceType: PriceType.get,
-        amountType: AmountType.give,
-        giveDivisible: false,
-        getDivisible: true,
-        buyOrders: [],
-        sellOrders: [],
-        amountInput: "100",
-        priceInput: "2.0",
-        expectMatch: false,
-        expectCreate: true),
-    TestCase(
-        description:
-            "AmountType.give-PriceType.get match and create giveDiv=false getDiv=true",
-        priceType: PriceType.get,
-        amountType: AmountType.give,
-        giveDivisible: false,
-        getDivisible: true,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "100",
-        priceInput: "2.0",
-        expectMatch: true,
-        expectCreate: false),
-    TestCase(
-        description:
-            "AmountType.give-PriceType.get match-only giveDiv=false getDiv=false",
-        priceType: PriceType.get,
-        amountType: AmountType.give,
-        giveDivisible: false,
-        getDivisible: false,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "100",
-        priceInput: "2.0",
-        expectMatch: true,
-        expectCreate: false),
-    TestCase(
-        description:
-            "AmountType.give-PriceType.get create-only giveDiv=false getDiv=false",
-        priceType: PriceType.get,
-        amountType: AmountType.give,
-        giveDivisible: false,
-        getDivisible: false,
-        buyOrders: [],
-        sellOrders: [],
-        amountInput: "100",
-        priceInput: "2.0",
-        expectMatch: false,
-        expectCreate: true),
-    TestCase(
-        description:
-            "AmountType.give-PriceType.get match and create giveDiv=false getDiv=false",
-        priceType: PriceType.get,
-        amountType: AmountType.give,
-        giveDivisible: false,
-        getDivisible: false,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "100",
-        priceInput: "2.0",
-        expectMatch: true,
-        expectCreate: false),
-    TestCase(
-        description:
-            "AmountType.get-PriceType.give match-only giveDiv=true getDiv=true",
-        priceType: PriceType.give,
-        amountType: AmountType.get,
-        giveDivisible: true,
-        getDivisible: true,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "200",
-        priceInput: "0.5",
-        expectMatch: true,
-        expectCreate: false),
-    TestCase(
-        description:
-            "AmountType.get-PriceType.give create-only giveDiv=true getDiv=true",
-        priceType: PriceType.give,
-        amountType: AmountType.get,
-        giveDivisible: true,
-        getDivisible: true,
-        buyOrders: [],
-        sellOrders: [],
-        amountInput: "200",
-        priceInput: "0.5",
-        expectMatch: false,
-        expectCreate: true),
-    TestCase(
-        description:
-            "AmountType.get-PriceType.give match and create giveDiv=true getDiv=true",
-        priceType: PriceType.give,
-        amountType: AmountType.get,
-        giveDivisible: true,
-        getDivisible: true,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "300",
-        priceInput: "0.5",
-        expectMatch: true,
-        expectCreate: false),
-    TestCase(
-        description:
-            "AmountType.get-PriceType.give match-only giveDiv=true getDiv=false",
-        priceType: PriceType.give,
-        amountType: AmountType.get,
-        giveDivisible: true,
-        getDivisible: false,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "200",
-        priceInput: "0.5",
-        expectMatch: true,
-        expectCreate: false),
-    TestCase(
-        description:
-            "AmountType.get-PriceType.give create-only giveDiv=true getDiv=false",
-        priceType: PriceType.give,
-        amountType: AmountType.get,
-        giveDivisible: true,
-        getDivisible: false,
-        buyOrders: [],
-        sellOrders: [],
-        amountInput: "200",
-        priceInput: "0.5",
-        expectMatch: false,
-        expectCreate: true),
-    TestCase(
-        description:
-            "AmountType.get-PriceType.give match and create giveDiv=true getDiv=false",
-        priceType: PriceType.give,
-        amountType: AmountType.get,
-        giveDivisible: true,
-        getDivisible: false,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "300",
-        priceInput: "0.5",
-        expectMatch: true,
-        expectCreate: false),
-    TestCase(
-        description:
-            "AmountType.get-PriceType.give match-only giveDiv=false getDiv=true",
-        priceType: PriceType.give,
-        amountType: AmountType.get,
-        giveDivisible: false,
-        getDivisible: true,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "200",
-        priceInput: "0.5",
-        expectMatch: true,
-        expectCreate: false),
-    TestCase(
-        description:
-            "AmountType.get-PriceType.give create-only giveDiv=false getDiv=true",
-        priceType: PriceType.give,
-        amountType: AmountType.get,
-        giveDivisible: false,
-        getDivisible: true,
-        buyOrders: [],
-        sellOrders: [],
-        amountInput: "200",
-        priceInput: "0.5",
-        expectMatch: false,
-        expectCreate: true),
-    TestCase(
-        description:
-            "AmountType.get-PriceType.give match and create giveDiv=false getDiv=true",
-        priceType: PriceType.give,
-        amountType: AmountType.get,
-        giveDivisible: false,
-        getDivisible: true,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "300",
-        priceInput: "0.5",
-        expectMatch: true,
-        expectCreate: false),
-    TestCase(
-        description:
-            "AmountType.get-PriceType.give match-only giveDiv=false getDiv=false",
-        priceType: PriceType.give,
-        amountType: AmountType.get,
-        giveDivisible: false,
-        getDivisible: false,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "200",
-        priceInput: "0.5",
-        expectMatch: true,
-        expectCreate: false),
-    TestCase(
-        description:
-            "AmountType.get-PriceType.give create-only giveDiv=false getDiv=false",
-        priceType: PriceType.give,
-        amountType: AmountType.get,
-        giveDivisible: false,
-        getDivisible: false,
-        buyOrders: [],
-        sellOrders: [],
-        amountInput: "200",
-        priceInput: "0.5",
-        expectMatch: false,
-        expectCreate: true),
-    TestCase(
-        description:
-            "AmountType.get-PriceType.give match and create giveDiv=false getDiv=false",
-        priceType: PriceType.give,
-        amountType: AmountType.get,
-        giveDivisible: false,
-        getDivisible: false,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "300",
-        priceInput: "0.5",
-        expectMatch: true,
-        expectCreate: false),
-    TestCase(
-        description:
-            "AmountType.get-PriceType.get match-only giveDiv=true getDiv=true",
-        priceType: PriceType.get,
-        amountType: AmountType.get,
-        giveDivisible: true,
-        getDivisible: true,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "200",
-        priceInput: "2.0",
-        expectMatch: true,
-        expectCreate: false),
-    TestCase(
-        description:
-            "AmountType.get-PriceType.get create-only giveDiv=true getDiv=true",
-        priceType: PriceType.get,
-        amountType: AmountType.get,
-        giveDivisible: true,
-        getDivisible: true,
-        buyOrders: [],
-        sellOrders: [],
-        amountInput: "200",
-        priceInput: "2.0",
-        expectMatch: false,
-        expectCreate: true),
-    TestCase(
-        description:
-            "AmountType.get-PriceType.get match and create giveDiv=true getDiv=true",
-        priceType: PriceType.get,
-        amountType: AmountType.get,
-        giveDivisible: true,
-        getDivisible: true,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "300",
-        priceInput: "2.0",
-        expectMatch: true,
-        expectCreate: false),
-    TestCase(
-        description:
-            "AmountType.get-PriceType.get match-only giveDiv=true getDiv=false",
-        priceType: PriceType.get,
-        amountType: AmountType.get,
-        giveDivisible: true,
-        getDivisible: false,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "200",
-        priceInput: "2.0",
-        expectMatch: true,
-        expectCreate: false),
-    TestCase(
-        description:
-            "AmountType.get-PriceType.get create-only giveDiv=true getDiv=false",
-        priceType: PriceType.get,
-        amountType: AmountType.get,
-        giveDivisible: true,
-        getDivisible: false,
-        buyOrders: [],
-        sellOrders: [],
-        amountInput: "200",
-        priceInput: "2.0",
-        expectMatch: false,
-        expectCreate: true),
-    TestCase(
-        description:
-            "AmountType.get-PriceType.get match and create giveDiv=true getDiv=false",
-        priceType: PriceType.get,
-        amountType: AmountType.get,
-        giveDivisible: true,
-        getDivisible: false,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "300",
-        priceInput: "2.0",
-        expectMatch: true,
-        expectCreate: false),
-    TestCase(
-        description:
-            "AmountType.get-PriceType.get match-only giveDiv=false getDiv=true",
-        priceType: PriceType.get,
-        amountType: AmountType.get,
-        giveDivisible: false,
-        getDivisible: true,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "200",
-        priceInput: "2.0",
-        expectMatch: true,
-        expectCreate: false),
-    TestCase(
-        description:
-            "AmountType.get-PriceType.get create-only giveDiv=false getDiv=true",
-        priceType: PriceType.get,
-        amountType: AmountType.get,
-        giveDivisible: false,
-        getDivisible: true,
-        buyOrders: [],
-        sellOrders: [],
-        amountInput: "200",
-        priceInput: "2.0",
-        expectMatch: false,
-        expectCreate: true),
-    TestCase(
-        description:
-            "AmountType.get-PriceType.get match and create giveDiv=false getDiv=true",
-        priceType: PriceType.get,
-        amountType: AmountType.get,
-        giveDivisible: false,
-        getDivisible: true,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "300",
-        priceInput: "2.0",
-        expectMatch: true,
-        expectCreate: false),
-    TestCase(
-        description:
-            "AmountType.get-PriceType.get match-only giveDiv=false getDiv=false",
-        priceType: PriceType.get,
-        amountType: AmountType.get,
-        giveDivisible: false,
-        getDivisible: false,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "200",
-        priceInput: "2.0",
-        expectMatch: true,
-        expectCreate: false),
-    TestCase(
-        description:
-            "AmountType.get-PriceType.get create-only giveDiv=false getDiv=false",
-        priceType: PriceType.get,
-        amountType: AmountType.get,
-        giveDivisible: false,
-        getDivisible: false,
-        buyOrders: [],
-        sellOrders: [],
-        amountInput: "200",
-        priceInput: "2.0",
-        expectMatch: false,
-        expectCreate: true),
-    TestCase(
-        description:
-            "AmountType.get-PriceType.get match and create giveDiv=false getDiv=false",
-        priceType: PriceType.get,
-        amountType: AmountType.get,
-        giveDivisible: false,
-        getDivisible: false,
-        buyOrders: [
-          FakeOrder(
-              giveQuantity: 100,
-              getQuantity: 200,
-              giveRemaining: 100,
-              getRemaining: 200)
-        ],
-        sellOrders: [],
-        amountInput: "300",
-        priceInput: "2.0",
-        expectMatch: true,
-        expectCreate: false)
+        expectedOrders: [
+          SimulatedOrderCreate(
+              give: AssetQuantity(
+                  divisible: true,
+                  quantity: BigInt.from(100 * TenToTheEigth.value)),
+              get: AssetQuantity(divisible: false, quantity: BigInt.from(200))),
+        ]),
+    // TestCase(
+    //     description:
+    //         "AmountType.give-PriceType.give match and create giveDiv=true getDiv=false",
+    //     priceType: PriceType.give,
+    //     amountType: AmountType.give,
+    //     giveDivisible: true,
+    //     getDivisible: false,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "100",
+    //     priceInput: "0.5",
+    //     expectMatch: true,
+    //     expectCreate: false),
+    // TestCase(
+    //     description:
+    //         "AmountType.give-PriceType.give match-only giveDiv=false getDiv=true",
+    //     priceType: PriceType.give,
+    //     amountType: AmountType.give,
+    //     giveDivisible: false,
+    //     getDivisible: true,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "100",
+    //     priceInput: "0.5",
+    //     expectMatch: true,
+    //     expectCreate: false),
+    // TestCase(
+    //     description:
+    //         "AmountType.give-PriceType.give create-only giveDiv=false getDiv=true",
+    //     priceType: PriceType.give,
+    //     amountType: AmountType.give,
+    //     giveDivisible: false,
+    //     getDivisible: true,
+    //     buyOrders: [],
+    //     sellOrders: [],
+    //     amountInput: "100",
+    //     priceInput: "0.5",
+    //     expectMatch: false,
+    //     expectCreate: true),
+    // TestCase(
+    //     description:
+    //         "AmountType.give-PriceType.give match and create giveDiv=false getDiv=true",
+    //     priceType: PriceType.give,
+    //     amountType: AmountType.give,
+    //     giveDivisible: false,
+    //     getDivisible: true,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "100",
+    //     priceInput: "0.5",
+    //     expectMatch: true,
+    //     expectCreate: false),
+    // TestCase(
+    //     description:
+    //         "AmountType.give-PriceType.give match-only giveDiv=false getDiv=false",
+    //     priceType: PriceType.give,
+    //     amountType: AmountType.give,
+    //     giveDivisible: false,
+    //     getDivisible: false,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "100",
+    //     priceInput: "0.5",
+    //     expectMatch: true,
+    //     expectCreate: false),
+    // TestCase(
+    //     description:
+    //         "AmountType.give-PriceType.give create-only giveDiv=false getDiv=false",
+    //     priceType: PriceType.give,
+    //     amountType: AmountType.give,
+    //     giveDivisible: false,
+    //     getDivisible: false,
+    //     buyOrders: [],
+    //     sellOrders: [],
+    //     amountInput: "100",
+    //     priceInput: "0.5",
+    //     expectMatch: false,
+    //     expectCreate: true),
+    // TestCase(
+    //     description:
+    //         "AmountType.give-PriceType.give match and create giveDiv=false getDiv=false",
+    //     priceType: PriceType.give,
+    //     amountType: AmountType.give,
+    //     giveDivisible: false,
+    //     getDivisible: false,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "100",
+    //     priceInput: "0.5",
+    //     expectMatch: true,
+    //     expectCreate: false),
+    // TestCase(
+    //     description:
+    //         "AmountType.give-PriceType.get match-only giveDiv=true getDiv=true",
+    //     priceType: PriceType.get,
+    //     amountType: AmountType.give,
+    //     giveDivisible: true,
+    //     getDivisible: true,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "100",
+    //     priceInput: "2.0",
+    //     expectMatch: true,
+    //     expectCreate: false),
+    // TestCase(
+    //     description:
+    //         "AmountType.give-PriceType.get create-only giveDiv=true getDiv=true",
+    //     priceType: PriceType.get,
+    //     amountType: AmountType.give,
+    //     giveDivisible: true,
+    //     getDivisible: true,
+    //     buyOrders: [],
+    //     sellOrders: [],
+    //     amountInput: "100",
+    //     priceInput: "2.0",
+    //     expectMatch: false,
+    //     expectCreate: true),
+    // TestCase(
+    //     description:
+    //         "AmountType.give-PriceType.get match and create giveDiv=true getDiv=true",
+    //     priceType: PriceType.get,
+    //     amountType: AmountType.give,
+    //     giveDivisible: true,
+    //     getDivisible: true,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "100",
+    //     priceInput: "2.0",
+    //     expectMatch: true,
+    //     expectCreate: false),
+    // TestCase(
+    //     description:
+    //         "AmountType.give-PriceType.get match-only giveDiv=true getDiv=false",
+    //     priceType: PriceType.get,
+    //     amountType: AmountType.give,
+    //     giveDivisible: true,
+    //     getDivisible: false,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "100",
+    //     priceInput: "2.0",
+    //     expectMatch: true,
+    //     expectCreate: false),
+    // TestCase(
+    //     description:
+    //         "AmountType.give-PriceType.get create-only giveDiv=true getDiv=false",
+    //     priceType: PriceType.get,
+    //     amountType: AmountType.give,
+    //     giveDivisible: true,
+    //     getDivisible: false,
+    //     buyOrders: [],
+    //     sellOrders: [],
+    //     amountInput: "100",
+    //     priceInput: "2.0",
+    //     expectMatch: false,
+    //     expectCreate: true),
+    // TestCase(
+    //     description:
+    //         "AmountType.give-PriceType.get match and create giveDiv=true getDiv=false",
+    //     priceType: PriceType.get,
+    //     amountType: AmountType.give,
+    //     giveDivisible: true,
+    //     getDivisible: false,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "100",
+    //     priceInput: "2.0",
+    //     expectMatch: true,
+    //     expectCreate: false),
+    // TestCase(
+    //     description:
+    //         "AmountType.give-PriceType.get match-only giveDiv=false getDiv=true",
+    //     priceType: PriceType.get,
+    //     amountType: AmountType.give,
+    //     giveDivisible: false,
+    //     getDivisible: true,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "100",
+    //     priceInput: "2.0",
+    //     expectMatch: true,
+    //     expectCreate: false),
+    // TestCase(
+    //     description:
+    //         "AmountType.give-PriceType.get create-only giveDiv=false getDiv=true",
+    //     priceType: PriceType.get,
+    //     amountType: AmountType.give,
+    //     giveDivisible: false,
+    //     getDivisible: true,
+    //     buyOrders: [],
+    //     sellOrders: [],
+    //     amountInput: "100",
+    //     priceInput: "2.0",
+    //     expectMatch: false,
+    //     expectCreate: true),
+    // TestCase(
+    //     description:
+    //         "AmountType.give-PriceType.get match and create giveDiv=false getDiv=true",
+    //     priceType: PriceType.get,
+    //     amountType: AmountType.give,
+    //     giveDivisible: false,
+    //     getDivisible: true,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "100",
+    //     priceInput: "2.0",
+    //     expectMatch: true,
+    //     expectCreate: false),
+    // TestCase(
+    //     description:
+    //         "AmountType.give-PriceType.get match-only giveDiv=false getDiv=false",
+    //     priceType: PriceType.get,
+    //     amountType: AmountType.give,
+    //     giveDivisible: false,
+    //     getDivisible: false,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "100",
+    //     priceInput: "2.0",
+    //     expectMatch: true,
+    //     expectCreate: false),
+    // TestCase(
+    //     description:
+    //         "AmountType.give-PriceType.get create-only giveDiv=false getDiv=false",
+    //     priceType: PriceType.get,
+    //     amountType: AmountType.give,
+    //     giveDivisible: false,
+    //     getDivisible: false,
+    //     buyOrders: [],
+    //     sellOrders: [],
+    //     amountInput: "100",
+    //     priceInput: "2.0",
+    //     expectMatch: false,
+    //     expectCreate: true),
+    // TestCase(
+    //     description:
+    //         "AmountType.give-PriceType.get match and create giveDiv=false getDiv=false",
+    //     priceType: PriceType.get,
+    //     amountType: AmountType.give,
+    //     giveDivisible: false,
+    //     getDivisible: false,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "100",
+    //     priceInput: "2.0",
+    //     expectMatch: true,
+    //     expectCreate: false),
+    // TestCase(
+    //     description:
+    //         "AmountType.get-PriceType.give match-only giveDiv=true getDiv=true",
+    //     priceType: PriceType.give,
+    //     amountType: AmountType.get,
+    //     giveDivisible: true,
+    //     getDivisible: true,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "200",
+    //     priceInput: "0.5",
+    //     expectMatch: true,
+    //     expectCreate: false),
+    // TestCase(
+    //     description:
+    //         "AmountType.get-PriceType.give create-only giveDiv=true getDiv=true",
+    //     priceType: PriceType.give,
+    //     amountType: AmountType.get,
+    //     giveDivisible: true,
+    //     getDivisible: true,
+    //     buyOrders: [],
+    //     sellOrders: [],
+    //     amountInput: "200",
+    //     priceInput: "0.5",
+    //     expectMatch: false,
+    //     expectCreate: true),
+    // TestCase(
+    //     description:
+    //         "AmountType.get-PriceType.give match and create giveDiv=true getDiv=true",
+    //     priceType: PriceType.give,
+    //     amountType: AmountType.get,
+    //     giveDivisible: true,
+    //     getDivisible: true,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "300",
+    //     priceInput: "0.5",
+    //     expectMatch: true,
+    //     expectCreate: false),
+    // TestCase(
+    //     description:
+    //         "AmountType.get-PriceType.give match-only giveDiv=true getDiv=false",
+    //     priceType: PriceType.give,
+    //     amountType: AmountType.get,
+    //     giveDivisible: true,
+    //     getDivisible: false,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "200",
+    //     priceInput: "0.5",
+    //     expectMatch: true,
+    //     expectCreate: false),
+    // TestCase(
+    //     description:
+    //         "AmountType.get-PriceType.give create-only giveDiv=true getDiv=false",
+    //     priceType: PriceType.give,
+    //     amountType: AmountType.get,
+    //     giveDivisible: true,
+    //     getDivisible: false,
+    //     buyOrders: [],
+    //     sellOrders: [],
+    //     amountInput: "200",
+    //     priceInput: "0.5",
+    //     expectMatch: false,
+    //     expectCreate: true),
+    // TestCase(
+    //     description:
+    //         "AmountType.get-PriceType.give match and create giveDiv=true getDiv=false",
+    //     priceType: PriceType.give,
+    //     amountType: AmountType.get,
+    //     giveDivisible: true,
+    //     getDivisible: false,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "300",
+    //     priceInput: "0.5",
+    //     expectMatch: true,
+    //     expectCreate: false),
+    // TestCase(
+    //     description:
+    //         "AmountType.get-PriceType.give match-only giveDiv=false getDiv=true",
+    //     priceType: PriceType.give,
+    //     amountType: AmountType.get,
+    //     giveDivisible: false,
+    //     getDivisible: true,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "200",
+    //     priceInput: "0.5",
+    //     expectMatch: true,
+    //     expectCreate: false),
+    // TestCase(
+    //     description:
+    //         "AmountType.get-PriceType.give create-only giveDiv=false getDiv=true",
+    //     priceType: PriceType.give,
+    //     amountType: AmountType.get,
+    //     giveDivisible: false,
+    //     getDivisible: true,
+    //     buyOrders: [],
+    //     sellOrders: [],
+    //     amountInput: "200",
+    //     priceInput: "0.5",
+    //     expectMatch: false,
+    //     expectCreate: true),
+    // TestCase(
+    //     description:
+    //         "AmountType.get-PriceType.give match and create giveDiv=false getDiv=true",
+    //     priceType: PriceType.give,
+    //     amountType: AmountType.get,
+    //     giveDivisible: false,
+    //     getDivisible: true,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "300",
+    //     priceInput: "0.5",
+    //     expectMatch: true,
+    //     expectCreate: false),
+    // TestCase(
+    //     description:
+    //         "AmountType.get-PriceType.give match-only giveDiv=false getDiv=false",
+    //     priceType: PriceType.give,
+    //     amountType: AmountType.get,
+    //     giveDivisible: false,
+    //     getDivisible: false,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "200",
+    //     priceInput: "0.5",
+    //     expectMatch: true,
+    //     expectCreate: false),
+    // TestCase(
+    //     description:
+    //         "AmountType.get-PriceType.give create-only giveDiv=false getDiv=false",
+    //     priceType: PriceType.give,
+    //     amountType: AmountType.get,
+    //     giveDivisible: false,
+    //     getDivisible: false,
+    //     buyOrders: [],
+    //     sellOrders: [],
+    //     amountInput: "200",
+    //     priceInput: "0.5",
+    //     expectMatch: false,
+    //     expectCreate: true),
+    // TestCase(
+    //     description:
+    //         "AmountType.get-PriceType.give match and create giveDiv=false getDiv=false",
+    //     priceType: PriceType.give,
+    //     amountType: AmountType.get,
+    //     giveDivisible: false,
+    //     getDivisible: false,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "300",
+    //     priceInput: "0.5",
+    //     expectMatch: true,
+    //     expectCreate: false),
+    // TestCase(
+    //     description:
+    //         "AmountType.get-PriceType.get match-only giveDiv=true getDiv=true",
+    //     priceType: PriceType.get,
+    //     amountType: AmountType.get,
+    //     giveDivisible: true,
+    //     getDivisible: true,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "200",
+    //     priceInput: "2.0",
+    //     expectMatch: true,
+    //     expectCreate: false),
+    // TestCase(
+    //     description:
+    //         "AmountType.get-PriceType.get create-only giveDiv=true getDiv=true",
+    //     priceType: PriceType.get,
+    //     amountType: AmountType.get,
+    //     giveDivisible: true,
+    //     getDivisible: true,
+    //     buyOrders: [],
+    //     sellOrders: [],
+    //     amountInput: "200",
+    //     priceInput: "2.0",
+    //     expectMatch: false,
+    //     expectCreate: true),
+    // TestCase(
+    //     description:
+    //         "AmountType.get-PriceType.get match and create giveDiv=true getDiv=true",
+    //     priceType: PriceType.get,
+    //     amountType: AmountType.get,
+    //     giveDivisible: true,
+    //     getDivisible: true,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "300",
+    //     priceInput: "2.0",
+    //     expectMatch: true,
+    //     expectCreate: false),
+    // TestCase(
+    //     description:
+    //         "AmountType.get-PriceType.get match-only giveDiv=true getDiv=false",
+    //     priceType: PriceType.get,
+    //     amountType: AmountType.get,
+    //     giveDivisible: true,
+    //     getDivisible: false,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "200",
+    //     priceInput: "2.0",
+    //     expectMatch: true,
+    //     expectCreate: false),
+    // TestCase(
+    //     description:
+    //         "AmountType.get-PriceType.get create-only giveDiv=true getDiv=false",
+    //     priceType: PriceType.get,
+    //     amountType: AmountType.get,
+    //     giveDivisible: true,
+    //     getDivisible: false,
+    //     buyOrders: [],
+    //     sellOrders: [],
+    //     amountInput: "200",
+    //     priceInput: "2.0",
+    //     expectMatch: false,
+    //     expectCreate: true),
+    // TestCase(
+    //     description:
+    //         "AmountType.get-PriceType.get match and create giveDiv=true getDiv=false",
+    //     priceType: PriceType.get,
+    //     amountType: AmountType.get,
+    //     giveDivisible: true,
+    //     getDivisible: false,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "300",
+    //     priceInput: "2.0",
+    //     expectMatch: true,
+    //     expectCreate: false),
+    // TestCase(
+    //     description:
+    //         "AmountType.get-PriceType.get match-only giveDiv=false getDiv=true",
+    //     priceType: PriceType.get,
+    //     amountType: AmountType.get,
+    //     giveDivisible: false,
+    //     getDivisible: true,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "200",
+    //     priceInput: "2.0",
+    //     expectMatch: true,
+    //     expectCreate: false),
+    // TestCase(
+    //     description:
+    //         "AmountType.get-PriceType.get create-only giveDiv=false getDiv=true",
+    //     priceType: PriceType.get,
+    //     amountType: AmountType.get,
+    //     giveDivisible: false,
+    //     getDivisible: true,
+    //     buyOrders: [],
+    //     sellOrders: [],
+    //     amountInput: "200",
+    //     priceInput: "2.0",
+    //     expectMatch: false,
+    //     expectCreate: true),
+    // TestCase(
+    //     description:
+    //         "AmountType.get-PriceType.get match and create giveDiv=false getDiv=true",
+    //     priceType: PriceType.get,
+    //     amountType: AmountType.get,
+    //     giveDivisible: false,
+    //     getDivisible: true,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "300",
+    //     priceInput: "2.0",
+    //     expectMatch: true,
+    //     expectCreate: false),
+    // TestCase(
+    //     description:
+    //         "AmountType.get-PriceType.get match-only giveDiv=false getDiv=false",
+    //     priceType: PriceType.get,
+    //     amountType: AmountType.get,
+    //     giveDivisible: false,
+    //     getDivisible: false,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "200",
+    //     priceInput: "2.0",
+    //     expectMatch: true,
+    //     expectCreate: false),
+    // TestCase(
+    //     description:
+    //         "AmountType.get-PriceType.get create-only giveDiv=false getDiv=false",
+    //     priceType: PriceType.get,
+    //     amountType: AmountType.get,
+    //     giveDivisible: false,
+    //     getDivisible: false,
+    //     buyOrders: [],
+    //     sellOrders: [],
+    //     amountInput: "200",
+    //     priceInput: "2.0",
+    //     expectMatch: false,
+    //     expectCreate: true),
+    // TestCase(
+    //     description:
+    //         "AmountType.get-PriceType.get match and create giveDiv=false getDiv=false",
+    //     priceType: PriceType.get,
+    //     amountType: AmountType.get,
+    //     giveDivisible: false,
+    //     getDivisible: false,
+    //     buyOrders: [
+    //       FakeOrder(
+    //           giveQuantity: 100,
+    //           getQuantity: 200,
+    //           giveRemaining: 100,
+    //           getRemaining: 200)
+    //     ],
+    //     sellOrders: [],
+    //     amountInput: "300",
+    //     priceInput: "2.0",
+    //     expectMatch: true,
+    //     expectCreate: false)
   ];
 }
 
@@ -979,11 +1121,10 @@ void main() {
   group('SwapOrderFormBloc - Order Matching', () {
     final allTestCases = generateTestCases();
 
-
     for (final testCase in allTestCases) {
       blocTest<SwapOrderFormBloc, SwapOrderFormModel>(
         testCase.description ??
-            'giveDiv=${testCase.giveDivisible}, getDiv=${testCase.getDivisible}, amount=${testCase.amountType}, price=${testCase.priceType}, match=${testCase.expectMatch}, create=${testCase.expectCreate}',
+            'giveDiv=${testCase.giveDivisible}, getDiv=${testCase.getDivisible}, amount=${testCase.amountType}, price=${testCase.priceType}',
         build: () {
           final giveAsset =
               FakeAsset(asset: 'GIVE', divisible: testCase.giveDivisible);
@@ -1003,37 +1144,33 @@ void main() {
             sellOrders: testCase.sellOrders,
           );
 
-          if (testCase.amountType == AmountType.give) {
+          if (bloc.state.amountType != testCase.amountType) {
             bloc.add(AmountTypeClicked());
           }
-          if (testCase.priceType == PriceType.give) {
+          if (bloc.state.priceType != testCase.priceType) {
             bloc.add(PriceTypeClicked());
           }
+          bloc.add(AmountInputChanged(value: testCase.amountInput));
+          bloc.add(PriceInputChanged(value: testCase.priceInput));
 
           return bloc;
         },
-        act: (bloc) => bloc
-          ..add(AmountInputChanged(value: testCase.amountInput))
-          ..add(PriceInputChanged(value: testCase.priceInput))
-          ..add(SimulatedOrdersRequested()),
+        act: (bloc) => bloc..add(SimulatedOrdersRequested()),
         wait: const Duration(milliseconds: 500),
         verify: (bloc) {
           final state = bloc.state;
 
-          print("state.simulatedOrders: ${state.simulatedOrders}");
+          print("state ${state.simulatedOrders}");
+          state.simulatedOrders.maybeWhen(
+            onSuccess: (actual) {
+              // how do i use this here
 
-          expect(
-            state.simulatedOrders.maybeWhen(
-              onSuccess: (orders) =>
-                  (testCase.expectMatch
-                      ? orders.any((o) => o is SimulatedOrderMatch)
-                      : true) &&
-                  (testCase.expectCreate
-                      ? orders.any((o) => o is SimulatedOrderCreate)
-                      : true),
-              orElse: () => false,
-            ),
-            isTrue,
+              print("expected: ${testCase.expectedOrders}");
+              print("  actual: $actual");
+              expect(actual, equalsSimulatedOrders(testCase.expectedOrders));
+            },
+            orElse: () => fail(
+                'Expected success with orders but got: ${state.simulatedOrders}'),
           );
         },
       );

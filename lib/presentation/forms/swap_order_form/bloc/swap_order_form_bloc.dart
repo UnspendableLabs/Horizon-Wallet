@@ -16,6 +16,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/repositories/order_repository.dart';
 import 'package:horizon/common/constants.dart';
 
+int toRawUnits(int quantity, bool divisible) =>
+    divisible ? quantity * TenToTheEigth.value.toInt() : quantity;
+
 sealed class SimulatedOrder extends Equatable {
   final AssetQuantity give;
   final AssetQuantity get;
@@ -23,7 +26,10 @@ sealed class SimulatedOrder extends Equatable {
   const SimulatedOrder({required this.give, required this.get});
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [runtimeType, give, get];
+
+  @override
+  String toString() => '$runtimeType(give: $give, get: $get)';
 }
 
 class SimulatedOrderMatch extends SimulatedOrder {
@@ -468,7 +474,6 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
             const Duration(milliseconds: 300)));
   }
 
-
   _handleRelativePriceValueClicked(
     RelativePriceButtonClicked event,
     Emitter<SwapOrderFormModel> emit,
@@ -587,8 +592,8 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
         final buyOrders = result[0];
         final sellOrders = result[1];
 
-        int tx1GiveRemaining = state.giveQuantityInput.value.quantity.toInt();
-        int tx1GetRemaining = state.getQuantityInput.value.quantity.toInt();
+        AssetQuantity tx1GiveRemaining = state.giveQuantityInput.value;
+        AssetQuantity tx1GetRemaining = state.getQuantityInput.value;
 
         final giveDivisible = state.giveAsset.divisible;
         final getDivisible = state.getAsset.divisible;
@@ -597,6 +602,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
 
         final simulatedOrders = <SimulatedOrder>[];
 
+        // TODO:  use AssetQuantity / operator
         final tx1Price = state.giveQuantityInput.value.normalizedNum() == 0
             ? 0
             : state.getQuantityInput.value.normalizedNum() /
@@ -622,74 +628,118 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
 
         print("tx1GiveRemaining: $tx1GiveRemaining");
         print("tx1GetRemaining: $tx1GetRemaining");
-        print("tx1Price: $tx1Price");
-        print("tx1InversePrice: $tx1InversePrice");
 
         for (final tx0 in candidateMatches) {
-          final tx0GiveRemaining = tx0.giveRemaining;
-          //
-          final tx0GetRemaining = tx0.getRemaining;
+          final tx0GiveRemaining = AssetQuantity(
+              quantity: BigInt.from(tx0.giveRemaining),
+              divisible: getDivisible);
+          // something seems wrong about not referencing tx0GetRemaining
+
+          final tx0GetRemaining = AssetQuantity(
+              quantity: BigInt.from(tx0.getRemaining),
+              divisible: giveDivisible);
+
           final tx0Price = tx0.getQuantity / tx0.giveQuantity;
 
-          if (tx0Price >
-              (state.priceType == PriceType.give
-                  ? tx1InversePrice
-                  : tx1Price)) {
+          print("tx0Price: $tx0Price");
+          print("\ttx0.giveQuantity: ${tx0.giveQuantity}");
+          print("\ttx0.giveQuantity: ${tx0.giveQuantity}");
+
+          print(
+              "tx0Price compairosn: ${state.priceType == PriceType.give ? "inverse" : "normal"}");
+          print("tx1Price: $tx1Price");
+          print("tx1InversePrice: $tx1InversePrice");
+
+          if (tx0Price > tx1InversePrice) {
+            print("skipping price mismatch");
+            print("\ttx0Price $tx0Price");
+            print("\ttx1Price $tx1Price");
             continue;
           }
 
           int forwardQuantity = min(
-            tx0GiveRemaining,
-            (tx1GiveRemaining / tx0Price).floor(),
-          );
+              tx0GiveRemaining.normalizedNum().toInt(),
+              (tx1GiveRemaining /
+                      AssetQuantity(
+                          divisible: true,
+                          quantity: BigInt.from(
+                              tx0Price * TenToTheEigth.doubleValue)))
+                  .quantity
+                  .toInt());
 
           int backwardQuantity = (forwardQuantity * tx0Price).round();
 
-          if (forwardQuantity == 0 || backwardQuantity == 0) {
+          if (forwardQuantity == 0) {
+            print("skipping: zero forward quantity");
             continue;
           }
+
+          if (backwardQuantity == 0) {
+            print("skipping: zero backward quantity");
+            continue;
+          }
+
+          int backwardQuantityRaw = toRawUnits(backwardQuantity, giveDivisible);
+          print("\n\nbackwardQuantity: $backwardQuantity");
+          print("backwardQuantityRaw: $backwardQuantityRaw");
+          print("giveDisibivel: $giveDivisible\n\n");
+
+          int forwardQuantityRaw = toRawUnits(forwardQuantity, getDivisible);
 
           simulatedOrders.add(SimulatedOrderMatch(
             give: AssetQuantity(
               divisible: giveDivisible,
-              quantity: BigInt.from(backwardQuantity),
+
+              // chat
+              // this seems to be the issue, and only results when give and get divisibility are distinct
+              quantity: BigInt.from(backwardQuantityRaw),
             ),
             get: AssetQuantity(
               divisible: getDivisible,
-              quantity: BigInt.from(forwardQuantity),
+              quantity: BigInt.from(forwardQuantityRaw),
             ),
           ));
 
-          tx1GiveRemaining -= backwardQuantity;
-          tx1GetRemaining -= forwardQuantity;
+          print("subtracting");
+          print("backwardQuantityRaw $backwardQuantityRaw");
+          print("forwardQuantityRaw $forwardQuantityRaw");
+          print(" tx1GiveRemaining: $tx1GiveRemaining");
+          print(" backwardquantity: $backwardQuantity");
+          tx1GiveRemaining -= AssetQuantity.fromNormalizedString(
+              input: backwardQuantity.toString(), divisible: giveDivisible);
+          print("           result: $tx1GiveRemaining");
+          tx1GetRemaining -= AssetQuantity.fromNormalizedString(
+              input: forwardQuantity.toString(), divisible: getDivisible);
         }
 
-        if (tx1GiveRemaining > 0 && tx1GetRemaining > 0) {
-          final correctedGiveQuantity =
-              (tx1GetRemaining * tx1InversePrice).round();
+        if (state.amountType == AmountType.give &&
+            tx1GiveRemaining.quantity > BigInt.zero) {
+          print("in this case");
+
+          final getAmount =
+              (tx1GiveRemaining.normalizedNum() * tx1Price).round();
 
           simulatedOrders.add(SimulatedOrderCreate(
-            give: AssetQuantity(
-              divisible: giveDivisible,
-              quantity: BigInt.from(correctedGiveQuantity),
-            ),
-            get: AssetQuantity(
-              divisible: getDivisible,
-              quantity: BigInt.from(tx1GetRemaining),
-            ),
-          ));
+              give: tx1GiveRemaining,
+              get: AssetQuantity.fromNormalizedString(
+                  divisible: getDivisible, input: getAmount.toString())));
         }
 
-        print("Simulated Matches:");
-        for (final o in simulatedOrders) {
-          print(
-              "• ${o.runtimeType}: give=${o.give.quantity}, get=${o.get.quantity}");
+        if (state.amountType == AmountType.get &&
+            tx1GetRemaining.quantity > BigInt.zero) {
+          final giveAmount =
+              (tx1GetRemaining.normalizedNum() * tx1Price).round();
+
+          simulatedOrders.add(SimulatedOrderCreate(
+            give: AssetQuantity.fromNormalizedString(
+                divisible: giveDivisible, input: giveAmount.toString()),
+            get: tx1GetRemaining,
+          ));
         }
 
         return (buyOrders, sellOrders, simulatedOrders);
       },
     );
-
 
     final result = await task.run();
 
