@@ -1,7 +1,8 @@
 import 'package:horizon/common/constants.dart';
+import 'package:equatable/equatable.dart';
 import "package:fpdart/fpdart.dart" hide Order;
 
-class AssetQuantity {
+class AssetQuantity extends Equatable {
   final bool divisible;
   final BigInt quantity;
 
@@ -9,6 +10,9 @@ class AssetQuantity {
     required this.divisible,
     required this.quantity,
   });
+
+  @override
+  List<Object> get props => [divisible, quantity];
 
   factory AssetQuantity.fromNormalizedString(
       {required bool divisible, required String input}) {
@@ -37,8 +41,8 @@ class AssetQuantity {
         print("input: $input");
         print(e);
         print(callstack);
-        return e.toString() ;
-        },
+        return e.toString();
+      },
     );
   }
 
@@ -87,5 +91,15 @@ extension AssetQuantityOperators on AssetQuantity {
       divisible: divisible,
       quantity: quantity * multiplier,
     );
+  }
+
+  AssetQuantity operator /(AssetQuantity other) {
+    if (other.quantity == BigInt.zero) {
+      return AssetQuantity(divisible: true, quantity: BigInt.zero);
+    }
+
+    return AssetQuantity(
+        divisible: true,
+        quantity: quantity * TenToTheEigth.bigIntValue ~/ other.quantity);
   }
 }

@@ -187,7 +187,7 @@ class _SwapOrderFormProviderState extends State<SwapOrderFormProvider> {
         httpConfig: widget.httpConfig,
       ),
       widget._orderRepository.getByPairTE(
-        status: "open",
+       status: "open",
         giveAsset: widget.getAsset,
         getAsset: widget.giveAsset,
         httpConfig: widget.httpConfig,
