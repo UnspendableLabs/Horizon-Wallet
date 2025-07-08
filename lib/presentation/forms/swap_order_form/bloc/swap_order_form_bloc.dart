@@ -643,15 +643,38 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
             tx1GiveRemaining.quantity > BigInt.zero) {
           final getAmount = (tx1GiveRemaining * tx1Price);
 
+          print("tx1GiveRemaining $tx1GiveRemaining");
+          print("tx1Price: $tx1Price");
+          print("getAmount $getAmount");
+          print("getAmount.quantity ${getAmount.quantity}");
+          print("getDvisible $getDivisible");
+
+          final getQuantity = switch ((giveDivisible, getDivisible)) {
+            (true, true) => getAmount.quantity,
+            (true, false) =>
+              BigInt.from(getAmount.quantity / TenToTheEigth.bigIntValue),
+            (false, true) => getAmount.quantity,
+            (false, false) => getAmount.quantity
+          };
+
           simulatedOrders.add(SimulatedOrderCreate(
               give: tx1GiveRemaining,
-              get: AssetQuantity(
-                divisible: getDivisible,
-                quantity: !getDivisible
-                    ? BigInt.from(
-                        getAmount.quantity / TenToTheEigth.bigIntValue)
-                    : getAmount.quantity,
-              )));
+              get: AssetQuantity(divisible: getDivisible, quantity: getQuantity
+                  // quantity: !getDivisible
+                  //     ? BigInt.from(
+                  //         getAmount.quantity / TenToTheEigth.bigIntValue)
+                  //     : getAmount.quantity,
+                  )));
+
+          // simulatedOrders.add(SimulatedOrderCreate(
+          //     give: tx1GiveRemaining,
+          //     get: AssetQuantity(
+          //       divisible: getDivisible,
+          //       quantity: !getDivisible
+          //           ? BigInt.from(
+          //               getAmount.quantity / TenToTheEigth.bigIntValue)
+          //           : getAmount.quantity,
+          //     )));
         }
 
         if (state.amountType == AmountType.get &&
