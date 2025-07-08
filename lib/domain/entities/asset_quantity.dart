@@ -86,20 +86,51 @@ extension AssetQuantityOperators on AssetQuantity {
     );
   }
 
-  AssetQuantity operator *(BigInt multiplier) {
-    return AssetQuantity(
-      divisible: divisible,
-      quantity: quantity * multiplier,
-    );
+  AssetQuantity operator *(AssetQuantity other) {
+    return switch ((divisible, other.divisible)) {
+      (true, true) => AssetQuantity(
+          divisible: true,
+          quantity: (quantity * other.quantity) ~/ TenToTheEigth.bigIntValue,
+        ),
+      (true, false) => AssetQuantity(
+          divisible: true,
+          quantity: quantity * other.quantity,
+        ),
+      (false, true) => AssetQuantity(
+          divisible: true,
+          quantity: quantity * other.quantity,
+        ),
+      (false, false) => AssetQuantity(
+          divisible: false,
+          quantity: quantity * other.quantity,
+        ),
+    };
   }
 
   AssetQuantity operator /(AssetQuantity other) {
     if (other.quantity == BigInt.zero) {
+      print("Division by zero: returning 0");
       return AssetQuantity(divisible: true, quantity: BigInt.zero);
     }
 
-    return AssetQuantity(
-        divisible: true,
-        quantity: quantity * TenToTheEigth.bigIntValue ~/ other.quantity);
+    print("Dividing: $this / $other");
+    return switch ((divisible, other.divisible)) {
+      (true, true) => AssetQuantity(
+          divisible: true,
+          quantity: BigInt.from(
+              (quantity * TenToTheEigth.bigIntValue / other.quantity).floor())),
+      (true, false) => AssetQuantity(
+          divisible: true,
+          quantity: BigInt.from((quantity / other.quantity).floor()),
+        ),
+      (false, true) => AssetQuantity(
+          divisible: true,
+          quantity: BigInt.from(
+              (quantity * TenToTheEigth.bigIntValue / other.quantity * TenToTheEigth.value).floor())),
+      (false, false) => AssetQuantity(
+          divisible: false,
+          quantity: quantity ~/ other.quantity,
+        ),
+    };
   }
 }
