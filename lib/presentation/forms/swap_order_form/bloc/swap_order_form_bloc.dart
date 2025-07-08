@@ -274,12 +274,12 @@ class SwapOrderFormModel with FormzMixin {
             value: AssetQuantity.fromNormalizedStringSafe(
                     divisible: getAsset.divisible,
                     input: (AssetQuantity.fromNormalizedString(
-                                    divisible: giveAsset.divisible,
-                                    input: amountInput.value)
-                                .normalizedNum() *
-                            AssetQuantity.fromNormalizedString(
                                     divisible: getAsset.divisible,
                                     input: priceInput.value)
+                                .normalizedNum() *
+                            AssetQuantity.fromNormalizedString(
+                                    divisible: giveAsset.divisible,
+                                    input: amountInput.value)
                                 .normalizedNum())
                         .toString())
                 .getOrElse((_) => AssetQuantity(
@@ -599,14 +599,15 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
         final getDivisible = state.getAsset.divisible;
 
         final candidateMatches = buyOrders;
-
         final simulatedOrders = <SimulatedOrder>[];
 
         // TODO:  use AssetQuantity / operator
-        final tx1Price = state.giveQuantityInput.value.normalizedNum() == 0
-            ? 0
-            : state.getQuantityInput.value.normalizedNum() /
-                state.giveQuantityInput.value.normalizedNum();
+
+        print("about to compute tx1 price");
+        final tx1Price =
+            state.getQuantityInput.value / state.giveQuantityInput.value;
+
+        print("tx1Price: $tx1Price \n\n\n\n");
 
         final tx1InversePrice =
             state.getQuantityInput.value.normalizedNum() == 0
@@ -639,7 +640,9 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
               quantity: BigInt.from(tx0.getRemaining),
               divisible: giveDivisible);
 
-          final tx0Price = tx0.getQuantity / tx0.giveQuantity;
+          final tx0Price = AssetQuantity.fromNormalizedString(
+              input: (tx0.getQuantity / tx0.giveQuantity).toString(),
+              divisible: true);
 
           print("tx0Price: $tx0Price");
           print("\ttx0.giveQuantity: ${tx0.giveQuantity}");
@@ -650,24 +653,18 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
           print("tx1Price: $tx1Price");
           print("tx1InversePrice: $tx1InversePrice");
 
-          if (tx0Price > tx1InversePrice) {
+          if (tx0Price.normalizedNum() > tx1InversePrice) {
             print("skipping price mismatch");
             print("\ttx0Price $tx0Price");
             print("\ttx1Price $tx1Price");
             continue;
           }
 
-          int forwardQuantity = min(
-              tx0GiveRemaining.normalizedNum().toInt(),
-              (tx1GiveRemaining /
-                      AssetQuantity(
-                          divisible: true,
-                          quantity: BigInt.from(
-                              tx0Price * TenToTheEigth.doubleValue)))
-                  .quantity
-                  .toInt());
+          int forwardQuantity = min(tx0GiveRemaining.normalizedNum().toInt(),
+              (tx1GiveRemaining / tx0Price).quantity.toInt());
 
-          int backwardQuantity = (forwardQuantity * tx0Price).round();
+          int backwardQuantity =
+              (forwardQuantity * tx0Price.normalizedNum()).round();
 
           if (forwardQuantity == 0) {
             print("skipping: zero forward quantity");
@@ -716,23 +713,35 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
             tx1GiveRemaining.quantity > BigInt.zero) {
           print("in this case");
 
-          final getAmount =
-              (tx1GiveRemaining.normalizedNum() * tx1Price).round();
+          print(
+              "tx1GetRemaining.normalizedNum() ${tx1GetRemaining.normalizedNum()}");
+          print("tx1Price $tx1Price");
+
+          print("this is the key");
+
+          final getAmount = (tx1GiveRemaining * tx1Price);
+
+          print("this is the key\n\n");
+
+          print("getAmount $getAmount");
 
           simulatedOrders.add(SimulatedOrderCreate(
               give: tx1GiveRemaining,
-              get: AssetQuantity.fromNormalizedString(
-                  divisible: getDivisible, input: getAmount.toString())));
+              get: AssetQuantity(
+                divisible: getDivisible,
+                quantity: !getDivisible
+                    ? BigInt.from(
+                        getAmount.quantity / TenToTheEigth.bigIntValue)
+                    : getAmount.quantity,
+              )));
         }
 
         if (state.amountType == AmountType.get &&
             tx1GetRemaining.quantity > BigInt.zero) {
-          final giveAmount =
-              (tx1GetRemaining.normalizedNum() * tx1Price).round();
+          final giveAmount = (tx1Price * tx1GetRemaining);
 
           simulatedOrders.add(SimulatedOrderCreate(
-            give: AssetQuantity.fromNormalizedString(
-                divisible: giveDivisible, input: giveAmount.toString()),
+            give: giveAmount,
             get: tx1GetRemaining,
           ));
         }
