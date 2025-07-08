@@ -324,25 +324,35 @@ List<TestCase> generateTestCases() {
                   quantity: BigInt.from(100 * TenToTheEigth.value)),
               get: AssetQuantity(divisible: false, quantity: BigInt.from(200))),
         ]),
-    // TestCase(
-    //     description:
-    //         "AmountType.give-PriceType.give match and create giveDiv=true getDiv=false",
-    //     priceType: PriceType.give,
-    //     amountType: AmountType.give,
-    //     giveDivisible: true,
-    //     getDivisible: false,
-    //     buyOrders: [
-    //       FakeOrder(
-    //           giveQuantity: 100,
-    //           getQuantity: 200,
-    //           giveRemaining: 100,
-    //           getRemaining: 200)
-    //     ],
-    //     sellOrders: [],
-    //     amountInput: "100",
-    //     priceInput: "0.5",
-    //     expectMatch: true,
-    //     expectCreate: false),
+    TestCase(
+        description:
+            "AmountType.give-PriceType.give match and create giveDiv=true getDiv=false",
+        priceType: PriceType.give,
+        amountType: AmountType.give,
+        giveDivisible: true,
+        getDivisible: false,
+        buyOrders: [
+          FakeOrder(
+              giveQuantity: 200,
+              getQuantity: 100,
+              giveRemaining: 200,
+              getRemaining: 100)
+        ],
+        sellOrders: [],
+        amountInput: "150",
+        priceInput: "0.5",
+        expectedOrders: [
+          SimulatedOrderMatch(
+              give: AssetQuantity(
+                  divisible: true,
+                  quantity: BigInt.from(100 * TenToTheEigth.value)),
+              get: AssetQuantity(divisible: false, quantity: BigInt.from(200))),
+          SimulatedOrderCreate(
+              give: AssetQuantity(
+                  divisible: true,
+                  quantity: BigInt.from(50 * TenToTheEigth.value)),
+              get: AssetQuantity(divisible: false, quantity: BigInt.from(100))),
+        ]),
     // TestCase(
     //     description:
     //         "AmountType.give-PriceType.give match-only giveDiv=false getDiv=true",
