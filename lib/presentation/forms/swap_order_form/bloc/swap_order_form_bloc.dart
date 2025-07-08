@@ -204,9 +204,6 @@ class SwapOrderFormModel with FormzMixin {
             value: AssetQuantity.fromNormalizedStringSafe(
                     divisible: giveAsset.divisible, input: amountInput.value)
                 .getOrElse((error) {
-              print("error: $error");
-              print("giveAsset.divisible: ${giveAsset.divisible}");
-              print("amountInut.value: ${amountInput.value}");
               return AssetQuantity(
                   divisible: giveAsset.divisible, quantity: BigInt.zero);
             }),
@@ -234,10 +231,6 @@ class SwapOrderFormModel with FormzMixin {
                             (num.tryParse(priceInput.value) ?? 0))
                         .toString())
                 .getOrElse((error) {
-              print("error: $error");
-              print("priceInput.value ${priceInput.value}");
-              print("amountInput.value ${amountInput.value}");
-              print("giveAsset.divisible: ${giveAsset.divisible}");
               return AssetQuantity(
                 divisible: giveAsset.divisible,
                 quantity: BigInt.zero,
@@ -256,20 +249,13 @@ class SwapOrderFormModel with FormzMixin {
                     divisible: getAsset.divisible, input: amountInput.value)
                 .getOrElse((_) => AssetQuantity(
                     divisible: getAsset.divisible, quantity: BigInt.zero))),
+
         ((AmountType.give, PriceType.give)) => GetQuantityInput.dirty(
-            value: AssetQuantity.fromNormalizedStringSafe(
-                    divisible: getAsset.divisible,
-                    input: (AssetQuantity.fromNormalizedString(
-                                    divisible: giveAsset.divisible,
-                                    input: amountInput.value)
-                                .normalizedNum() /
-                            AssetQuantity.fromNormalizedString(
-                                    divisible: giveAsset.divisible,
-                                    input: priceInput.value)
-                                .normalizedNum())
-                        .toString())
-                .getOrElse((_) => AssetQuantity(
-                    divisible: getAsset.divisible, quantity: BigInt.zero))),
+            value: AssetQuantity.fromNormalizedString(
+                divisible: getAsset.divisible,
+                input: (double.parse(amountInput.value) /
+                        double.parse(priceInput.value))
+                    .toString())),
         ((AmountType.give, PriceType.get)) => GetQuantityInput.dirty(
             value: AssetQuantity.fromNormalizedStringSafe(
                     divisible: getAsset.divisible,
@@ -478,8 +464,6 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     RelativePriceButtonClicked event,
     Emitter<SwapOrderFormModel> emit,
   ) {
-    print("aSDFASFDASF");
-
     final floorOrder = state.buyOrders.firstOrNull;
     if (floorOrder == null) return;
 
@@ -498,13 +482,6 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
       (RelativePriceValue.plus3, PriceType.get) => 0.97,
       (RelativePriceValue.plus5, PriceType.get) => 0.95,
     };
-
-    print("\n\n\n");
-    print("displayPrice $displayPrice");
-    print("adjustmentFactor $adjustmentFactor");
-    print("value ${event.value}");
-    print("priceType ${state.priceType}");
-    print("\n\n\n");
     add(PriceInputChanged(
         value: (displayPrice * adjustmentFactor).toStringAsFixed(8)));
 
@@ -595,6 +572,9 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
         AssetQuantity tx1GiveRemaining = state.giveQuantityInput.value;
         AssetQuantity tx1GetRemaining = state.getQuantityInput.value;
 
+        print("tx1GiveRemaining $tx1GiveRemaining");
+        print("tx1GetRemaining $tx1GetRemaining");
+
         final giveDivisible = state.giveAsset.divisible;
         final getDivisible = state.getAsset.divisible;
 
@@ -603,32 +583,14 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
 
         // TODO:  use AssetQuantity / operator
 
-        print("about to compute tx1 price");
         final tx1Price =
             state.getQuantityInput.value / state.giveQuantityInput.value;
-
-        print("tx1Price: $tx1Price \n\n\n\n");
 
         final tx1InversePrice =
             state.getQuantityInput.value.normalizedNum() == 0
                 ? 0
                 : state.giveQuantityInput.value.normalizedNum() /
                     state.getQuantityInput.value.normalizedNum();
-
-        print("=== _handleSimulateOrdersRequested ===");
-        print("AmountType: ${state.amountType}, PriceType: ${state.priceType}");
-        print("getQuantityInput: ${state.getQuantityInput.value.quantity}");
-        print(
-            "getQuantity divisibile: ${state.getQuantityInput.value.divisible}");
-        print("giveQuantityInput: ${state.giveQuantityInput.value.quantity}");
-        print(
-            "giveQuantityInput divisible: ${state.giveQuantityInput.value.divisible}");
-
-        print("Buy Orders: ${result[0].length}");
-        print("Sell Orders: ${result[1].length}");
-
-        print("tx1GiveRemaining: $tx1GiveRemaining");
-        print("tx1GetRemaining: $tx1GetRemaining");
 
         for (final tx0 in candidateMatches) {
           final tx0GiveRemaining = AssetQuantity(
@@ -644,19 +606,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
               input: (tx0.getQuantity / tx0.giveQuantity).toString(),
               divisible: true);
 
-          print("tx0Price: $tx0Price");
-          print("\ttx0.giveQuantity: ${tx0.giveQuantity}");
-          print("\ttx0.giveQuantity: ${tx0.giveQuantity}");
-
-          print(
-              "tx0Price compairosn: ${state.priceType == PriceType.give ? "inverse" : "normal"}");
-          print("tx1Price: $tx1Price");
-          print("tx1InversePrice: $tx1InversePrice");
-
           if (tx0Price.normalizedNum() > tx1InversePrice) {
-            print("skipping price mismatch");
-            print("\ttx0Price $tx0Price");
-            print("\ttx1Price $tx1Price");
             continue;
           }
 
@@ -667,19 +617,14 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
               (forwardQuantity * tx0Price.normalizedNum()).round();
 
           if (forwardQuantity == 0) {
-            print("skipping: zero forward quantity");
             continue;
           }
 
           if (backwardQuantity == 0) {
-            print("skipping: zero backward quantity");
             continue;
           }
 
           int backwardQuantityRaw = toRawUnits(backwardQuantity, giveDivisible);
-          print("\n\nbackwardQuantity: $backwardQuantity");
-          print("backwardQuantityRaw: $backwardQuantityRaw");
-          print("giveDisibivel: $giveDivisible\n\n");
 
           int forwardQuantityRaw = toRawUnits(forwardQuantity, getDivisible);
 
@@ -697,33 +642,15 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
             ),
           ));
 
-          print("subtracting");
-          print("backwardQuantityRaw $backwardQuantityRaw");
-          print("forwardQuantityRaw $forwardQuantityRaw");
-          print(" tx1GiveRemaining: $tx1GiveRemaining");
-          print(" backwardquantity: $backwardQuantity");
           tx1GiveRemaining -= AssetQuantity.fromNormalizedString(
               input: backwardQuantity.toString(), divisible: giveDivisible);
-          print("           result: $tx1GiveRemaining");
           tx1GetRemaining -= AssetQuantity.fromNormalizedString(
               input: forwardQuantity.toString(), divisible: getDivisible);
         }
 
         if (state.amountType == AmountType.give &&
             tx1GiveRemaining.quantity > BigInt.zero) {
-          print("in this case");
-
-          print(
-              "tx1GetRemaining.normalizedNum() ${tx1GetRemaining.normalizedNum()}");
-          print("tx1Price $tx1Price");
-
-          print("this is the key");
-
           final getAmount = (tx1GiveRemaining * tx1Price);
-
-          print("this is the key\n\n");
-
-          print("getAmount $getAmount");
 
           simulatedOrders.add(SimulatedOrderCreate(
               give: tx1GiveRemaining,

@@ -125,8 +125,11 @@ extension AssetQuantityOperators on AssetQuantity {
         ),
       (false, true) => AssetQuantity(
           divisible: true,
-          quantity: BigInt.from(
-              (quantity * TenToTheEigth.bigIntValue / other.quantity * TenToTheEigth.value).floor())),
+          quantity: BigInt.from((quantity *
+                  TenToTheEigth.bigIntValue /
+                  other.quantity *
+                  TenToTheEigth.value)
+              .floor())),
       (false, false) => AssetQuantity(
           divisible: false,
           quantity: quantity ~/ other.quantity,
