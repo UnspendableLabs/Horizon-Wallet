@@ -249,7 +249,6 @@ class SwapOrderFormModel with FormzMixin {
                     divisible: getAsset.divisible, input: amountInput.value)
                 .getOrElse((_) => AssetQuantity(
                     divisible: getAsset.divisible, quantity: BigInt.zero))),
-
         ((AmountType.give, PriceType.give)) => GetQuantityInput.dirty(
             value: AssetQuantity.fromNormalizedString(
                 divisible: getAsset.divisible,
@@ -257,19 +256,11 @@ class SwapOrderFormModel with FormzMixin {
                         double.parse(priceInput.value))
                     .toString())),
         ((AmountType.give, PriceType.get)) => GetQuantityInput.dirty(
-            value: AssetQuantity.fromNormalizedStringSafe(
-                    divisible: getAsset.divisible,
-                    input: (AssetQuantity.fromNormalizedString(
-                                    divisible: getAsset.divisible,
-                                    input: priceInput.value)
-                                .normalizedNum() *
-                            AssetQuantity.fromNormalizedString(
-                                    divisible: giveAsset.divisible,
-                                    input: amountInput.value)
-                                .normalizedNum())
-                        .toString())
-                .getOrElse((_) => AssetQuantity(
-                    divisible: getAsset.divisible, quantity: BigInt.zero))),
+            value: AssetQuantity.fromNormalizedString(
+                divisible: getAsset.divisible,
+                input: (double.parse(amountInput.value) *
+                        double.parse(priceInput.value))
+                    .toString())),
       };
 
   @override
