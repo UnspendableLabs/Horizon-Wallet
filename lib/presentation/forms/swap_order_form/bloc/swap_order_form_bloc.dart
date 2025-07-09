@@ -563,9 +563,6 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
         AssetQuantity tx1GiveRemaining = state.giveQuantityInput.value;
         AssetQuantity tx1GetRemaining = state.getQuantityInput.value;
 
-        print("tx1GiveRemaining $tx1GiveRemaining");
-        print("tx1GetRemaining $tx1GetRemaining");
-
         final giveDivisible = state.giveAsset.divisible;
         final getDivisible = state.getAsset.divisible;
 
@@ -574,13 +571,15 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
 
         // TODO:  use AssetQuantity / operator
 
+        print("\n\ncomputing tx1 price");
         final tx1Price =
             state.getQuantityInput.value / state.giveQuantityInput.value;
-        // log tx1 price calculation
-        print("\n\ngetQuantityInput.value ${state.getQuantityInput.value}");
-        print("getQuantityInput.value ${state.giveQuantityInput.value}");
-        print("tx1Price: ${tx1Price}\n\n");
+        print("state.getQuantityInput.value ${state.getQuantityInput.value}");
+        print("state.giveQuantityInput.value ${state.giveQuantityInput.value}");
+        print("tx1Price: $tx1Price\n\n");
 
+
+        // log tx1 price calculation
         final tx1InversePrice =
             state.getQuantityInput.value.normalizedNum() == 0
                 ? 0
@@ -646,14 +645,9 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
         if (state.amountType == AmountType.give &&
             tx1GiveRemaining.quantity > BigInt.zero) {
           final getAmount = switch (state.priceType) {
-             PriceType.give => (tx1GiveRemaining * tx1Price),
-             PriceType.get => (tx1GiveRemaining / tx1Price),
+            PriceType.give => (tx1GiveRemaining * tx1Price),
+            PriceType.get => (tx1GiveRemaining / tx1Price),
           };
-
-        
-          print("\n\ntx1GiveRemaining: $tx1GiveRemaining");
-          print("tx1Price: $tx1Price");
-          print("getAmount: $getAmount");
 
           final getQuantity = switch ((giveDivisible, getDivisible)) {
             (true, true) => getAmount.quantity,
