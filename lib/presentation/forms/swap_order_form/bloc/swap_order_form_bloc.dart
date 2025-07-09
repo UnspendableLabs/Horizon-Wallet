@@ -563,6 +563,8 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
         AssetQuantity tx1GiveQuantity = state.giveQuantityInput.value;
         AssetQuantity tx1GetQuantity = state.getQuantityInput.value;
 
+        print("tx1GiveQuantity: $tx1GiveQuantity");
+
         AssetQuantity tx1GiveRemaining = tx1GiveQuantity;
         AssetQuantity tx1GetRemaining = tx1GetQuantity;
 
@@ -587,7 +589,6 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
 
           final tx1InversePrice = tx1GiveQuantity / tx1GetQuantity;
 
-
           if (tx0Price.quantity > tx1InversePrice.quantity) {
             print("skip");
             print("tx0Price: $tx0Price");
@@ -595,6 +596,10 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
             continue;
           }
 
+          print("tx1GiveRemaining: $tx1GiveRemaining");
+          print("tx0Price: $tx0Price");
+          print("divided: ${tx1GiveRemaining / tx0Price}");
+          print("divided normalized: ${(tx1GiveRemaining / tx0Price).normalizedNum()}");
 
           int forwardQuantity = min(tx0GiveRemaining.normalizedNum().toInt(),
               (tx1GiveRemaining / tx0Price).normalizedNum().toInt());
@@ -602,8 +607,8 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
           int backwardQuantity =
               (forwardQuantity * tx0Price.normalizedNum()).round();
 
-          print("forward wquantity $forwardQuantity" );
-          print("backward wquantity $backwardQuantity" );
+          print("forward wquantity $forwardQuantity");
+          print("backward wquantity $backwardQuantity");
 
           if (forwardQuantity == 0) {
             continue;
@@ -662,9 +667,9 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
 
         if (state.amountType == AmountType.get &&
             tx1GetRemaining.quantity > BigInt.zero) {
-
+          print("case2");
           simulatedOrders.add(SimulatedOrderCreate(
-            give:tx1GiveRemaining,
+            give: tx1GiveRemaining,
             get: tx1GetRemaining,
           ));
         }
