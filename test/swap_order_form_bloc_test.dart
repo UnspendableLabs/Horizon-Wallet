@@ -737,6 +737,26 @@ List<TestCase> generateTestCases() {
                   divisible: true,
                   quantity: BigInt.from(200 * TenToTheEigth.value))),
         ]),
+    TestCase(
+        description:
+            "AmountType.give-PriceType.get create-only giveDive=true getDiv=true",
+        priceType: PriceType.get,
+        amountType: AmountType.give,
+        giveDivisible: true,
+        getDivisible: true,
+        buyOrders: [],
+        sellOrders: [],
+        amountInput: "100",
+        priceInput: ".5",
+        expectedOrders: [
+          SimulatedOrderCreate(
+              give: AssetQuantity(
+                  divisible: true,
+                  quantity: BigInt.from(100 * TenToTheEigth.value)),
+              get: AssetQuantity(
+                  divisible: true,
+                  quantity: BigInt.from(200 * TenToTheEigth.value))),
+        ]),
 
     // TestCase(
     //     description:
