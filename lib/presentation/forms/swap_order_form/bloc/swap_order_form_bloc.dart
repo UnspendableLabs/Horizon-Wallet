@@ -653,6 +653,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
               BigInt.from(getAmount.quantity / TenToTheEigth.bigIntValue)
           };
 
+          print("case 1");
           simulatedOrders.add(SimulatedOrderCreate(
               give: tx1GiveRemaining,
               get: AssetQuantity(
@@ -661,10 +662,9 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
 
         if (state.amountType == AmountType.get &&
             tx1GetRemaining.quantity > BigInt.zero) {
-          final giveAmount = (tx1PriceMax * tx1GetRemaining);
 
           simulatedOrders.add(SimulatedOrderCreate(
-            give: giveAmount,
+            give:tx1GiveRemaining,
             get: tx1GetRemaining,
           ));
         }
