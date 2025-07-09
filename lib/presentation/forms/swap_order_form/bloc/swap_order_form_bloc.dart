@@ -587,14 +587,23 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
 
           final tx1InversePrice = tx1GiveQuantity / tx1GetQuantity;
 
+
           if (tx0Price.quantity > tx1InversePrice.quantity) {
+            print("skip");
+            print("tx0Price: $tx0Price");
+            print("tx1InversePrice: $tx1InversePrice");
             continue;
           }
+
+
           int forwardQuantity = min(tx0GiveRemaining.normalizedNum().toInt(),
               (tx1GiveRemaining / tx0Price).normalizedNum().toInt());
 
           int backwardQuantity =
               (forwardQuantity * tx0Price.normalizedNum()).round();
+
+          print("forward wquantity $forwardQuantity" );
+          print("backward wquantity $backwardQuantity" );
 
           if (forwardQuantity == 0) {
             continue;
