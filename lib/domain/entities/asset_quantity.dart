@@ -63,6 +63,16 @@ class AssetQuantity extends Equatable {
 }
 
 extension AssetQuantityOperators on AssetQuantity {
+  AssetQuantity asNonDivisible() {
+    if (divisible) {
+      return AssetQuantity(
+        divisible: false,
+        quantity: quantity ~/ TenToTheEigth.bigIntValue,
+      );
+    }
+    return this;
+  }
+
   AssetQuantity operator +(AssetQuantity other) {
     if (divisible != other.divisible) {
       throw ArgumentError(
@@ -131,9 +141,9 @@ extension AssetQuantityOperators on AssetQuantity {
                   TenToTheEigth.value)
               .floor())),
       (false, false) => AssetQuantity(
-          divisible: false,
-          quantity: quantity ~/ other.quantity,
-        ),
+          divisible: true,
+          quantity:
+              BigInt.from((quantity / other.quantity * TenToTheEigth.value))),
     };
   }
 }
