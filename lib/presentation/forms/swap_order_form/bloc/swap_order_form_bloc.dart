@@ -572,19 +572,19 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
         // TODO:  use AssetQuantity / operator
 
         print("\n\ncomputing tx1 price");
-        final tx1Price =
-            state.getQuantityInput.value / state.giveQuantityInput.value;
-        print("state.getQuantityInput.value ${state.getQuantityInput.value}");
+        final tx1Price = switch ( state.priceType ) {
+          PriceType.give => state.getQuantityInput.value / state.giveQuantityInput.value,
+          PriceType.get => state.giveQuantityInput.value / state.getQuantityInput.value,
+        };
+        print(" state.getQuantityInput.value ${state.getQuantityInput.value}");
         print("state.giveQuantityInput.value ${state.giveQuantityInput.value}");
-        print("tx1Price: $tx1Price\n\n");
-
+        print("tx1Price: $tx1Price");
+        print("tx1Price.normalizedNum: ${tx1Price.normalizedNum()}\n\n");
 
         // log tx1 price calculation
-        final tx1InversePrice =
-            state.getQuantityInput.value.normalizedNum() == 0
-                ? 0
-                : state.giveQuantityInput.value.normalizedNum() /
-                    state.getQuantityInput.value.normalizedNum();
+        final tx1InversePrice = 1 / tx1Price.normalizedNum();
+
+
 
         for (final tx0 in candidateMatches) {
           final tx0GiveRemaining = AssetQuantity(
@@ -601,14 +601,29 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
               divisible: true);
 
           if (tx0Price.normalizedNum() > tx1InversePrice) {
+            print("we are continuing for some reason");
+            print("tx0Price.normalizedNum() ${tx0Price.normalizedNum()}");
+            print("tx0Price: $tx0Price");
+            print("tx1InversePrice $tx1InversePrice");
+            print("tx1Price $tx1Price\n\n\n");
             continue;
           }
 
+          print("tx0GiveRemaining: $tx0GiveRemaining");
+          print("tx0GiveRemaining.normalizedNm: ${tx0GiveRemaining.normalizedNum()}");
+
+          print("tx1GiveRemaining: $tx1GiveRemaining");
+          print("tx0Price: $tx0Price");
+          print("tx0PriceInverse: ${ 1 / tx0Price.normalizedNum()}");
+        
+
           int forwardQuantity = min(tx0GiveRemaining.normalizedNum().toInt(),
-              (tx1GiveRemaining / tx0Price).quantity.toInt());
+              (tx1GiveRemaining / tx0Price).normalizedNum().toInt());
+
 
           int backwardQuantity =
               (forwardQuantity * tx0Price.normalizedNum()).round();
+
 
           if (forwardQuantity == 0) {
             continue;
@@ -621,6 +636,8 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
           int backwardQuantityRaw = toRawUnits(backwardQuantity, giveDivisible);
 
           int forwardQuantityRaw = toRawUnits(forwardQuantity, getDivisible);
+
+
 
           simulatedOrders.add(SimulatedOrderMatch(
             give: AssetQuantity(
