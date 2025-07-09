@@ -619,25 +619,34 @@ List<TestCase> generateTestCases() {
             get: AssetQuantity(divisible: false, quantity: BigInt.from(200))),
       ],
     ),
-    // TestCase(
-    //     description:
-    //         "AmountType.give-PriceType.give match and create giveDiv=false getDiv=false",
-    //     priceType: PriceType.give,
-    //     amountType: AmountType.give,
-    //     giveDivisible: false,
-    //     getDivisible: false,
-    //     buyOrders: [
-    //       FakeOrder(
-    //           giveQuantity: 100,
-    //           getQuantity: 200,
-    //           giveRemaining: 100,
-    //           getRemaining: 200)
-    //     ],
-    //     sellOrders: [],
-    //     amountInput: "100",
-    //     priceInput: "0.5",
-    //     expectMatch: true,
-    //     expectCreate: false),
+    TestCase(
+      description:
+          "AmountType.give-PriceType.give match and create giveDiv=false getDiv=false",
+      priceType: PriceType.give,
+      amountType: AmountType.give,
+      giveDivisible: false,
+      getDivisible: false,
+      sellOrders: [],
+      amountInput: "150",
+      priceInput: "0.75",
+      buyOrders: [
+        FakeOrder(
+            giveQuantity: 200,
+            getQuantity: 100,
+            giveRemaining: 200,
+            getRemaining: 100)
+      ],
+      expectedOrders: [
+        SimulatedOrderMatch(
+            give: AssetQuantity(divisible: false, quantity: BigInt.from(100)),
+            get: AssetQuantity(divisible: false, quantity: BigInt.from(200))),
+        SimulatedOrderCreate(
+            give: AssetQuantity(divisible: false, quantity: BigInt.from(50)),
+            get: AssetQuantity(
+                divisible: false,
+                quantity: BigInt.from(66)))
+      ],
+    ),
     // TestCase(
     //     description:
     //         "AmountType.give-PriceType.get match-only giveDiv=true getDiv=true",
