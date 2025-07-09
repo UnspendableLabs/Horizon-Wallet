@@ -645,7 +645,15 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
 
         if (state.amountType == AmountType.give &&
             tx1GiveRemaining.quantity > BigInt.zero) {
-          final getAmount = (tx1GiveRemaining * tx1Price);
+          final getAmount = switch (state.priceType) {
+             PriceType.give => (tx1GiveRemaining * tx1Price),
+             PriceType.get => (tx1GiveRemaining / tx1Price),
+          };
+
+        
+          print("\n\ntx1GiveRemaining: $tx1GiveRemaining");
+          print("tx1Price: $tx1Price");
+          print("getAmount: $getAmount");
 
           final getQuantity = switch ((giveDivisible, getDivisible)) {
             (true, true) => getAmount.quantity,
