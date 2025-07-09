@@ -119,11 +119,9 @@ extension AssetQuantityOperators on AssetQuantity {
 
   AssetQuantity operator /(AssetQuantity other) {
     if (other.quantity == BigInt.zero) {
-      print("Division by zero: returning 0");
       return AssetQuantity(divisible: true, quantity: BigInt.zero);
     }
 
-    print("Dividing: $this / $other");
     return switch ((divisible, other.divisible)) {
       (true, true) => AssetQuantity(
           divisible: true,

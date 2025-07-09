@@ -560,8 +560,11 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
         final buyOrders = result[0];
         final sellOrders = result[1];
 
-        AssetQuantity tx1GiveRemaining = state.giveQuantityInput.value;
-        AssetQuantity tx1GetRemaining = state.getQuantityInput.value;
+        AssetQuantity tx1GiveQuantity = state.giveQuantityInput.value;
+        AssetQuantity tx1GetQuantity = state.getQuantityInput.value;
+
+        AssetQuantity tx1GiveRemaining = tx1GiveQuantity;
+        AssetQuantity tx1GetRemaining = tx1GetQuantity;
 
         final giveDivisible = state.giveAsset.divisible;
         final getDivisible = state.getAsset.divisible;
@@ -569,62 +572,24 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
         final candidateMatches = buyOrders;
         final simulatedOrders = <SimulatedOrder>[];
 
-        // TODO:  use AssetQuantity / operator
-
-        print("\n\ncomputing tx1 price");
-        final tx1Price = switch (state.priceType) {
-          PriceType.give =>
-            tx1GetRemaining / tx1GiveRemaining,
-          PriceType.get =>
-            tx1GiveRemaining / tx1GetRemaining
-        };
-        print(" state.getQuantityInput.value ${state.getQuantityInput.value}");
-        print("state.giveQuantityInput.value ${state.giveQuantityInput.value}");
-        print("tx1Price: $tx1Price");
-        print("tx1Price.normalizedNum: ${tx1Price.normalizedNum()}\n\n");
-
-        // log tx1 price calculation
-        final tx1InversePrice = 
-        switch (state.priceType) {
-          PriceType.get =>
-            tx1GetRemaining / tx1GiveRemaining,
-          PriceType.give =>
-            tx1GiveRemaining / tx1GetRemaining
+        final tx1PriceMax = switch (state.priceType) {
+          PriceType.give => tx1GetQuantity / tx1GiveQuantity,
+          PriceType.get => tx1GiveQuantity / tx1GetQuantity
         };
 
         for (final tx0 in candidateMatches) {
           final tx0GiveRemaining = AssetQuantity(
               quantity: BigInt.from(tx0.giveRemaining),
               divisible: getDivisible);
-          // something seems wrong about not referencing tx0GetRemaining
-
-          final tx0GetRemaining = AssetQuantity(
-              quantity: BigInt.from(tx0.getRemaining),
-              divisible: giveDivisible);
-
           final tx0Price = AssetQuantity.fromNormalizedString(
               input: (tx0.getQuantity / tx0.giveQuantity).toString(),
               divisible: true);
 
-
+          final tx1InversePrice = tx1GiveQuantity / tx1GetQuantity;
 
           if (tx0Price.quantity > tx1InversePrice.quantity) {
-            print("we are continuing for some reason");
-            print("tx0Price.normalizedNum() ${tx0Price.normalizedNum()}");
-            print("tx0Price: $tx0Price");
-            print("tx1InversePrice $tx1InversePrice");
-            print("tx1Price $tx1Price\n\n\n");
             continue;
           }
-
-          print("tx0GiveRemaining: $tx0GiveRemaining");
-          print(
-              "tx0GiveRemaining.normalizedNm: ${tx0GiveRemaining.normalizedNum()}");
-
-          print("tx1GiveRemaining: $tx1GiveRemaining");
-          print("tx0Price: $tx0Price");
-          print("tx0PriceInverse: ${1 / tx0Price.normalizedNum()}");
-
           int forwardQuantity = min(tx0GiveRemaining.normalizedNum().toInt(),
               (tx1GiveRemaining / tx0Price).normalizedNum().toInt());
 
@@ -666,8 +631,8 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
         if (state.amountType == AmountType.give &&
             tx1GiveRemaining.quantity > BigInt.zero) {
           final getAmount = switch (state.priceType) {
-            PriceType.give => (tx1GiveRemaining * tx1Price),
-            PriceType.get => (tx1GiveRemaining / tx1Price),
+            PriceType.give => (tx1GiveRemaining * tx1PriceMax),
+            PriceType.get => (tx1GiveRemaining / tx1PriceMax),
           };
 
           final getQuantity = switch ((giveDivisible, getDivisible)) {
@@ -687,7 +652,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
 
         if (state.amountType == AmountType.get &&
             tx1GetRemaining.quantity > BigInt.zero) {
-          final giveAmount = (tx1Price * tx1GetRemaining);
+          final giveAmount = (tx1PriceMax * tx1GetRemaining);
 
           simulatedOrders.add(SimulatedOrderCreate(
             give: giveAmount,
