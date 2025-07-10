@@ -199,6 +199,42 @@ class SwapOrderFormModel with FormzMixin {
     required this.priceType,
   });
 
+  AssetQuantity get giveAssetQuantityWhenAmountGetAndPriceGive {
+    final desiredGetAmount = AssetQuantity.fromNormalizedStringSafe(
+      divisible: getAsset.divisible,
+      input: amountInput.value,
+    ).getOrElse((_) =>
+        AssetQuantity(divisible: getAsset.divisible, quantity: BigInt.zero));
+
+    AssetQuantity totalGet =
+        AssetQuantity(quantity: BigInt.zero, divisible: getAsset.divisible);
+
+    AssetQuantity totalGive =
+        AssetQuantity(quantity: BigInt.zero, divisible: giveAsset.divisible);
+
+    for (final order in buyOrders) {
+      if (totalGet.quantity < desiredGetAmount.quantity) {
+        final matchPrice = order.getQuantity / order.giveQuantity;
+
+        final orderGiveRemaining = AssetQuantity(
+            quantity: BigInt.from(order.giveRemaining),
+            divisible: giveAsset.divisible);
+
+        final getAmount = min(orderGiveRemaining.quantity.toInt(),
+            (desiredGetAmount - totalGive).quantity.toInt());
+
+        totalGet += AssetQuantity(
+            quantity: BigInt.from(getAmount), divisible: getAsset.divisible);
+
+        totalGive += AssetQuantity(
+            divisible: getAsset.divisible,
+            quantity: BigInt.from(matchPrice * getAmount));
+      }
+    }
+
+    return totalGive;
+  }
+
   GiveQuantityInput get giveQuantityInput => switch ((amountType, priceType)) {
         ((AmountType.give, _)) => GiveQuantityInput.dirty(
             value: AssetQuantity.fromNormalizedStringSafe(
@@ -211,13 +247,7 @@ class SwapOrderFormModel with FormzMixin {
                 divisible: giveAsset.divisible,
                 quantity: BigInt.from(giveAssetBalance.quantity))),
         ((AmountType.get, PriceType.give)) => GiveQuantityInput.dirty(
-            value: AssetQuantity.fromNormalizedStringSafe(
-                    divisible: giveAsset.divisible,
-                    input: (getQuantityInput.value.normalizedNum() *
-                            (num.tryParse(priceInput.value) ?? 0))
-                        .toString())
-                .getOrElse((_) => AssetQuantity(
-                    divisible: giveAsset.divisible, quantity: BigInt.zero)),
+            value: giveAssetQuantityWhenAmountGetAndPriceGive,
             userBalance: AssetQuantity(
                 divisible: giveAsset.divisible,
                 quantity: BigInt.from(giveAssetBalance.quantity))),
@@ -579,6 +609,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
           PriceType.get => tx1GiveQuantity / tx1GetQuantity
         };
 
+
         for (final tx0 in candidateMatches) {
           final tx0GiveRemaining = AssetQuantity(
               quantity: BigInt.from(tx0.giveRemaining),
@@ -599,7 +630,8 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
           print("tx1GiveRemaining: $tx1GiveRemaining");
           print("tx0Price: $tx0Price");
           print("divided: ${tx1GiveRemaining / tx0Price}");
-          print("divided normalized: ${(tx1GiveRemaining / tx0Price).normalizedNum()}");
+          print(
+              "divided normalized: ${(tx1GiveRemaining / tx0Price).normalizedNum()}");
 
           int forwardQuantity = min(tx0GiveRemaining.normalizedNum().toInt(),
               (tx1GiveRemaining / tx0Price).normalizedNum().toInt());
