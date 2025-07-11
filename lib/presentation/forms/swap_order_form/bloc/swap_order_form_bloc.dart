@@ -310,7 +310,6 @@ class SwapOrderFormModel with FormzMixin {
       };
 
   AssetQuantity get getAssetQuantityWhenAmountGiveAndPriceGive {
-    // chatb this does what i want, use as guide for below method
 
     Rational price =
         toRawUnits(Rational.parse(priceInput.value), giveAsset.divisible);
@@ -375,7 +374,6 @@ class SwapOrderFormModel with FormzMixin {
   }
 
   AssetQuantity get getAssetQuantityWhenAmountGiveAndPriceGet {
-    // chatb this does what i want, use as guide for below method
 
     Rational price = Rational.parse(priceInput.value);
 
@@ -442,12 +440,10 @@ class SwapOrderFormModel with FormzMixin {
       print("price: $price");
 
       if (giveAsset.divisible && !getAsset.divisible) {
-        totalGet += ( unmatchedGive / TenToTheEigth.rational ) * price;
+        totalGet += (unmatchedGive / TenToTheEigth.rational) * price;
       } else {
         totalGet += unmatchedGive * price;
-
       }
-
     }
 
     print("totalGet here: $totalGet");
