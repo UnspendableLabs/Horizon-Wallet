@@ -394,7 +394,7 @@ class SwapOrderFormModel with FormzMixin {
       print("fooo  $price");
       print("* ${giveAmount / price}");
 
-      if (giveAsset.divisible != getAsset.divisible) {
+      if (giveAsset.divisible && !getAsset.divisible) {
         giveAmount = giveAmount / TenToTheEigth.rational;
       }
 
@@ -432,12 +432,22 @@ class SwapOrderFormModel with FormzMixin {
     }
 
     // Handle unmatched give via fallback price
+    print("giveAmont: $giveAmount");
+    print("ttotalGIve: $totalGive");
     final unmatchedGive = giveAmount - totalGive;
+
     if (unmatchedGive > Rational.zero) {
       print("current total get $totalGet");
       print("unmatchedGive: $unmatchedGive");
       print("price: $price");
-      totalGet += unmatchedGive * price;
+
+      if (giveAsset.divisible && !getAsset.divisible) {
+        totalGet += ( unmatchedGive / TenToTheEigth.rational ) * price;
+      } else {
+        totalGet += unmatchedGive * price;
+
+      }
+
     }
 
     print("totalGet here: $totalGet");
