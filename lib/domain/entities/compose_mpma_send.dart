@@ -6,12 +6,14 @@ class ComposeMpmaSendParams extends ComposeParams {
   final String destinations;
   final String assets;
   final String quantities;
+  final List<String>? memos; // ?memos=memo1&memos=memo2...
 
   ComposeMpmaSendParams({
     required this.source,
     required this.destinations,
     required this.assets,
     required this.quantities,
+    this.memos,
   });
 
   @override

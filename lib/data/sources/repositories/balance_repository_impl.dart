@@ -47,15 +47,19 @@ class BalanceRepositoryImpl implements BalanceRepository {
   Future<List<mba.MultiAddressBalance>> getBalancesForAddresses({
     required List<String> addresses,
     required HttpConfig httpConfig,
+    BalanceType? type,
   }) async {
     final List<mba.MultiAddressBalance> balances = [];
     balances.addAll([
       await _getBtcBalancesForAddresses(
-          addresses: addresses, httpConfig: httpConfig)
+        addresses: addresses,
+        httpConfig: httpConfig,
+      )
     ]);
     balances.addAll(await _fetchBalancesByAllAddresses(
         api: counterpartyClientFactory.getClient(httpConfig),
-        addresses: addresses));
+        addresses: addresses,
+        type: type));
     return balances;
   }
 

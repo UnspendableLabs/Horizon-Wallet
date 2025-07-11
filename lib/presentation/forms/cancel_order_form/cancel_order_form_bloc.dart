@@ -198,7 +198,8 @@ class CancelOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     InitializeForm event,
     Emitter<FormStateModel> emit,
   ) async {
-    emit(state.copyWith(feeEstimates: Loading(), orders: Loading()));
+    emit(
+        state.copyWith(feeEstimates: const Loading(), orders: const Loading()));
 
     try {
       final [feeEstimates as FeeEstimates, openOrders as List<Order>] =
@@ -312,7 +313,8 @@ class CancelOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
   Future<List<Order>> _fetchOrders() async {
     try {
       final e = await orderRepository
-          .getByAddress(address: currentAddress, status: "open", httpConfig: httpConfig)
+          .getByAddress(
+              address: currentAddress, status: "open", httpConfig: httpConfig)
           .run();
       return e.match(
           (error) => throw FetchOrdersException(error), (success) => success);

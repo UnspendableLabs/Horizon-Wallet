@@ -1,3 +1,11 @@
+class UtxoID {
+  final int vout;
+  final String txid;
+
+  UtxoID({required this.vout, required this.txid});
+
+}
+
 class Utxo {
   final int vout;
   final int? height;

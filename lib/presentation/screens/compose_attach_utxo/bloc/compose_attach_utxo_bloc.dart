@@ -19,7 +19,6 @@ import 'package:horizon/presentation/common/usecase/write_local_transaction_usec
 import 'package:horizon/presentation/screens/compose_attach_utxo/bloc/compose_attach_utxo_state.dart';
 import 'package:horizon/presentation/screens/compose_attach_utxo/usecase/fetch_form_data.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
-import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 class ComposeAttachUtxoEventParams {
   final String asset;
@@ -85,8 +84,8 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
 
     try {
       final (feeEstimates, balances, xcpFeeEstimate) =
-          await fetchComposeAttachUtxoFormDataUseCase
-              .call(event.currentAddress!, httpConfig);
+          await fetchComposeAttachUtxoFormDataUseCase.call(
+              event.currentAddress!, httpConfig);
 
       // there is an xcp fee associated with attaching utxos
       // we need to check that the user has enough xcp to pay for the fee
@@ -282,7 +281,7 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
     )));
 
     await signAndBroadcastTransactionUseCase.call(
-      httpConfig: httpConfig,
+        httpConfig: httpConfig,
         decryptionStrategy: Password(event.password),
         source: compose.params.source,
         rawtransaction: compose.rawtransaction,

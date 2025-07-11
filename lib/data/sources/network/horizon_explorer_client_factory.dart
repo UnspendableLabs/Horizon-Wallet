@@ -13,7 +13,7 @@ class HorizonExplorerClientFactory {
     return _cache.putIfAbsent(
       key,
       () => HorizonExplorerApi(
-        dio: Dio(
+        Dio(
           BaseOptions(
             baseUrl: config.horizonExplorerApi,
             connectTimeout: const Duration(seconds: 5),

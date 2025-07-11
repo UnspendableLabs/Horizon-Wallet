@@ -847,6 +847,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.2"
+  group_button:
+    dependency: "direct main"
+    description:
+      name: group_button
+      sha256: "0610fcf28ed122bfb4b410fce161a390f7f2531d55d1d65c5375982001415940"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.3.4"
   hex:
     dependency: "direct main"
     description:
@@ -1941,10 +1949,10 @@ packages:
     dependency: "direct main"
     description:
       name: wolt_modal_sheet
-      sha256: "5b46aa8db5cf4de9b605443d8e2d3bca8f6756975c0f634acd32ceaa9f172c1c"
+      sha256: "03e28e39dd4de44dc58a7c623877488a89ca3b41a62fc3e70bfc86b64be067d6"
       url: "https://pub.dev"
     source: hosted
-    version: "0.6.1"
+    version: "0.11.0"
   xdg_directories:
     dependency: transitive
     description:

@@ -1,12 +1,11 @@
 import 'package:equatable/equatable.dart';
+import 'package:fpdart/fpdart.dart';
 
 sealed class RemoteData<T> extends Equatable {
   const RemoteData();
 
   @override
   List<Object?> get props => [];
-
-  // CHAT: implement useful methos like map and or flat map
 }
 
 final class Initial<T> extends RemoteData<T> {
@@ -91,6 +90,8 @@ extension RemoteDataX<T> on RemoteData<T> {
         _ => null,
       };
 
+  Option<T> get toOption => Option.fromNullable(getOrNull());
+
   R fold<R>({
     required R Function() onInitial,
     required R Function() onLoading,
@@ -105,6 +106,48 @@ extension RemoteDataX<T> on RemoteData<T> {
         Success(value: final v) => onSuccess(v),
         Failure(error: final e) => onFailure(e),
       };
+
+  R replete<R>({
+    required R Function() onNone,
+    required R Function(T value) onReplete,
+  }) =>
+      switch (this) {
+        Initial() => onNone(),
+        Loading() => onNone(),
+        Refreshing(value: final v) => onReplete(v),
+        Success(value: final v) => onReplete(v),
+        Failure() => onNone(),
+      };
+
+  R fold3<R>({
+    required R Function() onNone,
+    required R Function(T value) onReplete,
+    required R Function(Object error) onFailure,
+  }) =>
+      fold(
+          onInitial: onNone,
+          onLoading: onNone,
+          onRefreshing: onReplete,
+          onSuccess: onReplete,
+          onFailure: onFailure);
+
+  R maybeWhen<R>({
+    R Function()? onInitial,
+    R Function()? onLoading,
+    R Function(T value)? onRefreshing,
+    R Function(T value)? onSuccess,
+    R Function(Object error)? onFailure,
+    required R Function() orElse,
+  }) {
+    return switch (this) {
+      Initial() => onInitial != null ? onInitial() : orElse(),
+      Loading() => onLoading != null ? onLoading() : orElse(),
+      Refreshing(value: final v) =>
+        onRefreshing != null ? onRefreshing(v) : orElse(),
+      Success(value: final v) => onSuccess != null ? onSuccess(v) : orElse(),
+      Failure(error: final e) => onFailure != null ? onFailure(e) : orElse(),
+    };
+  }
 }
 
 extension RemoteDataCombineX<A> on RemoteData<A> {
@@ -114,7 +157,6 @@ extension RemoteDataCombineX<A> on RemoteData<A> {
   ) {
     if (this is Failure) return Failure<R>((this as Failure).error);
     if (other is Failure) return Failure<R>((other as Failure).error);
-
 
     if (this is Loading || other is Loading) return Loading<R>();
     if (this is Initial || other is Initial) return Initial<R>();

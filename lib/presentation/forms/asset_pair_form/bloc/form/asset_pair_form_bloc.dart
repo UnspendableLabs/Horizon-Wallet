@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:formz/formz.dart';
@@ -136,6 +135,8 @@ class AssetPairFormModel with FormzMixin {
   final bool receiveAssetModalVisible;
   final SearchAssetInput searchAssetInput;
 
+  final FormzSubmissionStatus submissionStatus;
+
   AssetPairFormModel(
       {required this.giveAssets,
       required this.giveAssetInput,
@@ -143,20 +144,24 @@ class AssetPairFormModel with FormzMixin {
       required this.privilegedSearchResults,
       required this.searchResults,
       required this.receiveAssetModalVisible,
-      required this.searchAssetInput});
+      required this.searchAssetInput,
+      required this.submissionStatus});
 
   @override
   List<FormzInput> get inputs => [giveAssetInput, receiveAssetInput];
 
-  AssetPairFormModel copyWith(
-      {List<AssetPairFormOption>? giveAssets,
-      GiveAssetInput? giveAssetInput,
-      ReceiveAssetInput? receiveAssetInput,
-      RemoteData<Map<String, AssetSearchResult>>? privilegedSearchResults,
-      RemoteData<List<AssetSearchResult>>? searchResults,
-      Option<bool> receiveAssetModalVisible = const Option.none(),
-      SearchAssetInput? searchAssetInput}) {
+  AssetPairFormModel copyWith({
+    List<AssetPairFormOption>? giveAssets,
+    GiveAssetInput? giveAssetInput,
+    ReceiveAssetInput? receiveAssetInput,
+    RemoteData<Map<String, AssetSearchResult>>? privilegedSearchResults,
+    RemoteData<List<AssetSearchResult>>? searchResults,
+    Option<bool> receiveAssetModalVisible = const Option.none(),
+    SearchAssetInput? searchAssetInput,
+    FormzSubmissionStatus? submissionStatus,
+  }) {
     return AssetPairFormModel(
+        submissionStatus: submissionStatus ?? this.submissionStatus,
         privilegedSearchResults:
             privilegedSearchResults ?? this.privilegedSearchResults,
         giveAssets: giveAssets ?? this.giveAssets,
@@ -209,19 +214,30 @@ class AssetPairFormModel with FormzMixin {
     return receiveAssetInput.value == null || giveAssetInput.value == null;
   }
 
-  Option<SwapType> get swapType {
-    if (giveAssetInput.value == null ||
-        receiveAssetInput.value == null) {
-      return Option.none();
+  Either<String, SwapType> get swapType {
+    if (giveAssetInput.value == null || receiveAssetInput.value == null) {
+      return Either.left("Give or receive asset input is null");
     }
 
     return switch ((
       giveAssetInput.value!.name.toLowerCase(),
       receiveAssetInput.value!.name.toLowerCase()
     )) {
-      ("btc", _) => Option.of(AtomicSwapBuy()),
-      (_, "btc") => Option.of(AtomicSwapSell()),
-      (_, _) => Option.of(CounterpartyOrder()),
+      ("btc", _) => Either.of(AtomicSwapBuy(
+          receiveAsset: receiveAssetInput.value!,
+          btcBalance: giveAssetInput.value!.balance.getOrElse(
+            () => throw Exception("BTC balance is not available"),
+          ))),
+      (_, "btc") => Either.fromOption(
+            giveAssetInput.value!.balance, () => "Insufficient balance").map(
+          (balance) => AtomicSwapSell(giveBalance: balance),
+        ),
+      (_, _) => Either.of(CounterpartyOrder(
+          giveBalance: giveAssetInput.value!.balance.getOrElse(
+            () => throw Exception("Give asset balance is not available"),
+          ),
+          receiveAsset: receiveAssetInput.value!,
+        )),
     };
   }
 
@@ -249,6 +265,7 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
             assetSearchRepository ?? GetIt.I<AssetSearchRepository>(),
         super(
           AssetPairFormModel(
+              submissionStatus: FormzSubmissionStatus.initial,
               giveAssets: initialGiveAssets
                   .map((balance) => AssetPairFormOption(
                         name: balance.asset,
@@ -256,8 +273,8 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
                         balance: Option.of(balance),
                       ))
                   .toList(),
-              giveAssetInput: GiveAssetInput.pure(),
-              receiveAssetInput: ReceiveAssetInput.pure(),
+              giveAssetInput: const GiveAssetInput.pure(),
+              receiveAssetInput: const ReceiveAssetInput.pure(),
               searchAssetInput: const SearchAssetInput.pure(),
               receiveAssetModalVisible: false,
               privilegedSearchResults: Success(
@@ -270,11 +287,13 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
     on<SearchInputChanged>(_handleSearchInputChanged);
     on<ReceiveAssetSelected>(_handleReceiveAssetSelected);
     on<InvertClicked>(_handleInvertClicked);
+    on<SubmitClicked>(_handleSubmitClicked);
   }
 
   _handleGiveAssetChanged(
       GiveAssetSelected event, Emitter<AssetPairFormModel> emit) {
     emit(state.copyWith(
+      submissionStatus: FormzSubmissionStatus.initial,
       giveAssetInput: GiveAssetInput.dirty(value: event.value),
     ));
   }
@@ -282,6 +301,7 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
   _handleReceiveAssetInputClicked(
       ReceiveAssetInputClicked event, Emitter<AssetPairFormModel> emit) {
     emit(state.copyWith(
+        submissionStatus: FormzSubmissionStatus.initial,
         receiveAssetModalVisible: Option.of(!state.receiveAssetModalVisible)));
   }
 
@@ -289,7 +309,8 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
       SearchInputChanged event, Emitter<AssetPairFormModel> emit) async {
     if (event.value.isEmpty) {
       emit(state.copyWith(
-          searchAssetInput: SearchAssetInput.pure(),
+          submissionStatus: FormzSubmissionStatus.initial,
+          searchAssetInput: const SearchAssetInput.pure(),
           searchResults: const Success([])));
       return;
     }
@@ -301,6 +322,7 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
     };
 
     emit(state.copyWith(
+        submissionStatus: FormzSubmissionStatus.initial,
         searchResults: receiveAssetsNext,
         searchAssetInput: SearchAssetInput.dirty(event.value)));
 
@@ -328,8 +350,9 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
     Emitter<AssetPairFormModel> emit,
   ) {
     final next = state.copyWith(
+        submissionStatus: FormzSubmissionStatus.initial,
         receiveAssetInput: ReceiveAssetInput.dirty(value: event.value),
-        receiveAssetModalVisible: Option.of(false));
+        receiveAssetModalVisible: const Option.of(false));
 
     emit(next);
   }
@@ -344,7 +367,7 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
     }
 
     final nextReceiveAsset =
-        state.giveAssetInput.value!.copyWith(balance: Option.none());
+        state.giveAssetInput.value!.copyWith(balance: const Option.none());
 
     final nextGiveAsset = state.giveAssets.firstWhere(
       (a) => a.name == state.receiveAssetInput.value!.name,
@@ -352,8 +375,31 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
     );
 
     return emit(state.copyWith(
+      submissionStatus: FormzSubmissionStatus.initial,
       giveAssetInput: GiveAssetInput.dirty(value: nextGiveAsset),
       receiveAssetInput: ReceiveAssetInput.dirty(value: nextReceiveAsset),
     ));
+  }
+
+  _handleSubmitClicked(
+    SubmitClicked event,
+    Emitter<AssetPairFormModel> emit,
+  ) {
+    // TODO: more robust validation
+    emit(state.copyWith(submissionStatus: FormzSubmissionStatus.inProgress));
+
+    final swapType = state.swapType;
+
+    swapType.fold(
+        (error) => emit(
+              state.copyWith(
+                submissionStatus: FormzSubmissionStatus.failure,
+              ),
+            ),
+        (swapType) => emit(
+              state.copyWith(
+                submissionStatus: FormzSubmissionStatus.success,
+              ),
+            ));
   }
 }

@@ -7,7 +7,24 @@ import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/utils/app_icons.dart';
 
+String _stripLeadingZeros(String value, bool divisible) {
+  if (value.isEmpty) return value;
+
+  // If user starts with ".", treat as "0."
+  if (divisible && value.startsWith('.')) value = '0$value';
+
+  // Split int / frac parts
+  final parts = value.split('.');
+  var intPart = parts[0].replaceFirst(RegExp(r'^0+(?=\d)'), '');
+  if (intPart.isEmpty) intPart = '0';
+
+  // rebuild
+  return parts.length == 1 ? intPart : '$intPart.${parts[1]}';
+}
+
 Widget commonHeightSizedBox = const SizedBox(height: 10);
+Widget commonWidthSizedBox = const SizedBox(width: 10);
+
 const double defaultButtonHeight = 54;
 
 enum ButtonVariant { black, green, gradient, red, purple }
@@ -89,17 +106,19 @@ class HorizonButton extends StatefulWidget {
   final ButtonContent child;
   final Widget? icon;
   final double? borderRadius;
+  final bool isLoading;
 
   const HorizonButton({
     super.key,
-    required this.onPressed,
     required this.child,
+    required this.onPressed,
     this.width = double.infinity,
     this.height = defaultButtonHeight,
     this.variant = ButtonVariant.green,
     this.disabled = false,
     this.icon,
     this.borderRadius = 50,
+    this.isLoading = false,
   });
 
   @override
@@ -108,8 +127,12 @@ class HorizonButton extends StatefulWidget {
 
 class _HorizonButtonState extends State<HorizonButton> {
   bool isHovered = false;
+
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    Color progressIndicatorColor = isDarkMode ? transparentBlack66 : offWhite;
+
     ButtonStyle style = ElevatedButton.styleFrom(
       backgroundColor: green2,
       foregroundColor: offBlack,
@@ -198,6 +221,9 @@ class _HorizonButtonState extends State<HorizonButton> {
         ),
       );
 
+      progressIndicatorColor =
+          isDarkMode ? transparentWhite66 : transparentBlack66;
+
       textStyle = textStyle.copyWith(
         color: const Color.fromRGBO(254, 251, 249, 0.16),
       );
@@ -241,9 +267,20 @@ class _HorizonButtonState extends State<HorizonButton> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                if (widget.isLoading) ...[
+                  const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      color: transparentBlack66,
+                      strokeWidth: 2,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                ],
                 if (widget.icon != null) ...[
                   widget.icon!,
-                  const SizedBox(width: 4),
+                  const SizedBox(width: 8),
                 ],
                 // widget.child ?? Text(widget.buttonText, style: textStyle)
                 if (widget.child is TextButtonContent)
@@ -276,9 +313,20 @@ class _HorizonButtonState extends State<HorizonButton> {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              if (widget.isLoading) ...[
+                SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    color: progressIndicatorColor,
+                    strokeWidth: 2,
+                  ),
+                ),
+                const SizedBox(width: 10),
+              ],
               if (widget.icon != null) ...[
                 widget.icon!,
-                const SizedBox(width: 4),
+                const SizedBox(width: 8),
               ],
               if (widget.child is TextButtonContent)
                 Text((widget.child as TextButtonContent).value,
@@ -565,6 +613,7 @@ class HorizonRedesignDropdown<T> extends StatefulWidget {
   final Color? buttonBg;
   final TextStyle? buttonTextStyle;
   final EdgeInsetsGeometry? itemPadding;
+  final EdgeInsetsGeometry? selectorPadding;
 
   const HorizonRedesignDropdown({
     super.key,
@@ -579,6 +628,8 @@ class HorizonRedesignDropdown<T> extends StatefulWidget {
     this.buttonBg,
     this.buttonTextStyle,
     this.itemPadding,
+    this.selectorPadding =
+        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
   });
 
   @override
@@ -637,19 +688,21 @@ class _HorizonRedesignDropdownState<T>
             height: double.infinity,
             color: Colors.transparent,
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+              filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
               child: Container(
-                color: transparentBlack33,
+                color: transparentBlack66,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ConstrainedBox(
-                      constraints: const BoxConstraints(
+                      constraints: BoxConstraints(
                         maxWidth: 480, // Maximum width for larger screens
-                        minWidth: 200, // Minimum width for smaller screens
+                        minWidth: 200,
+                        maxHeight: MediaQuery.of(context).size.height * 0.7,
                       ),
                       child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 20),
+                        margin: const EdgeInsets.symmetric(horizontal: 8),
+                        clipBehavior: Clip.hardEdge,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(18),
                           border: widget.gradBorder
@@ -667,33 +720,36 @@ class _HorizonRedesignDropdownState<T>
                               ? transparentWhite8
                               : transparentBlack8),
                         ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: widget.items.map((item) {
-                            return Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () {
-                                  widget.onChanged(item.value);
-                                  _toggleDropdown();
-                                },
-                                child: Container(
-                                  padding: widget.itemPadding ??
-                                      const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 21,
+                        child: SingleChildScrollView(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: widget.items.map((item) {
+                              return Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () {
+                                    widget.onChanged(item.value);
+                                    _toggleDropdown();
+                                  },
+                                  child: Container(
+                                    padding: widget.itemPadding ??
+                                        const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 21,
+                                        ),
+                                    child: SizedBox(
+                                      width: double.infinity,
+                                      child: DefaultTextStyle(
+                                        style:
+                                            theme.dropdownMenuTheme.textStyle!,
+                                        child: item.child,
                                       ),
-                                  child: SizedBox(
-                                    width: double.infinity,
-                                    child: DefaultTextStyle(
-                                      style: theme.dropdownMenuTheme.textStyle!,
-                                      child: item.child,
                                     ),
                                   ),
                                 ),
-                              ),
-                            );
-                          }).toList(),
+                              );
+                            }).toList(),
+                          ),
                         ),
                       ),
                     ),
@@ -793,8 +849,7 @@ class _HorizonRedesignDropdownState<T>
               onTap: _toggleDropdown,
               child: Container(
                 height: 56,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: widget.selectorPadding,
                 decoration: BoxDecoration(
                   borderRadius: widget.cornerRadius,
                   border: focusNode.hasFocus
@@ -1624,6 +1679,7 @@ class HorizonCard extends StatelessWidget {
   final double borderRadius;
   final Color borderColor;
   final Color? backgroundColor;
+  final double? borderWidth;
 
   const HorizonCard({
     super.key,
@@ -1632,6 +1688,7 @@ class HorizonCard extends StatelessWidget {
     this.borderRadius = 18,
     this.borderColor = transparentPurple8,
     this.backgroundColor,
+    this.borderWidth = 1,
   });
 
   @override
@@ -1646,9 +1703,77 @@ class HorizonCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor ?? defaultBgColor,
         borderRadius: BorderRadius.circular(borderRadius),
-        border: Border.all(color: borderColor),
+        border: Border.all(color: borderColor, width: borderWidth ?? 1),
       ),
       child: child,
+    );
+  }
+}
+// lib/presentation/common/transactions/gradient_quantity_input.dart
+
+class QuantityInputV2 extends StatelessWidget {
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+  final TextStyle? style;
+  final bool divisible; // allows 1.23 vs 123
+
+  const QuantityInputV2({
+    super.key,
+    required this.controller,
+    required this.onChanged,
+    this.style,
+    this.divisible = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final gradient = LinearGradient(
+      begin: Alignment.centerLeft,
+      end: Alignment.centerRight,
+      colors: isDark
+          ? const [goldenGradient1, yellow1, goldenGradient2, goldenGradient3]
+          : const [duskGradient2, duskGradient1],
+      stops: isDark ? const [0.0, .325, .65, 1.0] : const [0.0, 1.0],
+    );
+
+    final baseStyle = TextStyle(
+      fontFamily: 'Lato',
+      fontSize: style?.fontSize ?? 14,
+      fontWeight: style?.fontWeight ?? FontWeight.w400,
+      color: Colors.white, // <- solid colour for masking
+    );
+
+    // TODO: we need this capability in a generic text input that can also take arbitrary styles.
+    // we keep reinventing the wheel
+    final fmt = divisible
+        ? FilteringTextInputFormatter.allow(
+            RegExp(r'^\d*\.?\d{0,8}$'),
+          )
+        : FilteringTextInputFormatter.digitsOnly;
+
+    return ShaderMask(
+      blendMode: BlendMode.srcIn, // keep only the text's alpha
+      shaderCallback: (bounds) => gradient.createShader(bounds),
+      child: TextField(
+        controller: controller,
+        inputFormatters: [fmt],
+        onChanged: onChanged,
+        keyboardType: TextInputType.numberWithOptions(
+          decimal: divisible,
+          signed: false,
+        ),
+        textAlign: TextAlign.left,
+        style: baseStyle,
+        cursorColor: Colors.white,
+        decoration: const InputDecoration(
+          border: InputBorder.none,
+          isCollapsed: true, // shrink to fit the text
+          contentPadding: EdgeInsets.zero,
+        ),
+      ),
     );
   }
 }
