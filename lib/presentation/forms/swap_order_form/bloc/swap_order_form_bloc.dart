@@ -219,23 +219,29 @@ class SwapOrderFormModel with FormzMixin {
     AssetQuantity totalGive =
         AssetQuantity(quantity: BigInt.zero, divisible: giveAsset.divisible);
 
-    for (final order in buyOrders) {
-      if (totalGet.quantity < desiredGetAmount.quantity) {
-        final matchPrice = order.getQuantity / order.giveQuantity;
+    if (buyOrders.isEmpty) {
+      return desiredGetAmount *
+          AssetQuantity.fromNormalizedString(
+              input: priceInput.value, divisible: giveAsset.divisible);
+    } else {
+      for (final order in buyOrders) {
+        if (totalGet.quantity < desiredGetAmount.quantity) {
+          final matchPrice = order.getQuantity / order.giveQuantity;
 
-        final orderGiveRemaining = AssetQuantity(
-            quantity: BigInt.from(order.giveRemaining),
-            divisible: giveAsset.divisible);
+          final orderGiveRemaining = AssetQuantity(
+              quantity: BigInt.from(order.giveRemaining),
+              divisible: giveAsset.divisible);
 
-        final getAmount = min(orderGiveRemaining.quantity.toInt(),
-            (desiredGetAmount - totalGive).quantity.toInt());
+          final getAmount = min(orderGiveRemaining.quantity.toInt(),
+              (desiredGetAmount - totalGive).quantity.toInt());
 
-        totalGet += AssetQuantity(
-            quantity: BigInt.from(getAmount), divisible: getAsset.divisible);
+          totalGet += AssetQuantity(
+              quantity: BigInt.from(getAmount), divisible: getAsset.divisible);
 
-        totalGive += AssetQuantity(
-            divisible: getAsset.divisible,
-            quantity: BigInt.from(matchPrice * getAmount));
+          totalGive += AssetQuantity(
+              divisible: getAsset.divisible,
+              quantity: BigInt.from(matchPrice * getAmount));
+        }
       }
     }
 
@@ -609,11 +615,6 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
       final candidateMatches = buyOrders;
       final simulatedOrders = <SimulatedOrder>[];
 
-      final tx1PriceMax = switch (state.priceType) {
-        PriceType.give => Rational(tx1GetQuantity, tx1GiveQuantity),
-        PriceType.get => Rational(tx1GiveQuantity, tx1GetQuantity)
-      };
-
       for (final tx0 in candidateMatches) {
         final tx0GiveRemaining = Rational.fromInt(tx0.giveRemaining);
         final tx0Price = Rational.fromInt(tx0.getQuantity, tx0.giveQuantity);
@@ -641,15 +642,19 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
           continue;
         }
 
-        Rational forwardQuantity =
-            switch ((state.giveAsset.divisible, state.getAsset.divisible)) {
-          (false, true) => forwardQuantity_ ,
+        Rational forwardQuantity = switch ((
+          state.giveAsset.divisible,
+          state.getAsset.divisible
+        )) {
+          (false, true) => forwardQuantity_,
           _ => forwardQuantity_
         };
 
-        Rational backwardQuantity =
-            switch ((state.giveAsset.divisible, state.getAsset.divisible)) {
-          (true, false) => backwardQuantity_ ,
+        Rational backwardQuantity = switch ((
+          state.giveAsset.divisible,
+          state.getAsset.divisible
+        )) {
+          (true, false) => backwardQuantity_,
           _ => backwardQuantity_
         };
 
@@ -677,6 +682,11 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
 
         print("tx1GiveRemaining $tx1GiveRemaining");
       }
+
+      final tx1PriceMax = switch (state.priceType) {
+        PriceType.give => Rational(tx1GetQuantity, tx1GiveQuantity),
+        PriceType.get => Rational(tx1GiveQuantity, tx1GetQuantity)
+      };
 
       if (state.amountType == AmountType.give &&
           tx1GiveRemaining > BigInt.zero) {
