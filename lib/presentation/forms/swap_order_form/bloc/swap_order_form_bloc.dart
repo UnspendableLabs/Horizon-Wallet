@@ -224,25 +224,29 @@ class SwapOrderFormModel with FormzMixin {
           AssetQuantity.fromNormalizedString(
               input: priceInput.value, divisible: giveAsset.divisible);
     } else {
-      for (final order in buyOrders) {
-        if (totalGet.quantity < desiredGetAmount.quantity) {
-          final matchPrice = order.getQuantity / order.giveQuantity;
 
-          final orderGiveRemaining = AssetQuantity(
-              quantity: BigInt.from(order.giveRemaining),
-              divisible: giveAsset.divisible);
-
-          final getAmount = min(orderGiveRemaining.quantity.toInt(),
-              (desiredGetAmount - totalGive).quantity.toInt());
-
-          totalGet += AssetQuantity(
-              quantity: BigInt.from(getAmount), divisible: getAsset.divisible);
-
-          totalGive += AssetQuantity(
-              divisible: getAsset.divisible,
-              quantity: BigInt.from(matchPrice * getAmount));
-        }
-      }
+      return desiredGetAmount *
+          AssetQuantity.fromNormalizedString(
+              input: priceInput.value, divisible: giveAsset.divisible);
+      // for (final order in buyOrders) {
+      //   if (totalGet.quantity < desiredGetAmount.quantity) {
+      //     final matchPrice = order.getQuantity / order.giveQuantity;
+      //
+      //     final orderGiveRemaining = AssetQuantity(
+      //         quantity: BigInt.from(order.giveRemaining),
+      //         divisible: giveAsset.divisible);
+      //
+      //     final getAmount = min(orderGiveRemaining.quantity.toInt(),
+      //         (desiredGetAmount - totalGive).quantity.toInt());
+      //
+      //     totalGet += AssetQuantity(
+      //         quantity: BigInt.from(getAmount), divisible: getAsset.divisible);
+      //
+      //     totalGive += AssetQuantity(
+      //         divisible: getAsset.divisible,
+      //         quantity: BigInt.from(matchPrice * getAmount));
+      //   }
+      // }
     }
 
     return totalGive;
