@@ -251,7 +251,6 @@ class SwapOrderFormModel with FormzMixin {
           final getAmount = min(orderGiveRemaining.quantity.toInt(),
               (desiredGetAmount - totalGet).quantity.toInt());
 
-
           totalGet += AssetQuantity(
               quantity: BigInt.from(getAmount), divisible: getAsset.divisible);
 
@@ -259,17 +258,13 @@ class SwapOrderFormModel with FormzMixin {
               divisible: giveAsset.divisible,
               quantity: BigInt.from(matchPrice * getAmount));
 
-
           print("\n\niterationg orders");
           print("\t\ttotalget $totalGet");
           print("\t\ttotalgive $totalGive");
-
         }
       }
 
       if ((desiredGetAmount.quantity - totalGet.quantity) > BigInt.zero) {
-
-
         Rational quantity =
             Rational(desiredGetAmount.quantity) - Rational(totalGet.quantity);
 
@@ -282,7 +277,8 @@ class SwapOrderFormModel with FormzMixin {
         }
 
         totalGive += AssetQuantity(
-            divisible: giveAsset.divisible, quantity: (quantity * price).toBigInt());
+            divisible: giveAsset.divisible,
+            quantity: (quantity * price).toBigInt());
 
         print("otal give $totalGive");
       }
@@ -848,8 +844,25 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
         ),
       ]));
 
-      final buyOrders = result[0];
+      final buyOrders_ = result[0];
       final sellOrders = result[1];
+
+      final price = switch (state.priceType) {
+        PriceType.give => Rational.parse(state.priceInput.value),
+        PriceType.get => Rational.parse(state.priceInput.value).inverse,
+      };
+
+      final priceFilter = Rational(
+          state.giveAsset.divisible
+              ? price.numerator * TenToTheEigth.bigIntValue
+              : price.numerator,
+          state.getAsset.divisible
+              ? price.denominator * TenToTheEigth.bigIntValue
+              : price.denominator);
+
+      final buyOrders = buyOrders_.where((order) =>
+          Rational.fromInt(order.getQuantity, order.giveQuantity) <=
+          priceFilter).toList();
 
       BigInt tx1GiveQuantity = state.giveQuantityInput.value.quantity;
       BigInt tx1GetQuantity = state.getQuantityInput.value.quantity;
@@ -864,25 +877,30 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
       final simulatedOrders = <SimulatedOrder>[];
 
       for (final tx0 in candidateMatches) {
-        print("\n\nnew loop: \ntx1GetRemaining: $tx1GetRemaining");
-        print("tx1GiveRemaining: $tx1GiveRemaining");
+        print("\n\nnew loop:");
+        print("\t\ttx1GetRemaining: $tx1GetRemaining");
         final tx0GiveRemaining = Rational.fromInt(tx0.giveRemaining);
         final tx0Price = Rational.fromInt(tx0.getQuantity, tx0.giveQuantity);
         final tx1InversePrice = Rational(tx1GiveRemaining, tx1GetRemaining);
 
+        print("\t\t x1GiveRemaining: $tx1GiveRemaining");
+        print("\t\t x1InversePrice: $tx1InversePrice");
+        print("\t\t x1GiveRemaining: $tx1GiveRemaining");
+        print("\t\t x0Price: $tx0Price");
+        print("\t\t\t\t x0Price: $tx0Price");
+
         if (tx0Price > tx1InversePrice) {
           print("\n\nwe are continuing");
-          print("tx1GiveRemaining: $tx1GiveRemaining");
-          print("tx1GetRemaining: $tx1GetRemaining");
-          print("tx0Price: $tx0Price");
-          print("tx1InversePrice: $tx1InversePrice");
+          print("\t\ttx1GiveRemaining: $tx1GiveRemaining");
+          print("\t\ttx1GetRemaining: $tx1GetRemaining");
+          print("\t\ttx0Price: $tx0Price");
+          print("\t\ttx1InversePrice: $tx1InversePrice");
 
           continue;
         }
 
         print("\n\n\ntx0GiveRemaining: $tx0GiveRemaining");
         print("tx1GiveRemaining: $tx1GiveRemaining");
-        print("tx0Price: $tx0Price");
 
         print(
             "tx1GiveRemaining / tx0Price: ${(Rational(tx1GiveRemaining) / tx0Price)}");
