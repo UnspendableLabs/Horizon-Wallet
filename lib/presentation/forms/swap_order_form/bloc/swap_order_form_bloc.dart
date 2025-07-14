@@ -205,6 +205,82 @@ class SwapOrderFormModel with FormzMixin {
     required this.sellOrders,
     required this.priceType,
   });
+  
+  AssetQuantity get giveAssetQuantityWhenAmountGetAndPriceGet {
+    print("is bthisbeingcalllet");
+    final desiredGetAmount = AssetQuantity.fromNormalizedStringSafe(
+      divisible: getAsset.divisible,
+      input: amountInput.value,
+    ).getOrElse((_) =>
+        AssetQuantity(divisible: getAsset.divisible, quantity: BigInt.zero));
+
+    AssetQuantity totalGet =
+        AssetQuantity(quantity: BigInt.zero, divisible: getAsset.divisible);
+
+    AssetQuantity totalGive =
+        AssetQuantity(quantity: BigInt.zero, divisible: giveAsset.divisible);
+
+    // final price = AssetQuantity.fromNormalizedString(
+    //     input: priceInput.value, divisible: giveAsset.divisible);
+    //
+
+    final price_ = Rational.parse(priceInput.value);
+
+    final price = Rational(
+        giveAsset.divisible
+            ? price_.numerator * TenToTheEigth.bigIntValue
+            : price_.numerator,
+        getAsset.divisible 
+            ? price_.denominator * TenToTheEigth.bigIntValue
+            : price_.denominator
+
+        ).inverse;
+
+
+
+    if (buyOrders.isEmpty) {
+      print("desired get amount $desiredGetAmount");
+
+      print("price_ $price_");
+      print("price $price");
+
+      return AssetQuantity(
+          quantity: (Rational(desiredGetAmount.quantity) * price).toBigInt(),
+          divisible: giveAsset.divisible);
+    } else {
+      for (final order in buyOrders) {
+        if (totalGet.quantity < desiredGetAmount.quantity) {
+          final matchPrice = order.getQuantity / order.giveQuantity;
+
+          final orderGiveRemaining = AssetQuantity(
+              quantity: BigInt.from(order.giveRemaining),
+              divisible: giveAsset.divisible);
+
+          final getAmount = min(orderGiveRemaining.quantity.toInt(),
+              (desiredGetAmount - totalGet).quantity.toInt());
+
+          totalGet += AssetQuantity(
+              quantity: BigInt.from(getAmount), divisible: getAsset.divisible);
+
+          totalGive += AssetQuantity(
+              divisible: giveAsset.divisible,
+              quantity: BigInt.from(matchPrice * getAmount));
+        }
+      }
+
+      if ((desiredGetAmount.quantity - totalGet.quantity) > BigInt.zero) {
+        totalGive += AssetQuantity(
+            divisible: giveAsset.divisible,
+            quantity: (Rational(desiredGetAmount.quantity - totalGet.quantity) *
+                    price)
+                .toBigInt());
+      }
+
+      print("totalGive: $totalGive");
+
+      return totalGive;
+    }
+  }
 
   AssetQuantity get giveAssetQuantityWhenAmountGetAndPriceGive {
     print("is bthisbeingcalllet");
@@ -297,20 +373,8 @@ class SwapOrderFormModel with FormzMixin {
                 divisible: giveAsset.divisible,
                 quantity: BigInt.from(giveAssetBalance.quantity))),
         ((AmountType.get, PriceType.get)) => GiveQuantityInput.dirty(
-            value: AssetQuantity.fromNormalizedStringSafe(
-                    divisible: giveAsset.divisible,
-                    input: (AssetQuantity.fromNormalizedString(
-                                    divisible: getAsset.divisible,
-                                    input: amountInput.value)
-                                .normalizedNum() /
-                            (num.tryParse(priceInput.value) ?? 0))
-                        .toString())
-                .getOrElse((error) {
-              return AssetQuantity(
-                divisible: giveAsset.divisible,
-                quantity: BigInt.zero,
-              );
-            }),
+        // TODO: rename
+            value: giveAssetQuantityWhenAmountGetAndPriceGet,
             userBalance: AssetQuantity(
               divisible: giveAsset.divisible,
               quantity: BigInt.from(giveAssetBalance.quantity),
