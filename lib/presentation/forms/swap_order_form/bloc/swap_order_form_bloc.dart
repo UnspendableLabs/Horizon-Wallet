@@ -205,7 +205,7 @@ class SwapOrderFormModel with FormzMixin {
     required this.sellOrders,
     required this.priceType,
   });
-  
+
   AssetQuantity get giveAssetQuantityWhenAmountGetAndPriceGet {
     print("is bthisbeingcalllet");
     final desiredGetAmount = AssetQuantity.fromNormalizedStringSafe(
@@ -220,32 +220,23 @@ class SwapOrderFormModel with FormzMixin {
     AssetQuantity totalGive =
         AssetQuantity(quantity: BigInt.zero, divisible: giveAsset.divisible);
 
-    // final price = AssetQuantity.fromNormalizedString(
-    //     input: priceInput.value, divisible: giveAsset.divisible);
-    //
-
-    final price_ = Rational.parse(priceInput.value);
-
-    final price = Rational(
-        giveAsset.divisible
-            ? price_.numerator * TenToTheEigth.bigIntValue
-            : price_.numerator,
-        getAsset.divisible 
-            ? price_.denominator * TenToTheEigth.bigIntValue
-            : price_.denominator
-
-        ).inverse;
-
+    final price = Rational.parse(priceInput.value).inverse;
 
 
     if (buyOrders.isEmpty) {
       print("desired get amount $desiredGetAmount");
 
-      print("price_ $price_");
       print("price $price");
 
+      print("${Rational(desiredGetAmount.quantity) * price}");
+
+      print(
+          "to raw untis ${toRawUnits(Rational(desiredGetAmount.quantity) * price, giveAsset.divisible)}");
+
       return AssetQuantity(
-          quantity: (Rational(desiredGetAmount.quantity) * price).toBigInt(),
+          quantity: (toRawUnits(Rational(desiredGetAmount.quantity) * price,
+                  giveAsset.divisible && giveAsset.divisible != getAsset.divisible )
+              .toBigInt()),
           divisible: giveAsset.divisible);
     } else {
       for (final order in buyOrders) {
@@ -306,11 +297,9 @@ class SwapOrderFormModel with FormzMixin {
         giveAsset.divisible
             ? price_.numerator * TenToTheEigth.bigIntValue
             : price_.numerator,
-        getAsset.divisible 
+        getAsset.divisible
             ? price_.denominator * TenToTheEigth.bigIntValue
-            : price_.denominator
-
-        );
+            : price_.denominator);
 
     if (buyOrders.isEmpty) {
       print("desired get amount $desiredGetAmount");
@@ -373,7 +362,7 @@ class SwapOrderFormModel with FormzMixin {
                 divisible: giveAsset.divisible,
                 quantity: BigInt.from(giveAssetBalance.quantity))),
         ((AmountType.get, PriceType.get)) => GiveQuantityInput.dirty(
-        // TODO: rename
+            // TODO: rename
             value: giveAssetQuantityWhenAmountGetAndPriceGet,
             userBalance: AssetQuantity(
               divisible: giveAsset.divisible,
