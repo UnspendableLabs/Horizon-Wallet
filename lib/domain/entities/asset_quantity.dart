@@ -16,7 +16,10 @@ class AssetQuantity extends Equatable {
 
   factory AssetQuantity.fromNormalizedString(
       {required bool divisible, required String input}) {
-    final parsed = num.parse(input);
+    final parsed = double.parse(input);
+
+    print("parsed $parsed");
+    print("divisible $divisible");
 
     if (!parsed.isFinite || parsed.isNaN) {
       throw FormatException("non-finite input");
@@ -24,6 +27,7 @@ class AssetQuantity extends Equatable {
 
     if (divisible) {
       int quantity = (parsed * TenToTheEigth.doubleValue).round();
+      print("quantity int $quantity");
 
       return AssetQuantity(divisible: true, quantity: BigInt.from(quantity));
     } else {

@@ -207,6 +207,7 @@ class SwapOrderFormModel with FormzMixin {
   });
 
   AssetQuantity get giveAssetQuantityWhenAmountGetAndPriceGive {
+    print("is bthisbeingcalllet");
     final desiredGetAmount = AssetQuantity.fromNormalizedStringSafe(
       divisible: getAsset.divisible,
       input: amountInput.value,
@@ -219,11 +220,31 @@ class SwapOrderFormModel with FormzMixin {
     AssetQuantity totalGive =
         AssetQuantity(quantity: BigInt.zero, divisible: giveAsset.divisible);
 
-    final price = AssetQuantity.fromNormalizedString(
-        input: priceInput.value, divisible: giveAsset.divisible);
+    // final price = AssetQuantity.fromNormalizedString(
+    //     input: priceInput.value, divisible: giveAsset.divisible);
+    //
+
+    final price_ = Rational.parse(priceInput.value);
+
+    final price = Rational(
+        giveAsset.divisible
+            ? price_.numerator * TenToTheEigth.bigIntValue
+            : price_.numerator,
+        getAsset.divisible 
+            ? price_.denominator * TenToTheEigth.bigIntValue
+            : price_.denominator
+
+        );
 
     if (buyOrders.isEmpty) {
-      return desiredGetAmount * price;
+      print("desired get amount $desiredGetAmount");
+
+      print("price_ $price_");
+      print("price $price");
+
+      return AssetQuantity(
+          quantity: (Rational(desiredGetAmount.quantity) * price).toBigInt(),
+          divisible: giveAsset.divisible);
     } else {
       for (final order in buyOrders) {
         if (totalGet.quantity < desiredGetAmount.quantity) {
@@ -246,8 +267,14 @@ class SwapOrderFormModel with FormzMixin {
       }
 
       if ((desiredGetAmount.quantity - totalGet.quantity) > BigInt.zero) {
-        totalGive += (desiredGetAmount - totalGet) * price;
+        totalGive += AssetQuantity(
+            divisible: giveAsset.divisible,
+            quantity: (Rational(desiredGetAmount.quantity - totalGet.quantity) *
+                    price)
+                .toBigInt());
       }
+
+      print("totalGive: $totalGive");
 
       return totalGive;
     }
@@ -443,9 +470,8 @@ class SwapOrderFormModel with FormzMixin {
 
       if (giveAsset.divisible && !getAsset.divisible) {
         totalGet += (unmatchedGive / TenToTheEigth.rational) * price;
-
       } else if (!giveAsset.divisible && getAsset.divisible) {
-        totalGet +=  ( unmatchedGive * TenToTheEigth.rational ) * price;
+        totalGet += (unmatchedGive * TenToTheEigth.rational) * price;
       } else {
         totalGet += unmatchedGive * price;
       }
@@ -846,6 +872,9 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
 
         print("tx1GiveRemaining $tx1GiveRemaining");
       }
+
+      print("tx1GiveQUantity: $tx1GiveQuantity");
+      print("tx1GiveQUantity: $tx1GetQuantity");
 
       final tx1PriceMax = switch (state.priceType) {
         PriceType.give => Rational(tx1GetQuantity, tx1GiveQuantity),
