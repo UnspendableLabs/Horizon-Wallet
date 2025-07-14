@@ -222,22 +222,19 @@ class SwapOrderFormModel with FormzMixin {
 
     final price = Rational.parse(priceInput.value).inverse;
 
-
     if (buyOrders.isEmpty) {
-      print("desired get amount $desiredGetAmount");
+      Rational quantity = Rational(desiredGetAmount.quantity) * price;
 
-      print("price $price");
-
-      print("${Rational(desiredGetAmount.quantity) * price}");
-
-      print(
-          "to raw untis ${toRawUnits(Rational(desiredGetAmount.quantity) * price, giveAsset.divisible)}");
+      if (giveAsset.divisible != getAsset.divisible) {
+        if (giveAsset.divisible) {
+          quantity *= TenToTheEigth.rational;
+        } else {
+          quantity /= TenToTheEigth.rational;
+        }
+      }
 
       return AssetQuantity(
-          quantity: (toRawUnits(Rational(desiredGetAmount.quantity) * price,
-                  giveAsset.divisible && giveAsset.divisible != getAsset.divisible )
-              .toBigInt()),
-          divisible: giveAsset.divisible);
+          quantity: quantity.toBigInt(), divisible: giveAsset.divisible);
     } else {
       for (final order in buyOrders) {
         if (totalGet.quantity < desiredGetAmount.quantity) {
