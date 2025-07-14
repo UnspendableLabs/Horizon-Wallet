@@ -240,7 +240,7 @@ class SwapOrderFormModel with FormzMixin {
               quantity: BigInt.from(getAmount), divisible: getAsset.divisible);
 
           totalGive += AssetQuantity(
-              divisible: getAsset.divisible,
+              divisible: giveAsset.divisible,
               quantity: BigInt.from(matchPrice * getAmount));
         }
       }
