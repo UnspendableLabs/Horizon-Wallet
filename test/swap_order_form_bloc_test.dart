@@ -2577,14 +2577,12 @@ List<TestCase> generateTestCases() {
     ),
     TestCase(
       description:
-          "AmountType.get-PriceType.get match-only giveDiv=false getDiv=true",
+          "AmountType.get-PriceType.get create-only giveDiv=false getDiv=true",
       priceType: PriceType.get,
       amountType: AmountType.get,
       giveDivisible: false,
       getDivisible: true,
-      buyOrders: [
-
-      ],
+      buyOrders: [],
       sellOrders: [],
       amountInput: "100",
       priceInput: "2.0",
@@ -2596,38 +2594,116 @@ List<TestCase> generateTestCases() {
                 quantity: BigInt.from(100) * TenToTheEigth.bigIntValue)),
       ],
     ),
-    // TestCase(
-    //     description:
-    //         "AmountType.get-PriceType.get create-only giveDiv=false getDiv=true",
-    //     priceType: PriceType.get,
-    //     amountType: AmountType.get,
-    //     giveDivisible: false,
-    //     getDivisible: true,
-    //     buyOrders: [],
-    //     sellOrders: [],
-    //     amountInput: "200",
-    //     priceInput: "2.0",
-    //     expectMatch: false,
-    //     expectCreate: true),
-    // TestCase(
-    //     description:
-    //         "AmountType.get-PriceType.get match and create giveDiv=false getDiv=true",
-    //     priceType: PriceType.get,
-    //     amountType: AmountType.get,
-    //     giveDivisible: false,
-    //     getDivisible: true,
-    //     buyOrders: [
-    //       FakeOrder(
-    //           giveQuantity: 100,
-    //           getQuantity: 200,
-    //           giveRemaining: 100,
-    //           getRemaining: 200)
-    //     ],
-    //     sellOrders: [],
-    //     amountInput: "300",
-    //     priceInput: "2.0",
-    //     expectMatch: true,
-    //     expectCreate: false),
+    TestCase(
+      description:
+          "AmountType.get-PriceType.get match-many giveDiv=false getDiv=true",
+      priceType: PriceType.get,
+      amountType: AmountType.get,
+      giveDivisible: false,
+      getDivisible: true,
+      buyOrders: [
+        FakeOrder(
+            giveQuantity: 200 * TenToTheEigth.value,
+            getQuantity: 100,
+            giveRemaining: 100 * TenToTheEigth.value,
+            getRemaining: 50),
+        FakeOrder(
+            giveQuantity: 50 * TenToTheEigth.value,
+            getQuantity: 50,
+            giveRemaining: 50 * TenToTheEigth.value,
+            getRemaining: 50)
+      ],
+      sellOrders: [],
+      amountInput: "150",
+      priceInput: "1.0",
+      expectedOrders: [
+        SimulatedOrderMatch(
+            give: AssetQuantity(divisible: false, quantity: BigInt.from(50)),
+            get: AssetQuantity(
+                divisible: true,
+                quantity: BigInt.from(100) * TenToTheEigth.bigIntValue)),
+        SimulatedOrderMatch(
+            give: AssetQuantity(divisible: false, quantity: BigInt.from(50)),
+            get: AssetQuantity(
+                divisible: true,
+                quantity: BigInt.from(50) * TenToTheEigth.bigIntValue)),
+      ],
+    ),
+    TestCase(
+      description:
+          "AmountType.get-PriceType.get match-many-partial giveDiv=false getDiv=true",
+      priceType: PriceType.get,
+      amountType: AmountType.get,
+      giveDivisible: false,
+      getDivisible: true,
+      buyOrders: [
+        FakeOrder(
+            giveQuantity: 200 * TenToTheEigth.value,
+            getQuantity: 100,
+            giveRemaining: 100 * TenToTheEigth.value,
+            getRemaining: 50),
+        FakeOrder(
+            giveQuantity: 50 * TenToTheEigth.value,
+            getQuantity: 50,
+            giveRemaining: 50 * TenToTheEigth.value,
+            getRemaining: 50)
+      ],
+      sellOrders: [],
+      amountInput: "125",
+      priceInput: "1.0",
+      expectedOrders: [
+        SimulatedOrderMatch(
+            give: AssetQuantity(divisible: false, quantity: BigInt.from(50)),
+            get: AssetQuantity(
+                divisible: true,
+                quantity: BigInt.from(100) * TenToTheEigth.bigIntValue)),
+        SimulatedOrderMatch(
+            give: AssetQuantity(divisible: false, quantity: BigInt.from(25)),
+            get: AssetQuantity(
+                divisible: true,
+                quantity: BigInt.from(25) * TenToTheEigth.bigIntValue)),
+      ],
+    ),
+    TestCase(
+      description:
+          "AmountType.get-PriceType.get match-many-and-create giveDiv=false getDiv=true",
+      priceType: PriceType.get,
+      amountType: AmountType.get,
+      giveDivisible: false,
+      getDivisible: true,
+      buyOrders: [
+        FakeOrder(
+            giveQuantity: 200 * TenToTheEigth.value,
+            getQuantity: 100,
+            giveRemaining: 100 * TenToTheEigth.value,
+            getRemaining: 50),
+        FakeOrder(
+            giveQuantity: 50 * TenToTheEigth.value,
+            getQuantity: 50,
+            giveRemaining: 50 * TenToTheEigth.value,
+            getRemaining: 50)
+      ],
+      sellOrders: [],
+      amountInput: "160",
+      priceInput: ".5",
+      expectedOrders: [
+        SimulatedOrderMatch(
+            give: AssetQuantity(divisible: false, quantity: BigInt.from(50)),
+            get: AssetQuantity(
+                divisible: true,
+                quantity: BigInt.from(100) * TenToTheEigth.bigIntValue)),
+        SimulatedOrderMatch(
+            give: AssetQuantity(divisible: false, quantity: BigInt.from(50)),
+            get: AssetQuantity(
+                divisible: true,
+                quantity: BigInt.from(50) * TenToTheEigth.bigIntValue)),
+        SimulatedOrderCreate(
+            give: AssetQuantity(divisible: false, quantity: BigInt.from(20)),
+            get: AssetQuantity(
+                divisible: true,
+                quantity: BigInt.from(10) * TenToTheEigth.bigIntValue)),
+      ],
+    ),
     // TestCase(
     //     description:
     //         "AmountType.get-PriceType.get match-only giveDiv=false getDiv=false",

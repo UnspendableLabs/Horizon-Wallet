@@ -225,6 +225,10 @@ class SwapOrderFormModel with FormzMixin {
     if (buyOrders.isEmpty) {
       Rational quantity = Rational(desiredGetAmount.quantity) * price;
 
+      print("\n\nbuy orders empty:");
+      print("\t\tquantity $quantity");
+      print("\t\tprice $price");
+
       if (giveAsset.divisible != getAsset.divisible) {
         if (giveAsset.divisible) {
           quantity *= TenToTheEigth.rational;
@@ -247,24 +251,41 @@ class SwapOrderFormModel with FormzMixin {
           final getAmount = min(orderGiveRemaining.quantity.toInt(),
               (desiredGetAmount - totalGet).quantity.toInt());
 
+
           totalGet += AssetQuantity(
               quantity: BigInt.from(getAmount), divisible: getAsset.divisible);
 
           totalGive += AssetQuantity(
               divisible: giveAsset.divisible,
               quantity: BigInt.from(matchPrice * getAmount));
+
+
+          print("\n\niterationg orders");
+          print("\t\ttotalget $totalGet");
+          print("\t\ttotalgive $totalGive");
+
         }
       }
 
       if ((desiredGetAmount.quantity - totalGet.quantity) > BigInt.zero) {
-        totalGive += AssetQuantity(
-            divisible: giveAsset.divisible,
-            quantity: (Rational(desiredGetAmount.quantity - totalGet.quantity) *
-                    price)
-                .toBigInt());
-      }
 
-      print("totalGive: $totalGive");
+
+        Rational quantity =
+            Rational(desiredGetAmount.quantity) - Rational(totalGet.quantity);
+
+        if (giveAsset.divisible != getAsset.divisible) {
+          if (giveAsset.divisible) {
+            quantity *= TenToTheEigth.rational;
+          } else {
+            quantity /= TenToTheEigth.rational;
+          }
+        }
+
+        totalGive += AssetQuantity(
+            divisible: giveAsset.divisible, quantity: (quantity * price).toBigInt());
+
+        print("otal give $totalGive");
+      }
 
       return totalGive;
     }
