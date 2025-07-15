@@ -217,7 +217,6 @@ class SwapOrderFormModel with FormzMixin {
     required this.priceType,
   });
 
-
   AssetQuantity giveAssetQuantityWhenAmountGet({required Rational price}) {
     // CHAT Help me finish this refactor
 
@@ -258,7 +257,6 @@ class SwapOrderFormModel with FormzMixin {
         divisible: giveAsset.divisible, quantity: totalGive.toBigInt());
   }
 
-
   GiveQuantityInput get giveQuantityInput => switch ((amountType, priceType)) {
         ((AmountType.give, _)) => GiveQuantityInput.dirty(
             value: AssetQuantity.fromNormalizedStringSafe(
@@ -295,46 +293,27 @@ class SwapOrderFormModel with FormzMixin {
                     divisible: getAsset.divisible, quantity: BigInt.zero))),
         ((AmountType.give, PriceType.give)) => GetQuantityInput.dirty(
             value: getAssetQuantityWhenAmountGiveAndPriceGive),
-        // ((AmountType.give, PriceType.give)) => GetQuantityInput.dirty(
-        //     value: AssetQuantity.fromNormalizedString(
-        //         divisible: getAsset.divisible,
-        //         input: (double.parse(amountInput.value) /
-        //                 double.parse(priceInput.value))
-        //             .toString())),
         ((AmountType.give, PriceType.get)) => GetQuantityInput.dirty(
             value: getAssetQuantityWhenAmountGiveAndPriceGet),
       };
 
   AssetQuantity get getAssetQuantityWhenAmountGiveAndPriceGive {
-    Rational price =
-        toRawUnits(Rational.parse(priceInput.value), giveAsset.divisible);
+    Rational price = toRawUnits(
+        Rational.tryParse(priceInput.value) ?? Rational.zero,
+        giveAsset.divisible);
 
-    final giveAmount = Rational(AssetQuantity.fromNormalizedString(
-            input: amountInput.value, divisible: giveAsset.divisible)
-        .quantity);
-
-    print("giveAmount $giveAmount");
-
-    if (buyOrders.isEmpty) {
-      print("fooo  $giveAmount");
-      print("fooo  $price");
-
-      return AssetQuantity(
-          quantity:
-              toRawUnits((giveAmount / price), getAsset.divisible).toBigInt(),
-          divisible: getAsset.divisible);
-    }
+    final giveAmount = toRawUnits(
+      Rational.tryParse(amountInput.value) ?? Rational.zero,
+      giveAsset.divisible,
+    );
 
     Rational totalGet = Rational.zero;
     Rational totalGive = Rational.zero;
 
     for (final order in buyOrders) {
-      print("totalGive $totalGive");
-
       if (totalGive >= giveAmount) break;
 
       final orderGiveRemaining = Rational.fromInt(order.giveRemaining);
-      final orderGetRemaining = Rational.fromInt(order.getRemaining);
       final matchPrice =
           Rational.fromInt(order.getQuantity, order.giveQuantity);
 
@@ -359,8 +338,6 @@ class SwapOrderFormModel with FormzMixin {
     // Handle unmatched give via fallback price
     final unmatchedGive = giveAmount - totalGive;
     if (unmatchedGive > Rational.zero) {
-      print("unmatchedGive: $unmatchedGive");
-      print("price: $price");
       totalGet += toRawUnits(unmatchedGive / price, getAsset.divisible);
     }
 
@@ -369,43 +346,16 @@ class SwapOrderFormModel with FormzMixin {
   }
 
   AssetQuantity get getAssetQuantityWhenAmountGiveAndPriceGet {
-    // chatb this does what i want, use as guide for below method
-
     Rational price = Rational.parse(priceInput.value);
 
-    // if (giveAsset.divisible) {
-    //   price = price * TenToTheEigth.rational;
-    // }
-
-    Rational giveAmount = Rational(AssetQuantity.fromNormalizedString(
-            input: amountInput.value, divisible: giveAsset.divisible)
-        .quantity);
-
-    print("giveAmount $giveAmount");
-
-    if (buyOrders.isEmpty) {
-      print("fooo  $giveAmount");
-      print("fooo  $price");
-      print("* ${giveAmount / price}");
-
-      if (giveAsset.divisible && !getAsset.divisible) {
-        giveAmount = giveAmount / TenToTheEigth.rational;
-      } else if (!giveAsset.divisible && getAsset.divisible) {
-        giveAmount = giveAmount * TenToTheEigth.rational;
-      }
-
-      return AssetQuantity(
-          quantity: (giveAmount * price).toBigInt(),
-          divisible: getAsset.divisible);
-    }
+    Rational giveAmount = toRawUnits(
+        Rational.tryParse(amountInput.value) ?? Rational.zero,
+        giveAsset.divisible);
 
     Rational totalGet = Rational.zero;
     Rational totalGive = Rational.zero;
 
     for (final order in buyOrders) {
-      print("totalGive $totalGive");
-      print("totalGet $totalGet");
-
       if (totalGive >= giveAmount) break;
 
       final orderGiveRemaining = Rational.fromInt(order.giveRemaining);
@@ -427,26 +377,12 @@ class SwapOrderFormModel with FormzMixin {
       totalGive += orderGive * matchPrice;
     }
 
-    // Handle unmatched give via fallback price
-    print("giveAmont: $giveAmount");
-    print("ttotalGIve: $totalGive");
     final unmatchedGive = giveAmount - totalGive;
 
     if (unmatchedGive > Rational.zero) {
-      print("current total get $totalGet");
-      print("unmatchedGive: $unmatchedGive");
-      print("price: $price");
-
-      if (giveAsset.divisible && !getAsset.divisible) {
-        totalGet += (unmatchedGive / TenToTheEigth.rational) * price;
-      } else if (!giveAsset.divisible && getAsset.divisible) {
-        totalGet += (unmatchedGive * TenToTheEigth.rational) * price;
-      } else {
-        totalGet += unmatchedGive * price;
-      }
+      totalGet += adjustForDivisibility(unmatchedGive * price,
+          fromDivisible: giveAsset.divisible, toDivisible: getAsset.divisible);
     }
-
-    print("totalGet here: $totalGet");
 
     return AssetQuantity(
         quantity: totalGet.toBigInt(), divisible: getAsset.divisible);
