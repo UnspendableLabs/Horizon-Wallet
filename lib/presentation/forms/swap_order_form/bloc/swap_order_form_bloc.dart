@@ -18,6 +18,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/repositories/order_repository.dart';
 import 'package:horizon/common/constants.dart';
 
+Rational adjustForDivisibility(Rational amount,
+    {required bool fromDivisible, required bool toDivisible}) {
+  if (fromDivisible && !toDivisible) {
+    return amount / TenToTheEigth.rational;
+  } else if (!fromDivisible && toDivisible) {
+    return amount * TenToTheEigth.rational;
+  } else {
+    return amount;
+  }
+}
+
 Rational rationalMinList(List<Rational> values) {
   if (values.isEmpty) throw ArgumentError('List cannot be empty');
   return values.reduce((a, b) => a < b ? a : b);
@@ -207,88 +218,47 @@ class SwapOrderFormModel with FormzMixin {
   });
 
   AssetQuantity get giveAssetQuantityWhenAmountGetAndPriceGet {
-    print("is bthisbeingcalllet");
-    final desiredGetAmount = AssetQuantity.fromNormalizedStringSafe(
-      divisible: getAsset.divisible,
-      input: amountInput.value,
-    ).getOrElse((_) =>
-        AssetQuantity(divisible: getAsset.divisible, quantity: BigInt.zero));
+    final desiredGetAmount = toRawUnits(
+      Rational.tryParse(amountInput.value) ?? Rational.zero,
+      getAsset.divisible,
+    );
 
-    AssetQuantity totalGet =
-        AssetQuantity(quantity: BigInt.zero, divisible: getAsset.divisible);
+    Rational totalGet = Rational.zero;
 
-    AssetQuantity totalGive =
-        AssetQuantity(quantity: BigInt.zero, divisible: giveAsset.divisible);
+    Rational totalGive = Rational.zero;
 
     final price = Rational.parse(priceInput.value).inverse;
 
-    if (buyOrders.isEmpty) {
-      Rational quantity = Rational(desiredGetAmount.quantity) * price;
-
-      print("\n\nbuy orders empty:");
-      print("\t\tquantity $quantity");
-      print("\t\tprice $price");
-
-      if (giveAsset.divisible != getAsset.divisible) {
-        if (giveAsset.divisible) {
-          quantity *= TenToTheEigth.rational;
-        } else {
-          quantity /= TenToTheEigth.rational;
-        }
+    for (final order in buyOrders) {
+      if (totalGet >= desiredGetAmount) {
+        break;
       }
 
-      return AssetQuantity(
-          quantity: quantity.toBigInt(), divisible: giveAsset.divisible);
-    } else {
-      for (final order in buyOrders) {
-        if (totalGet.quantity < desiredGetAmount.quantity) {
-          final matchPrice = order.getQuantity / order.giveQuantity;
+      final matchPrice =
+          Rational.fromInt(order.getQuantity, order.giveQuantity);
 
-          final orderGiveRemaining = AssetQuantity(
-              quantity: BigInt.from(order.giveRemaining),
-              divisible: giveAsset.divisible);
+      final orderGiveRemaining = Rational(BigInt.from(order.giveRemaining));
 
-          final getAmount = min(orderGiveRemaining.quantity.toInt(),
-              (desiredGetAmount - totalGet).quantity.toInt());
+      final getAmount =
+          rationalMinList([orderGiveRemaining, desiredGetAmount - totalGet]);
 
-          totalGet += AssetQuantity(
-              quantity: BigInt.from(getAmount), divisible: getAsset.divisible);
+      totalGet += getAmount;
 
-          totalGive += AssetQuantity(
-              divisible: giveAsset.divisible,
-              quantity: BigInt.from(matchPrice * getAmount));
-
-          print("\n\niterationg orders");
-          print("\t\ttotalget $totalGet");
-          print("\t\ttotalgive $totalGive");
-        }
-      }
-
-      if ((desiredGetAmount.quantity - totalGet.quantity) > BigInt.zero) {
-        Rational quantity =
-            Rational(desiredGetAmount.quantity) - Rational(totalGet.quantity);
-
-        if (giveAsset.divisible != getAsset.divisible) {
-          if (giveAsset.divisible) {
-            quantity *= TenToTheEigth.rational;
-          } else {
-            quantity /= TenToTheEigth.rational;
-          }
-        }
-
-        totalGive += AssetQuantity(
-            divisible: giveAsset.divisible,
-            quantity: (quantity * price).toBigInt());
-
-        print("otal give $totalGive");
-      }
-
-      return totalGive;
+      totalGive += matchPrice * getAmount;
     }
+
+    if (desiredGetAmount - totalGet > Rational.zero) {
+      Rational quantity = adjustForDivisibility(desiredGetAmount - totalGet,
+          fromDivisible: getAsset.divisible, toDivisible: giveAsset.divisible);
+
+      totalGive += quantity * price;
+    }
+
+    return AssetQuantity(
+        divisible: giveAsset.divisible, quantity: totalGive.toBigInt());
   }
 
   AssetQuantity get giveAssetQuantityWhenAmountGetAndPriceGive {
-    print("is bthisbeingcalllet");
     final desiredGetAmount = AssetQuantity.fromNormalizedStringSafe(
       divisible: getAsset.divisible,
       input: amountInput.value,
@@ -860,9 +830,11 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
               ? price.denominator * TenToTheEigth.bigIntValue
               : price.denominator);
 
-      final buyOrders = buyOrders_.where((order) =>
-          Rational.fromInt(order.getQuantity, order.giveQuantity) <=
-          priceFilter).toList();
+      final buyOrders = buyOrders_
+          .where((order) =>
+              Rational.fromInt(order.getQuantity, order.giveQuantity) <=
+              priceFilter)
+          .toList();
 
       BigInt tx1GiveQuantity = state.giveQuantityInput.value.quantity;
       BigInt tx1GetQuantity = state.getQuantityInput.value.quantity;
