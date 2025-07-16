@@ -56,8 +56,11 @@ class SwapOnChainFeeSignHandler extends StatelessWidget {
                             onPressed: () {
                               Navigator.of(context).pop();
                             },
-                            child: Text("Cancel",
-                                style: Theme.of(context).textTheme.labelLarge),
+                            child: AppIcons.closeIcon(
+                              context: context,
+                              width: 24,
+                              height: 24,
+                            ),
                           ),
                           hasTopBarLayer: false,
                           // pageTitle: Text("Sign PSBT",

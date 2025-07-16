@@ -68,7 +68,7 @@ class SwapBuySignFormProvider extends StatelessWidget {
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
 
     return RemoteDataTaskEitherBuilder<String, FeeEstimates>(
-        task:  _feeEstimatesRepository.getFeeEstimates(
+        task: _feeEstimatesRepository.getFeeEstimates(
             httpConfig: session.httpConfig),
         builder: (context, state, refresh) => state.fold(
             onInitial: () => const SizedBox.shrink(),
@@ -139,8 +139,11 @@ class CreateBuyPsbtSignHandler extends StatelessWidget {
                             onPressed: () {
                               Navigator.of(context).pop();
                             },
-                            child: Text("Cancel",
-                                style: Theme.of(context).textTheme.labelLarge),
+                            child: AppIcons.closeIcon(
+                              context: context,
+                              width: 24,
+                              height: 24,
+                            ),
                           ),
                           hasTopBarLayer: false,
                           // pageTitle: Text("Sign PSBT",
@@ -179,8 +182,12 @@ class CreateBuyPsbtSignHandler extends StatelessWidget {
                             onPressed: () {
                               Navigator.of(context).pop();
                             },
-                            child: Text("Cancel",
-                                style: Theme.of(context).textTheme.labelLarge),
+
+                            child: AppIcons.closeIcon(
+                              context: context,
+                              width: 24,
+                              height: 24,
+                            ),
                           ),
                           hasTopBarLayer: false,
                           // pageTitle: Text("Sign PSBT",

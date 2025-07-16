@@ -39,7 +39,8 @@ class Testnet4 extends HttpConfig {
       : super(
           network: Network.testnet4,
           counterparty: "https://testnet4.counterparty.io:44000/v2/",
-          esplora: "https://testnet4.counterparty.io:43000",
+          // esplora: "https://testnet4.counterparty.io:43000",
+          esplora: "https://mempool.space/testnet4/api",
           btcExplorer: "https://mempool.space/testnet4",
           horizonExplorer:
               "https://horizon-market-testnet.vercel.app/explorer", // TODO: link to testnet

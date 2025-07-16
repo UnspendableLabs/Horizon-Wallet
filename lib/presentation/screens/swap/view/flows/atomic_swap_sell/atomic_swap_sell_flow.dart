@@ -236,6 +236,22 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                   )),
                 AttachedAtomicSwapSell() => MaterialPage(
                     child: FlowStep(
+                        leading: IconButton(
+                          onPressed: () {
+                            _controller.update(
+                              (model) => model.copyWith(
+                                atomicSwapSellVariant: const Option.none(),
+                              ),
+                            );
+                            
+                          },
+                          icon: AppIcons.backArrowIcon(
+                            context: context,
+                            width: 24,
+                            height: 24,
+                            fit: BoxFit.fitHeight,
+                          ),
+                        ),
                         title: "Create PSBT",
                         widthFactor: .8,
                         body: CreatePsbtFormProvider(
