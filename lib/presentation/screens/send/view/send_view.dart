@@ -172,7 +172,7 @@ class _SendViewState extends State<SendView> {
               )),
           model.address.map((address) => MaterialPage(
                 child: FlowStep(
-                  title: "Receipient & Quantity",
+                  title: "Recipient & Quantity",
                   widthFactor: .6,
                   body: SendComposeFormProvider(
                     initialEntries: [
