@@ -5,6 +5,15 @@ enum AddressV2Type {
   p2wpkh,
 }
 
+extension AddressV2TypeFriendlyName on AddressV2Type {
+  String get displayName {
+    return switch (this) {
+      AddressV2Type.p2pkh => "Legacy (P2PKH)",
+      AddressV2Type.p2wpkh => "SegWit (P2WPKH)"
+    };
+  }
+}
+
 sealed class DerivationType {}
 
 class Bip32Path extends DerivationType {
@@ -40,5 +49,12 @@ extension AddressV2X on AddressV2 {
         AddressV2Type.p2wpkh => AddressRpcType.p2wpkh,
       },
     );
+  }
+
+  String shortAddress({int first = 6, int last = 4}) {
+    if (address.length <= first + last) return address;
+    final start = address.substring(0, first);
+    final end = address.substring(address.length - last);
+    return '$start...$end';
   }
 }

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 import 'package:dio/dio.dart';
 import 'package:drift_db_viewer/drift_db_viewer.dart';
@@ -923,9 +924,9 @@ class MyApp extends StatelessWidget {
           fontFamily: 'Montserrat',
         ),
       ),
-      extensions: const {
+      extensions: const [
         CustomThemeExtension.light,
-      },
+      ],
     );
   }
 
@@ -1085,9 +1086,12 @@ class MyApp extends StatelessWidget {
           fontFamily: 'Montserrat',
         ),
       ),
-      extensions: const {
+      extensions: [
         CustomThemeExtension.dark,
-      },
+        WoltModalSheetThemeData(
+          backgroundColor: offBlack,
+        )
+      ],
     );
   }
 
