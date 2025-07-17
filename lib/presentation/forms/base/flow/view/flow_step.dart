@@ -6,14 +6,15 @@ class FlowStep extends StatelessWidget {
   final String title;
   final Widget body;
   final Widget? leading;
+  final Widget? trailing;
 
-  const FlowStep({
-    super.key,
-    required this.widthFactor,
-    required this.title,
-    required this.body,
-    this.leading,
-  });
+  const FlowStep(
+      {super.key,
+      required this.widthFactor,
+      required this.title,
+      required this.body,
+      this.leading,
+      this.trailing});
 
   @override
   Widget build(context) {
@@ -21,11 +22,12 @@ class FlowStep extends StatelessWidget {
 
     return Scaffold(
         appBar: AppBar(
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            elevation: 0,
-            leading: leading, 
-            automaticallyImplyLeading: leading != null,
-            ),
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          elevation: 0,
+          leading: leading,
+          automaticallyImplyLeading: leading != null,
+ actions: trailing != null ? [trailing!] : null, 
+        ),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: Center(
           child: Container(
