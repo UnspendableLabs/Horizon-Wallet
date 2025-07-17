@@ -125,6 +125,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
         final txVerbose = response.result!;
         return compose_send.ComposeSendResponse(
+
             params: compose_send.ComposeSendResponseParams(
               source: txVerbose.params.source,
               destination: txVerbose.params.destination,
@@ -140,6 +141,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
             ),
             btcFee: txVerbose.btcFee,
             rawtransaction: txVerbose.rawtransaction,
+            psbt: txVerbose.psbt,
             name: txVerbose.name,
             signedTxEstimatedSize: txVerbose.signedTxEstimatedSize.toDomain());
       },
@@ -187,6 +189,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final txVerbose = response.result!;
         return compose_mpma_send.ComposeMpmaSendResponse(
             rawtransaction: txVerbose.rawtransaction,
+            psbt: txVerbose.psbt,
             btcFee: txVerbose.btcFee,
             params: compose_mpma_send.ComposeMpmaSendResponseParams(
               source: txVerbose.params.source,
@@ -249,6 +252,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final txVerbose = response.result!;
         return compose_issuance.ComposeIssuanceResponseVerbose(
             rawtransaction: txVerbose.rawtransaction,
+            psbt: txVerbose.psbt,
             btcFee: txVerbose.btcFee,
             params: compose_issuance.ComposeIssuanceResponseVerboseParams(
               reset: txVerbose.params.reset,
@@ -319,6 +323,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final txVerbose = response.result!;
         return compose_dispenser.ComposeDispenserResponseVerbose(
             rawtransaction: txVerbose.rawtransaction,
+            psbt: txVerbose.psbt,
             btcIn: txVerbose.btcIn,
             btcOut: txVerbose.btcOut,
             btcChange: txVerbose.btcChange,
@@ -529,6 +534,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
     final txVerbose = response.result!;
     return compose_dispenser.ComposeDispenserResponseVerbose(
         rawtransaction: txVerbose.rawtransaction,
+        psbt: txVerbose.psbt,
         btcIn: txVerbose.btcIn,
         btcOut: txVerbose.btcOut,
         btcChange: txVerbose.btcChange,

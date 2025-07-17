@@ -1,4 +1,5 @@
 abstract class ComposeResponse {
+  String get psbt;
   String get rawtransaction;
   int get btcFee;
   SignedTxEstimatedSize get signedTxEstimatedSize;

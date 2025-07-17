@@ -19,6 +19,10 @@ class ComposeDestroyParams extends ComposeParams {
 }
 
 class ComposeDestroyResponse implements ComposeResponse {
+
+  @override
+  final String psbt;
+
   @override
   final String rawtransaction;
   @override
@@ -31,6 +35,7 @@ class ComposeDestroyResponse implements ComposeResponse {
   final ComposeDestroyResponseParams params;
 
   ComposeDestroyResponse({
+    required this.psbt,
     required this.rawtransaction,
     required this.btcFee,
     required this.signedTxEstimatedSize,

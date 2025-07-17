@@ -40,7 +40,11 @@ class ComposeFairmintResponse extends ComposeResponse {
   @override
   final String rawtransaction;
 
+  @override
+  final String psbt;
+
   ComposeFairmintResponse({
+    required this.psbt,
     required this.params,
     required this.name,
     required this.data,

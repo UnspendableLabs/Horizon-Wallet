@@ -14,10 +14,12 @@ class ComposeFairmintVerboseModel {
   final int? btcChange;
   final int btcFee;
   final String rawtransaction;
+  final String psbt;
   final ComposeFairmintVerboseParamsModel params;
   final SignedTxEstimatedSizeModel signedTxEstimatedSize;
 
   ComposeFairmintVerboseModel({
+    required this.psbt,
     required this.rawtransaction,
     required this.params,
     required this.name,
@@ -33,6 +35,7 @@ class ComposeFairmintVerboseModel {
       _$ComposeFairmintVerboseModelFromJson(json);
 
   ComposeFairmintResponse toDomain() => ComposeFairmintResponse(
+        psbt: psbt,
         rawtransaction: rawtransaction,
         name: name,
         data: data,

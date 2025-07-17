@@ -13,11 +13,13 @@ class ComposeFairminterVerboseModel {
   final int? btcChange;
   final int btcFee;
   final String rawtransaction;
+  final String psbt;
   final ComposeFairminterVerboseParamsModel params;
   final SignedTxEstimatedSizeModel signedTxEstimatedSize;
 
   ComposeFairminterVerboseModel({
     required this.rawtransaction,
+    required this.psbt,
     required this.params,
     required this.name,
     required this.btcIn,
@@ -33,6 +35,7 @@ class ComposeFairminterVerboseModel {
 
   ComposeFairminterResponse toDomain() => ComposeFairminterResponse(
         rawtransaction: rawtransaction,
+        psbt: psbt,
         name: name,
         data: data,
         btcIn: btcIn,

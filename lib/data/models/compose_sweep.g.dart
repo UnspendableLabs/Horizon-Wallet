@@ -9,6 +9,7 @@ part of 'compose_sweep.dart';
 ComposeSweepResponseModel _$ComposeSweepResponseModelFromJson(
         Map<String, dynamic> json) =>
     ComposeSweepResponseModel(
+      psbt: json['psbt'] as String,
       rawtransaction: json['rawtransaction'] as String,
       params: ComposeSweepParamsModel.fromJson(
           json['params'] as Map<String, dynamic>),
@@ -32,6 +33,7 @@ Map<String, dynamic> _$ComposeSweepResponseModelToJson(
       'btc_change': instance.btcChange,
       'btc_fee': instance.btcFee,
       'rawtransaction': instance.rawtransaction,
+      'psbt': instance.psbt,
       'params': instance.params,
       'signed_tx_estimated_size': instance.signedTxEstimatedSize,
     };

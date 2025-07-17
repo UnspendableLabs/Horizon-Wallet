@@ -13,10 +13,12 @@ class ComposeDetachUtxoResponseModel {
   final int? btcChange;
   final int btcFee;
   final String rawtransaction;
+  final String psbt;
   final ComposeDetachUtxoResponseParamsModel params;
   final SignedTxEstimatedSizeModel signedTxEstimatedSize;
 
   ComposeDetachUtxoResponseModel({
+    required this.psbt,
     required this.rawtransaction,
     required this.params,
     required this.name,
@@ -35,6 +37,7 @@ class ComposeDetachUtxoResponseModel {
         name: name,
         data: data,
         rawtransaction: rawtransaction,
+        psbt: psbt,
         btcFee: btcFee,
         params: params.toDomain(),
         signedTxEstimatedSize: signedTxEstimatedSize.toDomain(),

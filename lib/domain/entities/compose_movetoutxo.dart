@@ -17,6 +17,9 @@ class ComposeMoveToUtxoParams extends ComposeParams {
 
 class ComposeMoveToUtxoResponse implements ComposeResponse {
   @override
+  final String psbt;
+
+  @override
   final String rawtransaction;
   @override
   final int btcFee;
@@ -28,6 +31,7 @@ class ComposeMoveToUtxoResponse implements ComposeResponse {
   final ComposeMoveToUtxoResponseParams params;
 
   ComposeMoveToUtxoResponse({
+    required this.psbt,
     required this.rawtransaction,
     required this.btcFee,
     required this.signedTxEstimatedSize,

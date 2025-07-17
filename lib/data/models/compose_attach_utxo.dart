@@ -14,10 +14,12 @@ class ComposeAttachUtxoResponseModel {
   final int btcChange;
   final int btcFee;
   final String rawtransaction;
+  final String psbt;
   final ComposeAttachUtxoResponseParamsModel params;
   final SignedTxEstimatedSizeModel signedTxEstimatedSize;
 
   ComposeAttachUtxoResponseModel({
+    required this.psbt,
     required this.rawtransaction,
     required this.params,
     required this.name,
@@ -35,6 +37,7 @@ class ComposeAttachUtxoResponseModel {
   ComposeAttachUtxoResponse toDomain() => ComposeAttachUtxoResponse(
         name: name,
         data: data,
+        psbt: psbt,
         rawtransaction: rawtransaction,
         btcFee: btcFee,
         params: params.toDomain(),

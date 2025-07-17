@@ -50,6 +50,10 @@ class ComposeSendResponseParams {
 class ComposeSendResponse extends ComposeResponse {
   @override
   final String rawtransaction;
+
+  @override
+  final String psbt;
+
   @override
   final int btcFee;
   @override
@@ -58,6 +62,7 @@ class ComposeSendResponse extends ComposeResponse {
   final String name;
 
   ComposeSendResponse({
+    required this.psbt,
     required this.rawtransaction,
     required this.params,
     required this.name,

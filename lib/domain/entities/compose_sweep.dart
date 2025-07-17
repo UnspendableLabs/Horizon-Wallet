@@ -20,6 +20,8 @@ class ComposeSweepParams extends ComposeParams {
 
 class ComposeSweepResponse implements ComposeResponse {
   @override
+  final String psbt;
+  @override
   final String rawtransaction;
   @override
   final int btcFee;
@@ -31,6 +33,7 @@ class ComposeSweepResponse implements ComposeResponse {
   final ComposeSweepResponseParams params;
 
   ComposeSweepResponse({
+    required this.psbt,
     required this.rawtransaction,
     required this.btcFee,
     required this.signedTxEstimatedSize,

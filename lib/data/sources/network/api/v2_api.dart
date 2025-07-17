@@ -3213,8 +3213,11 @@ class ComposeIssuanceVerbose extends ComposeIssuance {
   final ComposeIssuanceVerboseParams params;
   final int btcFee;
   final SignedTxEstimatedSizeModel signedTxEstimatedSize;
+  final String psbt;
+
 
   ComposeIssuanceVerbose({
+    required this.psbt,
     required super.rawtransaction,
     required super.name,
     required this.params,
@@ -3297,6 +3300,7 @@ class ComposeDispenserParams {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class ComposeDispenserVerbose extends ComposeDispenser {
+  final String psbt;
   @override
   final ComposeDispenserVerboseParams params;
   final int btcIn;
@@ -3306,6 +3310,7 @@ class ComposeDispenserVerbose extends ComposeDispenser {
   final String data;
   final SignedTxEstimatedSizeModel signedTxEstimatedSize;
   ComposeDispenserVerbose({
+    required this.psbt,
     required super.rawtransaction,
     required super.name,
     required this.params,
@@ -3629,10 +3634,13 @@ class SendTxVerbose extends SendTx {
   final SendTxParamsVerbose params;
   final int btcFee;
   final SignedTxEstimatedSizeModel signedTxEstimatedSize;
+  final String psbt;
+
 
   const SendTxVerbose({
     required this.params,
     required super.rawtransaction,
+    required this.psbt,
     required this.btcFee,
     required super.name,
     required this.signedTxEstimatedSize,
@@ -3650,6 +3658,7 @@ class ComposeMpmaSend {
   final String name;
   final String data;
   final String rawtransaction;
+  final String psbt;
   final int btcIn;
   final int btcOut;
   final int btcFee;
@@ -3661,6 +3670,7 @@ class ComposeMpmaSend {
     required this.name,
     required this.data,
     required this.rawtransaction,
+    required this.psbt,
     required this.btcIn,
     required this.btcOut,
     required this.btcFee,

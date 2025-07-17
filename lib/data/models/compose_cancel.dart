@@ -13,12 +13,14 @@ class ComposeCancelResponseModel {
   final int btcChange;
   final int btcFee;
   final String rawtransaction;
+  final String psbt;
   final ComposeCancelResponseParamsModel params;
   final SignedTxEstimatedSizeModel signedTxEstimatedSize;
   // final CancelUnpackedVerbose unpackedData;
 
   ComposeCancelResponseModel({
     required this.rawtransaction,
+    required this.psbt,
     required this.params,
     required this.name,
     // required this.unpackedData,
@@ -34,6 +36,7 @@ class ComposeCancelResponseModel {
       _$ComposeCancelResponseModelFromJson(json);
 
   ComposeCancelResponse toDomain() => ComposeCancelResponse(
+        psbt: psbt,
         rawtransaction: rawtransaction,
         btcFee: btcFee,
         params: params.toDomain(),

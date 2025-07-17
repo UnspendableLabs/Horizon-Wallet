@@ -14,10 +14,12 @@ class ComposeDestroyResponseModel {
   int? btcChange;
   final int btcFee;
   final String rawtransaction;
+  final String psbt;
   final ComposeDestroyParamsModel params;
   final SignedTxEstimatedSizeModel signedTxEstimatedSize;
 
   ComposeDestroyResponseModel({
+    required this.psbt,
     required this.rawtransaction,
     required this.params,
     required this.name,
@@ -38,6 +40,7 @@ class ComposeDestroyResponseModel {
         name: name,
         data: data,
         rawtransaction: rawtransaction,
+        psbt: psbt,
         btcFee: btcFee,
         params: params.toDomain(),
         signedTxEstimatedSize: signedTxEstimatedSize.toDomain(),

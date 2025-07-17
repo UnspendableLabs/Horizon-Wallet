@@ -42,6 +42,8 @@ class ComposeMpmaSendResponseParams {
 
 class ComposeMpmaSendResponse extends ComposeResponse {
   @override
+  final String psbt;
+  @override
   final String rawtransaction;
   @override
   final int btcFee;
@@ -51,6 +53,7 @@ class ComposeMpmaSendResponse extends ComposeResponse {
   final String name;
 
   ComposeMpmaSendResponse({
+    required this.psbt,
     required this.rawtransaction,
     required this.params,
     required this.name,

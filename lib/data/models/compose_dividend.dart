@@ -15,10 +15,12 @@ class ComposeDividendResponseModel {
   final int btcChange;
   final int btcFee;
   final String rawtransaction;
+  final String psbt; 
   final ComposeDividendParamsModel params;
   final SignedTxEstimatedSizeModel signedTxEstimatedSize;
   ComposeDividendResponseModel({
     required this.rawtransaction,
+    required this.psbt,
     required this.params,
     required this.name,
     required this.btcIn,
@@ -37,6 +39,7 @@ class ComposeDividendResponseModel {
   ComposeDividendResponse toDomain() => ComposeDividendResponse(
         name: name,
         data: data,
+        psbt: psbt,
         rawtransaction: rawtransaction,
         btcFee: btcFee,
         params: params.toDomain(),

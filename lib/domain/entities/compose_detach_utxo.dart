@@ -17,6 +17,8 @@ class ComposeDetachUtxoParams extends ComposeParams {
 
 class ComposeDetachUtxoResponse implements ComposeResponse {
   @override
+  final String psbt;
+  @override
   final String rawtransaction;
   @override
   final int btcFee;
@@ -28,6 +30,7 @@ class ComposeDetachUtxoResponse implements ComposeResponse {
   final ComposeDetachUtxoResponseParams params;
 
   ComposeDetachUtxoResponse({
+    required this.psbt,
     required this.rawtransaction,
     required this.btcFee,
     required this.signedTxEstimatedSize,

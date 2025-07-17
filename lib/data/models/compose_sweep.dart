@@ -13,10 +13,12 @@ class ComposeSweepResponseModel {
   final int btcChange;
   final int btcFee;
   final String rawtransaction;
+  final String psbt;
   final ComposeSweepParamsModel params;
   final SignedTxEstimatedSizeModel signedTxEstimatedSize;
 
   ComposeSweepResponseModel({
+    required this.psbt,
     required this.rawtransaction,
     required this.params,
     required this.name,
@@ -36,6 +38,7 @@ class ComposeSweepResponseModel {
   ComposeSweepResponse toDomain() => ComposeSweepResponse(
         name: name,
         data: data,
+        psbt: psbt,
         rawtransaction: rawtransaction,
         btcFee: btcFee,
         params: params.toDomain(),

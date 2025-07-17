@@ -13,10 +13,12 @@ class ComposeBurnResponseModel {
   final int? btcChange;
   final int btcFee;
   final String rawtransaction;
+  final String psbt;
   final ComposeBurnParamsModel params;
   final SignedTxEstimatedSizeModel signedTxEstimatedSize;
 
   ComposeBurnResponseModel({
+    required this.psbt,
     required this.rawtransaction,
     required this.params,
     required this.name,
@@ -35,6 +37,7 @@ class ComposeBurnResponseModel {
 
   ComposeBurnResponse toDomain() => ComposeBurnResponse(
         rawtransaction: rawtransaction,
+        psbt: psbt,
         name: name,
         data: data,
         btcIn: btcIn,

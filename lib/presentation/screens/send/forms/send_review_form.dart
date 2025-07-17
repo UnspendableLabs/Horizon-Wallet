@@ -39,7 +39,7 @@ class SendReviewFormProvider extends StatelessWidget {
       child: BlocBuilder<SendReviewFormBloc, SendReviewFormModel>(
         builder: (context, state) => child(SendFormReviewActions(
           onSubmit: () {
-            context.read<SendReviewFormBloc>().add(OnSignAndSubmitEvent());
+            context.read<SendReviewFormBloc>().add(SignAndSubmitClicked());
           },
         ), state),
       ),
