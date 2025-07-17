@@ -188,6 +188,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
     on<FetchFormEvent>(_handleFetchForm);
     on<PasswordChanged>(_handlePasswordChanged);
     on<SignPsbtSubmitted>(_handleSignPsbtSubmitted);
+    print(unsignedPsbt);
   }
 
   Future<void> _handleFetchForm(
@@ -199,6 +200,9 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
 
       final transactionHex =
           _transactionService.psbtToUnsignedTransactionHex(unsignedPsbt);
+
+      print("transactionhex $transactionHex");
+      print("signinputs ${signInputs}"):
 
       final decoded = await _bitcoindService.decoderawtransaction(
           transactionHex, httpConfig);
@@ -308,7 +312,9 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
         augmentedOutputs: augmentedOutputs,
         isFormDataLoaded: true,
       ));
-    } catch (e) {
+    } catch (e, callstack) {
+      print(e);
+      print(callstack);
       emit(state.copyWith(
         isFormDataLoaded: true,
       ));
@@ -328,6 +334,8 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
   _handleSignPsbtSubmitted(
       SignPsbtSubmitted event, Emitter<SignPsbtState> emit) async {
     final task = TaskEither<String, String>.Do(($) async {
+
+
       final inputPrivateKeyMap = await $(buildInputPrivateKeyMap(
         addresses,
         signInputs,
@@ -335,13 +343,16 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
         httpConfig,
       ));
 
+     // here we need to actually take care of adding witness data
+
       String signedHex = await $(TaskEither.fromEither(
           _transactionService.signPsbtT(
               psbtHex: unsignedPsbt,
               inputPrivateKeyMap: inputPrivateKeyMap,
               httpConfig: httpConfig,
               sighashTypes: sighashTypes,
-              onError: (e) => "Error signing PSBT")));
+              onError: (e) => e.toString())));
+      // onError: (e) => "Error signing PSBT")));
 
       return signedHex;
     });
@@ -353,9 +364,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
       emit(state.copyWith(
           submissionStatus: FormzSubmissionStatus.failure,
           error: msg.toString()));
-
     }, (success) {
-
       emit(state.copyWith(
         submissionStatus: FormzSubmissionStatus.success,
         signedPsbt: success,

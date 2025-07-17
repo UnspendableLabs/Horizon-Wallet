@@ -12,6 +12,7 @@ import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
+import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/send/bloc/send_entry_form_bloc.dart';
@@ -172,14 +173,20 @@ class SendComposeFormBloc
   final ComposeTransactionUseCase composeTransactionUseCase;
   final ComposeRepository composeRepository;
   final HttpConfig httpConfig;
+  final TransactionService _transactionService;
+
   SendComposeFormBloc(
       {required List<SendEntryFormModel> initialEntries,
       required List<MultiAddressBalance> initialBalances,
       required FeeEstimates feeEstimates,
       required String sourceAddress,
-      required this.httpConfig})
+      required this.httpConfig, 
+      TransactionService? transactionService,
+      })
       : composeTransactionUseCase = GetIt.I<ComposeTransactionUseCase>(),
         composeRepository = GetIt.I<ComposeRepository>(),
+        _transactionService = transactionService ??
+            GetIt.I<TransactionService>(),
         super(SendComposeFormModel(
           sendEntries: initialEntries,
           balances: initialBalances,
@@ -256,7 +263,12 @@ class SendComposeFormBloc
         _ => throw Exception("invariant"),
       };
 
-      return await $(composeT);
+
+      final composeResponse =  await $(composeT);
+
+
+
+      return composeResponse;
     });
 
     final result = await task.run();

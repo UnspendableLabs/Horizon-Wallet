@@ -52,6 +52,9 @@ abstract class TransactionService {
 
   Future<String> signTransaction(String unsignedTransaction, String privateKey,
       String sourceAddress, Map<String, Utxo> utxoMap, HttpConfig httpConfig);
+  
+  Future<String> transactionToUnsignedPsbt(String unsignedTransaction, String privateKey,
+      String sourceAddress, Map<String, Utxo> utxoMap, HttpConfig httpConfig);
 
   int getVirtualSize(String unsignedTransaction);
 
@@ -68,6 +71,10 @@ abstract class TransactionService {
       required Map<String, Utxo> utxoMap});
 
   int countSigOps({
+    required String rawtransaction,
+  });
+  
+  int countInputs({
     required String rawtransaction,
   });
 

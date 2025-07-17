@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:formz/formz.dart';
 import 'package:horizon/domain/entities/http_config.dart';
+import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/presentation/common/collapsable_view.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
@@ -13,6 +16,9 @@ import 'package:horizon/presentation/screens/send/view/send_view.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
+import 'package:get_it/get_it.dart';
+import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
+import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
 
 class SendFormReviewActions {
   final Function onSubmit;
@@ -44,6 +50,139 @@ class SendReviewFormProvider extends StatelessWidget {
         ), state),
       ),
     );
+  }
+}
+
+class SendReviewSignHandler extends StatelessWidget {
+  final VoidCallback onClose;
+  final String address;
+
+  const SendReviewSignHandler(
+      {super.key, required this.onClose, required this.address});
+
+  @override
+  Widget build(context) {
+    final session = context.read<SessionStateCubit>().state.successOrThrow();
+
+    return BlocListener<SendReviewFormBloc, SendReviewFormModel>(
+        listener: (context, state) async {
+          final settings = GetIt.I<SettingsRepository>();
+
+          if (state.showSignTransactionModal) {
+            final result = await WoltModalSheet.show(
+                context: context,
+                modalTypeBuilder: (_) => WoltModalType.bottomSheet(),
+                pageListBuilder: (bottomSheetContext) => [
+                      WoltModalSheetPage(
+                        trailingNavBarWidget: TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: AppIcons.closeIcon(
+                            context: context,
+                            width: 24,
+                            height: 24,
+                          ),
+                        ),
+                        hasTopBarLayer: false,
+                        // pageTitle: Text("Sign PSBT",
+                        //     style: Theme.of(context).textTheme.headlineSmall),
+                        child: BlocProvider(
+                            create: (context) => SignPsbtBloc(
+                                  httpConfig: session.httpConfig,
+                                  addresses: session.addresses,
+                                  passwordRequired: settings
+                                      .requirePasswordForCryptoOperations,
+                                  unsignedPsbt: switch (state.composeResponse) {
+                                    ComposeSendMpma(response: var resp) =>
+                                      resp.psbtHex,
+                                    ComposeSendSingle(response: var resp) =>
+                                      resp.psbtHex,
+                                  },
+                                  signInputs: {
+                                    address: switch (state.composeResponse) {
+                                      ComposeSendMpma(response: var resp) =>
+                                        List.generate(
+                                            resp.numInputs(), (n) => n),
+                                      ComposeSendSingle(response: var resp) =>
+                                        List.generate(
+                                            resp.numInputs(), (n) => n),
+                                    }
+                                  },
+                                  sighashTypes: [
+                                    0x01 // SIGHASH_ALL
+                                  ],
+                                ),
+                            child: SignPsbtForm(
+                              key: Key(
+                                switch (state.composeResponse) {
+                                  ComposeSendMpma(response: var resp) =>
+                                    resp.psbt,
+                                  ComposeSendSingle(response: var resp) =>
+                                    resp.psbt,
+                                },
+                              ),
+                              passwordRequired:
+                                  settings.requirePasswordForCryptoOperations,
+                              onSuccess: (signedPsbtHex) {
+                                // onSuccess(signedPsbtHex);
+
+                                //  chat if hit this condition, i don't
+                                // want to call onCLose() below
+                                Navigator.of(context).pop("signed");
+                              },
+                            )),
+                      ),
+                      // WoltModalSheetPage(
+                      //     trailingNavBarWidget: TextButton(
+                      //       onPressed: () {
+                      //         Navigator.of(context).pop();
+                      //       },
+                      //       child: AppIcons.closeIcon(
+                      //         context: context,
+                      //         width: 24,
+                      //         height: 24,
+                      //       ),
+                      //     ),
+                      //     hasTopBarLayer: false,
+                      //     // pageTitle: Text("Sign PSBT",
+                      //     //     style: Theme.of(context).textTheme.headlineSmall),
+                      //     child: state.current.psbtWithArgs.fold(
+                      //       () => const SizedBox.shrink(),
+                      //       (psbtWithArgs) => BlocProvider(
+                      //           create: (context) => SignPsbtBloc(
+                      //                 httpConfig: session.httpConfig,
+                      //                 addresses: session.addresses,
+                      //                 passwordRequired: settings
+                      //                     .requirePasswordForCryptoOperations,
+                      //                 unsignedPsbt: psbtWithArgs.psbtHex,
+                      //                 signInputs: {
+                      //                   address: psbtWithArgs.inputsToSign
+                      //                 },
+                      //                 sighashTypes: [
+                      //                   0x01 // SIGHASH_ALL
+                      //                 ],
+                      //               ),
+                      //           child: SignPsbtForm(
+                      //             key: Key(psbtWithArgs.psbtHex),
+                      //             passwordRequired: settings
+                      //                 .requirePasswordForCryptoOperations,
+                      //             onSuccess: (signedPsbtHex) {
+                      //               onSuccess(signedPsbtHex);
+                      //               Navigator.of(context).pop("signed");
+                      //             },
+                      //           )),
+                      //     ))
+                    ]);
+
+            if (result != "signed") {
+              onClose();
+            }
+
+            // show wolt modal but only if it's not already displayed
+          }
+        },
+        child: const SizedBox.shrink());
   }
 }
 

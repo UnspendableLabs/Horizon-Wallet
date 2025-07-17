@@ -255,10 +255,11 @@ class TransactionServiceWeb implements TransactionService {
   @override
   String signPsbt(String psbtHex, Map<int, String> inputPrivateKeyMap,
       HttpConfig httpConfig,
-      [List<int>? sighashTypes]) {
+      [List<int>? sighashTypes, ]) {
     print("before");
 
     bitcoinjs.Psbt psbt = bitcoinjs.Psbt.fromHex(psbtHex);
+
 
     print(sighashTypes);
 
@@ -275,8 +276,12 @@ class TransactionServiceWeb implements TransactionService {
       final signer =
           ecpairFactory.fromPrivateKey(privKeyJS, httpConfig.network.toJS);
 
+      print("signer $signer");
+
       psbt.signInput(
           index, signer, sighashTypes?.map((e) => e.toJS).toList().toJS);
+
+      print("after sdlfjasf");
     }
     return psbt.toHex();
   }
@@ -304,12 +309,75 @@ class TransactionServiceWeb implements TransactionService {
   }
 
   @override
+  Future<String> transactionToUnsignedPsbt(
+      String unsignedTransaction,
+      String privateKey,
+      String sourceAddress,
+      Map<String, Utxo> utxoMap,
+      HttpConfig httpConfig) async {
+    bitcoinjs.Transaction transaction =
+        bitcoinjs.Transaction.fromHex(unsignedTransaction);
+
+    bitcoinjs.Psbt psbt = bitcoinjs.Psbt(bitcoinjs.PsbtOptions(
+      network: httpConfig.network.toJS,
+    ));
+
+    Buffer privKeyJS =
+        Buffer.from(Uint8List.fromList(hex.decode(privateKey)).toJS);
+
+    dynamic signer =
+        ecpairFactory.fromPrivateKey(privKeyJS, httpConfig.network.toJS);
+
+    bool isSourceSegwit = addressIsSegwit(sourceAddress);
+
+    bitcoinjs.Payment script;
+    if (isSourceSegwit) {
+      script = bitcoinjs.p2wpkh(bitcoinjs.PaymentOptions(
+          pubkey: signer.publicKey, network: httpConfig.network.toJS));
+    } else {
+      script = bitcoinjs.p2pkh(bitcoinjs.PaymentOptions(
+          pubkey: signer.publicKey, network: httpConfig.network.toJS));
+    }
+
+    for (var i = 0; i < transaction.ins.toDart.length; i++) {
+      bitcoinjs.TxInput input = transaction.ins.toDart[i];
+
+      var txHash = HEX.encode(input.hash.toDart.reversed.toList());
+      final txHashKey = "$txHash:${input.index}";
+
+      var prev = utxoMap[txHashKey];
+      if (prev != null) {
+        if (isSourceSegwit) {
+          input.witnessUtxo = bitcoinjs.WitnessUTXO(
+              script: Buffer.from(script.output), value: prev.value);
+          psbt.addInput(input);
+        } else {
+          input.script = script.output;
+          final txHex = await bitcoinRepository.getTransactionHex(
+              txid: prev.txid, httpConfig: httpConfig);
+
+          input.nonWitnessUtxo =
+              Buffer.from(Uint8List.fromList(hex.decode(txHex)).toJS);
+          psbt.addInput(input);
+        }
+      } else {
+        throw TransactionServiceException(
+            'Could not find output at $txHashKey');
+      }
+    }
+
+    return psbt.toHex();
+  }
+  @override
   Future<String> signTransaction(
       String unsignedTransaction,
       String privateKey,
       String sourceAddress,
       Map<String, Utxo> utxoMap,
       HttpConfig httpConfig) async {
+
+
+
     bitcoinjs.Transaction transaction =
         bitcoinjs.Transaction.fromHex(unsignedTransaction);
 
@@ -450,6 +518,14 @@ class TransactionServiceWeb implements TransactionService {
     bitcoinjs.Transaction transaction =
         bitcoinjs.Transaction.fromHex(rawtransaction);
     return horizon_utils.countSigOps(transaction);
+  }
+  
+  @override
+  int countInputs({required String rawtransaction}) {
+    bitcoinjs.Transaction transaction =
+        bitcoinjs.Transaction.fromHex(rawtransaction);
+
+    return transaction.ins.toDart.length;
   }
 
   bool _isOpReturn(JSUint8Array script) {
@@ -634,6 +710,7 @@ class TransactionServiceWeb implements TransactionService {
 
   @override
   String psbtToUnsignedTransactionHex(String psbtHex) {
+
     bitcoinjs.Psbt psbt = bitcoinjs.Psbt.fromHex(psbtHex);
 
     // Access the unsigned transaction from the global map

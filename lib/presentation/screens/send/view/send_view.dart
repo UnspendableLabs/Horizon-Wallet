@@ -148,21 +148,19 @@ class _SendViewState extends State<SendView> {
                 child: FlowStep(
                   title: "Choose your Address",
                   widthFactor: .4,
-                  leading: Builder(
-                    builder: (context) {
-                      return IconButton(
-                          onPressed: () {
-                            context.flow<SendFlowModel>().update(
-                                (model) => model.copyWith(balance: Option.none()));
-                          },
-                          icon: AppIcons.backArrowIcon(
-                            context: context,
-                            width: 24,
-                            height: 24,
-                            fit: BoxFit.fitHeight,
-                          ));
-                    }
-                  ),
+                  leading: Builder(builder: (context) {
+                    return IconButton(
+                        onPressed: () {
+                          context.flow<SendFlowModel>().update((model) =>
+                              model.copyWith(balance: Option.none()));
+                        },
+                        icon: AppIcons.backArrowIcon(
+                          context: context,
+                          width: 24,
+                          height: 24,
+                          fit: BoxFit.fitHeight,
+                        ));
+                  }),
                   trailing: IconButton(
                       onPressed: () {
                         context.pop();
@@ -199,21 +197,19 @@ class _SendViewState extends State<SendView> {
                 child: FlowStep(
                   title: "Recipient & Quantity",
                   widthFactor: .6,
-                  leading: Builder(
-                    builder: (context) {
-                      return IconButton(
-                          onPressed: () {
-                            context.flow<SendFlowModel>().update(
-                                (model) => model.copyWith(address: Option.none()));
-                          },
-                          icon: AppIcons.backArrowIcon(
-                            context: context,
-                            width: 24,
-                            height: 24,
-                            fit: BoxFit.fitHeight,
-                          ));
-                    }
-                  ),
+                  leading: Builder(builder: (context) {
+                    return IconButton(
+                        onPressed: () {
+                          context.flow<SendFlowModel>().update((model) =>
+                              model.copyWith(address: Option.none()));
+                        },
+                        icon: AppIcons.backArrowIcon(
+                          context: context,
+                          width: 24,
+                          height: 24,
+                          fit: BoxFit.fitHeight,
+                        ));
+                  }),
                   trailing: IconButton(
                       onPressed: () {
                         context.pop();
@@ -279,18 +275,22 @@ class _SendViewState extends State<SendView> {
                       child: (actions, state) => Builder(builder: (context) {
                             return Column(
                               children: [
-                                SendReviewFormSuccessHandler(
-                                  onSuccess: (confirmationStep) {
-                                    context
-                                        .flow<SendFlowModel>()
-                                        .update((model) {
-                                      return model.copyWith(
-                                        confirmationStep:
-                                            fp.Option.of(confirmationStep),
-                                      );
-                                    });
-                                  },
-                                ),
+                                SendReviewSignHandler(
+                                    onClose: () {},
+                                    address: model.address.getOrThrow()),
+
+                                // SendReviewFormSuccessHandler(
+                                //   onSuccess: (confirmationStep) {
+                                //     context
+                                //         .flow<SendFlowModel>()
+                                //         .update((model) {
+                                //       return model.copyWith(
+                                //         confirmationStep:
+                                //             fp.Option.of(confirmationStep),
+                                //       );
+                                //     });
+                                //   },
+                                // ),
                                 SendReviewForm(
                                   state: state,
                                   actions: actions,
