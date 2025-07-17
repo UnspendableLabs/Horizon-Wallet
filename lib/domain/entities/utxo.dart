@@ -4,6 +4,10 @@ class UtxoID {
 
   UtxoID({required this.vout, required this.txid});
 
+  @override
+  toString() {
+    return 'UtxoID(vout: $vout, txid: $txid)';
+  }
 }
 
 class Utxo {
@@ -23,4 +27,6 @@ class Utxo {
   String toString() {
     return 'Utxo(vout: $vout, height: $height, value: $value, txid: $txid, address: $address)';
   }
+
+  get utoxId => UtxoID(vout: vout, txid: txid);
 }

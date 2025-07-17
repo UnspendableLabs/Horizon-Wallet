@@ -32,11 +32,11 @@ extension UtxoRepositoryX on UtxoRepository {
   }
 
   Future<Map<String, Utxo>> getUnattachedUTXOMapForAddress(
-    AddressV2 address,
+    String address,
     HttpConfig httpConfig,
   ) async {
     final utxos = await getUnattachedForAddress(
-      address.address,
+      address,
       httpConfig,
     );
 
@@ -61,7 +61,7 @@ extension UtxoRepositoryX on UtxoRepository {
     required HttpConfig httpConfig,
   }) {
     return TaskEither.tryCatch(
-      () => getUnattachedUTXOMapForAddress(address, httpConfig),
+      () => getUnattachedUTXOMapForAddress(address.address, httpConfig),
       (err, _) => "Failed to get UTXO map for address ${address.address}",
     );
   }
