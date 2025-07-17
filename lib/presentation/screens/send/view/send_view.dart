@@ -108,7 +108,7 @@ class _SendViewState extends State<SendView> {
             return FlowStep(
               title: "Send",
               widthFactor: .2,
-              leading: IconButton(
+              trailing: IconButton(
                   onPressed: () {
                     context.pop();
                   },
@@ -148,6 +148,31 @@ class _SendViewState extends State<SendView> {
                 child: FlowStep(
                   title: "Choose your Address",
                   widthFactor: .4,
+                  leading: Builder(
+                    builder: (context) {
+                      return IconButton(
+                          onPressed: () {
+                            context.flow<SendFlowModel>().update(
+                                (model) => model.copyWith(balance: Option.none()));
+                          },
+                          icon: AppIcons.backArrowIcon(
+                            context: context,
+                            width: 24,
+                            height: 24,
+                            fit: BoxFit.fitHeight,
+                          ));
+                    }
+                  ),
+                  trailing: IconButton(
+                      onPressed: () {
+                        context.pop();
+                      },
+                      icon: AppIcons.closeIcon(
+                        context: context,
+                        width: 24,
+                        height: 24,
+                        fit: BoxFit.fitHeight,
+                      )),
                   body: AssetBalanceFormProvider(
                     multiAddressBalance: balance,
                     child: (actions, state) => Column(
