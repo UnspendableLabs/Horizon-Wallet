@@ -199,6 +199,31 @@ class _SendViewState extends State<SendView> {
                 child: FlowStep(
                   title: "Recipient & Quantity",
                   widthFactor: .6,
+                  leading: Builder(
+                    builder: (context) {
+                      return IconButton(
+                          onPressed: () {
+                            context.flow<SendFlowModel>().update(
+                                (model) => model.copyWith(address: Option.none()));
+                          },
+                          icon: AppIcons.backArrowIcon(
+                            context: context,
+                            width: 24,
+                            height: 24,
+                            fit: BoxFit.fitHeight,
+                          ));
+                    }
+                  ),
+                  trailing: IconButton(
+                      onPressed: () {
+                        context.pop();
+                      },
+                      icon: AppIcons.closeIcon(
+                        context: context,
+                        width: 24,
+                        height: 24,
+                        fit: BoxFit.fitHeight,
+                      )),
                   body: SendComposeFormProvider(
                     initialEntries: [
                       SendEntryFormModel(
