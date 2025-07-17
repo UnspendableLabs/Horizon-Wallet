@@ -270,7 +270,7 @@ class SwapOrderFormModel with FormzMixin {
                 quantity: BigInt.from(giveAssetBalance.quantity))),
         ((AmountType.get, PriceType.give)) => GiveQuantityInput.dirty(
             value: giveAssetQuantityWhenAmountGet(
-                price: Rational.parse(priceInput.value)),
+                price: Rational.tryParse(priceInput.value) ?? Rational.zero),
             userBalance: AssetQuantity(
                 divisible: giveAsset.divisible,
                 quantity: BigInt.from(giveAssetBalance.quantity))),
@@ -662,6 +662,11 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     SimulatedOrdersRequested event,
     Emitter<SwapOrderFormModel> emit,
   ) async {
+    if (Rational.tryParse(state.priceInput.value) == null ||
+        Rational.tryParse(state.amountInput.value) == null) {
+      return;
+    }
+
     emit(state.copyWith(simulatedOrders: const Loading()));
 
     final task =
@@ -682,7 +687,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
         ),
       ]));
 
-      final buyOrders_ = result[0];
+      final buyOrders = result[0];
       final sellOrders = result[1];
 
       final price = switch (state.priceType) {
@@ -698,7 +703,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
               ? price.denominator * TenToTheEigth.bigIntValue
               : price.denominator);
 
-      final buyOrders = buyOrders_
+      final buyOrdersFiltered = buyOrders
           .where((order) =>
               Rational.fromInt(order.getQuantity, order.giveQuantity) <=
               priceFilter)
@@ -713,7 +718,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
       final giveDivisible = state.giveAsset.divisible;
       final getDivisible = state.getAsset.divisible;
 
-      final candidateMatches = buyOrders;
+      final candidateMatches = buyOrdersFiltered;
       final simulatedOrders = <SimulatedOrder>[];
 
       for (final tx0 in candidateMatches) {
