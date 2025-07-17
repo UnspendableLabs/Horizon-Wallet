@@ -341,7 +341,7 @@ class _PortfolioViewState extends State<PortfolioView>
                                                                       ScaffoldMessenger.of(
                                                                               bottomSheetContext)
                                                                           .showSnackBar(
-                                                                         SnackBar(
+                                                                        SnackBar(
                                                                             content:
                                                                                 Text("${addy.address} copied to clipboard")),
                                                                       );
@@ -400,24 +400,6 @@ class _PortfolioViewState extends State<PortfolioView>
                       ),
                     ),
                     const SizedBox(width: spacing),
-                    Expanded(
-                      child: HorizonButton(
-                        child: TextButtonContent(
-                            value: 'Mint',
-                            style: const TextStyle(
-                              fontSize: 12,
-                            )),
-                        height: 44,
-                        borderRadius: 18,
-                        variant: ButtonVariant.black,
-                        icon: AppIcons.mintIcon(
-                          context: context,
-                        ),
-                        onPressed: () {
-                          // TODO: Implement mint functionality
-                        },
-                      ),
-                    ),
                   ],
                 );
               },
