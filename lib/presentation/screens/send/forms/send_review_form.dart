@@ -22,7 +22,9 @@ import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
 
 class SendFormReviewActions {
   final Function onSubmit;
-  const SendFormReviewActions({required this.onSubmit});
+  final VoidCallback onCloseSignModalClicked;
+  const SendFormReviewActions(
+      {required this.onSubmit, required this.onCloseSignModalClicked});
 }
 
 class SendReviewFormProvider extends StatelessWidget {
@@ -47,6 +49,11 @@ class SendReviewFormProvider extends StatelessWidget {
           onSubmit: () {
             context.read<SendReviewFormBloc>().add(SignAndSubmitClicked());
           },
+          onCloseSignModalClicked: () {
+            context.read<SendReviewFormBloc>().add(CloseSignModalClicked());
+          },
+                 
+
         ), state),
       ),
     );

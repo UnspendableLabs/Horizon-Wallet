@@ -335,7 +335,9 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
   Widget _buildOutputView(AugmentedOutput output, ThemeData theme) {
     // The address from output.vout.scriptPubKey.address
     // But you also have a getter in AugmentedOutput for `address`.
-    final address = _shortenAddress(output.address);
+
+    final outputLabel =
+        output.isOpReturn() ? "OP_RETURN" : _shortenAddress(output.address);
 
     // The BTC value from output.value
     final int btcValue = output.value;
@@ -368,7 +370,7 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(address, style: theme.textTheme.labelLarge),
+            Text(outputLabel, style: theme.textTheme.labelLarge),
             Text("${satoshisToBtc(btcValue)} BTC",
                 style: theme.textTheme.labelMedium),
           ],
@@ -400,6 +402,7 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
 
   String _shortenAddress(String? address, {int prefix = 6, int suffix = 5}) {
     if (address == null || address.length < (prefix + suffix)) {
+      print("address: $address");
       return address ?? 'Unknown';
     }
     final start = address.substring(0, prefix);

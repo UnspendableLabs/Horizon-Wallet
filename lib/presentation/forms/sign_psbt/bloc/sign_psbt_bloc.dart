@@ -116,6 +116,10 @@ class AugmentedOutput {
     return userAddresses.contains(address);
   }
 
+  bool isOpReturn() {
+    return vout.scriptPubKey.asm.contains("OP_RETURN");
+  }
+
   List<AssetCredit> getCredits(Set<String> userAddresses) {
     List<AssetCredit> credits = [];
     // for now, we only show btc credits

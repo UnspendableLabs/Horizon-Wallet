@@ -299,7 +299,11 @@ class _SendViewState extends State<SendView> {
                             return Column(
                               children: [
                                 SendReviewSignHandler(
-                                    onClose: () {},
+                                    onClose: () {
+
+                                    actions.onCloseSignModalClicked();
+
+                                    },
                                     address: model.address.getOrThrow()),
 
                                 // SendReviewFormSuccessHandler(

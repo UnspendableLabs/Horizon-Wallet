@@ -10,6 +10,10 @@ class SignAndSubmitClicked extends SendReviewFormEvent {
   SignAndSubmitClicked();
 }
 
+class CloseSignModalClicked extends SendReviewFormEvent {
+  CloseSignModalClicked();
+}
+
 class SendReviewFormModel with FormzMixin {
   final FormzSubmissionStatus submissionStatus;
   final List<SendEntryFormModel> sendEntries;
@@ -62,6 +66,16 @@ class SendReviewFormBloc
           signedTxHash: "",
         )) {
     on<SignAndSubmitClicked>(_handleSignAndSubmit);
+    on<CloseSignModalClicked>(_handleCloseSignModal);
+  }
+
+  _handleCloseSignModal(
+    CloseSignModalClicked event,
+    Emitter<SendReviewFormModel> emit,
+  ) {
+    emit(state.copyWith(
+      showSignTransactionModal: const Some(false),
+    ));
   }
 
   _handleSignAndSubmit(

@@ -48,6 +48,11 @@ class Vout {
     required this.n,
     required this.scriptPubKey,
   });
+
+  @override
+  String toString() {
+    return 'Vout(value: $value, n: $n, scriptPubKey: ${scriptPubKey.asm})';
+  }
 }
 
 class ScriptSig {
@@ -74,4 +79,9 @@ class ScriptPubKey {
     this.address,
     required this.type,
   });
+
+  @override
+  String toString() {
+    return 'ScriptPubKey(asm: $asm, desc: $desc, hex: $hex, address: $address, type: $type)';
+  }
 }
