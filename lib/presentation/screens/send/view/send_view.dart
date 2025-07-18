@@ -263,6 +263,29 @@ class _SendViewState extends State<SendView> {
           model.composeStep.map((composeStep) => MaterialPage(
                 child: FlowStep(
                   title: "Review Send",
+                  leading: Builder(builder: (context) {
+                    return IconButton(
+                        onPressed: () {
+                          context.flow<SendFlowModel>().update((model) =>
+                              model.copyWith(composeStep:const  Option.none()));
+                        },
+                        icon: AppIcons.backArrowIcon(
+                          context: context,
+                          width: 24,
+                          height: 24,
+                          fit: BoxFit.fitHeight,
+                        ));
+                  }),
+                  trailing: IconButton(
+                      onPressed: () {
+                        context.pop();
+                      },
+                      icon: AppIcons.closeIcon(
+                        context: context,
+                        width: 24,
+                        height: 24,
+                        fit: BoxFit.fitHeight,
+                      )),
                   widthFactor: 1.0,
                   body: SendReviewFormProvider(
                       composeResponse: switch (composeStep.composeResponse) {

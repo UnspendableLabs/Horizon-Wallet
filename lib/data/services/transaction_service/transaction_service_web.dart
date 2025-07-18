@@ -253,13 +253,15 @@ class TransactionServiceWeb implements TransactionService {
   }
 
   @override
-  String signPsbt(String psbtHex, Map<int, String> inputPrivateKeyMap,
-      HttpConfig httpConfig,
-      [List<int>? sighashTypes, ]) {
+  String signPsbt(
+    String psbtHex,
+    Map<int, (String, String)> inputPrivateKeyMap,
+    HttpConfig httpConfig, [
+    List<int>? sighashTypes,
+  ]) {
     print("before");
 
     bitcoinjs.Psbt psbt = bitcoinjs.Psbt.fromHex(psbtHex);
-
 
     print(sighashTypes);
 
@@ -268,7 +270,7 @@ class TransactionServiceWeb implements TransactionService {
 
     for (final entry in inputPrivateKeyMap.entries) {
       final index = entry.key;
-      final privateKey = entry.value;
+      final privateKey = entry.value.$2;
 
       Buffer privKeyJS =
           Buffer.from(Uint8List.fromList(hex.decode(privateKey)).toJS);
@@ -368,6 +370,7 @@ class TransactionServiceWeb implements TransactionService {
 
     return psbt.toHex();
   }
+
   @override
   Future<String> signTransaction(
       String unsignedTransaction,
@@ -375,9 +378,6 @@ class TransactionServiceWeb implements TransactionService {
       String sourceAddress,
       Map<String, Utxo> utxoMap,
       HttpConfig httpConfig) async {
-
-
-
     bitcoinjs.Transaction transaction =
         bitcoinjs.Transaction.fromHex(unsignedTransaction);
 
@@ -519,7 +519,7 @@ class TransactionServiceWeb implements TransactionService {
         bitcoinjs.Transaction.fromHex(rawtransaction);
     return horizon_utils.countSigOps(transaction);
   }
-  
+
   @override
   int countInputs({required String rawtransaction}) {
     bitcoinjs.Transaction transaction =
@@ -710,7 +710,6 @@ class TransactionServiceWeb implements TransactionService {
 
   @override
   String psbtToUnsignedTransactionHex(String psbtHex) {
-
     bitcoinjs.Psbt psbt = bitcoinjs.Psbt.fromHex(psbtHex);
 
     // Access the unsigned transaction from the global map
@@ -726,6 +725,67 @@ class TransactionServiceWeb implements TransactionService {
     String txHex = hex.encode(txBytes);
 
     return txHex;
+  }
+
+  @override
+  Future<String> embedWitnessData(
+      {required String psbtHex,
+      required Map<int, (String, String)> inputPrivateKeyMap,
+      required Map<String, Utxo> utxoMap,
+      required HttpConfig httpConfig}) async {
+    // CHAT: let's change this to take a private key map
+    // where address is key and private key is value.
+
+    bitcoinjs.Transaction transaction =
+        bitcoinjs.Transaction.fromHex(psbtToUnsignedTransactionHex(psbtHex));
+
+    bitcoinjs.Psbt psbt = bitcoinjs.Psbt(bitcoinjs.PsbtOptions(
+      network: httpConfig.network.toJS,
+    ));
+
+    for (var i = 0; i < transaction.ins.toDart.length; i++) {
+      final inputSignerData = inputPrivateKeyMap[i];
+      if (inputSignerData == null) continue;
+
+      final source = inputSignerData.$1;
+      final privateKey = inputSignerData.$2;
+
+      final input = transaction.ins.toDart[i];
+      final txHash = HEX.encode(input.hash.toDart.reversed.toList());
+      final utxoID = "$txHash:${input.index}";
+
+      final utxo = utxoMap[utxoID];
+
+      if (utxo == null) {
+        throw TransactionServiceException('Could not find output at $utxoID');
+      }
+
+      Buffer privKeyJS =
+          Buffer.from(Uint8List.fromList(hex.decode(privateKey)).toJS);
+      dynamic signer =
+          ecpairFactory.fromPrivateKey(privKeyJS, httpConfig.network.toJS);
+
+      if (addressIsSegwit(source)) {
+        bitcoinjs.Payment script = bitcoinjs.p2wpkh(bitcoinjs.PaymentOptions(
+            pubkey: signer.publicKey, network: httpConfig.network.toJS));
+        input.witnessUtxo = bitcoinjs.WitnessUTXO(
+            script: Buffer.from(script.output), value: utxo.value);
+        psbt.addInput(input);
+      } else {
+        bitcoinjs.Payment script = bitcoinjs.p2pkh(bitcoinjs.PaymentOptions(
+            pubkey: signer.publicKey, network: httpConfig.network.toJS));
+        input.script = script.output;
+        final txHex = await bitcoinRepository.getTransactionHex(
+            txid: utxo.txid, httpConfig: httpConfig);
+
+        input.nonWitnessUtxo =
+            Buffer.from(Uint8List.fromList(hex.decode(txHex)).toJS);
+
+        psbt.addInput(input);
+      }
+    }
+
+    return psbt.toHex();
   }
 }
 

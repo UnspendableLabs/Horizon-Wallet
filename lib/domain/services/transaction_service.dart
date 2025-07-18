@@ -41,7 +41,7 @@ class MakeBuyPsbtReturn {
 }
 
 abstract class TransactionService {
-  String signPsbt(String psbtHex, Map<int, String> inputPrivateKeyMap,
+  String signPsbt(String psbtHex, Map<int, (String, String)> inputPrivateKeyMap,
       HttpConfig httpConfig,
       [List<int>? sighashTypes]);
 
@@ -52,9 +52,13 @@ abstract class TransactionService {
 
   Future<String> signTransaction(String unsignedTransaction, String privateKey,
       String sourceAddress, Map<String, Utxo> utxoMap, HttpConfig httpConfig);
-  
-  Future<String> transactionToUnsignedPsbt(String unsignedTransaction, String privateKey,
-      String sourceAddress, Map<String, Utxo> utxoMap, HttpConfig httpConfig);
+
+  Future<String> transactionToUnsignedPsbt(
+      String unsignedTransaction,
+      String privateKey,
+      String sourceAddress,
+      Map<String, Utxo> utxoMap,
+      HttpConfig httpConfig);
 
   int getVirtualSize(String unsignedTransaction);
 
@@ -73,7 +77,7 @@ abstract class TransactionService {
   int countSigOps({
     required String rawtransaction,
   });
-  
+
   int countInputs({
     required String rawtransaction,
   });
@@ -118,6 +122,12 @@ abstract class TransactionService {
     required int price, // TODO: convert to js BigInt
     required int change,
   });
+
+  Future<String> embedWitnessData(
+      {required String psbtHex,
+      required Map<int, (String, String)> inputPrivateKeyMap,
+      required Map<String, Utxo> utxoMap,
+      required HttpConfig httpConfig});
 }
 
 class TransactionServiceException implements Exception {
@@ -248,7 +258,7 @@ extension TransactionServiceX on TransactionService {
 
   Either<String, String> signPsbtT({
     required String psbtHex,
-    required Map<int, String> inputPrivateKeyMap,
+    required Map<int, (String, String)> inputPrivateKeyMap,
     required HttpConfig httpConfig,
     List<int>? sighashTypes,
     required String Function(Object error) onError,
@@ -332,6 +342,34 @@ extension TransactionServiceX on TransactionService {
     return Either.tryCatch(
       () => countSigOps(rawtransaction: rawTransaction),
       (e, _) => onError(e),
+    );
+  }
+
+  Either<String, int> countInputsT({
+    required String rawTransaction,
+    required String Function(Object error) onError,
+  }) {
+    return Either.tryCatch(
+      () => countInputs(rawtransaction: rawTransaction),
+      (e, _) => onError(e),
+    );
+  }
+
+  TaskEither<String, String> embedWitnessDataT({
+    required String psbtHex,
+    required Map<int, (String, String)> inputPrivateKeyMap,
+    required Map<String, Utxo> utxoMap,
+    required HttpConfig httpConfig,
+    required String Function(Object error, StackTrace callstack) onError,
+  }) {
+    return TaskEither.tryCatch(
+      () => embedWitnessData(
+        psbtHex: psbtHex,
+        inputPrivateKeyMap: inputPrivateKeyMap,
+        utxoMap: utxoMap,
+        httpConfig: httpConfig,
+      ),
+      (e, callstack) => onError(e, callstack),
     );
   }
 }

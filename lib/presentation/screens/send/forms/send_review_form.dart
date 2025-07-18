@@ -89,6 +89,7 @@ class SendReviewSignHandler extends StatelessWidget {
                         //     style: Theme.of(context).textTheme.headlineSmall),
                         child: BlocProvider(
                             create: (context) => SignPsbtBloc(
+                                  embeddedWitnessData: true,
                                   httpConfig: session.httpConfig,
                                   addresses: session.addresses,
                                   passwordRequired: settings

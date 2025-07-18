@@ -1,6 +1,5 @@
 import "package:fpdart/fpdart.dart";
 import 'package:formz/formz.dart';
-import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import "package:get_it/get_it.dart";
 import 'package:horizon/common/format.dart';
@@ -25,8 +24,8 @@ import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/wallet_config_repository.dart';
 import 'package:horizon/domain/services/seed_service.dart';
 
-import "./sign_psbt_state.dart";
-import "./sign_psbt_event.dart";
+import "./sign_transaction_state.dart";
+import "./sign_transaction_event.dart";
 
 class AssetCredit {
   final String asset;
@@ -140,7 +139,7 @@ class AugmentedOutput {
   }
 }
 
-class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
+class SignTransactionBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
   final List<AddressV2> addresses;
   final bool passwordRequired;
   final String unsignedPsbt;
@@ -156,11 +155,8 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
   final BitcoindService _bitcoindService;
   final BitcoinRepository _bitcoinRepository;
   final BalanceRepository _balanceRepository;
-  final UtxoRepository _utxoRepository;
 
-  final bool embeddedWitnessData;
-
-  SignPsbtBloc({
+  SignTransactionBloc({
     required this.addresses,
     required this.httpConfig,
     required this.passwordRequired,
@@ -176,8 +172,6 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
     TransactionService? transactionService,
     WalletConfigRepository? walletConfigRepository,
     SeedService? seedService,
-    UtxoRepository? utxoRepository,
-    this.embeddedWitnessData = false,
   })  : _balanceRepository = balanceRepository ?? GetIt.I<BalanceRepository>(),
         _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>(),
         _bitcoindService = bitcoindService ?? GetIt.I<BitcoindService>(),
@@ -190,7 +184,6 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
         _walletConfigRepository =
             walletConfigRepository ?? GetIt.I<WalletConfigRepository>(),
         _seedService = seedService ?? GetIt.I<SeedService>(),
-        _utxoRepository = utxoRepository ?? GetIt.I<UtxoRepository>(),
         super(SignPsbtState()) {
     on<FetchFormEvent>(_handleFetchForm);
     on<PasswordChanged>(_handlePasswordChanged);
@@ -207,6 +200,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
 
       final transactionHex =
           _transactionService.psbtToUnsignedTransactionHex(unsignedPsbt);
+
 
       final decoded = await _bitcoindService.decoderawtransaction(
           transactionHex, httpConfig);
@@ -338,6 +332,8 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
   _handleSignPsbtSubmitted(
       SignPsbtSubmitted event, Emitter<SignPsbtState> emit) async {
     final task = TaskEither<String, String>.Do(($) async {
+
+
       final inputPrivateKeyMap = await $(buildInputPrivateKeyMap(
         addresses,
         signInputs,
@@ -345,25 +341,11 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
         httpConfig,
       ));
 
-      // here we need to actually take care of adding witness data
-
-      String psbt = unsignedPsbt;
-
-      if (embeddedWitnessData) {
-        final utxoMap = await $(_utxoRepository.getUTXOMapForAddressT(
-            address: addresses.first, httpConfig: httpConfig));
-
-        psbt = await $(_transactionService.embedWitnessDataT(
-            psbtHex: unsignedPsbt,
-            inputPrivateKeyMap: inputPrivateKeyMap,
-            utxoMap: utxoMap,
-            httpConfig: httpConfig,
-            onError: (e, c) => c.toString()));
-      }
+     // here we need to actually take care of adding witness data
 
       String signedHex = await $(TaskEither.fromEither(
           _transactionService.signPsbtT(
-              psbtHex: psbt,
+              psbtHex: unsignedPsbt,
               inputPrivateKeyMap: inputPrivateKeyMap,
               httpConfig: httpConfig,
               sighashTypes: sighashTypes,
@@ -388,14 +370,14 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
     });
   }
 
-  TaskEither<String, Map<int, (String, String)>> buildInputPrivateKeyMap(
+  TaskEither<String, Map<int, String>> buildInputPrivateKeyMap(
     List<AddressV2> addresses,
     Map<String, List<int>> signInputs,
     DecryptionStrategy decryptionStrategy,
     HttpConfig httpConfig,
   ) {
     final tasks = signInputs.entries.map((entry) {
-      return TaskEither<String, Map<int, (String, String)>>.Do(($) async {
+      return TaskEither<String, Map<int, String>>.Do(($) async {
         final address = await $(TaskEither.fromOption(
             Option.fromNullable(
                 addresses.firstWhereOrNull((a) => a.address == entry.key)),
@@ -437,7 +419,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
             })
         };
         return {
-          for (final index in entry.value) index: (address.address, pk),
+          for (final index in entry.value) index: pk,
         };
       });
     }).toList();
