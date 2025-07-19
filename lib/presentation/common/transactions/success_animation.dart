@@ -16,7 +16,7 @@ class _TxnSuccessAnimationState extends State<TxnSuccessAnimation> {
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(seconds: 1), () {
+    Timer(const Duration(milliseconds: 10), () {
       if (mounted) {
         setState(() {
           _showLottie = false;
@@ -28,7 +28,7 @@ class _TxnSuccessAnimationState extends State<TxnSuccessAnimation> {
   @override
   Widget build(BuildContext context) {
     return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 200),
       child: _showLottie
           ? Lottie.asset(
               "assets/lottie/txn_success_anim.json",

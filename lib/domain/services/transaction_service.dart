@@ -1,3 +1,4 @@
+import "package:flutter/cupertino.dart";
 import "package:horizon/domain/entities/utxo.dart";
 import "package:horizon/domain/entities/http_config.dart";
 import "package:horizon/domain/entities/bitcoin_tx.dart";
@@ -41,6 +42,8 @@ class MakeBuyPsbtReturn {
 }
 
 abstract class TransactionService {
+  String finalizePsbtAndExtractTransaction({required String psbtHex});
+
   String signPsbt(String psbtHex, Map<int, (String, String)> inputPrivateKeyMap,
       HttpConfig httpConfig,
       [List<int>? sighashTypes]);
@@ -369,6 +372,16 @@ extension TransactionServiceX on TransactionService {
         utxoMap: utxoMap,
         httpConfig: httpConfig,
       ),
+      (e, callstack) => onError(e, callstack),
+    );
+  }
+
+  Either<String, String> finalizePsbtAndExtractTransactionT({
+    required String psbtHex,
+    required String Function(Object error, StackTrace callstack) onError,
+  }) {
+    return Either.tryCatch(
+      () => finalizePsbtAndExtractTransaction(psbtHex: psbtHex),
       (e, callstack) => onError(e, callstack),
     );
   }

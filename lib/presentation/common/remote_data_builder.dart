@@ -10,7 +10,7 @@ typedef RemoteDataBuilderFn<T> = Widget Function(
 );
 
 class RemoteDataTaskEitherBuilder<E extends Object, T> extends StatefulWidget {
-  final TaskEither<E, T>  task;
+  final TaskEither<E, T> task;
   final RemoteDataBuilderFn<T> builder;
 
   const RemoteDataTaskEitherBuilder({
@@ -27,6 +27,7 @@ class RemoteDataTaskEitherBuilder<E extends Object, T> extends StatefulWidget {
 class _RemoteDataTaskEitherBuilderState<E extends Object, T>
     extends State<RemoteDataTaskEitherBuilder<E, T>> {
   late Future<Either<E, T>> _future;
+  Object _reloadToken = Object();
   T? _latestValue;
 
   @override
@@ -42,7 +43,10 @@ class _RemoteDataTaskEitherBuilderState<E extends Object, T>
   }
 
   Future<void> _run() async {
-    setState(() => _future = widget.task.run());
+    setState(() {
+      _reloadToken = Object(); // force a new key for the builder
+      _future = widget.task.run();
+    });
     await _future;
   }
 

@@ -23,8 +23,10 @@ import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
 class SendFormReviewActions {
   final Function onSubmit;
   final VoidCallback onCloseSignModalClicked;
-  const SendFormReviewActions(
-      {required this.onSubmit, required this.onCloseSignModalClicked});
+  const SendFormReviewActions({
+    required this.onSubmit,
+    required this.onCloseSignModalClicked,
+  });
 }
 
 class SendReviewFormProvider extends StatelessWidget {
@@ -45,16 +47,16 @@ class SendReviewFormProvider extends StatelessWidget {
       create: (context) => SendReviewFormBloc(
           sendEntries: sendEntries, composeResponse: composeResponse),
       child: BlocBuilder<SendReviewFormBloc, SendReviewFormModel>(
-        builder: (context, state) => child(SendFormReviewActions(
-          onSubmit: () {
-            context.read<SendReviewFormBloc>().add(SignAndSubmitClicked());
-          },
-          onCloseSignModalClicked: () {
-            context.read<SendReviewFormBloc>().add(CloseSignModalClicked());
-          },
-                 
-
-        ), state),
+        builder: (context, state) => child(
+            SendFormReviewActions(
+              onSubmit: () {
+                context.read<SendReviewFormBloc>().add(SignAndSubmitClicked());
+              },
+              onCloseSignModalClicked: () {
+                context.read<SendReviewFormBloc>().add(CloseSignModalClicked());
+              },
+            ),
+            state),
       ),
     );
   }
@@ -63,9 +65,14 @@ class SendReviewFormProvider extends StatelessWidget {
 class SendReviewSignHandler extends StatelessWidget {
   final VoidCallback onClose;
   final String address;
+  final Function(String signedPsbtHex) onSuccess;
 
-  const SendReviewSignHandler(
-      {super.key, required this.onClose, required this.address});
+  const SendReviewSignHandler({
+    super.key,
+    required this.onClose,
+    required this.address,
+    required this.onSuccess,
+  });
 
   @override
   Widget build(context) {
@@ -133,10 +140,7 @@ class SendReviewSignHandler extends StatelessWidget {
                               passwordRequired:
                                   settings.requirePasswordForCryptoOperations,
                               onSuccess: (signedPsbtHex) {
-                                // onSuccess(signedPsbtHex);
-
-                                //  chat if hit this condition, i don't
-                                // want to call onCLose() below
+                                onSuccess(signedPsbtHex);
                                 Navigator.of(context).pop("signed");
                               },
                             )),
@@ -194,25 +198,24 @@ class SendReviewSignHandler extends StatelessWidget {
   }
 }
 
-class SendReviewFormSuccessHandler extends StatelessWidget {
-  final Function(SendFlowConfirmationStep) onSuccess;
-  const SendReviewFormSuccessHandler({super.key, required this.onSuccess});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocListener<SendReviewFormBloc, SendReviewFormModel>(
-      listener: (context, state) {
-        if (state.submissionStatus.isSuccess) {
-          onSuccess(SendFlowConfirmationStep(
-            signedTxHex: state.signedTxHex,
-            signedTxHash: state.signedTxHash,
-          ));
-        }
-      },
-      child: const SizedBox.shrink(),
-    );
-  }
-}
+// class SendReviewFormSuccessHandler extends StatelessWidget {
+//   final Function(SendFlowConfirmationStep) onSuccess;
+//   const SendReviewFormSuccessHandler({super.key, required this.onSuccess});
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return BlocListener<SendReviewFormBloc, SendReviewFormModel>(
+//       listener: (context, state) {
+//         if (state.submissionStatus.isSuccess) {
+//           onSuccess(SendFlowConfirmationStep(
+//             psbtHex: state.signedTxHex,
+//           ));
+//         }
+//       },
+//       child: const SizedBox.shrink(),
+//     );
+//   }
+// }
 
 class SendReviewForm extends StatefulWidget {
   final SendReviewFormModel state;

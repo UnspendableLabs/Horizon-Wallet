@@ -285,6 +285,7 @@ class TransactionServiceWeb implements TransactionService {
 
       print("after sdlfjasf");
     }
+
     return psbt.toHex();
   }
 
@@ -785,7 +786,32 @@ class TransactionServiceWeb implements TransactionService {
       }
     }
 
+    for ( var i = 0; i < transaction.outs.toDart.length; i++) {
+      bitcoinjs.TxOutput output = transaction.outs.toDart[i];
+      psbt.addOutput(output);
+    }
+
+
+
     return psbt.toHex();
+  }
+
+  @override
+  String finalizePsbtAndExtractTransaction({required String psbtHex}) {
+    // CHAT this is telling me t
+
+    print("psbtHex: $psbtHex");
+
+    bitcoinjs.Psbt psbt = bitcoinjs.Psbt.fromHex(psbtHex);
+
+    psbt.finalizeAllInputs();
+
+    print("befroe extract");
+    bitcoinjs.Transaction tx = psbt.extractTransaction();
+
+    print("after extract");
+
+    return tx.toHex();
   }
 }
 

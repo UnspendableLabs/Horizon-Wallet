@@ -1,16 +1,28 @@
 import 'package:equatable/equatable.dart';
+import 'package:horizon/domain/entities/http_config.dart';
+import 'package:flutter/services.dart';
+import 'package:horizon/presentation/common/transactions/success_animation.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get_it/get_it.dart';
 import 'package:flow_builder/flow_builder.dart';
+import 'package:lottie/lottie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fpdart/fpdart.dart' as fp;
+import 'package:fpdart/fpdart.dart' hide State;
 import 'package:fpdart/fpdart.dart' show Option;
 import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/domain/entities/compose_mpma_send.dart';
+import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/extensions.dart';
 import 'package:horizon/presentation/common/transactions/transaction_successful.dart';
+import 'package:horizon/presentation/common/transactions/transaction_error.dart';
+import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:horizon/presentation/forms/asset_balance_form/asset_balance_form_view.dart';
 import 'package:horizon/presentation/forms/base/flow/view/flow_step.dart';
 import 'package:horizon/presentation/screens/send/bloc/send_compose_form_bloc.dart';
@@ -20,6 +32,8 @@ import 'package:horizon/presentation/screens/send/forms/send_form_token_selector
 import 'package:horizon/presentation/screens/send/forms/send_review_form.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
+import 'package:horizon/domain/services/bitcoind_service.dart';
+import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/utils/app_icons.dart';
 
 class SendFlowComposeStep {
@@ -33,12 +47,10 @@ class SendFlowComposeStep {
 }
 
 class SendFlowConfirmationStep {
-  final String signedTxHex;
-  final String signedTxHash;
+  final String psbtHex;
 
   const SendFlowConfirmationStep({
-    required this.signedTxHex,
-    required this.signedTxHash,
+    required this.psbtHex,
   });
 }
 
@@ -85,6 +97,7 @@ class SendView extends StatefulWidget {
 class _SendViewState extends State<SendView> {
   late SendFlowController _controller;
   List<MultiAddressBalance>? _cachedBalances;
+  SvgPicture? _preloadedSvg;
 
   @override
   void initState() {
@@ -243,7 +256,7 @@ class _SendViewState extends State<SendView> {
                           SendComposeSuccessHandler(onComposeResponse: (value) {
                             context.flow<SendFlowModel>().update((model) {
                               return model.copyWith(
-                                composeStep: fp.Option.of(SendFlowComposeStep(
+                                composeStep: Option.of(SendFlowComposeStep(
                                   sendEntries: state.sendEntries,
                                   composeResponse: value,
                                 )),
@@ -267,7 +280,7 @@ class _SendViewState extends State<SendView> {
                     return IconButton(
                         onPressed: () {
                           context.flow<SendFlowModel>().update((model) =>
-                              model.copyWith(composeStep:const  Option.none()));
+                              model.copyWith(composeStep: const Option.none()));
                         },
                         icon: AppIcons.backArrowIcon(
                           context: context,
@@ -299,10 +312,20 @@ class _SendViewState extends State<SendView> {
                             return Column(
                               children: [
                                 SendReviewSignHandler(
+                                    onSuccess: (signedPsbt) {
+                                      context
+                                          .flow<SendFlowModel>()
+                                          .update((model) {
+                                        return model.copyWith(
+                                          confirmationStep: Option.of(
+                                            SendFlowConfirmationStep(
+                                                psbtHex: signedPsbt),
+                                          ),
+                                        );
+                                      });
+                                    },
                                     onClose: () {
-
-                                    actions.onCloseSignModalClicked();
-
+                                      actions.onCloseSignModalClicked();
                                     },
                                     address: model.address.getOrThrow()),
 
@@ -328,47 +351,273 @@ class _SendViewState extends State<SendView> {
                 ),
               )),
           model.confirmationStep.map((confirmationStep) => MaterialPage(
-                  child: Scaffold(
-                appBar: PreferredSize(
-                    preferredSize: const Size.fromHeight(72),
-                    child: Container(
-                      height: 46,
-                      width: double.infinity,
-                      padding: const EdgeInsets.only(
-                          left: 12, top: 0, bottom: 0, right: 12),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              context.go("/dashboard");
-                            },
-                            icon: AppIcons.closeIcon(
-                              context: context,
-                              width: 24,
-                              height: 24,
-                              fit: BoxFit.fitHeight,
+              child: Scaffold(
+                  appBar: PreferredSize(
+                      preferredSize: const Size.fromHeight(72),
+                      child: Container(
+                        height: 46,
+                        width: double.infinity,
+                        padding: const EdgeInsets.only(
+                            left: 12, top: 0, bottom: 0, right: 12),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            IconButton(
+                              onPressed: () {
+                                context.go("/dashboard");
+                              },
+                              icon: AppIcons.closeIcon(
+                                context: context,
+                                width: 24,
+                                height: 24,
+                                fit: BoxFit.fitHeight,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    )),
-                body: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: TransactionSuccessful(
-                      txHex: confirmationStep.signedTxHex,
-                      txHash: confirmationStep.signedTxHash,
-                      title: "Send Successful",
-                      onClose: () {
-                        context.go("/dashboard");
-                      },
-                    )),
-              )))
+                          ],
+                        ),
+                      )),
+                  body: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: RemoteDataTaskEitherBuilder(
+                          task: TaskEither<String, String>.Do(($) async {
+                        final finalizedTx = await $(TaskEither.fromEither(
+                            GetIt.I<TransactionService>()
+                                .finalizePsbtAndExtractTransactionT(
+                                    psbtHex: confirmationStep.psbtHex,
+                                    onError: (e, _) => e.toString())));
+
+                        final hash = $(GetIt.I<BitcoindService>()
+                            .sendrawtransactionT(
+                                signedHex: finalizedTx,
+                                httpConfig: session.httpConfig,
+                                onError: (e, _) => e.toString())
+                            .minimumDuration(Duration(seconds: 2)));
+
+                        return hash;
+                      }), builder: (context, state, retry) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 500),
+                                child: state.fold3(
+                                  onNone: () => Center(
+                                    child:  Lottie.asset(
+                                            "assets/lottie/txn_success_anim.json",
+                                            width: 127,
+                                            key: const ValueKey('lottie'),
+                                          )
+                                  ),
+                                  onReplete: (_) => Center(
+                                    child: TxnSuccessAnimation()
+                                    // SvgPicture.asset(
+                                    //   "assets/icons/txn_success_check.svg",
+                                    //   width: 127,
+                                    //   key: const ValueKey('svg'),
+                                    //   colorBlendMode: BlendMode.srcOver,
+                                    //   fit: BoxFit.contain,
+                                    // ),
+                                  ),
+                                  onFailure: (err) => TransactionError(
+                                    errorMessage: err.toString(),
+                                    onErrorButtonAction: retry,
+                                    buttonText: "Retry",
+                                  ),
+                                )),
+                            commonHeightSizedBox,
+                            state.fold3(
+                              onNone: () => Text(
+                                "Broadcasting...",
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              onFailure: (_) => SizedBox.shrink(),
+                              onReplete: (hash) => Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text("Broadcast Success",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium!),
+                                ],
+                              ),
+                            ),
+                            commonHeightSizedBox,
+                            commonHeightSizedBox,
+                            Container(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 14.0),
+                              height: 56,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(
+                                  color: Theme.of(context)
+                                          .inputDecorationTheme
+                                          .outlineBorder
+                                          ?.color ??
+                                      transparentBlack8,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(left: 8.0),
+                                      child: RichText(
+                                        text: TextSpan(
+                                          children: [
+                                            TextSpan(
+                                              text: 'Transaction id: ',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .labelSmall
+                                                  ?.copyWith(
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Theme.of(context)
+                                                        .textTheme
+                                                        .labelSmall
+                                                        ?.color,
+                                                  ),
+                                            ),
+                                            TextSpan(
+                                              text: state.fold3(
+                                                  onNone: () => '',
+                                                  onFailure: (_) => '',
+                                                  onReplete: (hash) =>
+                                                      hash.replaceRange(
+                                                          6,
+                                                          hash.length - 6,
+                                                          '...')),
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall
+                                                  ?.copyWith(
+                                                    color: Theme.of(context)
+                                                        .textTheme
+                                                        .bodySmall
+                                                        ?.color,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                        overflow: TextOverflow.visible,
+                                        maxLines: 1,
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 8.0),
+                                    child: TextButton(
+                                      style: Theme.of(context)
+                                          .textButtonTheme
+                                          .style
+                                          ?.copyWith(
+                                            backgroundColor:
+                                                WidgetStateProperty.all(
+                                              transparentPurple8,
+                                            ),
+                                            padding: WidgetStateProperty.all(
+                                              const EdgeInsets.symmetric(
+                                                  horizontal: 10, vertical: 12),
+                                            ),
+                                          ),
+                                      onPressed: state.fold3(
+                                          onNone: () => () {},
+                                          onFailure: (_) => () {},
+                                          onReplete: (hash) => () {
+                                                Clipboard.setData(
+                                                    ClipboardData(text: hash));
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text(
+                                                        'Tx id copied to clipboard'),
+                                                    duration:
+                                                        Duration(seconds: 2),
+                                                  ),
+                                                );
+                                              }),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          AppIcons.copyIcon(
+                                            context: context,
+                                            width: 16,
+                                            height: 16,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'COPY',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 28),
+                            HorizonButton(
+                              onPressed: state.fold3(
+                                  onNone: () => () {},
+                                  onFailure: (_) => () {},
+                                  onReplete: (hash) => () {
+                                        _launchExplorer(
+                                            hash, session.httpConfig);
+                                      }),
+                              disabled: state.fold3(
+                                onNone: () => true,
+                                onFailure: (_) => true,
+                                onReplete: (_) => false,
+                              ),
+                              child:
+                                  TextButtonContent(value: "View Transaction"),
+                              variant: ButtonVariant.black,
+                            ),
+                            commonHeightSizedBox,
+                            HorizonButton(
+                              onPressed: () {
+                                print("asf");
+                              },
+                              child: TextButtonContent(value: "Close"),
+                              disabled: state.fold3(
+                                onNone: () => true,
+                                onFailure: (_) => true,
+                                onReplete: (_) => false,
+                              ),
+                              variant: ButtonVariant.black,
+                            ),
+                          ],
+                        );
+
+                        // return switch (state) {
+                        //   Loading() => AnimatedSwitcher(
+                        //         child: Lottie.asset(
+                        //       "assets/lottie/txn_success_anim.json",
+                        //       width: 127,
+                        //       key: const ValueKey('lottie'),
+                        //     )),
+                        //   _ => Text(state.toString())
+                        // };
+                        return Text(state.toString());
+                      })))))
         ]
             .filter((page) => page.isSome())
             .map((page) => page.getOrThrow())
             .toList();
       },
     );
+  }
+
+  Future<void> _launchExplorer(
+    String hash,
+    HttpConfig httpConfig,
+  ) async {
+    final uri = Uri.parse("${httpConfig.btcExplorer}/tx/$hash");
+    if (!await launchUrl(uri)) {
+      throw Exception('Could not launch $uri');
+    }
   }
 }

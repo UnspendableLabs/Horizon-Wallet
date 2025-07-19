@@ -221,18 +221,7 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                 state.error!,
                 style: const TextStyle(color: Colors.red),
               ),
-            ] else if (state.submissionStatus.isSuccess) ...[
-              const Text(
-                'Transaction signed successfully!',
-                style: TextStyle(color: Colors.green),
-              ),
-              // Show the signed PSBT if needed
-              if (state.signedPsbt != null)
-                SelectableText(
-                  'Signed PSBT: ${state.signedPsbt}',
-                  style: const TextStyle(color: Colors.black),
-                ),
-            ],
+            ]
           ]),
         );
       }),
