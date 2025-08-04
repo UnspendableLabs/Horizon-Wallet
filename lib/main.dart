@@ -591,7 +591,7 @@ class MyApp extends StatelessWidget {
         iconColor: elevatedButtonForegroundLightTheme,
         textColor: elevatedButtonForegroundLightTheme,
         selectedColor: royalBlueLightTheme),
-    dialogTheme: const DialogTheme(
+    dialogTheme: const DialogThemeData(
       contentTextStyle: TextStyle(color: mainTextBlack),
       backgroundColor: dialogBackgroundColorLightTheme,
     ),
@@ -639,7 +639,7 @@ class MyApp extends StatelessWidget {
       ),
     ),
     dividerColor: greyLightThemeUnderlineColor,
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: lightThemeInputColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(30.0),
@@ -709,7 +709,7 @@ class MyApp extends StatelessWidget {
         textColor: elevatedButtonForegroundDarkTheme,
         selectedColor: neonBlueDarkTheme),
 
-    dialogTheme: const DialogTheme(
+    dialogTheme: const DialogThemeData(
       contentTextStyle: TextStyle(color: mainTextWhite),
       backgroundColor: dialogBackgroundColorDarkTheme,
     ),
@@ -757,7 +757,7 @@ class MyApp extends StatelessWidget {
       ),
     ),
     dividerColor: greyDarkThemeUnderlineColor,
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: darkThemeInputColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(30.0),
