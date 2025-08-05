@@ -6,7 +6,7 @@
     "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
   },
   "icons": {
-    "128": "./favicon.png"
+    "48": "favicon.png"
   },
   "action": {
     "default_popup": "index.html",
