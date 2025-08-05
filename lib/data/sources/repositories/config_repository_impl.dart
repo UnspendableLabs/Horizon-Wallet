@@ -1,5 +1,6 @@
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:pub_semver/pub_semver.dart';
+import 'package:fpdart/fpdart.dart';
 
 class ConfigImpl implements Config {
   @override
@@ -64,16 +65,26 @@ class ConfigImpl implements Config {
   }
 
   @override
-  String toString() {
-    return '''EnvironmentConfig(
-      version: $version,
-      versionInfoEndpoint: $versionInfoEndpoint,
-      isDatabaseViewerEnabled: $isDatabaseViewerEnabled,
-      isAnalyticsEnabled: $isAnalyticsEnabled,
-      isWebExtension: $isWebExtension,
-      isSentryEnabled: $isSentryEnabled
-      sentryDsn: $sentryDsn,
-      sentrySampleRate: $sentrySampleRate,
-    )''';
+  Option<MeilisearchConfig> get meilisearchConfigMainnet {
+    const api = String.fromEnvironment('HORIZON_MEILISEARCH_API_MAINNET');
+    const key = String.fromEnvironment('HORIZON_MEILISEARCH_KEY_MAINNET');
+
+    if (api.isEmpty || key.isEmpty) {
+      return Option.none();
+    }
+
+    return Option.of(MeilisearchConfig(api: api, key: key));
+  }
+
+  @override
+  Option<MeilisearchConfig> get meilisearchConfigTestnet {
+    const api = String.fromEnvironment('HORIZON_MEILISEARCH_API_TESTNET');
+    const key = String.fromEnvironment('HORIZON_MEILISEARCH_KEY_TESTNET');
+
+    if (api.isEmpty || key.isEmpty) {
+      return Option.none();
+    }
+
+    return Option.of(MeilisearchConfig(api: api, key: key));
   }
 }
