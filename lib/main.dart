@@ -529,7 +529,7 @@ class AppRouter {
               path: "/atomic-swap",
               pageBuilder: (context, state) => CustomTransitionPage<void>(
                 key: state.pageKey,
-                child: const SwapFlowView(),
+                child: SwapFlowView(),
                 transitionDuration: const Duration(milliseconds: 300),
                 transitionsBuilder:
                     (context, animation, secondaryAnimation, child) {
@@ -811,7 +811,7 @@ class MyApp extends StatelessWidget {
       fontFamily: 'Montserrat',
       brightness: Brightness.light,
       scaffoldBackgroundColor: offWhite,
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
@@ -976,7 +976,7 @@ class MyApp extends StatelessWidget {
       fontFamily: 'Montserrat',
       brightness: Brightness.dark,
       scaffoldBackgroundColor: offBlack,
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: black,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),

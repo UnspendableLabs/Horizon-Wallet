@@ -1,3 +1,5 @@
+import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:horizon/domain/entities/swap_type.dart';
@@ -35,7 +37,12 @@ class SwapFlowController extends FlowController<SwapFlowModel> {
 }
 
 class SwapFlowView extends StatefulWidget {
-  const SwapFlowView({super.key});
+  Config _config;
+
+  SwapFlowView({
+    super.key,
+    Config? config,
+  }) : _config = config ?? GetIt.I.get<Config>();
 
   @override
   State<SwapFlowView> createState() => _SwapFlowViewState();
@@ -128,12 +135,14 @@ class _SwapFlowViewState extends State<SwapFlowView> {
                   giveBalance: var giveBalance,
                   receiveAsset: var receiveAsset,
                 ) =>
-                  MaterialPage(
-                      child: OrderFlowView(
-                    addresses: session.addresses,
-                    receiveAsset: receiveAsset,
-                    giveBalance: giveBalance,
-                  )),
+                  widget._config.disableNativeOrders
+                      ? MaterialPage(child: Text("Native orders disabled"))
+                      : MaterialPage(
+                          child: OrderFlowView(
+                          addresses: session.addresses,
+                          receiveAsset: receiveAsset,
+                          giveBalance: giveBalance,
+                        )),
 
                 // AtomicSwapSell(giveBalance: var balance) => MaterialPage(
                 //       child: FlowStep(

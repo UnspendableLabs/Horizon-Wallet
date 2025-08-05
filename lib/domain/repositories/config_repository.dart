@@ -15,4 +15,5 @@ abstract class Config {
   double get sentrySampleRate;
   bool get isSentryEnabled;
   int get defaultEnvelopeSize;
+  bool get disableNativeOrders;
 }
