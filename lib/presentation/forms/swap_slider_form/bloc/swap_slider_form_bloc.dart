@@ -13,6 +13,8 @@ import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:horizon/domain/repositories/atomic_swap_repository.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
 
+enum SelectionMode { slider, manual }
+
 enum SelectedAtomicSwapsValidationError { empty }
 
 class SelectedAtomicSwapsInput
@@ -45,16 +47,26 @@ enum SliderInputError {
   required,
 }
 
-class SliderInput extends FormzInput<int, void> {
-  const SliderInput.pure() : super.pure(0);
-  const SliderInput.dirty({required int value}) : super.dirty(value);
+class SliderInput extends FormzInput<int, SliderInputError> {
+  final SelectionMode selectionMode;
+
+  const SliderInput.pure({this.selectionMode = SelectionMode.slider})
+      : super.pure(0);
+  const SliderInput.dirty(
+      {required int value, this.selectionMode = SelectionMode.slider})
+      : super.dirty(value);
 
   @override
   SliderInputError? validator(int value) {
-    if (value == 0) {
+    if (selectionMode == SelectionMode.slider && value == 0) {
       return SliderInputError.required;
     }
     return null;
+  }
+
+  @override
+  bool get isValid {
+    return selectionMode == SelectionMode.slider ? super.isValid : true;
   }
 }
 
@@ -112,6 +124,7 @@ class SwapSliderFormModel with FormzMixin {
   final SliderInput sliderInput;
   final TotalCostInput totalCostInput;
   final SelectedAtomicSwapsInput selectedSwapsInput;
+  final Set<int> manuallySelectedSwapIndices;
 
   final FormzSubmissionStatus submissionStatus;
 
@@ -123,6 +136,7 @@ class SwapSliderFormModel with FormzMixin {
     required this.totalCostInput,
     required this.selectedSwapsInput,
     required this.submissionStatus,
+    required this.manuallySelectedSwapIndices,
   });
 
   @override
@@ -137,6 +151,7 @@ class SwapSliderFormModel with FormzMixin {
     TotalCostInput? totalCostInput,
     SelectedAtomicSwapsInput? selectedSwapsInput,
     FormzSubmissionStatus? submissionStatus,
+    Set<int>? manuallySelectedSwapIndices,
   }) {
     return SwapSliderFormModel(
       sliderInput: sliderInput ?? this.sliderInput,
@@ -146,79 +161,42 @@ class SwapSliderFormModel with FormzMixin {
       atomicSwaps: atomicSwaps ?? this.atomicSwaps,
       asset: asset ?? this.asset,
       submissionStatus: submissionStatus ?? this.submissionStatus,
+      manuallySelectedSwapIndices:
+          manuallySelectedSwapIndices ?? this.manuallySelectedSwapIndices,
     );
   }
 
-  // AssetQuantity get totalPrice {
-  //   final zero = AssetQuantity(
-  //     divisible: true,
-  //     quantity: BigInt.zero,
-  //   );
-  //
-  //   return atomicSwapListModel.fold(
-  //       onInitial: () => zero,
-  //       onLoading: () => zero,
-  //       onFailure: (_) => zero,
-  //       onSuccess: (model) => model.items.filter((item) => item.selected).fold(
-  //           AssetQuantity(
-  //             quantity: BigInt.zero,
-  //             divisible: true, // quantities from swaps api are always divisible
-  //             // divisible: model.asset.divisible ?? false
-  //           ),
-  //           (previousValue, element) =>
-  //               previousValue +
-  //               AssetQuantity(divisible: true, quantity: element.price)),
-  //       onRefreshing: (model) => model.items
-  //           .filter((item) => item.selected)
-  //           .fold(
-  //               AssetQuantity(
-  //                 quantity: BigInt.zero,
-  //                 divisible:
-  //                     true, // quantities from swaps api are always divisible
-  //               ),
-  //               (previousValue, element) =>
-  //                   previousValue +
-  //                   AssetQuantity(divisible: true, quantity: element.price)));
-  // }
-  //
-  // AssetQuantity get total {
-  //   final zero = AssetQuantity(
-  //     divisible: true,
-  //     quantity: BigInt.zero,
-  //   );
-  //
-  //   return atomicSwapListModel.fold(
-  //     onInitial: () => zero,
-  //     onLoading: () => zero,
-  //     onFailure: (_) => zero,
-  //     onSuccess: (model) => model.items.filter((item) => item.selected).fold(
-  //           AssetQuantity(
-  //             quantity: BigInt.zero,
-  //             divisible: true, // quantities from swaps api are always divisible
-  //             // divisible: model.asset.divisible ?? false
-  //           ),
-  //           (previousValue, element) => previousValue + element.quantity,
-  //         ),
-  //     onRefreshing: (model) => model.items.filter((item) => item.selected).fold(
-  //           AssetQuantity(
-  //             quantity: BigInt.zero,
-  //             divisible: true, // quantities from swaps api are always divisible
-  //           ),
-  //           (previousValue, element) => previousValue + element.quantity,
-  //         ),
-  //   );
-  // }
+  String? get errorMessage {
+    if (isValid || isPure) return null;
+
+    if (totalCostInput.error == TotalCostValidationError.insufficientBalance) {
+      return "Insufficient balance";
+    }
+
+    if (selectedSwapsInput.error == SelectedAtomicSwapsValidationError.empty) {
+      return "No swaps selected";
+    }
+
+    if (sliderInput.error == SliderInputError.required) {
+      return "Invalid slider value";
+    }
+
+    return "Invalid form";
+  }
 
   RemoteData<AtomicSwapListModel> get atomicSwapListModel {
     return asset.combine(atomicSwaps, (asset, atomicSwaps) {
-      final swaps = atomicSwaps
-          .mapWithIndex((swap, idx) => AtomicSwapListItemModel(
-              selected: idx + 1 <= sliderInput.value,
-              asset: asset,
-              quantity: swap.assetQuantity,
-              price: swap.price,
-              pricePerUnit: swap.pricePerUnit))
-          .toList();
+      final swaps = atomicSwaps.mapWithIndex((swap, idx) {
+        final isSelected = sliderInput.selectionMode == SelectionMode.slider
+            ? idx + 1 <= sliderInput.value
+            : manuallySelectedSwapIndices.contains(idx);
+        return AtomicSwapListItemModel(
+            selected: isSelected,
+            asset: asset,
+            quantity: swap.assetQuantity,
+            price: swap.price,
+            pricePerUnit: swap.pricePerUnit);
+      }).toList();
 
       return AtomicSwapListModel(items: swaps, asset: asset);
     });
@@ -237,6 +215,11 @@ class SwapSliderFormInitialized extends SwapSliderFormEvent {}
 class SliderDragged extends SwapSliderFormEvent {
   final int value;
   const SliderDragged({required this.value});
+}
+
+class RowClicked extends SwapSliderFormEvent {
+  final int index;
+  const RowClicked({required this.index});
 }
 
 class SubmitClicked extends SwapSliderFormEvent {
@@ -262,12 +245,13 @@ class SwapSliderFormBloc
         _assetRepository = assetRepository ?? GetIt.I<AssetRepository>(),
         super(
           SwapSliderFormModel(
+              manuallySelectedSwapIndices: {},
               totalCostInput: TotalCostInput.pure(
                   userBalance: AssetQuantity(
                 quantity: BigInt.from(bitcoinBalance.quantity),
                 divisible: true,
               )),
-              selectedSwapsInput: SelectedAtomicSwapsInput.pure(),
+              selectedSwapsInput: const SelectedAtomicSwapsInput.pure(),
               assetName: assetName,
               atomicSwaps: const Initial<List<AtomicSwap>>(),
               asset: const Initial<Asset>(),
@@ -276,8 +260,45 @@ class SwapSliderFormBloc
         ) {
     on<SwapSliderFormInitialized>(_handleInitialized);
     on<SliderDragged>(_handleSliderDragged);
+    on<RowClicked>(_handleRowClicked);
     on<SubmitClicked>(_handleSubmitClicked);
     add(SwapSliderFormInitialized());
+  }
+
+  _handleRowClicked(
+    RowClicked event,
+    Emitter<SwapSliderFormModel> emit,
+  ) {
+    final currentlySelected = state.manuallySelectedSwapIndices;
+    final index = event.index;
+    final nextSelected = {...currentlySelected};
+    if (nextSelected.contains(index)) {
+      nextSelected.remove(index);
+    } else {
+      nextSelected.add(index);
+    }
+
+    final selectedSwapsInput = SelectedAtomicSwapsInput.dirty(
+        value: state.atomicSwaps.replete(
+            onNone: () => [],
+            onReplete: (swaps) {
+              return swaps
+                  .filterWithIndex(
+                      (swap, index) => nextSelected.contains(index))
+                  .toList();
+            }));
+
+    emit(state.copyWith(
+        manuallySelectedSwapIndices: nextSelected,
+        sliderInput: SliderInput.dirty(
+          value: state.sliderInput.value,
+          selectionMode: SelectionMode.manual,
+        ),
+        totalCostInput: TotalCostInput.dirty(
+          value: selectedSwapsInput.totalPrice,
+          userBalance: state.totalCostInput.userBalance,
+        ),
+        selectedSwapsInput: selectedSwapsInput));
   }
 
   _handleInitialized(
@@ -329,11 +350,15 @@ class SwapSliderFormBloc
             }));
 
     emit(state.copyWith(
+        manuallySelectedSwapIndices: {},
+        sliderInput: SliderInput.dirty(
+          value: event.value,
+          selectionMode: SelectionMode.slider,
+        ),
         totalCostInput: TotalCostInput.dirty(
           value: selectedSwapsInput.totalPrice,
           userBalance: state.totalCostInput.userBalance,
         ),
-        sliderInput: SliderInput.dirty(value: event.value),
         selectedSwapsInput: selectedSwapsInput));
   }
 
