@@ -6,12 +6,14 @@ class ComposeMpmaSendParams extends ComposeParams {
   final String destinations;
   final String assets;
   final String quantities;
+  final List<String>? memos; // ?memos=memo1&memos=memo2...
 
   ComposeMpmaSendParams({
     required this.source,
     required this.destinations,
     required this.assets,
     required this.quantities,
+    this.memos,
   });
 
   @override
@@ -40,6 +42,8 @@ class ComposeMpmaSendResponseParams {
 
 class ComposeMpmaSendResponse extends ComposeResponse {
   @override
+  final String psbt;
+  @override
   final String rawtransaction;
   @override
   final int btcFee;
@@ -49,6 +53,7 @@ class ComposeMpmaSendResponse extends ComposeResponse {
   final String name;
 
   ComposeMpmaSendResponse({
+    required this.psbt,
     required this.rawtransaction,
     required this.params,
     required this.name,

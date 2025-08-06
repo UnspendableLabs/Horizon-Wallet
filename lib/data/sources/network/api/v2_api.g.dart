@@ -3192,6 +3192,7 @@ Map<String, dynamic> _$ComposeIssuanceParamsToJson(
 ComposeIssuanceVerbose _$ComposeIssuanceVerboseFromJson(
         Map<String, dynamic> json) =>
     ComposeIssuanceVerbose(
+      psbt: json['psbt'] as String,
       rawtransaction: json['rawtransaction'] as String,
       name: json['name'] as String,
       params: ComposeIssuanceVerboseParams.fromJson(
@@ -3209,6 +3210,7 @@ Map<String, dynamic> _$ComposeIssuanceVerboseToJson(
       'params': instance.params,
       'btc_fee': instance.btcFee,
       'signed_tx_estimated_size': instance.signedTxEstimatedSize,
+      'psbt': instance.psbt,
     };
 
 ComposeIssuanceVerboseParams _$ComposeIssuanceVerboseParamsFromJson(
@@ -3290,6 +3292,7 @@ Map<String, dynamic> _$ComposeDispenserParamsToJson(
 ComposeDispenserVerbose _$ComposeDispenserVerboseFromJson(
         Map<String, dynamic> json) =>
     ComposeDispenserVerbose(
+      psbt: json['psbt'] as String,
       rawtransaction: json['rawtransaction'] as String,
       name: json['name'] as String,
       params: ComposeDispenserVerboseParams.fromJson(
@@ -3308,6 +3311,7 @@ Map<String, dynamic> _$ComposeDispenserVerboseToJson(
     <String, dynamic>{
       'rawtransaction': instance.rawtransaction,
       'name': instance.name,
+      'psbt': instance.psbt,
       'params': instance.params,
       'btc_in': instance.btcIn,
       'btc_out': instance.btcOut,
@@ -3534,6 +3538,7 @@ SendTxVerbose _$SendTxVerboseFromJson(Map<String, dynamic> json) =>
       params:
           SendTxParamsVerbose.fromJson(json['params'] as Map<String, dynamic>),
       rawtransaction: json['rawtransaction'] as String,
+      psbt: json['psbt'] as String,
       btcFee: (json['btc_fee'] as num).toInt(),
       name: json['name'] as String,
       signedTxEstimatedSize: SignedTxEstimatedSizeModel.fromJson(
@@ -3547,6 +3552,7 @@ Map<String, dynamic> _$SendTxVerboseToJson(SendTxVerbose instance) =>
       'params': instance.params,
       'btc_fee': instance.btcFee,
       'signed_tx_estimated_size': instance.signedTxEstimatedSize,
+      'psbt': instance.psbt,
     };
 
 ComposeMpmaSend _$ComposeMpmaSendFromJson(Map<String, dynamic> json) =>
@@ -3554,6 +3560,7 @@ ComposeMpmaSend _$ComposeMpmaSendFromJson(Map<String, dynamic> json) =>
       name: json['name'] as String,
       data: json['data'] as String,
       rawtransaction: json['rawtransaction'] as String,
+      psbt: json['psbt'] as String,
       btcIn: (json['btc_in'] as num).toInt(),
       btcOut: (json['btc_out'] as num).toInt(),
       btcFee: (json['btc_fee'] as num).toInt(),
@@ -3568,6 +3575,7 @@ Map<String, dynamic> _$ComposeMpmaSendToJson(ComposeMpmaSend instance) =>
       'name': instance.name,
       'data': instance.data,
       'rawtransaction': instance.rawtransaction,
+      'psbt': instance.psbt,
       'btc_in': instance.btcIn,
       'btc_out': instance.btcOut,
       'btc_fee': instance.btcFee,
@@ -4351,6 +4359,18 @@ Map<String, dynamic> _$UTXOToJson(UTXO instance) => <String, dynamic>{
       'amount': instance.amount,
       'txid': instance.txid,
       'address': instance.address,
+    };
+
+UtxoWithBalancesResponse _$UtxoWithBalancesResponseFromJson(
+        Map<String, dynamic> json) =>
+    UtxoWithBalancesResponse(
+      result: Map<String, bool>.from(json['result'] as Map),
+    );
+
+Map<String, dynamic> _$UtxoWithBalancesResponseToJson(
+        UtxoWithBalancesResponse instance) =>
+    <String, dynamic>{
+      'result': instance.result,
     };
 
 // **************************************************************************
@@ -5549,6 +5569,7 @@ class _V2Api implements V2Api {
     String destination,
     String asset,
     int quantity, [
+    String? memo,
     bool? allowUnconfirmedInputs,
     num? satPerVbyte,
     String? inputsSet,
@@ -5561,6 +5582,7 @@ class _V2Api implements V2Api {
       r'destination': destination,
       r'asset': asset,
       r'quantity': quantity,
+      r'memo': memo,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
       r'sat_per_vbyte': satPerVbyte,
       r'inputs_set': inputsSet,
@@ -5605,6 +5627,7 @@ class _V2Api implements V2Api {
   Future<Response<ComposeMpmaSend>> composeMpmaSend(
     String address,
     String? destinations,
+    List<String>? memos,
     String? assets,
     String? quantities, [
     bool? allowUnconfirmedInputs,
@@ -5616,6 +5639,7 @@ class _V2Api implements V2Api {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'destinations': destinations,
+      r'memos': memos,
       r'assets': assets,
       r'quantities': quantities,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
@@ -5868,6 +5892,62 @@ class _V2Api implements V2Api {
       _value = Response<ComposeIssuanceVerbose>.fromJson(
         _result.data!,
         (json) => ComposeIssuanceVerbose.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<Response<List<OrderVerbose>>> getOrders([
+    String? status,
+    String? getAsset,
+    String? giveAsset,
+    CursorModel? cursor,
+    int? limit,
+    int? offset,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'status': status,
+      r'get_asset': getAsset,
+      r'give_asset': giveAsset,
+      r'cursor': cursor?.toJson(),
+      r'limit': limit,
+      r'offset': offset,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<Response<List<OrderVerbose>>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+        .compose(
+          _dio.options,
+          '/orders?verbose=true',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<OrderVerbose>> _value;
+    try {
+      _value = Response<List<OrderVerbose>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<OrderVerbose>(
+                    (i) => OrderVerbose.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
       );
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);
@@ -6979,7 +7059,8 @@ class _V2Api implements V2Api {
   Future<Response<ComposeAttachUtxoResponseModel>> composeAttachUtxo(
     String address,
     String asset,
-    int quantity, [
+    int quantity,
+    int utxoValue, [
     String? destinationVout,
     bool? skipValidation,
     bool? allowUnconfirmedInputs,
@@ -6993,6 +7074,7 @@ class _V2Api implements V2Api {
     final queryParameters = <String, dynamic>{
       r'asset': asset,
       r'quantity': quantity,
+      r'utxo_value': utxoValue,
       r'destination_vout': destinationVout,
       r'skip_validation': skipValidation,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
@@ -7619,6 +7701,44 @@ class _V2Api implements V2Api {
         _result.data!,
         (json) =>
             ComposeBurnResponseModel.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<Response<UtxoWithBalancesResponse>> utxosWithBalances(
+      String utxos) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'utxos': utxos};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<Response<UtxoWithBalancesResponse>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+        .compose(
+          _dio.options,
+          '/utxos/withbalances',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<UtxoWithBalancesResponse> _value;
+    try {
+      _value = Response<UtxoWithBalancesResponse>.fromJson(
+        _result.data!,
+        (json) =>
+            UtxoWithBalancesResponse.fromJson(json as Map<String, dynamic>),
       );
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);

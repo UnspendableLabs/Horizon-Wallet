@@ -83,7 +83,8 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
 
     try {
       final (feeEstimates, dispensers) =
-          await fetchCloseDispenserFormDataUseCase.call(event.currentAddress!, httpConfig);
+          await fetchCloseDispenserFormDataUseCase.call(
+              event.currentAddress!, httpConfig);
 
       emit(state.copyWith(
         balancesState: const BalancesState.success([]),
@@ -241,13 +242,13 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
     )));
 
     await signAndBroadcastTransactionUseCase.call(
-      httpConfig: httpConfig,
+        httpConfig: httpConfig,
         decryptionStrategy: Password(event.password),
         source: AddressV2(
-              type: AddressV2Type.p2wpkh,
-              address: compose.params.source,
-              derivation: txHash,
-              publicKey: publicKey),
+            type: AddressV2Type.p2wpkh,
+            address: compose.params.source,
+            derivation: txHash,
+            publicKey: publicKey),
         rawtransaction: compose.rawtransaction,
         onSuccess: (txHex, txHash) async {
           await writelocalTransactionUseCase.call(txHex, txHash);

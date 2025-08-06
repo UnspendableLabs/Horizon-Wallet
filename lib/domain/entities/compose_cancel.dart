@@ -15,6 +15,10 @@ class ComposeCancelParams extends ComposeParams {
 }
 
 class ComposeCancelResponse implements ComposeResponse {
+
+  @override
+  final String psbt;
+
   @override
   final String rawtransaction;
   @override
@@ -25,6 +29,7 @@ class ComposeCancelResponse implements ComposeResponse {
   final ComposeCancelResponseParams params;
 
   const ComposeCancelResponse({
+    required this.psbt,
     required this.rawtransaction,
     required this.btcFee,
     required this.signedTxEstimatedSize,

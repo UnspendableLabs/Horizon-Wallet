@@ -20,8 +20,13 @@ class ComposeAttachUtxoParams extends ComposeParams {
 }
 
 class ComposeAttachUtxoResponse implements ComposeResponse {
+
   @override
   final String rawtransaction;
+  
+  @override
+  final String psbt;
+
   @override
   final int btcFee;
   @override
@@ -32,6 +37,7 @@ class ComposeAttachUtxoResponse implements ComposeResponse {
   final ComposeAttachUtxoResponseParams params;
 
   ComposeAttachUtxoResponse({
+    required this.psbt,
     required this.rawtransaction,
     required this.btcFee,
     required this.signedTxEstimatedSize,

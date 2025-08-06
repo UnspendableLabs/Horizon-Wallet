@@ -209,7 +209,7 @@ class _CreateSwapListingState extends State<CreateSwapListing> {
               feeEstimates: const FeeEstimates(fast: 4, medium: 3, slow: 2),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric( vertical: 14),
+              padding: const EdgeInsets.symmetric(vertical: 14),
               child: HorizonButton(
                   disabled: false,
                   onPressed: () {},

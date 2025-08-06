@@ -22,6 +22,8 @@ class ComposeOrderParams extends ComposeParams {
 
 class ComposeOrderResponse implements ComposeResponse {
   @override
+  final String psbt;
+  @override
   final String rawtransaction;
   @override
   final int btcFee;
@@ -31,6 +33,7 @@ class ComposeOrderResponse implements ComposeResponse {
   final ComposeOrderResponseParams params;
 
   const ComposeOrderResponse({
+    required this.psbt,
     required this.rawtransaction,
     required this.btcFee,
     required this.signedTxEstimatedSize,

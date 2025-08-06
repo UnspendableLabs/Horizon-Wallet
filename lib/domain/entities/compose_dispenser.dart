@@ -30,6 +30,8 @@ class ComposeDispenserParams extends ComposeParams {
 
 class ComposeDispenserResponse implements ComposeResponse {
   @override
+  final String psbt;
+  @override
   final String rawtransaction;
   @override
   final int btcFee;
@@ -39,6 +41,7 @@ class ComposeDispenserResponse implements ComposeResponse {
   final String name;
 
   const ComposeDispenserResponse({
+    required this.psbt,
     required this.rawtransaction,
     required this.btcFee,
     required this.signedTxEstimatedSize,
@@ -72,6 +75,9 @@ class ComposeDispenserResponseParams {
 class ComposeDispenserResponseVerbose implements ComposeResponse {
   @override
   final String rawtransaction;
+
+  @override
+  final String psbt; 
   final ComposeDispenserResponseVerboseParams params;
   final String name;
   final int btcIn;
@@ -84,6 +90,7 @@ class ComposeDispenserResponseVerbose implements ComposeResponse {
   final String data;
 
   const ComposeDispenserResponseVerbose({
+    required this.psbt,
     required this.rawtransaction,
     required this.params,
     required this.name,

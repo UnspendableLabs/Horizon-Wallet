@@ -13,11 +13,13 @@ class ComposeMoveToUtxoResponseModel {
   final int btcChange;
   final int btcFee;
   final String rawtransaction;
+  final String psbt;
   final ComposeMoveToUtxoResponseParamsModel params;
   final SignedTxEstimatedSizeModel signedTxEstimatedSize;
 
   ComposeMoveToUtxoResponseModel({
     required this.rawtransaction,
+    required this.psbt,
     required this.params,
     required this.name,
     required this.btcIn,
@@ -35,6 +37,7 @@ class ComposeMoveToUtxoResponseModel {
         name: name,
         data: data,
         rawtransaction: rawtransaction,
+        psbt: psbt,
         btcFee: btcFee,
         params: params.toDomain(),
         signedTxEstimatedSize: signedTxEstimatedSize.toDomain(),

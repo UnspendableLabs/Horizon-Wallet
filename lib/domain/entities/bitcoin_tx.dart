@@ -65,6 +65,11 @@ class Vout {
     this.scriptpubkeyAddress,
     required this.value,
   });
+
+  @override
+  toString() {
+    return 'Vout(scriptpubkey: $scriptpubkey, scriptpubkeyAsm: $scriptpubkeyAsm, scriptpubkeyType: $scriptpubkeyType, scriptpubkeyAddress: $scriptpubkeyAddress, value: $value)';
+  }
 }
 
 class Status {

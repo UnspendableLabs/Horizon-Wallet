@@ -13,6 +13,8 @@ class ComposeOrderResponseModel {
   final int btcChange;
   final int btcFee;
   final String rawtransaction;
+  final String psbt;
+
   final ComposeOrderResponseParamsModel params;
   final SignedTxEstimatedSizeModel signedTxEstimatedSize;
   // final OrderUnpackedVerbose unpackedData;
@@ -21,6 +23,7 @@ class ComposeOrderResponseModel {
     required this.rawtransaction,
     required this.params,
     required this.name,
+    required this.psbt,
     // required this.unpackedData,
     required this.btcIn,
     required this.btcOut,
@@ -35,6 +38,7 @@ class ComposeOrderResponseModel {
 
   ComposeOrderResponse toDomain() => ComposeOrderResponse(
         rawtransaction: rawtransaction,
+        psbt: psbt,
         btcFee: btcFee,
         params: params.toDomain(),
         signedTxEstimatedSize: signedTxEstimatedSize.toDomain(),

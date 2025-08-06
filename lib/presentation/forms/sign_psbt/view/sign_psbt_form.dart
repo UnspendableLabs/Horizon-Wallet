@@ -3,27 +3,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:horizon/common/format.dart';
-import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_state.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_event.dart';
-import 'package:horizon/domain/repositories/balance_repository.dart';
 
 // example import
 
 class SignPsbtForm extends StatefulWidget {
   final bool passwordRequired;
-  final BalanceRepository balanceRepository;
-  final BitcoinRepository bitcoinRepository;
 
   final void Function(String) onSuccess;
 
-  const SignPsbtForm(
-      {super.key,
-      required this.onSuccess,
-      required this.passwordRequired,
-      required this.bitcoinRepository,
-      required this.balanceRepository});
+  const SignPsbtForm({
+    super.key,
+    required this.onSuccess,
+    required this.passwordRequired,
+  });
 
   @override
   State<SignPsbtForm> createState() => _SignPsbtFormState();
@@ -226,18 +221,7 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                 state.error!,
                 style: const TextStyle(color: Colors.red),
               ),
-            ] else if (state.submissionStatus.isSuccess) ...[
-              const Text(
-                'Transaction signed successfully!',
-                style: TextStyle(color: Colors.green),
-              ),
-              // Show the signed PSBT if needed
-              if (state.signedPsbt != null)
-                SelectableText(
-                  'Signed PSBT: ${state.signedPsbt}',
-                  style: const TextStyle(color: Colors.black),
-                ),
-            ],
+            ]
           ]),
         );
       }),
@@ -340,7 +324,9 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
   Widget _buildOutputView(AugmentedOutput output, ThemeData theme) {
     // The address from output.vout.scriptPubKey.address
     // But you also have a getter in AugmentedOutput for `address`.
-    final address = _shortenAddress(output.address);
+
+    final outputLabel =
+        output.isOpReturn() ? "OP_RETURN" : _shortenAddress(output.address);
 
     // The BTC value from output.value
     final int btcValue = output.value;
@@ -373,7 +359,7 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(address, style: theme.textTheme.labelLarge),
+            Text(outputLabel, style: theme.textTheme.labelLarge),
             Text("${satoshisToBtc(btcValue)} BTC",
                 style: theme.textTheme.labelMedium),
           ],
@@ -405,6 +391,7 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
 
   String _shortenAddress(String? address, {int prefix = 6, int suffix = 5}) {
     if (address == null || address.length < (prefix + suffix)) {
+      print("address: $address");
       return address ?? 'Unknown';
     }
     final start = address.substring(0, prefix);

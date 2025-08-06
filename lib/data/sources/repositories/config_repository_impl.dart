@@ -1,7 +1,7 @@
-
-
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:pub_semver/pub_semver.dart';
+import 'package:fpdart/fpdart.dart';
+
 class ConfigImpl implements Config {
   @override
   Version get version => Version.parse('1.7.7');
@@ -12,6 +12,12 @@ class ConfigImpl implements Config {
     return envValue.isNotEmpty
         ? envValue
         : "https://version-service.vercel.app/api";
+  }
+
+  @override
+  bool get disableNativeOrders {
+    return const bool.fromEnvironment('HORIZON_DISABLE_NATIVE_ORDERS',
+        defaultValue: true); // TODO: should be changed to false
   }
 
   @override
@@ -53,16 +59,32 @@ class ConfigImpl implements Config {
   }
 
   @override
-  String toString() {
-    return '''EnvironmentConfig(
-      version: $version,
-      versionInfoEndpoint: $versionInfoEndpoint,
-      isDatabaseViewerEnabled: $isDatabaseViewerEnabled,
-      isAnalyticsEnabled: $isAnalyticsEnabled,
-      isWebExtension: $isWebExtension,
-      isSentryEnabled: $isSentryEnabled
-      sentryDsn: $sentryDsn,
-      sentrySampleRate: $sentrySampleRate,
-    )''';
+  int get defaultEnvelopeSize {
+    const envValue = String.fromEnvironment('HORIZON_DEFAULT_ENVELOPE_SIZE');
+    return envValue.isNotEmpty ? int.parse(envValue) : 546;
+  }
+
+  @override
+  Option<MeilisearchConfig> get meilisearchConfigMainnet {
+    const api = String.fromEnvironment('HORIZON_MEILISEARCH_API_MAINNET');
+    const key = String.fromEnvironment('HORIZON_MEILISEARCH_KEY_MAINNET');
+
+    if (api.isEmpty || key.isEmpty) {
+      return Option.none();
+    }
+
+    return Option.of(MeilisearchConfig(api: api, key: key));
+  }
+
+  @override
+  Option<MeilisearchConfig> get meilisearchConfigTestnet {
+    const api = String.fromEnvironment('HORIZON_MEILISEARCH_API_TESTNET');
+    const key = String.fromEnvironment('HORIZON_MEILISEARCH_KEY_TESTNET');
+
+    if (api.isEmpty || key.isEmpty) {
+      return Option.none();
+    }
+
+    return Option.of(MeilisearchConfig(api: api, key: key));
   }
 }

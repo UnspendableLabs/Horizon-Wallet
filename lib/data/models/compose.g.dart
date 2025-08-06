@@ -44,6 +44,7 @@ ComposeDispenseResponseModel _$ComposeDispenseResponseModelFromJson(
       params: ComposeDispenseResponseParamsModel.fromJson(
           json['params'] as Map<String, dynamic>),
       rawtransaction: json['rawtransaction'] as String,
+      psbt: json['psbt'] as String,
       name: json['name'] as String,
       btcIn: (json['btc_in'] as num).toInt(),
       btcOut: (json['btc_out'] as num).toInt(),
@@ -57,6 +58,7 @@ Map<String, dynamic> _$ComposeDispenseResponseModelToJson(
         ComposeDispenseResponseModel instance) =>
     <String, dynamic>{
       'rawtransaction': instance.rawtransaction,
+      'psbt': instance.psbt,
       'name': instance.name,
       'btc_in': instance.btcIn,
       'btc_out': instance.btcOut,

@@ -1,4 +1,3 @@
-
 import 'package:fpdart/fpdart.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/balance.dart';
@@ -18,6 +17,7 @@ abstract class BalanceRepository {
   Future<List<MultiAddressBalance>> getBalancesForAddresses({
     required HttpConfig httpConfig,
     required List<String> addresses,
+    BalanceType? type,
   });
 
   Future<MultiAddressBalance> getBalancesForAddressesAndAsset({

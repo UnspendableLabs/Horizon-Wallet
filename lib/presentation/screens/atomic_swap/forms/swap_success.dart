@@ -17,27 +17,30 @@ class _SwapSuccessStepState extends State<SwapSuccessStep> {
       width: double.infinity,
       height: double.infinity,
       child: SingleChildScrollView(
-      child: Column(
-        children: [
-          const SizedBox(
-            height: 218,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                TxnSuccessAnimation(),
-              ],
+        child: Column(
+          children: [
+            const SizedBox(
+              height: 218,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  TxnSuccessAnimation(),
+                ],
+              ),
             ),
-          ),
-          Text(
-            "Swap Successful",
-            style: theme.textTheme.titleMedium,
-          ),
-          commonHeightSizedBox,
-          Text("2 listings successfully fulfilled", style: theme.inputDecorationTheme.hintStyle,),
-        ],
+            Text(
+              "Swap Successful",
+              style: theme.textTheme.titleMedium,
+            ),
+            commonHeightSizedBox,
+            Text(
+              "2 listings successfully fulfilled",
+              style: theme.inputDecorationTheme.hintStyle,
+            ),
+          ],
+        ),
       ),
-    ),
     );
   }
 }

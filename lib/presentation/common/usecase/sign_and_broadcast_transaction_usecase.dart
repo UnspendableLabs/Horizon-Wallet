@@ -1,4 +1,5 @@
 import "package:get_it/get_it.dart";
+import "package:flutter/foundation.dart";
 import "package:fpdart/fpdart.dart";
 
 import 'package:horizon/domain/repositories/utxo_repository.dart';
@@ -14,6 +15,8 @@ import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/services/seed_service.dart';
 
+export 'package:horizon/domain/entities/decryption_strategy.dart';
+
 class AddressNotFoundException implements Exception {
   final String message;
   AddressNotFoundException([this.message = 'Address not found']);
@@ -25,6 +28,16 @@ class SignAndBroadcastTransactionException implements Exception {
   SignAndBroadcastTransactionException(
       [this.message =
           'An error occurred during the sign and broadcast process.']);
+}
+
+class BroadcastResponse {
+  final String hex;
+  final String hash;
+
+  const BroadcastResponse({
+    required this.hex,
+    required this.hash,
+  });
 }
 
 class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
@@ -66,7 +79,26 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
     required String rawtransaction,
     required HttpConfig httpConfig,
   }) async {
-    final task = TaskEither<String, (String hex, String hash)>.Do(($) async {
+    final task = callT(
+      source: source,
+      decryptionStrategy: decryptionStrategy,
+      rawtransaction: rawtransaction,
+      httpConfig: httpConfig,
+    );
+
+    final result = await task.run();
+
+    result.fold((msg) => onError(msg),
+        (success) => {onSuccess(success.hex, success.hash)});
+  }
+
+  TaskEither<String, BroadcastResponse> callT({
+    required AddressV2 source,
+    required DecryptionStrategy decryptionStrategy,
+    required String rawtransaction,
+    required HttpConfig httpConfig,
+  }) {
+    return TaskEither<String, BroadcastResponse>.Do(($) async {
       String pk = switch (source.derivation) {
         Bip32Path(value: var value) => await $(_walletConfigRepository
             .getCurrentT((_) => "invariant: could not read wallet config")
@@ -74,7 +106,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
                 .getForWalletConfigT(
                     walletConfig: walletConfig,
                     decryptionStrategy: decryptionStrategy,
-                    onError: (_) => "invairant: could not derive seed")
+                    onError: (_) => "invariant: could not derive seed")
                 .flatMap((seed) => _addressService.deriveAddressPrivateKeyWIPT(
                       path: Bip32Path(value: value),
                       seed: seed,
@@ -110,19 +142,18 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
           sourceAddress: source.address,
           utxoMap: utxoMap,
           httpConfig: httpConfig,
-          onError: (_) => "Failed to sign transaction"));
+          onError: (error) =>
+              kDebugMode ? error.toString() : "Failed to sign transaction"));
 
       final hash = await $(_bitcoindService.sendrawtransactionT(
           signedHex: signedHex,
           httpConfig: httpConfig,
           onError: (err, _) => err.toString()));
 
-      return (signedHex, hash);
+      return BroadcastResponse(
+        hex: signedHex,
+        hash: hash,
+      );
     });
-
-    final result = await task.run();
-
-    result.fold((msg) => onError(msg),
-        (success) => {onSuccess(success.$1, success.$2)});
   }
 }

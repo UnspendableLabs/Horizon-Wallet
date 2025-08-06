@@ -29,6 +29,9 @@ class ComposeIssuanceParams extends ComposeParams {
 
 class ComposeIssuanceResponse implements ComposeResponse {
   @override
+  final String psbt;
+
+  @override
   final String rawtransaction;
   @override
   final int btcFee;
@@ -39,6 +42,7 @@ class ComposeIssuanceResponse implements ComposeResponse {
   final String name;
 
   const ComposeIssuanceResponse({
+    required this.psbt,
     required this.rawtransaction,
     required this.btcFee,
     required this.signedTxEstimatedSize,
@@ -71,6 +75,9 @@ class ComposeIssuanceResponseParams {
 
 class ComposeIssuanceResponseVerbose implements ComposeResponse {
   @override
+  final String psbt;
+
+  @override
   final String rawtransaction;
   @override
   final int btcFee;
@@ -81,6 +88,7 @@ class ComposeIssuanceResponseVerbose implements ComposeResponse {
   final String name;
 
   const ComposeIssuanceResponseVerbose({
+    required this.psbt,
     required this.rawtransaction,
     required this.btcFee,
     required this.signedTxEstimatedSize,

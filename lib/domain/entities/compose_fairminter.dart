@@ -73,8 +73,11 @@ class ComposeFairminterResponse extends ComposeResponse {
   final SignedTxEstimatedSize signedTxEstimatedSize;
   @override
   final String rawtransaction;
+  @override
+  final String psbt;
 
   ComposeFairminterResponse({
+    required this.psbt,
     required this.params,
     required this.name,
     required this.data,

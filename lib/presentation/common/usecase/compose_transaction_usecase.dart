@@ -6,6 +6,7 @@ import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/domain/entities/http_config.dart';
+import 'package:fpdart/fpdart.dart';
 
 class VirtualSize extends Equatable {
   final int virtualSize;
@@ -26,7 +27,6 @@ class ComposeTransactionUseCase {
   final UtxoRepository utxoRepository;
   final BalanceRepository balanceRepository;
   final ErrorService errorService;
-
   const ComposeTransactionUseCase({
     required this.utxoRepository,
     required this.balanceRepository,
@@ -60,7 +60,8 @@ class ComposeTransactionUseCase {
       List<Utxo> inputsSetForTx = inputsSet;
 
       if (inputsSet.length > 20) {
-        inputsSetForTx = await _getLargeInputsSet(inputsSet, httpConfig);
+        inputsSetForTx =
+            await _getLargeInputsSet(source, inputsSet, httpConfig);
       }
 
       final R finalTx =
@@ -72,10 +73,21 @@ class ComposeTransactionUseCase {
   }
 
   Future<List<Utxo>> _getLargeInputsSet(
-      List<Utxo> inputsSet, HttpConfig httpConfig) async {
+      String source, List<Utxo> inputsSet, HttpConfig httpConfig) async {
+    // final utxos  = utxoRepository.getUnattachedForAddress(
+    //   address: inputsSet.first.address, httpConfig: httpConfig);
+
     // if the inputsSet is larger than 20, we need to take 20 UTXOs with the highest values that have no balance
     // 20 is a random number that we know will not cause the load balancer to deny the request
+    //
+    // todo: consider not actually sorting these
     inputsSet.sort((a, b) => b.value.compareTo(a.value));
+
+    final unattachedMap = await utxoRepository.getUnattachedUTXOMapForAddress(
+      source,
+      httpConfig,
+    );
+
     final List<Utxo> inputsForSet = [];
 
     for (var utxo in inputsSet) {
@@ -83,10 +95,11 @@ class ComposeTransactionUseCase {
         break;
       }
       final utxoKey = "${utxo.txid}:${utxo.vout}";
-      final balance = await balanceRepository.getBalancesForUTXO(
-          httpConfig: httpConfig, utxo: utxoKey);
-      if (balance.isEmpty) {
+
+      if (unattachedMap.containsKey(utxoKey)) {
         inputsForSet.add(utxo);
+
+        continue; // skip if the UTXO is not unattached
       }
     }
 
@@ -95,5 +108,24 @@ class ComposeTransactionUseCase {
     }
 
     return inputsForSet;
+  }
+
+  TaskEither<String, R>
+      callT<P extends ComposeParams, R extends ComposeResponse>({
+    required num feeRate,
+    required String source,
+    required P params,
+    required ComposeFunction<P, R> composeFn,
+    required HttpConfig httpConfig,
+  }) {
+    return TaskEither.tryCatch(
+        () => call(
+              feeRate: feeRate,
+              source: source,
+              params: params,
+              composeFn: composeFn,
+              httpConfig: httpConfig,
+            ),
+        (error, _) => error.toString());
   }
 }

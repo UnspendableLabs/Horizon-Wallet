@@ -10,6 +10,7 @@ ComposeFairminterVerboseModel _$ComposeFairminterVerboseModelFromJson(
         Map<String, dynamic> json) =>
     ComposeFairminterVerboseModel(
       rawtransaction: json['rawtransaction'] as String,
+      psbt: json['psbt'] as String,
       params: ComposeFairminterVerboseParamsModel.fromJson(
           json['params'] as Map<String, dynamic>),
       name: json['name'] as String,
@@ -32,6 +33,7 @@ Map<String, dynamic> _$ComposeFairminterVerboseModelToJson(
       'btc_change': instance.btcChange,
       'btc_fee': instance.btcFee,
       'rawtransaction': instance.rawtransaction,
+      'psbt': instance.psbt,
       'params': instance.params,
       'signed_tx_estimated_size': instance.signedTxEstimatedSize,
     };

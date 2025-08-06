@@ -54,6 +54,7 @@ class ComposeDispenseResponseParamsModel extends ComposeDispenseResponseParams {
 @JsonSerializable(fieldRename: FieldRename.snake)
 class ComposeDispenseResponseModel {
   final String rawtransaction;
+  final String psbt;
   final String name;
   final int btcIn;
   final int btcOut;
@@ -66,6 +67,7 @@ class ComposeDispenseResponseModel {
   ComposeDispenseResponseModel({
     required this.params,
     required this.rawtransaction,
+    required this.psbt,
     required this.name,
     required this.btcIn,
     required this.btcOut,
@@ -80,6 +82,7 @@ class ComposeDispenseResponseModel {
   // Domain conversion function
   ComposeDispenseResponse toDomain() {
     return ComposeDispenseResponse(
+      psbt: psbt,
       rawtransaction: rawtransaction,
       params: params.toDomain(),
       name: name,

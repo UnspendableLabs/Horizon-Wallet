@@ -32,6 +32,7 @@ import 'package:horizon/domain/entities/compose_sweep.dart' as compose_sweep;
 import 'package:horizon/domain/entities/compose_burn.dart' as compose_burn;
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
 
 import 'package:horizon/data/sources/network/counterparty_client_factory.dart';
 import 'package:fpdart/fpdart.dart';
@@ -39,10 +40,13 @@ import 'package:horizon/domain/entities/http_config.dart';
 
 class ComposeRepositoryImpl extends ComposeRepository {
   final CounterpartyClientFactory _counterpartyClientFactory;
+  final Config _config;
 
-  ComposeRepositoryImpl({CounterpartyClientFactory? counterpartyClientFactory})
+  ComposeRepositoryImpl(
+      {Config? config, CounterpartyClientFactory? counterpartyClientFactory})
       : _counterpartyClientFactory =
-            counterpartyClientFactory ?? GetIt.I<CounterpartyClientFactory>();
+            counterpartyClientFactory ?? GetIt.I<CounterpartyClientFactory>(),
+        _config = config ?? GetIt.I<Config>();
 
   Future<T> retryOnInvalidUtxo<T>(
       Future<T> Function(List<Utxo> inputsSet) apiCall,
@@ -97,6 +101,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         const excludeUtxosWithBalances = true;
         const allowUnconfirmedInputs = true;
         const disableUtxoLocks = false;
+        final memo = params.memo;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
@@ -107,6 +112,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
                 destination,
                 asset,
                 quantity,
+                memo,
                 allowUnconfirmedInputs,
                 satPerVbyte,
                 inputsSetString,
@@ -119,6 +125,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
         final txVerbose = response.result!;
         return compose_send.ComposeSendResponse(
+
             params: compose_send.ComposeSendResponseParams(
               source: txVerbose.params.source,
               destination: txVerbose.params.destination,
@@ -134,6 +141,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
             ),
             btcFee: txVerbose.btcFee,
             rawtransaction: txVerbose.rawtransaction,
+            psbt: txVerbose.psbt,
             name: txVerbose.name,
             signedTxEstimatedSize: txVerbose.signedTxEstimatedSize.toDomain());
       },
@@ -155,6 +163,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final quantities = params.quantities;
         const excludeUtxosWithBalances = true;
         const allowUnconfirmedInputs = true;
+        final memos = params.memos;
         const disableUtxoLocks = false;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
@@ -164,6 +173,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
             .composeMpmaSend(
                 source,
                 destinations,
+                memos,
                 assets,
                 quantities,
                 allowUnconfirmedInputs,
@@ -179,6 +189,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final txVerbose = response.result!;
         return compose_mpma_send.ComposeMpmaSendResponse(
             rawtransaction: txVerbose.rawtransaction,
+            psbt: txVerbose.psbt,
             btcFee: txVerbose.btcFee,
             params: compose_mpma_send.ComposeMpmaSendResponseParams(
               source: txVerbose.params.source,
@@ -241,6 +252,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final txVerbose = response.result!;
         return compose_issuance.ComposeIssuanceResponseVerbose(
             rawtransaction: txVerbose.rawtransaction,
+            psbt: txVerbose.psbt,
             btcFee: txVerbose.btcFee,
             params: compose_issuance.ComposeIssuanceResponseVerboseParams(
               reset: txVerbose.params.reset,
@@ -311,6 +323,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final txVerbose = response.result!;
         return compose_dispenser.ComposeDispenserResponseVerbose(
             rawtransaction: txVerbose.rawtransaction,
+            psbt: txVerbose.psbt,
             btcIn: txVerbose.btcIn,
             btcOut: txVerbose.btcOut,
             btcChange: txVerbose.btcChange,
@@ -521,6 +534,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
     final txVerbose = response.result!;
     return compose_dispenser.ComposeDispenserResponseVerbose(
         rawtransaction: txVerbose.rawtransaction,
+        psbt: txVerbose.psbt,
         btcIn: txVerbose.btcIn,
         btcOut: txVerbose.btcOut,
         btcChange: txVerbose.btcChange,
@@ -651,6 +665,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
                 address,
                 asset,
                 quantity,
+                _config.defaultEnvelopeSize,
                 destinationVout,
                 skipValidation,
                 allowUnconfirmedInputs,

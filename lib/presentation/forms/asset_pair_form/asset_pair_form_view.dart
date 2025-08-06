@@ -1,7 +1,8 @@
 import "./bloc/loader/loader_bloc.dart";
+import 'package:formz/formz.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
+import 'package:horizon/domain/entities/swap_type.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/domain/entities/asset_search_result.dart';
 import 'package:flutter/material.dart';
 
 import 'package:horizon/domain/entities/address_v2.dart';
@@ -54,13 +55,15 @@ class AssetPairFormActions {
   final Function(AssetPairFormOption value) onReceiveAssetSelected;
   final VoidCallback onReceiveAssetInputClicked;
   final Function(String value) onSearchAssetInputChanged;
+  final VoidCallback onSubmitClicked;
 
   const AssetPairFormActions(
       {required this.onInvertClicked,
       required this.onReceiveAssetSelected,
       required this.onGiveAssetSelected,
       required this.onReceiveAssetInputClicked,
-      required this.onSearchAssetInputChanged});
+      required this.onSearchAssetInputChanged,
+      required this.onSubmitClicked});
 }
 
 class AssetPairFormProvider extends StatelessWidget {
@@ -95,6 +98,8 @@ class AssetPairFormProvider extends StatelessWidget {
               onReceiveAssetInputClicked: () => context
                   .read<AssetPairFormBloc>()
                   .add(const ReceiveAssetInputClicked()),
+              onSubmitClicked: () =>
+                  context.read<AssetPairFormBloc>().add(SubmitClicked()),
               onSearchAssetInputChanged: (String value) => context
                   .read<AssetPairFormBloc>()
                   .add(SearchInputChanged(value))),
@@ -104,6 +109,7 @@ class AssetPairFormProvider extends StatelessWidget {
 }
 
 class AssetPairForm extends StatefulWidget {
+  final Function(SwapType type) onSubmit;
   final AssetPairFormActions actions;
   final AssetPairFormModel state;
 
@@ -121,7 +127,8 @@ class AssetPairForm extends StatefulWidget {
   // final Function(String value) onSearchAssetInputChanged;
 
   const AssetPairForm(
-      {required this.actions,
+      {required this.onSubmit,
+      required this.actions,
       required this.state,
       //   required this.receiveAssetModalVisible,
       // required this.onReceiveAssetInputClicked,
@@ -159,7 +166,7 @@ class _AssetPairFormState extends State<AssetPairForm> {
           },
         ).then((selection) {
           if (selection != null) {
-            widget.actions.onReceiveAssetSelected!(selection);
+            widget.actions.onReceiveAssetSelected(selection);
           } else {
             widget.actions.onReceiveAssetInputClicked();
           }
@@ -170,116 +177,131 @@ class _AssetPairFormState extends State<AssetPairForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              vertical: 14,
-            ),
-            child: Stack(
-              children: [
-                Column(
-                  children: [
-                    HorizonRedesignDropdown<AssetPairFormOption>(
-                        itemPadding: const EdgeInsets.all(12),
-                        items: widget.state.giveAssets
-                            .map((item) => DropdownMenuItem(
-                                value: item,
-                                child: AssetBalanceListItemWithOptionalBalance(
-                                    asset: item.name,
-                                    description: item.description,
-                                    balance: item.balance)))
-                            .toList(),
-                        onChanged: (value) {
-                          widget.actions.onGiveAssetSelected(value!);
-                        },
-                        selectedValue: widget.state.giveAssetInput.value,
-                        selectedItemBuilder: (AssetPairFormOption item) =>
-                            AssetBalanceListItemWithOptionalBalance(
-                                asset: item.name,
-                                description: item.description,
-                                balance: item.balance),
-                        hintText: "Select Token"),
-                    commonHeightSizedBox,
-                    // overlay a transparent mask on top of the
-                    // dropdown to get custom behavior
-                    Stack(
-                      children: [
-                        HorizonRedesignDropdown<AssetPairFormOption>(
-                            itemPadding: const EdgeInsets.all(12),
-                            items: [],
-                            onChanged: (value) {},
-                            selectedValue: widget.state.receiveAssetInput.value,
-                            selectedItemBuilder: (AssetPairFormOption item) =>
-                                AssetBalanceListItemWithOptionalBalance(
-                                    asset: item.name,
-                                    description: item.description,
-                                    balance: item.balance),
-                            hintText: "Select Token"),
-                        Positioned.fill(
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: widget.actions.onReceiveAssetInputClicked,
-                              splashColor: Theme.of(context)
-                                  .splashColor
-                                  .withOpacity(0.1),
-                              highlightColor: Theme.of(context)
-                                  .highlightColor
-                                  .withOpacity(0.1),
+    return BlocConsumer<AssetPairFormBloc, AssetPairFormModel>(
+        listener: (context, state) {
+      if (state.submissionStatus.isSuccess) {
+        widget.state.swapType.fold(
+            (error) => throw Exception(
+                "invariant: submissionStatus is success but swapType cannot be derived"),
+            (type) => widget.onSubmit(type));
+      }
+    }, builder: (context, state) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: 14,
+              ),
+              child: Stack(
+                children: [
+                  Column(
+                    children: [
+                      HorizonRedesignDropdown<AssetPairFormOption>(
+                          itemPadding: const EdgeInsets.all(12),
+                          items: widget.state.giveAssets
+                              .map((item) => DropdownMenuItem(
+                                  value: item,
+                                  child:
+                                      AssetBalanceListItemWithOptionalBalance(
+                                          asset: item.name,
+                                          description: item.description,
+                                          balance: item.balance)))
+                              .toList(),
+                          onChanged: (value) {
+                            widget.actions.onGiveAssetSelected(value!);
+                          },
+                          selectedValue: widget.state.giveAssetInput.value,
+                          selectedItemBuilder: (AssetPairFormOption item) =>
+                              AssetBalanceListItemWithOptionalBalance(
+                                  asset: item.name,
+                                  description: item.description,
+                                  balance: item.balance),
+                          hintText: "Select Token"),
+                      commonHeightSizedBox,
+                      // overlay a transparent mask on top of the
+                      // dropdown to get custom behavior
+                      Stack(
+                        children: [
+                          HorizonRedesignDropdown<AssetPairFormOption>(
+                              itemPadding: const EdgeInsets.all(12),
+                              items: const [],
+                              onChanged: (value) {},
+                              selectedValue:
+                                  widget.state.receiveAssetInput.value,
+                              selectedItemBuilder: (AssetPairFormOption item) =>
+                                  AssetBalanceListItemWithOptionalBalance(
+                                      asset: item.name,
+                                      description: item.description,
+                                      balance: item.balance),
+                              hintText: "Select Token"),
+                          Positioned.fill(
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap:
+                                    widget.actions.onReceiveAssetInputClicked,
+                                splashColor: Theme.of(context)
+                                    .splashColor
+                                    .withOpacity(0.1),
+                                highlightColor: Theme.of(context)
+                                    .highlightColor
+                                    .withOpacity(0.1),
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    )
-                  ],
-                ),
-                Positioned(
-                    top: 0,
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    child: Center(
-                      child: Material(
-                        color: Theme.of(context).scaffoldBackgroundColor,
-                        borderRadius: BorderRadius.circular(8),
-                        child: InkWell(
-                          hoverColor: transparentPurple8,
+                        ],
+                      )
+                    ],
+                  ),
+                  Positioned(
+                      top: 0,
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: Material(
+                          color: Theme.of(context).scaffoldBackgroundColor,
                           borderRadius: BorderRadius.circular(8),
-                          onTap: widget.actions.onInvertClicked,
-                          child: Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                  color: transparentWhite8, width: 1),
+                          child: InkWell(
+                            hoverColor: transparentPurple8,
+                            borderRadius: BorderRadius.circular(8),
+                            onTap: widget.actions.onInvertClicked,
+                            child: Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                    color: transparentWhite8, width: 1),
+                              ),
+                              padding: const EdgeInsets.all(10),
+                              child: AppIcons.arrowDownIcon(
+                                  context: context, width: 24, height: 24),
                             ),
-                            padding: const EdgeInsets.all(10),
-                            child: AppIcons.arrowDownIcon(
-                                context: context, width: 24, height: 24),
                           ),
                         ),
-                      ),
-                    ))
-              ],
+                      ))
+                ],
+              ),
             ),
-          ),
-          const SizedBox(
-            height: 24,
-          ),
-          HorizonButton(
-              disabled: widget.state.disabled,
-              onPressed: () {},
-              child: TextButtonContent(
-                  value: "Swap" +
-                      widget.state.swapType
-                          .fold(() => "", (type) => " ${type.toString()}")),
-              variant: ButtonVariant.green)
-        ],
-      ),
-    );
+            const SizedBox(
+              height: 24,
+            ),
+            HorizonButton(
+                disabled: widget.state.disabled ||
+                    widget.state.swapType.fold((_) => false,
+                        (type) => type.runtimeType == CounterpartyOrder),
+                onPressed: () {
+                  if (widget.state.disabled) return;
+                  widget.actions.onSubmitClicked();
+                },
+                child: TextButtonContent(value: "Swap"),
+                variant: ButtonVariant.green)
+          ],
+        ),
+      );
+    });
   }
 }

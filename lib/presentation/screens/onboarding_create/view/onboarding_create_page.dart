@@ -111,8 +111,7 @@ class OnboardingCreatePageWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => OnboardingCreateBloc(
-        httpConfig:
-            const Mainnet(), // Always defaults to mainnet during onboarding
+        httpConfig: Mainnet(), // Always defaults to mainnet during onboarding
         mnmonicService: GetIt.I<MnemonicService>(),
       )..add(MnemonicGenerated()),
       child: const OnboardingCreatePage(),

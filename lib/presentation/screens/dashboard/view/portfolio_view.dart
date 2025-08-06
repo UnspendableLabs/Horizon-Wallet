@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
-import 'package:go_router/go_router.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
@@ -21,6 +22,8 @@ import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/presentation/common/gradient_avatar.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class PortfolioView extends StatefulWidget {
   const PortfolioView({super.key});
@@ -174,8 +177,7 @@ class _PortfolioViewState extends State<PortfolioView>
                           color: black,
                         ),
                         onPressed: () {
-                          context.go("/accounts");
-                          // TODO: Implement send functionality
+                          context.push('/send');
                         },
                       ),
                     ),
@@ -193,7 +195,187 @@ class _PortfolioViewState extends State<PortfolioView>
                         icon: AppIcons.receiveIcon(
                           context: context,
                         ),
-                        onPressed: () {
+                        onPressed: () async {
+                          await WoltModalSheet.show(
+                              context: context,
+                              modalTypeBuilder: (_) =>
+                                  WoltModalType.bottomSheet(),
+                              pageListBuilder: (bottomSheetContext) => [
+                                    WoltModalSheetPage(
+                                        trailingNavBarWidget: IconButton(
+                                          icon: AppIcons.closeIcon(
+                                            context: context,
+                                            color: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium
+                                                ?.color,
+                                          ),
+                                          onPressed: () {
+                                            Navigator.pop(bottomSheetContext);
+                                          },
+                                        ),
+                                        child: ListView.builder(
+                                          shrinkWrap: true,
+                                          itemCount: session.addresses.length,
+                                          itemBuilder: (context, index) {
+                                            final addy =
+                                                session.addresses[index];
+
+                                            return ListTile(
+                                                onTap: () {
+                                                  WoltModalSheet.of(
+                                                          bottomSheetContext)
+                                                      .pushPage(
+                                                    WoltModalSheetPage(
+                                                      trailingNavBarWidget:
+                                                          IconButton(
+                                                        icon:
+                                                            AppIcons.closeIcon(
+                                                          context: context,
+                                                          color:
+                                                              Theme.of(context)
+                                                                  .textTheme
+                                                                  .bodyMedium
+                                                                  ?.color,
+                                                        ),
+                                                        onPressed: () {
+                                                          Navigator.pop(
+                                                              bottomSheetContext);
+                                                        },
+                                                      ),
+                                                      child: Center(
+                                                        child: Column(
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Center(
+                                                              child:
+                                                                  QrImageView(
+                                                                      eyeStyle:
+                                                                          QrEyeStyle(
+                                                                        eyeShape:
+                                                                            QrEyeShape.circle,
+                                                                        color: Theme.of(context)
+                                                                            .textTheme
+                                                                            .bodyMedium!
+                                                                            .color,
+                                                                      ),
+                                                                      dataModuleStyle:
+                                                                          QrDataModuleStyle(
+                                                                        dataModuleShape:
+                                                                            QrDataModuleShape.square,
+                                                                        color: Theme.of(context)
+                                                                            .textTheme
+                                                                            .bodyMedium!
+                                                                            .color,
+                                                                      ),
+                                                                      data: addy
+                                                                          .address,
+                                                                      size:
+                                                                          256),
+                                                            ), // <- your QR code
+                                                            const SizedBox(
+                                                                height: 100),
+                                                            Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .fromLTRB(
+                                                                      16,
+                                                                      0,
+                                                                      0,
+                                                                      0),
+                                                              child: Text(
+                                                                addy.type
+                                                                    .displayName,
+                                                                style: Theme.of(
+                                                                        context)
+                                                                    .textTheme
+                                                                    .labelSmall,
+                                                              ),
+                                                            ),
+                                                            const SizedBox(
+                                                                height: 8),
+                                                            Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .fromLTRB(
+                                                                      16,
+                                                                      8,
+                                                                      8,
+                                                                      8),
+                                                              child: Row(
+                                                                children: [
+                                                                  Expanded(
+                                                                    child: Text(
+                                                                      addy.address,
+                                                                      softWrap:
+                                                                          true,
+                                                                      overflow:
+                                                                          TextOverflow
+                                                                              .visible,
+                                                                      style: Theme.of(
+                                                                              context)
+                                                                          .textTheme
+                                                                          .bodyMedium,
+                                                                    ),
+                                                                  ),
+                                                                  IconButton(
+                                                                    visualDensity:
+                                                                        VisualDensity
+                                                                            .compact,
+                                                                    icon: const Icon(
+                                                                        Icons
+                                                                            .copy,
+                                                                        size:
+                                                                            18),
+                                                                    tooltip:
+                                                                        'Copy address',
+                                                                    onPressed:
+                                                                        () {
+                                                                      Clipboard.setData(
+                                                                          ClipboardData(
+                                                                              text: addy.address));
+                                                                      ScaffoldMessenger.of(
+                                                                              bottomSheetContext)
+                                                                          .showSnackBar(
+                                                                        SnackBar(
+                                                                            content:
+                                                                                Text("${addy.address} copied to clipboard")),
+                                                                      );
+                                                                    },
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                            const SizedBox(
+                                                                height: 32),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+                                                leading: AppIcons.btcIcon(
+                                                    width: 32, height: 32),
+                                                title: Text(
+                                                  addy.type.displayName,
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .labelSmall, // smaller than default
+                                                ),
+                                                subtitle: Text(
+                                                    addy.shortAddress(),
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .labelMedium),
+                                                trailing: Text("tk balance"));
+                                          },
+                                        ))
+                                  ]);
+
                           // TODO: Implement receive functionality
                         },
                       ),
@@ -218,24 +400,6 @@ class _PortfolioViewState extends State<PortfolioView>
                       ),
                     ),
                     const SizedBox(width: spacing),
-                    Expanded(
-                      child: HorizonButton(
-                        child: TextButtonContent(
-                            value: 'Mint',
-                            style: const TextStyle(
-                              fontSize: 12,
-                            )),
-                        height: 44,
-                        borderRadius: 18,
-                        variant: ButtonVariant.black,
-                        icon: AppIcons.mintIcon(
-                          context: context,
-                        ),
-                        onPressed: () {
-                          // TODO: Implement mint functionality
-                        },
-                      ),
-                    ),
                   ],
                 );
               },
@@ -399,8 +563,7 @@ class _PortfolioViewState extends State<PortfolioView>
               children: [
                 // Balances tab
                 Padding(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: isSmallScreen ? 16 : 35),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: BalancesDisplay(
                     key: const Key('balances_view'),
                     searchQuery: _searchQuery,

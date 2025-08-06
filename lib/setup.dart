@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/data/services/mempool_price_service_impl.dart';
 
 import 'package:horizon/data/services/secure_kv_service_impl.dart';
-import 'package:horizon/data/sources/network/horizon_explorer_client.dart';
-import 'package:horizon/domain/entities/asset_search_result.dart';
+import 'package:horizon/domain/services/mempool_price_service.dart';
 import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 
@@ -18,7 +18,6 @@ import 'package:horizon/data/services/encryption_service/encryption_service_fact
 import 'package:horizon/data/services/bitcoind_service_impl.dart';
 import 'package:horizon/data/services/cache_provider_impl.dart';
 // import 'package:horizon/data/services/encryption_service_web_worker_impl.dart';
-import 'package:dio_smart_retry/dio_smart_retry.dart';
 // import 'package:horizon/data/services/imported_address_service_impl.dart';
 import 'package:horizon/data/services/imported_address_service/imported_address_service_factory.dart';
 // import 'package:chrome_extension/tabs.dart';
@@ -36,8 +35,6 @@ import 'package:horizon/data/services/mnemonic_service/mnemonic_service_factory.
 // import 'package:horizon/data/services/transaction_service_impl.dart';
 import 'package:horizon/data/services/transaction_service/transaction_service_factory.dart';
 // import 'package:horizon/data/services/wallet_service_impl.dart';
-import 'package:horizon/data/sources/network/api/v2_api.dart';
-import 'package:horizon/data/sources/repositories/account_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/account_settings_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/address_tx_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/balance_repository_impl.dart';
@@ -109,10 +106,12 @@ import 'package:horizon/data/sources/repositories/dispenser_repository_impl.dart
 import "package:horizon/domain/repositories/fee_estimates_repository.dart";
 import 'package:horizon/data/sources/repositories/fee_estimates_repository_mempool_space_impl.dart';
 
-import 'package:horizon/data/sources/network/mempool_space_client.dart';
+import "package:horizon/domain/repositories/atomic_swap_repository.dart";
+import 'package:horizon/data/sources/repositories/atomic_swap_repository_impl.dart';
+
+import 'package:horizon/data/sources/network/mempool_space_client_factory.dart';
 
 import 'package:horizon/domain/services/analytics_service.dart';
-import 'package:horizon/data/services/analytics_service_impl.dart';
 import 'package:horizon/presentation/common/usecase/set_mnemonic_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_chained_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/close_dispenser/usecase/fetch_form_data.dart';
@@ -137,7 +136,6 @@ import 'package:logger/logger.dart' as logger;
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/data/logging/logger_impl.dart';
 import 'package:horizon/domain/entities/extension_rpc.dart';
-import 'package:horizon/domain/entities/address_rpc.dart';
 
 // will need to move this import elsewhere for compile to native
 // import 'dart:html' as html;
@@ -346,10 +344,11 @@ void setup() {
   injector.registerSingleton<EsploraClientFactory>(EsploraClientFactory());
   injector.registerSingleton<CounterpartyClientFactory>(
       CounterpartyClientFactory());
+  injector.registerSingleton<MempoolSpaceClientFactory>(
+      MempoolSpaceClientFactory());
 
-  injector.registerSingleton<AssetSearchRepository>(
-      AssetSearchRepositoryImpl());
-
+  injector
+      .registerSingleton<AssetSearchRepository>(AssetSearchRepositoryImpl());
 
   injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(
     esploraClientFactory: GetIt.I.get<EsploraClientFactory>(),
@@ -447,7 +446,7 @@ void setup() {
 
   injector.registerSingleton<FeeEstimatesRespository>(
       FeeEstimatesRespositoryMempoolSpaceImpl(
-          mempoolSpaceApi: MempoolSpaceApi()));
+          mempoolSpaceClientFactory: GetIt.I.get<MempoolSpaceClientFactory>()));
 
   injector.registerSingleton<NodeInfoRepository>(NodeInfoRepositoryImpl());
 
@@ -632,7 +631,6 @@ void setup() {
           config: config, logger: GetIt.I<Logger>())
       : VersionRepositoryImpl(config: config));
 
-
   // Register the appropriate platform service
   // if (GetIt.I.get<Config>().isWebExtension) {
   //   GetIt.I.registerSingleton<PlatformService>(PlatformServiceExtensionImpl());
@@ -648,6 +646,8 @@ void setup() {
 
   injector.registerSingleton<AddressV2Repository>(AddressV2RepositoryImpl());
 
+  injector.registerSingleton<AtomicSwapRepository>(AtomicSwapRepositoryImpl());
+
   injector.registerSingleton<SessionStateCubit>(SessionStateCubit(
       kvService: GetIt.I<SecureKVService>(),
       encryptionService: GetIt.I<EncryptionService>(),
@@ -658,6 +658,9 @@ void setup() {
       // addressRepository: GetIt.I<AddressRepository>(),
       // importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
       analyticsService: GetIt.I<AnalyticsService>()));
+
+  injector.registerSingleton<MempoolPriceService>(MempoolPriceServiceImpl(
+      mempoolSpaceClientFactory: GetIt.I.get<MempoolSpaceClientFactory>()));
 }
 
 class CustomDioException extends DioException {

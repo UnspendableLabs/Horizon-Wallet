@@ -15,6 +15,10 @@ class ComposeBurnParams extends ComposeParams {
 }
 
 class ComposeBurnResponse implements ComposeResponse {
+
+  @override
+  final String psbt;
+
   @override
   final String rawtransaction;
   @override
@@ -30,6 +34,7 @@ class ComposeBurnResponse implements ComposeResponse {
   final ComposeBurnResponseParams params;
 
   ComposeBurnResponse({
+    required this.psbt,
     required this.rawtransaction,
     required this.btcFee,
     required this.signedTxEstimatedSize,

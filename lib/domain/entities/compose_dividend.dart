@@ -22,6 +22,8 @@ class ComposeDividendParams extends ComposeParams {
 
 class ComposeDividendResponse implements ComposeResponse {
   @override
+  final String psbt;
+  @override
   final String rawtransaction;
   @override
   final int btcFee;
@@ -33,6 +35,7 @@ class ComposeDividendResponse implements ComposeResponse {
   final ComposeDividendResponseParams params;
 
   ComposeDividendResponse({
+    required this.psbt,
     required this.rawtransaction,
     required this.btcFee,
     required this.data,

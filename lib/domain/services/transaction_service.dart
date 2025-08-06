@@ -1,5 +1,7 @@
+import "package:flutter/cupertino.dart";
 import "package:horizon/domain/entities/utxo.dart";
 import "package:horizon/domain/entities/http_config.dart";
+import "package:horizon/domain/entities/bitcoin_tx.dart";
 import 'package:fpdart/fpdart.dart';
 
 class MakeRBFResponse {
@@ -17,8 +19,32 @@ class MakeRBFResponse {
   });
 }
 
+class UtxoWithTransaction {
+  final Utxo utxo;
+  final BitcoinTx transaction;
+  UtxoWithTransaction({
+    required this.utxo,
+    required this.transaction,
+  });
+}
+
+class MakeBuyPsbtReturn {
+  final String psbtHex;
+  final List<int> inputsToSign;
+  MakeBuyPsbtReturn({
+    required this.psbtHex,
+    required this.inputsToSign,
+  });
+
+  String toString() {
+    return 'MakeBuyPsbtReturn(psbtHex: $psbtHex, inputsToSign: $inputsToSign)';
+  }
+}
+
 abstract class TransactionService {
-  String signPsbt(String psbtHex, Map<int, String> inputPrivateKeyMap,
+  String finalizePsbtAndExtractTransaction({required String psbtHex});
+
+  String signPsbt(String psbtHex, Map<int, (String, String)> inputPrivateKeyMap,
       HttpConfig httpConfig,
       [List<int>? sighashTypes]);
 
@@ -29,6 +55,13 @@ abstract class TransactionService {
 
   Future<String> signTransaction(String unsignedTransaction, String privateKey,
       String sourceAddress, Map<String, Utxo> utxoMap, HttpConfig httpConfig);
+
+  Future<String> transactionToUnsignedPsbt(
+      String unsignedTransaction,
+      String privateKey,
+      String sourceAddress,
+      Map<String, Utxo> utxoMap,
+      HttpConfig httpConfig);
 
   int getVirtualSize(String unsignedTransaction);
 
@@ -45,6 +78,10 @@ abstract class TransactionService {
       required Map<String, Utxo> utxoMap});
 
   int countSigOps({
+    required String rawtransaction,
+  });
+
+  int countInputs({
     required String rawtransaction,
   });
 
@@ -67,6 +104,33 @@ abstract class TransactionService {
     required num newFee,
     required HttpConfig httpConfig,
   });
+
+  String makeSalePsbt({
+    required BigInt price,
+    required String source,
+    required String utxoTxid,
+    required int utxoVoutIndex,
+    required Vout utxoVout,
+    required HttpConfig httpConfig,
+  });
+
+  Future<MakeBuyPsbtReturn> makeBuyPsbt({
+    required String buyerAddress,
+    required String sellerAddress,
+    required List<UtxoWithTransaction> utxos,
+    required HttpConfig httpConfig,
+    required int utxoAssetValue, // TODO: convert to JS BigInt
+    required BitcoinTx sellerTransaction,
+    required UtxoID sellerUtxoID,
+    required int price, // TODO: convert to js BigInt
+    required int change,
+  });
+
+  Future<String> embedWitnessData(
+      {required String psbtHex,
+      required Map<int, (String, String)> inputPrivateKeyMap,
+      required Map<String, Utxo> utxoMap,
+      required HttpConfig httpConfig});
 }
 
 class TransactionServiceException implements Exception {
@@ -75,7 +139,55 @@ class TransactionServiceException implements Exception {
 }
 
 extension TransactionServiceX on TransactionService {
-  // --- Async methods wrapped in TaskEither ---
+  TaskEither<String, MakeBuyPsbtReturn> makeBuyPsbtT({
+    required String buyerAddress,
+    required String sellerAddress,
+    required List<UtxoWithTransaction> utxos,
+    required HttpConfig httpConfig,
+    required int utxoAssetValue, // TODO: convert to JS BigInt
+    required BitcoinTx sellerTransaction,
+    required UtxoID sellerUtxoID,
+    required int price, // TODO: convert to js BigInt
+    required int change,
+    required String Function(Object error) onError,
+  }) {
+    return TaskEither.tryCatch(
+      () => makeBuyPsbt(
+        buyerAddress: buyerAddress,
+        sellerAddress: sellerAddress,
+        utxos: utxos,
+        httpConfig: httpConfig,
+        utxoAssetValue: utxoAssetValue,
+        sellerTransaction: sellerTransaction,
+        sellerUtxoID: sellerUtxoID,
+        price: price,
+        change: change,
+      ),
+      (e, _) => onError(e),
+    );
+  }
+
+  Either<String, String> makeSalePsbtT({
+    required BigInt price,
+    required String source,
+    required String utxoTxid,
+    required int utxoVoutIndex,
+    required Vout utxoVout,
+    required HttpConfig httpConfig,
+    required String Function(Object error) onError,
+  }) {
+    return Either.tryCatch(
+      () => makeSalePsbt(
+        price: price,
+        source: source,
+        utxoTxid: utxoTxid,
+        utxoVoutIndex: utxoVoutIndex,
+        utxoVout: utxoVout,
+        httpConfig: httpConfig,
+      ),
+      (e, _) => onError(e),
+    );
+  }
 
   TaskEither<String, String> signTransactionT({
     required String unsignedTransaction,
@@ -149,7 +261,7 @@ extension TransactionServiceX on TransactionService {
 
   Either<String, String> signPsbtT({
     required String psbtHex,
-    required Map<int, String> inputPrivateKeyMap,
+    required Map<int, (String, String)> inputPrivateKeyMap,
     required HttpConfig httpConfig,
     List<int>? sighashTypes,
     required String Function(Object error) onError,
@@ -233,6 +345,44 @@ extension TransactionServiceX on TransactionService {
     return Either.tryCatch(
       () => countSigOps(rawtransaction: rawTransaction),
       (e, _) => onError(e),
+    );
+  }
+
+  Either<String, int> countInputsT({
+    required String rawTransaction,
+    required String Function(Object error) onError,
+  }) {
+    return Either.tryCatch(
+      () => countInputs(rawtransaction: rawTransaction),
+      (e, _) => onError(e),
+    );
+  }
+
+  TaskEither<String, String> embedWitnessDataT({
+    required String psbtHex,
+    required Map<int, (String, String)> inputPrivateKeyMap,
+    required Map<String, Utxo> utxoMap,
+    required HttpConfig httpConfig,
+    required String Function(Object error, StackTrace callstack) onError,
+  }) {
+    return TaskEither.tryCatch(
+      () => embedWitnessData(
+        psbtHex: psbtHex,
+        inputPrivateKeyMap: inputPrivateKeyMap,
+        utxoMap: utxoMap,
+        httpConfig: httpConfig,
+      ),
+      (e, callstack) => onError(e, callstack),
+    );
+  }
+
+  Either<String, String> finalizePsbtAndExtractTransactionT({
+    required String psbtHex,
+    required String Function(Object error, StackTrace callstack) onError,
+  }) {
+    return Either.tryCatch(
+      () => finalizePsbtAndExtractTransaction(psbtHex: psbtHex),
+      (e, callstack) => onError(e, callstack),
     );
   }
 }

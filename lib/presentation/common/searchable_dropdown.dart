@@ -94,21 +94,19 @@ class _SearchableDropdownState<T> extends State<SearchableDropdown<T>> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Container(
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 20,
-                                ),
-                                height: 56,
-                                child: HorizonTextField(
-                                    suffixIcon: AppIcons.searchIcon(
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 20,
+                                  ),
+                                  height: 56,
+                                  child: HorizonTextField(
+                                      suffixIcon: AppIcons.searchIcon(
                                           context: context,
                                           width: 24,
                                           height: 24),
                                       controller: widget.searchController,
                                       hintText:
-                                          widget.searchHintText ?? "Search")
-                                          
-                                          ),
+                                          widget.searchHintText ?? "Search")),
                               ...widget.items.map((item) {
                                 return Material(
                                   color: Colors.transparent,

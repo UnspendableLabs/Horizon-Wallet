@@ -6,23 +6,42 @@ import 'package:horizon/js/buffer.dart';
 import "./signer.dart";
 
 extension type WitnessUTXO._(JSObject o) implements JSObject {
-  external WitnessUTXO({JSUint8Array script, int value});
+  external WitnessUTXO({Buffer script, int value});
 }
 
 // extension TxInput {
 extension type TxInput._(JSObject _) implements JSObject {
-  external JSUint8Array hash;
+  external factory TxInput.make({
+    Buffer hash,
+    int index,
+    JSUint8Array? script,
+    int? sequence,
+    JSUint8Array? witness,
+    WitnessUTXO? witnessUtxo,
+    Buffer? nonWitnessUtxo,
+    int? sighashType,
+  });
+
+  external Buffer hash;
   external int index;
   external JSUint8Array script;
   external int sequence;
   external JSUint8Array witness;
   external WitnessUTXO? witnessUtxo;
   external Buffer? nonWitnessUtxo;
+  external int? sighashType;
 }
 
 extension type TxOutput._(JSObject _) implements JSObject {
+  external factory TxOutput.make({
+    JSUint8Array? script,
+    int? value,
+    String address,
+  });
+
   external JSUint8Array script;
   external int value;
+  external String address;
 }
 
 extension type Transaction._(JSObject _) implements JSObject {
@@ -53,8 +72,17 @@ extension type PsbtCache._(JSObject _) implements JSObject {
   external int get fee;
 }
 
+
+
+extension type PsbtOptions._(JSObject o) implements JSObject {
+  external PsbtOptions({ JSAny network });
+}
+
 extension type Psbt._(JSObject _) implements JSObject {
-  external Psbt();
+  // chat there is somthing wrong with this binding. o
+  // the js equivalent suold be  new Psbt({ network: networkValue })
+
+  external factory Psbt(PsbtOptions options);
 
   external static Psbt fromHex(String hex);
   external String toHex();
@@ -77,6 +105,8 @@ extension type Psbt._(JSObject _) implements JSObject {
   external PsbtData get data;
 
   external int getFee();
+
+  external int get inputCount;
 
   @JS("__CACHE")
   external PsbtCache get cache;

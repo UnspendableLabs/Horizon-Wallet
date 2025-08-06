@@ -47,11 +47,10 @@ class CustomThemeExtension extends ThemeExtension<CustomThemeExtension> {
       fontFamily: 'Lato',
     ),
     number35Regular: TextStyle(
-      fontFamily: 'Lato',
-      fontSize: 35,
-      fontWeight: FontWeight.w400,
-      color: Colors.black
-    ),
+        fontFamily: 'Lato',
+        fontSize: 35,
+        fontWeight: FontWeight.w400,
+        color: Colors.black),
     offColorText: offBlack,
   );
 

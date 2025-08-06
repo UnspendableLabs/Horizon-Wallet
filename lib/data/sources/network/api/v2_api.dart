@@ -3213,8 +3213,11 @@ class ComposeIssuanceVerbose extends ComposeIssuance {
   final ComposeIssuanceVerboseParams params;
   final int btcFee;
   final SignedTxEstimatedSizeModel signedTxEstimatedSize;
+  final String psbt;
+
 
   ComposeIssuanceVerbose({
+    required this.psbt,
     required super.rawtransaction,
     required super.name,
     required this.params,
@@ -3297,6 +3300,7 @@ class ComposeDispenserParams {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class ComposeDispenserVerbose extends ComposeDispenser {
+  final String psbt;
   @override
   final ComposeDispenserVerboseParams params;
   final int btcIn;
@@ -3306,6 +3310,7 @@ class ComposeDispenserVerbose extends ComposeDispenser {
   final String data;
   final SignedTxEstimatedSizeModel signedTxEstimatedSize;
   ComposeDispenserVerbose({
+    required this.psbt,
     required super.rawtransaction,
     required super.name,
     required this.params,
@@ -3629,10 +3634,13 @@ class SendTxVerbose extends SendTx {
   final SendTxParamsVerbose params;
   final int btcFee;
   final SignedTxEstimatedSizeModel signedTxEstimatedSize;
+  final String psbt;
+
 
   const SendTxVerbose({
     required this.params,
     required super.rawtransaction,
+    required this.psbt,
     required this.btcFee,
     required super.name,
     required this.signedTxEstimatedSize,
@@ -3650,6 +3658,7 @@ class ComposeMpmaSend {
   final String name;
   final String data;
   final String rawtransaction;
+  final String psbt;
   final int btcIn;
   final int btcOut;
   final int btcFee;
@@ -3661,6 +3670,7 @@ class ComposeMpmaSend {
     required this.name,
     required this.data,
     required this.rawtransaction,
+    required this.psbt,
     required this.btcIn,
     required this.btcOut,
     required this.btcFee,
@@ -5189,6 +5199,7 @@ abstract class V2Api {
     @Query("destination") String destination,
     @Query("asset") String asset,
     @Query("quantity") int quantity, [
+    @Query("memo") String? memo,
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
     @Query("sat_per_vbyte") num? satPerVbyte,
     @Query("inputs_set") String? inputsSet,
@@ -5201,6 +5212,7 @@ abstract class V2Api {
   Future<Response<ComposeMpmaSend>> composeMpmaSend(
     @Path("address") String address,
     @Query("destinations") String? destinations,
+    @Query("memos") List<String>? memos,
     @Query("assets") String? assets,
     @Query("quantities") String? quantities, [
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
@@ -5253,6 +5265,16 @@ abstract class V2Api {
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
+  ]);
+
+  @GET("/orders?verbose=true")
+  Future<Response<List<OrderVerbose>>> getOrders([
+    @Query("status") String? status,
+    @Query("get_asset") String? getAsset,
+    @Query("give_asset") String? giveAsset,
+    @Query("cursor") CursorModel? cursor,
+    @Query("limit") int? limit,
+    @Query("offset") int? offset,
   ]);
 
   @GET("/addresses/{address}/orders?verbose=true")
@@ -5458,7 +5480,8 @@ abstract class V2Api {
   Future<Response<ComposeAttachUtxoResponseModel>> composeAttachUtxo(
     @Path("address") String address,
     @Query("asset") String asset,
-    @Query("quantity") int quantity, [
+    @Query("quantity") int quantity,
+    @Query("utxo_value") int utxoValue, [
     @Query("destination_vout") String? destinationVout,
     @Query("skip_validation") bool? skipValidation,
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
@@ -5574,4 +5597,21 @@ abstract class V2Api {
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
     @Query("unconfirmed") bool? unconfirmed,
   ]);
+
+  @GET("/utxos/withbalances")
+  Future<Response<UtxoWithBalancesResponse>> utxosWithBalances(
+      @Query("utxos") String utxos);
+}
+
+@JsonSerializable()
+class UtxoWithBalancesResponse {
+  final Map<String, bool> result;
+
+  UtxoWithBalancesResponse({required this.result});
+
+  factory UtxoWithBalancesResponse.fromJson(Map<String, dynamic> json) =>
+      UtxoWithBalancesResponse(
+          result: json.map((k, v) => MapEntry(k, v as bool)));
+
+  Map<String, dynamic> toJson() => result;
 }

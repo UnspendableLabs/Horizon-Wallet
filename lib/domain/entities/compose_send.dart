@@ -7,12 +7,14 @@ class ComposeSendParams extends ComposeParams {
   final String destination;
   final String asset;
   final int quantity;
+  final String? memo;
 
   ComposeSendParams({
     required this.source,
     required this.destination,
     required this.asset,
     required this.quantity,
+    this.memo,
   });
 
   @override
@@ -32,6 +34,7 @@ class ComposeSendResponseParams {
   final bool useEnhancedSend;
   final AssetInfo assetInfo;
   final String quantityNormalized;
+  final String? memo;
 
   ComposeSendResponseParams(
       {required this.source,
@@ -40,12 +43,17 @@ class ComposeSendResponseParams {
       required this.quantity,
       required this.useEnhancedSend,
       required this.assetInfo,
-      required this.quantityNormalized});
+      required this.quantityNormalized,
+      this.memo});
 }
 
 class ComposeSendResponse extends ComposeResponse {
   @override
   final String rawtransaction;
+
+  @override
+  final String psbt;
+
   @override
   final int btcFee;
   @override
@@ -54,6 +62,7 @@ class ComposeSendResponse extends ComposeResponse {
   final String name;
 
   ComposeSendResponse({
+    required this.psbt,
     required this.rawtransaction,
     required this.params,
     required this.name,

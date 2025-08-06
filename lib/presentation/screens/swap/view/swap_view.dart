@@ -1,3 +1,5 @@
+import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:horizon/domain/entities/swap_type.dart';
@@ -11,6 +13,11 @@ import 'package:horizon/presentation/forms/asset_pair_form/asset_pair_form_view.
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
+import 'package:horizon/extensions.dart';
+
+import "./flows/atomic_swap_sell/atomic_swap_sell_flow.dart";
+import "./flows/atomic_swap_buy/atomic_swap_buy_flow.dart";
+import "./flows/order/order_flow.dart";
 
 class SwapFlowModel extends Equatable {
   final Option<SwapType> swapType;
@@ -30,7 +37,12 @@ class SwapFlowController extends FlowController<SwapFlowModel> {
 }
 
 class SwapFlowView extends StatefulWidget {
-  const SwapFlowView({super.key});
+  Config _config;
+
+  SwapFlowView({
+    super.key,
+    Config? config,
+  }) : _config = config ?? GetIt.I.get<Config>();
 
   @override
   State<SwapFlowView> createState() => _SwapFlowViewState();
@@ -43,8 +55,8 @@ class _SwapFlowViewState extends State<SwapFlowView> {
   void initState() {
     super.initState();
     _controller = SwapFlowController(
-      initialState: const SwapFlowModel(swapType: Option.none()),
-    );
+        // initialState: const SwapFlowModel(swapType: Option.none()),
+        initialState: const SwapFlowModel(swapType: Option.none()));
   }
 
   @override
@@ -55,10 +67,11 @@ class _SwapFlowViewState extends State<SwapFlowView> {
       controller: _controller,
       onGeneratePages: (model, pages) {
         return [
-          MaterialPage(child: Builder(builder: (context) {
+          Option.of(MaterialPage(child: Builder(builder: (context) {
             return FlowStep(
               title: "Swap",
-              widthFactor: .25,
+              // TODO: this needs to be dynamic based on current step / estimated number of steps
+              widthFactor: .2,
               // TODO: rename to AssetPairForm
               body: AssetPairLoader(
                   addresses: session.addresses,
@@ -70,8 +83,16 @@ class _SwapFlowViewState extends State<SwapFlowView> {
                         const Center(child: CircularProgressIndicator()),
                       Success(value: var data) => AssetPairFormProvider(
                           balances: data.balances,
-                          child: (actions, state) =>
-                              AssetPairForm(actions: actions, state: state)),
+                          child: (actions, state) => AssetPairForm(
+                              onSubmit: (swapType) {
+                                context
+                                    .flow<SwapFlowModel>()
+                                    .update((model) => model.copyWith(
+                                          swapType: Option.of(swapType),
+                                        ));
+                              },
+                              actions: actions,
+                              state: state)),
                       Failure(error: var error) => Text(error.toString()),
                       Refreshing() => throw UnimplementedError(),
                     };
@@ -88,10 +109,65 @@ class _SwapFlowViewState extends State<SwapFlowView> {
                 ),
               ),
             );
-          }))
-        ];
+          }))),
+          model.swapType.map((swapType) => switch (swapType) {
+                AtomicSwapSell(giveBalance: var balance) => MaterialPage(
+                    child: AtomicSwapSellFlowView(
+                      addresses: session.addresses,
+                      balances: balance,
+                    ),
+                  ),
+                AtomicSwapBuy(
+                  btcBalance: var btcBalance,
+                  receiveAsset: var receiveAsset
+                ) =>
+                  MaterialPage(
+                    child: AtomicSwapBuyFlowView(
+                        // TODO: this is a little messy, for sure
+                        addresses: session.addresses,
+                        receiveAsset: receiveAsset,
+                        balances: btcBalance,
+                        onExitFlow: () {
+                          Navigator.of(context).pop();
+                        }),
+                  ),
+                CounterpartyOrder(
+                  giveBalance: var giveBalance,
+                  receiveAsset: var receiveAsset,
+                ) =>
+                  MaterialPage(
+                      child: OrderFlowView(
+                    addresses: session.addresses,
+                    receiveAsset: receiveAsset,
+                    giveBalance: giveBalance,
+                  )),
+
+                // AtomicSwapSell(giveBalance: var balance) => MaterialPage(
+                //       child: FlowStep(
+                //     title: "Choose your asset / address",
+                //     widthFactor: .3,
+                //     body: AssetBalanceFormProvider(
+                //       multiAddressBalance: balance,
+                //       child: (actions, state) => Column(
+                //         children: [
+                //           AssetBalanceSuccessHandler(onSubmit: (option) {
+                //             print(option);
+                //           }),
+                //           AssetBalanceForm(
+                //             state: state,
+                //             actions: actions,
+                //           ),
+                //         ],
+                //       ),
+                //     ),
+                //   )),
+                _ => throw UnimplementedError("Swap type not implemented")
+              })
+        ]
+            .filter((page) => page.isSome())
+            .map((page) => page.getOrThrow())
+            .toList();
       },
     );
-    return Text("Swap View");
   }
 }

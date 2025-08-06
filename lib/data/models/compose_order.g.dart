@@ -13,6 +13,7 @@ ComposeOrderResponseModel _$ComposeOrderResponseModelFromJson(
       params: ComposeOrderResponseParamsModel.fromJson(
           json['params'] as Map<String, dynamic>),
       name: json['name'] as String,
+      psbt: json['psbt'] as String,
       btcIn: (json['btc_in'] as num).toInt(),
       btcOut: (json['btc_out'] as num).toInt(),
       btcChange: (json['btc_change'] as num).toInt(),
@@ -32,6 +33,7 @@ Map<String, dynamic> _$ComposeOrderResponseModelToJson(
       'btc_change': instance.btcChange,
       'btc_fee': instance.btcFee,
       'rawtransaction': instance.rawtransaction,
+      'psbt': instance.psbt,
       'params': instance.params,
       'signed_tx_estimated_size': instance.signedTxEstimatedSize,
     };
