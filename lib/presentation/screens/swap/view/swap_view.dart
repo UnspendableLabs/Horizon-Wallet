@@ -135,14 +135,12 @@ class _SwapFlowViewState extends State<SwapFlowView> {
                   giveBalance: var giveBalance,
                   receiveAsset: var receiveAsset,
                 ) =>
-                  widget._config.disableNativeOrders
-                      ? MaterialPage(child: Text("Native orders disabled"))
-                      : MaterialPage(
-                          child: OrderFlowView(
-                          addresses: session.addresses,
-                          receiveAsset: receiveAsset,
-                          giveBalance: giveBalance,
-                        )),
+                  MaterialPage(
+                      child: OrderFlowView(
+                    addresses: session.addresses,
+                    receiveAsset: receiveAsset,
+                    giveBalance: giveBalance,
+                  )),
 
                 // AtomicSwapSell(giveBalance: var balance) => MaterialPage(
                 //       child: FlowStep(

@@ -12,10 +12,6 @@ class MeilisearchConfig {
 abstract class Config {
   Version get version;
   String get versionInfoEndpoint;
-  // Network get network;
-  // String get counterpartyApiBase;
-  // String get esploraBase;
-  // String get blockCypherBase;
   bool get isDatabaseViewerEnabled;
   bool get isAnalyticsEnabled;
   bool get isWebExtension;
@@ -23,7 +19,6 @@ abstract class Config {
   double get sentrySampleRate;
   bool get isSentryEnabled;
   int get defaultEnvelopeSize;
-  bool get disableNativeOrders;
 
   Option<MeilisearchConfig> get meilisearchConfigMainnet;
   Option<MeilisearchConfig> get meilisearchConfigTestnet;

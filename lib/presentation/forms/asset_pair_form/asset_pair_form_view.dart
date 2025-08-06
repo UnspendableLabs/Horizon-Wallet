@@ -290,7 +290,9 @@ class _AssetPairFormState extends State<AssetPairForm> {
               height: 24,
             ),
             HorizonButton(
-                disabled: widget.state.disabled,
+                disabled: widget.state.disabled ||
+                    widget.state.swapType.fold((_) => false,
+                        (type) => type.runtimeType == CounterpartyOrder),
                 onPressed: () {
                   if (widget.state.disabled) return;
                   widget.actions.onSubmitClicked();
