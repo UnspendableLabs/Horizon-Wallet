@@ -36,8 +36,8 @@ import './session_state.dart';
 
 HttpConfig httpConfigForNetwork(Network network) {
   return switch (network) {
-    Network.mainnet => const Mainnet(),
-    Network.testnet4 => const Testnet4(),
+    Network.mainnet => Mainnet(),
+    Network.testnet4 => Testnet4(),
     // Network.custom => const Custom(esplora: 'http://localhost:3000'),
   };
 }
