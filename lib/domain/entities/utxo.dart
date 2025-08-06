@@ -6,7 +6,7 @@ class UtxoID {
 
   @override
   toString() {
-    return 'UtxoID(vout: $vout, txid: $txid)';
+    return '$txid:$vout';
   }
 }
 

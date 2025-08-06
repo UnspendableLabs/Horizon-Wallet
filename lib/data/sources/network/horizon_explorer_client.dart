@@ -24,6 +24,18 @@ class DataWrapper<T> {
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
+class AtomicSwapSaleResponse {
+  final String id;
+
+  AtomicSwapSaleResponse({
+    required this.id,
+  });
+
+  factory AtomicSwapSaleResponse.fromJson(Map<String, dynamic> json) =>
+      _$AtomicSwapSaleResponseFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
 class AtomicSwapBuyResponse {
   final AtomicSwapBuyResponseSwap atomicSwap;
   final String buyerAddress;
@@ -267,9 +279,14 @@ abstract class HorizonExplorerApii {
     @Query('order') String? order,
   ]);
 
-  @PUT('/atomic-swaps/{id}/buy')
+  @PUT('/atomic-swaps/{id}/multi-buy')
   Future<DataWrapper<AtomicSwapBuyResponse>> _atomicSwapBuy(
     @Path('id') String id,
+    @Body() Map<String, dynamic> body,
+  );
+
+  @POST('/atomic-swaps')
+  Future<DataWrapper<AtomicSwapSaleResponse>> _atomicSwapSale(
     @Body() Map<String, dynamic> body,
   );
 }
@@ -327,5 +344,36 @@ class HorizonExplorerApi {
     };
 
     return await _api._atomicSwapBuy(id, body);
+  }
+
+  Future<DataWrapper<AtomicSwapSaleResponse>> atomicSwapSale(
+      {required String psbtHex,
+      required String sellerAddress,
+      required UtxoID assetUtxoId,
+      required BigInt assetUtxoValue,
+      required String assetName,
+      required BigInt assetQuantity,
+      required BigInt price,
+      required DateTime expiresAt,
+      required String feePaymentId,
+      required String feeHex}) async {
+    final body = {
+      'data': {
+        'psbt_hex': psbtHex,
+        'seller_address': sellerAddress,
+        "asset_utxo_id": assetUtxoId.toString(),
+        "asset_utxo_value": assetUtxoValue,
+        "asset_name": assetName,
+        "asset_quantity": assetQuantity.toString(),
+        "price": price.toString(),
+        "expires_at": expiresAt.toIso8601String(),
+      },
+      "payment": {
+        "feePaymentId": feePaymentId,
+        "psbtHex": feeHex,
+      }
+    };
+
+    return await _api._atomicSwapSale(body);
   }
 }

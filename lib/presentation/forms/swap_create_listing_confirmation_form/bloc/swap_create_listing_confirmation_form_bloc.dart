@@ -190,18 +190,19 @@ class SwapCreateListingFormBloc
     on<SubmitClicked>(_handleSubmitClicked);
     on<CloseSignPsbtModalClicked>(_handleCloseSignPsbtModalClicked);
 
-    on<SignatureCompleted>((event, emit) {
-      emit(state.copyWith(
-        showSignPsbtModal: const Option.of(false),
-        submissionStatus: FormzSubmissionStatus.success,
-      ));
+    on<SignatureCompleted>(_handleSignatureCompleted);
+  }
 
-      emit(state.copyWith(
-        showSignPsbtModal: const Option.of(false),
-        submissionStatus: FormzSubmissionStatus.initial,
-      ));
-    });
-    add(const OnChainPaymentRequested());
+  _handleSignatureCompleted(SignatureCompleted event, emit) {
+    emit(state.copyWith(
+      showSignPsbtModal: const Option.of(false),
+      submissionStatus: FormzSubmissionStatus.success,
+    ));
+
+    emit(state.copyWith(
+      showSignPsbtModal: const Option.of(false),
+      submissionStatus: FormzSubmissionStatus.initial,
+    ));
   }
 
   _handleFeeOptionChanged(

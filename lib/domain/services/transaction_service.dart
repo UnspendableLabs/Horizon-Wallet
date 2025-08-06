@@ -114,14 +114,14 @@ abstract class TransactionService {
     required HttpConfig httpConfig,
   });
 
-  MakeBuyPsbtReturn makeBuyPsbt({
+  Future<MakeBuyPsbtReturn> makeBuyPsbt({
     required String buyerAddress,
     required String sellerAddress,
     required List<UtxoWithTransaction> utxos,
     required HttpConfig httpConfig,
     required int utxoAssetValue, // TODO: convert to JS BigInt
     required BitcoinTx sellerTransaction,
-    required int sellerVout,
+    required UtxoID sellerUtxoID,
     required int price, // TODO: convert to js BigInt
     required int change,
   });
@@ -139,19 +139,19 @@ class TransactionServiceException implements Exception {
 }
 
 extension TransactionServiceX on TransactionService {
-  Either<String, MakeBuyPsbtReturn> makeBuyPsbtT({
+  TaskEither<String, MakeBuyPsbtReturn> makeBuyPsbtT({
     required String buyerAddress,
     required String sellerAddress,
     required List<UtxoWithTransaction> utxos,
     required HttpConfig httpConfig,
     required int utxoAssetValue, // TODO: convert to JS BigInt
     required BitcoinTx sellerTransaction,
-    required int sellerVout,
+    required UtxoID sellerUtxoID,
     required int price, // TODO: convert to js BigInt
     required int change,
     required String Function(Object error) onError,
   }) {
-    return Either.tryCatch(
+    return TaskEither.tryCatch(
       () => makeBuyPsbt(
         buyerAddress: buyerAddress,
         sellerAddress: sellerAddress,
@@ -159,7 +159,7 @@ extension TransactionServiceX on TransactionService {
         httpConfig: httpConfig,
         utxoAssetValue: utxoAssetValue,
         sellerTransaction: sellerTransaction,
-        sellerVout: sellerVout,
+        sellerUtxoID: sellerUtxoID,
         price: price,
         change: change,
       ),

@@ -243,7 +243,6 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                                 atomicSwapSellVariant: const Option.none(),
                               ),
                             );
-                            
                           },
                           icon: AppIcons.backArrowIcon(
                             context: context,

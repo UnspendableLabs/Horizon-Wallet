@@ -22,6 +22,18 @@ Map<String, dynamic> _$DataWrapperToJson<T>(
       'data': toJsonT(instance.data),
     };
 
+AtomicSwapSaleResponse _$AtomicSwapSaleResponseFromJson(
+        Map<String, dynamic> json) =>
+    AtomicSwapSaleResponse(
+      id: json['id'] as String,
+    );
+
+Map<String, dynamic> _$AtomicSwapSaleResponseToJson(
+        AtomicSwapSaleResponse instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+    };
+
 AtomicSwapBuyResponse _$AtomicSwapBuyResponseFromJson(
         Map<String, dynamic> json) =>
     AtomicSwapBuyResponse(
@@ -395,7 +407,45 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
     )
         .compose(
           _dio.options,
-          '/atomic-swaps/${id}/buy',
+          '/atomic-swaps/${id}/multi-buy',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late DataWrapper<AtomicSwapBuyResponse> _value;
+    try {
+      _value = DataWrapper<AtomicSwapBuyResponse>.fromJson(
+        _result.data!,
+        (json) => AtomicSwapBuyResponse.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<DataWrapper<AtomicSwapBuyResponse>> _atomicSwapSale(
+      Map<String, dynamic> body) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    final _data = <String, dynamic>{};
+    _data.addAll(body);
+    final _options = _setStreamType<DataWrapper<AtomicSwapBuyResponse>>(Options(
+      method: 'POST',
+      headers: _headers,
+      extra: _extra,
+    )
+        .compose(
+          _dio.options,
+          '/atomic-swaps',
           queryParameters: queryParameters,
           data: _data,
         )

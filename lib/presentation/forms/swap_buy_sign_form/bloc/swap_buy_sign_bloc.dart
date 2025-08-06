@@ -360,31 +360,30 @@ class SwapBuySignFormBloc
         ),
       );
 
-      print("seleced sum ${selected.sum}");
-      print("selected price ${selected.price}");
-      print("atomt swap price ${state.current.atomicSwap.price.quantity}");
-      print("selected fee ${selected.fee}");
-      print("selected change ${selected.change}");
-
       return await $(
-        TaskEither.fromEither(_transactionService.makeBuyPsbtT(
+        _transactionService.makeBuyPsbtT(
           buyerAddress: buyerAddress.address,
           sellerAddress: sellerAddress,
           utxos: utxosWithTransactions,
           httpConfig: httpConfig,
           utxoAssetValue: assetUtxoValue,
           sellerTransaction: sellerTransaction,
-          sellerVout: state.current.atomicSwap.assetUtxoId.vout,
+          sellerUtxoID: state.current.atomicSwap.assetUtxoId,
           price: state.current.atomicSwap.price.quantity
               .toInt(), // TODO: convert to JS BigInt
           change: selected.change.toInt(), // TODO: compute change
           onError: (error) =>
               'Failed to create PSBT for buy transaction: $error',
-        )),
+        ),
       );
     });
 
     final result = await task.run();
+
+    print("\n\n\n");
+    print("da result");
+    print(result);
+    print("\n\n\n");
 
     result.fold((error) {
       print(error);
@@ -441,6 +440,11 @@ class SwapBuySignFormBloc
 
     final result = await task.run();
 
+    print("\n\n\n");
+    print("we tried to post the buy and we failed miserably");
+    print(result);
+    print("\n\n\n");
+
     if (result.isLeft()) {
       final error = result.getLeft();
 
@@ -448,8 +452,9 @@ class SwapBuySignFormBloc
           state.swapIndex,
           (swap) => swap.copyWith(
                 broadcastStatus: FormzSubmissionStatus.failure,
-                error: Option.of(error).getOrThrow(),
+                // error: Option.of(error).getOrThrow(),
               ));
+      print("did we get past the update fn?");
     } else {
       final success = result.getRight().getOrThrow();
 
@@ -459,7 +464,6 @@ class SwapBuySignFormBloc
                 broadcastStatus: FormzSubmissionStatus.success,
               )));
       await Future.delayed(const Duration(seconds: 1));
-
 
       if (state.next.isNone()) {
         print("no next swap, done");

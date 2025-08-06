@@ -1,6 +1,8 @@
 import 'package:horizon/domain/entities/atomic_swap/on_chain_payment.dart';
+import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap_buy.dart';
+import 'package:horizon/domain/entities/atomic_swap/atomic_swap_sale.dart';
 import "package:fpdart/fpdart.dart";
 import 'package:horizon/domain/entities/http_config.dart';
 
@@ -24,6 +26,19 @@ import 'package:horizon/domain/entities/http_config.dart';
 // };
 
 abstract class AtomicSwapRepository {
+  Future<AtomicSwapSale> atomicSwapSale(
+      {required HttpConfig httpConfig,
+      required String psbtHex,
+      required String sellerAddress,
+      required UtxoID assetUtxoId,
+      required BigInt assetUtxoValue,
+      required String assetName,
+      required BigInt assetQuantity,
+      required BigInt price,
+      required DateTime expiresAt,
+      required String feePaymentId,
+      required String feeHex});
+
   Future<AtomicSwapBuy> atomicSwapBuy({
     required HttpConfig httpConfig,
     required String id,

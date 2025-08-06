@@ -290,7 +290,7 @@ class AssetAttachFormBloc
 
     final result = await task.run();
 
-    result.fold((error) {
+    await result.fold((error) {
       emit(state.copyWith(
           submissionStatus: FormzSubmissionStatus.failure,
           error: error.toString()));
