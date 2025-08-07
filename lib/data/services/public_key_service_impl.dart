@@ -38,5 +38,6 @@ class PublicKeyServiceImpl implements PublicKeyService {
         Network.testnet => ecpair.testnet,
         Network.testnet4 => ecpair.testnet,
         Network.regtest => ecpair.regtest,
+        Network.signet => ecpair.testnet,
       };
 }

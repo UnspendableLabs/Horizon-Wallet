@@ -217,6 +217,7 @@ class AddressServiceImpl implements AddressService {
         Network.testnet => ecpair.testnet,
         Network.testnet4 => ecpair.testnet,
         Network.regtest => ecpair.regtest,
+        Network.signet => ecpair.testnet,
       };
 
   _getNetworkBech32() => switch (config.network) {
@@ -224,6 +225,7 @@ class AddressServiceImpl implements AddressService {
         Network.testnet => ecpair.testnet.bech32,
         Network.testnet4 => ecpair.testnet.bech32,
         Network.regtest => ecpair.regtest.bech32,
+        Network.signet => ecpair.testnet.bech32,
       };
 
   String _getPathForImportFormat(
