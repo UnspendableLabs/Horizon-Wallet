@@ -1,6 +1,6 @@
 import 'package:pub_semver/pub_semver.dart';
 
-enum Network { mainnet, testnet, testnet4, regtest }
+enum Network { mainnet, testnet, testnet4, regtest, signet }
 
 abstract class Config {
   Version get version;

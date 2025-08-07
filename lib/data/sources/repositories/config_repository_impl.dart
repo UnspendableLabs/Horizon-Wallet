@@ -22,6 +22,7 @@ class ConfigImpl implements Config {
       'testnet' => Network.testnet,
       'regtest' => Network.regtest,
       'testnet4' => Network.testnet4,
+      'signet' => Network.signet,
       'mainnet' => Network.mainnet,
       _ => throw Exception('Unknown network: $networkString'),
     };
@@ -37,6 +38,7 @@ class ConfigImpl implements Config {
         Network.mainnet => 'https://api.unspendablelabs.com:4000/v2',
         Network.testnet => 'https://api.unspendablelabs.com:14000/v2',
         Network.testnet4 => 'https://testnet4.counterparty.io:44000/v2/',
+        Network.signet => 'https://signet.counterparty.io:34000/v2/',
         Network.regtest => 'http://localhost:24000/v2'
       };
 
@@ -52,6 +54,7 @@ class ConfigImpl implements Config {
         Network.testnet => '',
         Network.testnet4 => '',
         Network.regtest => '',
+        Network.signet => '',
       };
 
   @override
@@ -66,6 +69,7 @@ class ConfigImpl implements Config {
         Network.testnet => '',
         Network.testnet4 => '',
         Network.regtest => '',
+        Network.signet => '',
       };
 
   @override
@@ -78,6 +82,7 @@ class ConfigImpl implements Config {
         Network.mainnet => "https://api.unspendablelabs.com:3000",
         Network.testnet => "https://api.unspendablelabs.com:13000",
         Network.testnet4 => 'https://testnet4.counterparty.io:43000',
+        Network.signet => 'https://signet.counterparty.io:33000',
         Network.regtest => "http://127.0.0.1:3002",
       };
 
@@ -87,6 +92,7 @@ class ConfigImpl implements Config {
         Network.testnet => "https://testnet-explorer.unspendablelabs.com",
         Network.testnet4 =>
           "https://mempool.space/testnet4", // TODO: update when testnet4 explorer is ready
+        Network.signet => "https://mempool.space/signet",
         Network.regtest => "http://127.0.0.1:3000",
       };
 
@@ -95,6 +101,7 @@ class ConfigImpl implements Config {
         Network.mainnet => "https://mempool.space",
         Network.testnet => "https://mempool.space/testnet",
         Network.testnet4 => "https://mempool.space/testnet4",
+        Network.signet => "https://mempool.space/signet",
         Network.regtest => "http://127.0.0.1:3000",
       };
 
@@ -127,6 +134,7 @@ class ConfigImpl implements Config {
         Network.testnet => '',
         Network.testnet4 => '',
         Network.regtest => '',
+        Network.signet => '',
       };
 
   @override
