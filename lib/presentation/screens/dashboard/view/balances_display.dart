@@ -481,7 +481,7 @@ class BalancesSliverState extends State<BalancesSliver> {
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             if (assetName == 'BTC' &&
-                _config.network == Network.testnet4 &&
+                (_config.network == Network.testnet4 || _config.network == Network.signet) &&
                 quantity > 0)
               SizedBox(
                 width: 32,
