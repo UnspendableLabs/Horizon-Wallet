@@ -1,5 +1,19 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/services.dart';
+import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
+import 'package:horizon/domain/entities/http_config.dart';
+import 'package:horizon/domain/entities/remote_data.dart';
+import 'package:horizon/domain/entities/utxo.dart';
+import 'package:horizon/domain/services/transaction_service.dart';
+import 'package:horizon/domain/repositories/atomic_swap_repository.dart';
+import 'package:horizon/domain/repositories/utxo_repository.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/remote_data_builder.dart';
+import 'package:horizon/presentation/common/transactions/success_animation.dart';
+import 'package:horizon/presentation/common/transactions/transaction_error.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/presentation/forms/base/flow/view/flow_step.dart';
@@ -13,6 +27,8 @@ import 'package:horizon/extensions.dart';
 import 'package:horizon/presentation/forms/asset_attach_form/asset_attach_form_view.dart';
 import 'package:horizon/presentation/forms/create_psbt_form/create_psbt_form_view.dart';
 import 'package:horizon/presentation/forms/swap_create_listing_confirmation_form/swap_create_listing_confirmation_form_view.dart';
+import 'package:lottie/lottie.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 sealed class AtomicSwapSellVariant {}
 
@@ -20,14 +36,14 @@ class AttachedAtomicSwapSell extends AtomicSwapSellVariant {
   final String asset;
   final String quantityNormalized;
   final int quantity;
-  final String utxo;
+  final UtxoID utxoId;
   final String utxoAddress;
 
   AttachedAtomicSwapSell({
     required this.asset,
     required this.quantityNormalized,
     required this.quantity,
-    required this.utxo,
+    required this.utxoId,
     required this.utxoAddress,
   });
 }
@@ -79,7 +95,7 @@ extension AtomicSwapSellVariantX on AssetBalanceFormModel {
           asset: asset,
           quantityNormalized: entry.quantityNormalized,
           quantity: entry.quantity,
-          utxo: entry.utxo!,
+          utxoId: UtxoID.fromString(entry.utxo!),
           utxoAddress: entry.utxoAddress!,
         ),
       );
@@ -101,25 +117,40 @@ class SwapSellConfirmationDetails {
   });
 }
 
+class OnChainPaymentDetails {
+  final String id;
+  final String signedPsbtHex;
+
+  const OnChainPaymentDetails({
+    required this.id,
+    required this.signedPsbtHex,
+  });
+}
+
 class AtomicSwapSellModel extends Equatable {
   final Option<AtomicSwapSellVariant> atomicSwapSellVariant;
   final Option<SwapSellConfirmationDetails> swapSellConfirmationDetails;
+  final Option<OnChainPaymentDetails> onChainPaymentDetails;
 
   const AtomicSwapSellModel(
       {required this.atomicSwapSellVariant,
-      required this.swapSellConfirmationDetails});
+      required this.swapSellConfirmationDetails,
+      required this.onChainPaymentDetails});
 
   @override
   List<Object?> get props => [];
 
   AtomicSwapSellModel copyWith(
           {Option<AtomicSwapSellVariant>? atomicSwapSellVariant,
-          Option<SwapSellConfirmationDetails>? swapSellConfirmationDetails}) =>
+          Option<SwapSellConfirmationDetails>? swapSellConfirmationDetails,
+          Option<OnChainPaymentDetails>? onChainPaymentDetails}) =>
       AtomicSwapSellModel(
         atomicSwapSellVariant:
             atomicSwapSellVariant ?? this.atomicSwapSellVariant,
         swapSellConfirmationDetails:
             swapSellConfirmationDetails ?? this.swapSellConfirmationDetails,
+        onChainPaymentDetails:
+            onChainPaymentDetails ?? this.onChainPaymentDetails,
       );
 }
 
@@ -129,12 +160,24 @@ class AtomicSwapSellFlowController extends FlowController<AtomicSwapSellModel> {
 }
 
 class AtomicSwapSellFlowView extends StatefulWidget {
-  final List<AddressV2> addresses;
+  final HttpConfig httpConfig;
 
+  final AtomicSwapRepository _atomicSwapRepository;
+  final UtxoRepository _utxoRepository;
+
+  final List<AddressV2> addresses;
   final MultiAddressBalance balances;
 
-  const AtomicSwapSellFlowView(
-      {required this.addresses, required this.balances, super.key});
+  AtomicSwapSellFlowView(
+      {required this.httpConfig,
+      required this.addresses,
+      required this.balances,
+      AtomicSwapRepository? atomicSwapRepository,
+      UtxoRepository? utxoRepository,
+      super.key})
+      : _utxoRepository = utxoRepository ?? GetIt.I<UtxoRepository>(),
+        _atomicSwapRepository =
+            atomicSwapRepository ?? GetIt.I<AtomicSwapRepository>();
 
   @override
   State<AtomicSwapSellFlowView> createState() => _AtomicSwapSellFlowViewState();
@@ -149,7 +192,8 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
     _controller = AtomicSwapSellFlowController(
         initialState: const AtomicSwapSellModel(
             atomicSwapSellVariant: Option.none(),
-            swapSellConfirmationDetails: Option.none()));
+            swapSellConfirmationDetails: Option.none(),
+            onChainPaymentDetails: Option.none()));
   }
 
   @override
@@ -254,7 +298,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                         title: "Create PSBT",
                         widthFactor: .8,
                         body: CreatePsbtFormProvider(
-                          utxoID: variant.utxo,
+                          utxoID: variant.utxoId.toString(),
                           address: widget.addresses.firstWhere((address) =>
                               address.address == variant.utxoAddress),
                           child: (actions, state) => Column(
@@ -285,7 +329,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                                 asset: variant.asset,
                                 quantity: variant.quantity,
                                 quantityNormalized: variant.quantityNormalized,
-                                utxo: variant.utxo,
+                                utxo: variant.utxoId.toString(),
                                 utxoAddress: variant.utxoAddress,
                               ),
                             ],
@@ -297,6 +341,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                     title: "Post Listing",
                     widthFactor: .9,
                     body: SwapCreateListingFormProvider(
+                        signedSwapPsbtHex: details.signedPsbt,
                         address: widget.addresses.firstWhere((address) =>
                             address.address == details.sellDetails.utxoAddress),
                         giveAsset: details.sellDetails.asset,
@@ -308,7 +353,17 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                               children: [
                                 SwapOnChainFeeSignHandler(
                                     address: details.sellDetails.utxoAddress,
-                                    onSuccess: actions.onSignatureCompleted,
+                                    onSuccess: (data) => {
+                                          _controller.update(
+                                            (model) => model.copyWith(
+                                                onChainPaymentDetails: Option
+                                                    .of(OnChainPaymentDetails(
+                                                        signedPsbtHex:
+                                                            data.signedPsbtHex,
+                                                        id: data
+                                                            .onChainPaymentId))),
+                                          )
+                                        },
                                     onClose: () {
                                       actions.onCloseSignPsbtModalClicked();
                                     }),
@@ -316,12 +371,296 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                                     actions: actions, state: state),
                               ],
                             ))),
-              ))
+              )),
+          model.onChainPaymentDetails.map(
+            (a) => MaterialPage(
+                child: Scaffold(
+                    appBar: PreferredSize(
+                        preferredSize: const Size.fromHeight(72),
+                        child: Container(
+                          height: 46,
+                          width: double.infinity,
+                          padding: const EdgeInsets.only(
+                              left: 12, top: 0, bottom: 0, right: 12),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              IconButton(
+                                onPressed: () {
+                                  context.go("/dashboard");
+                                },
+                                icon: AppIcons.closeIcon(
+                                  context: context,
+                                  width: 24,
+                                  height: 24,
+                                  fit: BoxFit.fitHeight,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )),
+                    body: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: RemoteDataTaskEitherBuilder(
+                            task: TaskEither<String, String>.Do(($) async {
+                          final swapSellDetails =
+                              model.swapSellConfirmationDetails.getOrThrow();
+
+                          final signedSwapPsbt = swapSellDetails.signedPsbt;
+
+                          final sellerAddress = widget.addresses.firstWhere(
+                              (address) =>
+                                  address.address ==
+                                  swapSellDetails.sellDetails.utxoAddress);
+
+                          final assetUtxoId =
+                              swapSellDetails.sellDetails.utxoId;
+
+                          final utxoMap = await $(
+                              widget._utxoRepository.getUTXOMapForAddressT(
+                            httpConfig: widget.httpConfig,
+                            address: sellerAddress,
+                          ));
+
+                          final utxo = utxoMap[assetUtxoId.toString()];
+
+                          final btcPrice = swapSellDetails.btcPrice;
+
+                          final assetQuantity =
+                              swapSellDetails.sellDetails.quantity;
+
+                          final atomicSwap = await $(
+                              widget._atomicSwapRepository.atomicSwapCreateT(
+                                  httpConfig: widget.httpConfig,
+                                  psbtHex: signedSwapPsbt,
+                                  sellerAddress: sellerAddress.address,
+                                  assetUtxoId: assetUtxoId.toString(),
+                                  feePaymentPsbtHex: a.signedPsbtHex,
+                                  feePaymentId: a.id,
+                                  price: btcPrice.toInt(), // TODO
+                                  assetQuantity: assetQuantity,
+                                  assetUtxoValue: utxo?.value ?? 0,
+                                  assetName: swapSellDetails.sellDetails.asset,
+                                  expiresAt: DateTime.now()
+                                      .add(const Duration(days: 7))));
+
+                          return atomicSwap.id;
+
+                          // return hash;
+                        }), builder: (context, state, retry) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 500),
+                                  child: state.fold3(
+                                    onNone: () => Center(
+                                        child: Lottie.asset(
+                                      "assets/lottie/txn_success_anim.json",
+                                      width: 127,
+                                      key: const ValueKey('lottie'),
+                                    )),
+                                    onReplete: (_) =>
+                                        Center(child: TxnSuccessAnimation()),
+                                    onFailure: (err) => TransactionError(
+                                      errorMessage: err.toString(),
+                                      onErrorButtonAction: retry,
+                                      buttonText: "Retry",
+                                    ),
+                                  )),
+                              commonHeightSizedBox,
+                              state.fold3(
+                                onNone: () => Text(
+                                  "Creating swap...",
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium,
+                                ),
+                                onFailure: (_) => SizedBox.shrink(),
+                                onReplete: (hash) => Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text("Successfully created swap",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleMedium!),
+                                  ],
+                                ),
+                              ),
+                              commonHeightSizedBox,
+                              commonHeightSizedBox,
+                              Container(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 14.0),
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(18),
+                                  border: Border.all(
+                                    color: Theme.of(context)
+                                            .inputDecorationTheme
+                                            .outlineBorder
+                                            ?.color ??
+                                        transparentBlack8,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Padding(
+                                        padding:
+                                            const EdgeInsets.only(left: 8.0),
+                                        child: RichText(
+                                          text: TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: 'Swap id: ',
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .labelSmall
+                                                    ?.copyWith(
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color: Theme.of(context)
+                                                          .textTheme
+                                                          .labelSmall
+                                                          ?.color,
+                                                    ),
+                                              ),
+                                              TextSpan(
+                                                text: state.fold3(
+                                                    onNone: () => '',
+                                                    onFailure: (_) => '',
+                                                    onReplete: (hash) =>
+                                                        hash.replaceRange(
+                                                            6,
+                                                            hash.length - 6,
+                                                            '...')),
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodySmall
+                                                    ?.copyWith(
+                                                      color: Theme.of(context)
+                                                          .textTheme
+                                                          .bodySmall
+                                                          ?.color,
+                                                    ),
+                                              ),
+                                            ],
+                                          ),
+                                          overflow: TextOverflow.visible,
+                                          maxLines: 1,
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(right: 8.0),
+                                      child: TextButton(
+                                        style: Theme.of(context)
+                                            .textButtonTheme
+                                            .style
+                                            ?.copyWith(
+                                              backgroundColor:
+                                                  WidgetStateProperty.all(
+                                                transparentPurple8,
+                                              ),
+                                              padding: WidgetStateProperty.all(
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 12),
+                                              ),
+                                            ),
+                                        onPressed: state.fold3(
+                                            onNone: () => () {},
+                                            onFailure: (_) => () {},
+                                            onReplete: (hash) => () {
+                                                  Clipboard.setData(
+                                                      ClipboardData(
+                                                          text: hash));
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
+                                                    const SnackBar(
+                                                      content: Text(
+                                                          'swap id copied to clipboard'),
+                                                      duration:
+                                                          Duration(seconds: 2),
+                                                    ),
+                                                  );
+                                                }),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            AppIcons.copyIcon(
+                                              context: context,
+                                              width: 16,
+                                              height: 16,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              'COPY',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 28),
+                              HorizonButton(
+                                onPressed: state.fold3(
+                                    onNone: () => () {},
+                                    onFailure: (_) => () {},
+                                    onReplete: (hash) => () {
+                                          _launchExplorer(
+                                              hash, widget.httpConfig);
+                                        }),
+                                disabled: state.fold3(
+                                  onNone: () => true,
+                                  onFailure: (_) => true,
+                                  onReplete: (_) => false,
+                                ),
+                                child: TextButtonContent(value: "View Swap"),
+                                variant: ButtonVariant.black,
+                              ),
+                              commonHeightSizedBox,
+                              HorizonButton(
+                                onPressed: state.fold3(
+                                    onNone: () => () {},
+                                    onFailure: (_) => () {},
+                                    onReplete: (hash) => () {
+                                          _launchExplorer(
+                                              hash, widget.httpConfig);
+                                        }),
+                                child: TextButtonContent(value: "Close"),
+                                disabled: state.fold3(
+                                  onNone: () => true,
+                                  onFailure: (_) => true,
+                                  onReplete: (_) => false,
+                                ),
+                                variant: ButtonVariant.black,
+                              ),
+                            ],
+                          );
+                        })))),
+          )
         ]
             .filter((page) => page.isSome())
             .map((page) => page.getOrThrow())
             .toList();
       },
     );
+  }
+
+  Future<void> _launchExplorer(
+    String hash,
+    HttpConfig httpConfig,
+  ) async {
+    final uri = Uri.parse("${httpConfig.btcExplorer}/tx/$hash");
+    if (!await launchUrl(uri)) {
+      throw Exception('Could not launch $uri');
+    }
   }
 }

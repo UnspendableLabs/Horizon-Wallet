@@ -8,6 +8,7 @@ import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/compose_attach_utxo.dart';
+import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import "package:horizon/presentation/forms/base/transaction_form_model_base.dart";
@@ -283,7 +284,7 @@ class AssetAttachFormBloc
         asset: composeResponse.params.asset,
         quantity: composeResponse.params.quantity,
         quantityNormalized: composeResponse.params.quantityNormalized,
-        utxo: "${broadcastResponse.hash}:0",
+        utxoId: UtxoID.fromString("${broadcastResponse.hash}:0"),
         utxoAddress: composeResponse.params.source,
       );
     });

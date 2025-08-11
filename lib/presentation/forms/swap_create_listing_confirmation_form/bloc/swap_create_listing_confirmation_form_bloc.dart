@@ -9,6 +9,7 @@ import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/compose_attach_utxo.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/atomic_swap/on_chain_payment.dart';
+import 'package:horizon/domain/entities/atomic_swap/atomic_swap_create.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/atomic_swap_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
@@ -190,19 +191,7 @@ class SwapCreateListingFormBloc
     on<SubmitClicked>(_handleSubmitClicked);
     on<CloseSignPsbtModalClicked>(_handleCloseSignPsbtModalClicked);
 
-    on<SignatureCompleted>(_handleSignatureCompleted);
-  }
-
-  _handleSignatureCompleted(SignatureCompleted event, emit) {
-    emit(state.copyWith(
-      showSignPsbtModal: const Option.of(false),
-      submissionStatus: FormzSubmissionStatus.success,
-    ));
-
-    emit(state.copyWith(
-      showSignPsbtModal: const Option.of(false),
-      submissionStatus: FormzSubmissionStatus.initial,
-    ));
+    add(const OnChainPaymentRequested());
   }
 
   _handleFeeOptionChanged(
@@ -260,6 +249,8 @@ class SwapCreateListingFormBloc
     SubmitClicked event,
     Emitter<SwapCreateListingFormModel> emit,
   ) async {
+    print(event);
+
     emit(state.copyWith(
         submissionStatus: FormzSubmissionStatus.inProgress,
         showSignPsbtModal: const Option.of(true)));

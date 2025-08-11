@@ -22,8 +22,18 @@ import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 
+class SignOnChainPaymentSuccess {
+  final String signedPsbtHex;
+  final String onChainPaymentId;
+
+  SignOnChainPaymentSuccess({
+    required this.signedPsbtHex,
+    required this.onChainPaymentId,
+  });
+}
+
 class SwapOnChainFeeSignHandler extends StatelessWidget {
-  final Function(String signedPsbtHex) onSuccess;
+  final Function(SignOnChainPaymentSuccess signedPsbtHex) onSuccess;
   final VoidCallback onClose;
   final String address;
 
@@ -42,7 +52,7 @@ class SwapOnChainFeeSignHandler extends StatelessWidget {
           final settings = GetIt.I<SettingsRepository>();
 
           if (state.showSignPsbtModal) {
-            final result = await WoltModalSheet.show(
+            await WoltModalSheet.show(
                 context: context,
                 modalTypeBuilder: (_) => WoltModalType.bottomSheet(),
                 // pageContentDecorator: (child) {
@@ -96,7 +106,10 @@ class SwapOnChainFeeSignHandler extends StatelessWidget {
                                   passwordRequired: settings
                                       .requirePasswordForCryptoOperations,
                                   onSuccess: (signedPsbtHex) {
-                                    onSuccess(signedPsbtHex);
+                                    onSuccess(SignOnChainPaymentSuccess(
+                                        signedPsbtHex: signedPsbtHex,
+                                        onChainPaymentId:
+                                            onChainPayment.feePaymentId));
                                     Navigator.of(context).pop();
                                   },
                                 )),
@@ -129,6 +142,7 @@ class SwapCreateListingFormActions {
 class SwapCreateListingFormProvider extends StatelessWidget {
   final AddressV2 address;
 
+  final String signedSwapPsbtHex;
   final String giveAsset;
   final int giveQuantity;
   final String giveQuantityNormalized;
@@ -141,6 +155,7 @@ class SwapCreateListingFormProvider extends StatelessWidget {
 
   SwapCreateListingFormProvider({
     super.key,
+    required this.signedSwapPsbtHex,
     required this.address,
     required this.child,
     required this.giveAsset,
@@ -193,6 +208,8 @@ class SwapCreateListingFormProvider extends StatelessWidget {
                                   );
                             },
                             onSignatureCompleted: (signedPsbtHex) {
+                              print("signed psbt hex $signedPsbtHex");
+
                               context.read<SwapCreateListingFormBloc>().add(
                                   SignatureCompleted(
                                       signedPsbtHex: signedPsbtHex));

@@ -8,6 +8,10 @@ class UtxoID {
   toString() {
     return '$txid:$vout';
   }
+
+  UtxoID.fromString(String id)
+      : vout = int.parse(id.split(':')[1]),
+        txid = id.split(':')[0];
 }
 
 class Utxo {

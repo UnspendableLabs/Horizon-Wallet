@@ -254,6 +254,17 @@ class AtomicSwapListResponseData {
   }
 }
 
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AtomicSwapCreateResponseData {
+  final String id;
+  AtomicSwapCreateResponseData({
+    required this.id,
+  });
+  factory AtomicSwapCreateResponseData.fromJson(Map<String, dynamic> json) {
+    return _$AtomicSwapCreateResponseDataFromJson(json);
+  }
+}
+
 @RestApi()
 abstract class HorizonExplorerApii {
   factory HorizonExplorerApii(Dio dio, {String baseUrl}) = _HorizonExplorerApii;
@@ -271,6 +282,11 @@ abstract class HorizonExplorerApii {
   @POST('/on-chain-payment')
   Future<DataWrapper<OnChainPaymentModel>> _createOnChainPayment(
       @Body() Map<String, dynamic> body);
+
+  @POST('/atomic-swaps')
+  Future<DataWrapper<AtomicSwapCreateResponseData>> _createSwap(
+    @Body() Map<String, dynamic> body,
+  );
 
   @GET('/atomic-swaps')
   Future<DataWrapper<AtomicSwapListResponseData>> _getAtomicSwapsRaw([
@@ -323,6 +339,40 @@ class HorizonExplorerApi {
       }
     };
     return await _api._createOnChainPayment(body);
+  }
+
+  Future<DataWrapper<AtomicSwapCreateResponseData>> createAtomicSwap({
+    required String psbtHex,
+    required String sellerAddress,
+    required String assetUtxoId,
+    required int assetUtxoValue,
+    required String assetName,
+    required int assetQuantity,
+    required int price,
+    required DateTime expiresAt,
+    required String feePaymentId,
+    required String feePaymentPsbtHex,
+  }) async {
+    final body = {
+      "data": {
+        'data': {
+          'psbt_hex': psbtHex,
+          'seller_address': sellerAddress,
+          'asset_utxo_id': assetUtxoId, // e.g. "txid:vout"
+          'asset_utxo_value': assetUtxoValue, // in sats
+          'asset_name': assetName,
+          'asset_quantity': assetQuantity, // always 1 for atomic swaps
+          'price': price, // in sats
+          'expires_at': expiresAt.toIso8601String(),
+        },
+        "payment": {
+          "feePaymentId": feePaymentId,
+          "psbtHex": feePaymentPsbtHex,
+        }
+      }
+    };
+
+    return await _api._createSwap(body);
   }
 
 // TODO: this is a misnomer

@@ -2,7 +2,7 @@ import 'package:horizon/domain/entities/atomic_swap/on_chain_payment.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap_buy.dart';
-import 'package:horizon/domain/entities/atomic_swap/atomic_swap_sale.dart';
+import 'package:horizon/domain/entities/atomic_swap/atomic_swap_create.dart';
 import "package:fpdart/fpdart.dart";
 import 'package:horizon/domain/entities/http_config.dart';
 
@@ -26,18 +26,19 @@ import 'package:horizon/domain/entities/http_config.dart';
 // };
 
 abstract class AtomicSwapRepository {
-  Future<AtomicSwapSale> atomicSwapSale(
-      {required HttpConfig httpConfig,
-      required String psbtHex,
-      required String sellerAddress,
-      required UtxoID assetUtxoId,
-      required BigInt assetUtxoValue,
-      required String assetName,
-      required BigInt assetQuantity,
-      required BigInt price,
-      required DateTime expiresAt,
-      required String feePaymentId,
-      required String feeHex});
+  Future<AtomicSwapCreate> atomicSwapCreate({
+    required HttpConfig httpConfig,
+    required String psbtHex,
+    required String sellerAddress,
+    required String assetUtxoId,
+    required int assetUtxoValue,
+    required String assetName,
+    required int assetQuantity,
+    required int price,
+    required DateTime expiresAt,
+    required String feePaymentId,
+    required String feePaymentPsbtHex,
+  });
 
   Future<AtomicSwapBuy> atomicSwapBuy({
     required HttpConfig httpConfig,
@@ -62,6 +63,39 @@ abstract class AtomicSwapRepository {
 }
 
 extension AtomicSwapRepositoryX on AtomicSwapRepository {
+  TaskEither<String, AtomicSwapCreate> atomicSwapCreateT({
+    required HttpConfig httpConfig,
+    required String psbtHex,
+    required String sellerAddress,
+    required String assetUtxoId,
+    required int assetUtxoValue,
+    required String assetName,
+    required int assetQuantity,
+    required int price,
+    required DateTime expiresAt,
+    required String feePaymentId,
+    required String feePaymentPsbtHex,
+    String Function(Object error, StackTrace stacktrace)? onError,
+  }) {
+    return TaskEither.tryCatch(
+      () => atomicSwapCreate(
+        httpConfig: httpConfig,
+        psbtHex: psbtHex,
+        sellerAddress: sellerAddress,
+        assetUtxoId: assetUtxoId,
+        assetUtxoValue: assetUtxoValue,
+        assetName: assetName,
+        assetQuantity: assetQuantity,
+        price: price,
+        expiresAt: expiresAt,
+        feePaymentId: feePaymentId,
+        feePaymentPsbtHex: feePaymentPsbtHex,
+      ),
+      (error, stacktrace) =>
+          onError != null ? onError(error, stacktrace) : error.toString(),
+    );
+  }
+
   TaskEither<String, AtomicSwapBuy> atomicSwapBuyT({
     required HttpConfig httpConfig,
     required String id,

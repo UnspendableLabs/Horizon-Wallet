@@ -211,6 +211,18 @@ Map<String, dynamic> _$AtomicSwapListResponseDataToJson(
       'count': instance.count,
     };
 
+AtomicSwapCreateResponseData _$AtomicSwapCreateResponseDataFromJson(
+        Map<String, dynamic> json) =>
+    AtomicSwapCreateResponseData(
+      id: json['id'] as String,
+    );
+
+Map<String, dynamic> _$AtomicSwapCreateResponseDataToJson(
+        AtomicSwapCreateResponseData instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+    };
+
 // **************************************************************************
 // RetrofitGenerator
 // **************************************************************************
@@ -335,6 +347,46 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
       _value = DataWrapper<OnChainPaymentModel>.fromJson(
         _result.data!,
         (json) => OnChainPaymentModel.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<DataWrapper<AtomicSwapCreateResponseData>> _createSwap(
+      Map<String, dynamic> body) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    final _data = <String, dynamic>{};
+    _data.addAll(body);
+    final _options =
+        _setStreamType<DataWrapper<AtomicSwapCreateResponseData>>(Options(
+      method: 'POST',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/atomic-swaps',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late DataWrapper<AtomicSwapCreateResponseData> _value;
+    try {
+      _value = DataWrapper<AtomicSwapCreateResponseData>.fromJson(
+        _result.data!,
+        (json) =>
+            AtomicSwapCreateResponseData.fromJson(json as Map<String, dynamic>),
       );
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);

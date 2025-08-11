@@ -402,22 +402,13 @@ class _SendViewState extends State<SendView> {
                                 duration: const Duration(milliseconds: 500),
                                 child: state.fold3(
                                   onNone: () => Center(
-                                    child:  Lottie.asset(
-                                            "assets/lottie/txn_success_anim.json",
-                                            width: 127,
-                                            key: const ValueKey('lottie'),
-                                          )
-                                  ),
-                                  onReplete: (_) => Center(
-                                    child: TxnSuccessAnimation()
-                                    // SvgPicture.asset(
-                                    //   "assets/icons/txn_success_check.svg",
-                                    //   width: 127,
-                                    //   key: const ValueKey('svg'),
-                                    //   colorBlendMode: BlendMode.srcOver,
-                                    //   fit: BoxFit.contain,
-                                    // ),
-                                  ),
+                                      child: Lottie.asset(
+                                    "assets/lottie/txn_success_anim.json",
+                                    width: 127,
+                                    key: const ValueKey('lottie'),
+                                  )),
+                                  onReplete: (_) =>
+                                      Center(child: TxnSuccessAnimation()),
                                   onFailure: (err) => TransactionError(
                                     errorMessage: err.toString(),
                                     onErrorButtonAction: retry,

@@ -3,6 +3,7 @@ import "package:horizon/domain/repositories/atomic_swap_repository.dart";
 import 'package:horizon/domain/entities/atomic_swap/on_chain_payment.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
+import 'package:horizon/domain/entities/atomic_swap/atomic_swap_create.dart';
 import 'package:horizon/data/sources/network/horizon_explorer_client_factory.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap_buy.dart';
@@ -17,6 +18,40 @@ class AtomicSwapRepositoryImpl implements AtomicSwapRepository {
             GetIt.I<HorizonExplorerClientFactory>();
 
   @override
+  Future<AtomicSwapCreate> atomicSwapCreate({
+    required HttpConfig httpConfig,
+    required String psbtHex,
+    required String sellerAddress,
+    required String assetUtxoId,
+    required int assetUtxoValue,
+    required String assetName,
+    required int assetQuantity,
+    required int price,
+    required DateTime expiresAt,
+    required String feePaymentId,
+    required String feePaymentPsbtHex,
+  }) async {
+    final client = _horizonExplorerClientFactory.getClient(httpConfig);
+
+    final res = await client.createAtomicSwap(
+      psbtHex: psbtHex,
+      sellerAddress: sellerAddress,
+      assetUtxoId: assetUtxoId,
+      assetUtxoValue: assetUtxoValue,
+      assetName: assetName,
+      assetQuantity: assetQuantity,
+      price: price,
+      expiresAt: expiresAt,
+      feePaymentId: feePaymentId,
+      feePaymentPsbtHex: feePaymentPsbtHex,
+    );
+
+    return AtomicSwapCreate(
+      id: res.data.id,
+    );
+  }
+
+  @override
   Future<OnChainPayment> createOnChainPayment({
     required HttpConfig httpConfig,
     required String address,
@@ -27,7 +62,6 @@ class AtomicSwapRepositoryImpl implements AtomicSwapRepository {
 
     final res = await client.createOnChainPayment(
         address: address, utxoSetIds: utxoSetIds, satsPerVbyte: satsPerVbyte);
-
     return res.data.toEntity();
   }
 
