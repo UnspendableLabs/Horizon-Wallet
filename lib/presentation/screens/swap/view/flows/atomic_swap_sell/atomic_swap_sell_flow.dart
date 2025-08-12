@@ -9,6 +9,7 @@ import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/repositories/atomic_swap_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:horizon/presentation/common/transactions/success_animation.dart';
@@ -161,6 +162,7 @@ class AtomicSwapSellFlowController extends FlowController<AtomicSwapSellModel> {
 
 class AtomicSwapSellFlowView extends StatefulWidget {
   final HttpConfig httpConfig;
+  final Config _config;
 
   final AtomicSwapRepository _atomicSwapRepository;
   final UtxoRepository _utxoRepository;
@@ -172,10 +174,12 @@ class AtomicSwapSellFlowView extends StatefulWidget {
       {required this.httpConfig,
       required this.addresses,
       required this.balances,
+      Config? config,
       AtomicSwapRepository? atomicSwapRepository,
       UtxoRepository? utxoRepository,
       super.key})
-      : _utxoRepository = utxoRepository ?? GetIt.I<UtxoRepository>(),
+      : _config = config ?? GetIt.I<Config>(),
+        _utxoRepository = utxoRepository ?? GetIt.I<UtxoRepository>(),
         _atomicSwapRepository =
             atomicSwapRepository ?? GetIt.I<AtomicSwapRepository>();
 
@@ -424,6 +428,11 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
 
                           final utxo = utxoMap[assetUtxoId.toString()];
 
+                          // if for some reason a recent attach isn't in the mempool,
+                          // we can fallback to `defaultEnvelopeSize`
+                          int utxoValue =
+                              utxo?.value ?? widget._config.defaultEnvelopeSize;
+
                           final btcPrice = swapSellDetails.btcPrice;
 
                           final assetQuantity =
@@ -439,7 +448,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                                   feePaymentId: a.id,
                                   price: btcPrice.toInt(), // TODO
                                   assetQuantity: assetQuantity,
-                                  assetUtxoValue: utxo?.value ?? 0,
+                                  assetUtxoValue: utxoValue,
                                   assetName: swapSellDetails.sellDetails.asset,
                                   expiresAt: DateTime.now()
                                       .add(const Duration(days: 7))));
