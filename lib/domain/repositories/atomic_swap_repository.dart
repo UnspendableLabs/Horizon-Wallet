@@ -38,6 +38,7 @@ abstract class AtomicSwapRepository {
     required DateTime expiresAt,
     required String feePaymentId,
     required String feePaymentPsbtHex,
+    required bool assetDivisible,
   });
 
   Future<AtomicSwapBuy> atomicSwapBuy({
@@ -75,10 +76,12 @@ extension AtomicSwapRepositoryX on AtomicSwapRepository {
     required DateTime expiresAt,
     required String feePaymentId,
     required String feePaymentPsbtHex,
+    required bool assetDivisible,
     String Function(Object error, StackTrace stacktrace)? onError,
   }) {
     return TaskEither.tryCatch(
       () => atomicSwapCreate(
+        assetDivisible: assetDivisible,
         httpConfig: httpConfig,
         psbtHex: psbtHex,
         sellerAddress: sellerAddress,

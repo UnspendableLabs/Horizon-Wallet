@@ -231,15 +231,14 @@ class CreatePsbtFormBloc
           state.btcPriceInput.asSats,
           () => "Error parsing BTC price input as sats"));
 
-      final newSalePsbtHex = await $(TaskEither.fromEither(
-          _transactionService.makeSalePsbtT(
-              price: priceInSats,
-              source: address.address,
-              utxoTxid: attachTxID,
-              utxoVoutIndex: voutIndex,
-              utxoVout: tx.vout[voutIndex],
-              httpConfig: httpConfig,
-              onError: (err) => err.toString())));
+      final newSalePsbtHex = await $(_transactionService.makeSalePsbtT(
+          price: priceInSats,
+          source: address.address,
+          utxoTxid: attachTxID,
+          utxoVoutIndex: voutIndex,
+          utxoVout: tx.vout[voutIndex],
+          httpConfig: httpConfig,
+          onError: (err) => err.toString()));
 
       return newSalePsbtHex;
     });
@@ -248,11 +247,14 @@ class CreatePsbtFormBloc
 
     final result = await task.run();
 
-    result.fold((err) {
+    print("result $result");
+    await result.fold((err) {
+      print(err);
       emit(state.copyWith(
           error: err.toString(),
           submissionStatus: FormzSubmissionStatus.failure));
     }, (psbtHex) {
+      print(psbtHex);
       emit(state.copyWith(
         unsignedPsbtHex: Option.of(psbtHex),
         showSignPsbtModal: const Option.of(true),

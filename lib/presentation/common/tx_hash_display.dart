@@ -42,7 +42,7 @@ class TxHashDisplayState extends State<TxHashDisplay> {
       URIType.btcexplorer =>
         Uri.parse("${httpConfig.btcExplorer}/tx/${widget.hash}"),
       URIType.hoex =>
-        Uri.parse("${httpConfig.horizonExplorer}/tx/${widget.hash}")
+        Uri.parse("${httpConfig.horizonMarket}/explorer/tx/${widget.hash}")
     };
 
     // final uri =

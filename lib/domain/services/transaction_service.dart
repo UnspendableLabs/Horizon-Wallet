@@ -105,7 +105,7 @@ abstract class TransactionService {
     required HttpConfig httpConfig,
   });
 
-  String makeSalePsbt({
+  Future<String> makeSalePsbt({
     required BigInt price,
     required String source,
     required String utxoTxid,
@@ -167,7 +167,7 @@ extension TransactionServiceX on TransactionService {
     );
   }
 
-  Either<String, String> makeSalePsbtT({
+  TaskEither<String, String> makeSalePsbtT({
     required BigInt price,
     required String source,
     required String utxoTxid,
@@ -176,7 +176,7 @@ extension TransactionServiceX on TransactionService {
     required HttpConfig httpConfig,
     required String Function(Object error) onError,
   }) {
-    return Either.tryCatch(
+    return TaskEither.tryCatch(
       () => makeSalePsbt(
         price: price,
         source: source,

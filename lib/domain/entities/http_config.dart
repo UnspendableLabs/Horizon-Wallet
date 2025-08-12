@@ -8,8 +8,8 @@ sealed class HttpConfig {
   final String counterparty;
   final String esplora;
   final String btcExplorer;
-  final String horizonExplorer;
-  final String horizonExplorerApi;
+  final String horizonMarket;
+  final String horizonMarketApi;
   final String mempoolSpaceApi;
   final Option<MeilisearchConfig> meilisearchConfig;
 
@@ -18,8 +18,8 @@ sealed class HttpConfig {
       required this.counterparty,
       required this.esplora,
       required this.btcExplorer,
-      required this.horizonExplorer,
-      required this.horizonExplorerApi,
+      required this.horizonMarket,
+      required this.horizonMarketApi,
       required this.mempoolSpaceApi,
       this.meilisearchConfig = const None()});
 
@@ -34,8 +34,8 @@ class Mainnet extends HttpConfig {
             counterparty: "https://api.unspendablelabs.com:4000/v2",
             esplora: "https://api.unspendablelabs.com:3000",
             btcExplorer: "https://mempool.space",
-            horizonExplorer: "https://horizon.market/explorer",
-            horizonExplorerApi: "https://horizon.market/api",
+            horizonMarket: "https://horizon.market",
+            horizonMarketApi: "https://horizon.market/api",
             mempoolSpaceApi: "https://mempool.space/api/v1",
             meilisearchConfig: GetIt.I<Config>().meilisearchConfigMainnet);
 }
@@ -48,9 +48,9 @@ class Testnet4 extends HttpConfig {
             // esplora: "https://testnet4.counterparty.io:43000",
             esplora: "https://mempool.space/testnet4/api",
             btcExplorer: "https://mempool.space/testnet4",
-            horizonExplorer:
-                "https://horizon-market-testnet.vercel.app/explorer", // TODO: link to testnet
-            horizonExplorerApi: "https://horizon-market-testnet.vercel.app/api",
+            horizonMarket:
+                "https://horizon-market-testnet.vercel.app", // TODO: link to testnet
+            horizonMarketApi: "https://horizon-market-testnet.vercel.app/api",
             mempoolSpaceApi: "https://mempool.space/testnet4/api/v1",
             meilisearchConfig: GetIt.I<Config>().meilisearchConfigTestnet);
 }
@@ -61,7 +61,7 @@ class Custom extends HttpConfig {
       required super.esplora,
       required super.counterparty,
       required super.btcExplorer,
-      required super.horizonExplorer,
-      required super.horizonExplorerApi,
+      required super.horizonMarket,
+      required super.horizonMarketApi,
       required super.mempoolSpaceApi});
 }

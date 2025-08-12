@@ -286,6 +286,7 @@ class AssetAttachFormBloc
         quantityNormalized: composeResponse.params.quantityNormalized,
         utxoId: UtxoID.fromString("${broadcastResponse.hash}:0"),
         utxoAddress: composeResponse.params.source,
+        divisible: state.attachQuantityInput.divisible,
       );
     });
 

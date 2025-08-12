@@ -352,6 +352,7 @@ class HorizonExplorerApi {
     required DateTime expiresAt,
     required String feePaymentId,
     required String feePaymentPsbtHex,
+    required bool divisible,
   }) async {
     final body = {
       "data": {
@@ -361,9 +362,11 @@ class HorizonExplorerApi {
           'asset_utxo_id': assetUtxoId, // e.g. "txid:vout"
           'asset_utxo_value': assetUtxoValue, // in sats
           'asset_name': assetName,
-          'asset_quantity': assetQuantity, // always 1 for atomic swaps
+          'asset_quantity': divisible
+              ? assetQuantity
+              : assetQuantity * 1e8, // always 1 for atomic swaps
           'price': price, // in sats
-          'expires_at': expiresAt.toIso8601String(),
+          'expires_at': expiresAt.toUtc().toIso8601String(),
         },
         "payment": {
           "feePaymentId": feePaymentId,
@@ -396,34 +399,40 @@ class HorizonExplorerApi {
     return await _api._atomicSwapBuy(id, body);
   }
 
-  Future<DataWrapper<AtomicSwapSaleResponse>> atomicSwapSale(
-      {required String psbtHex,
-      required String sellerAddress,
-      required UtxoID assetUtxoId,
-      required BigInt assetUtxoValue,
-      required String assetName,
-      required BigInt assetQuantity,
-      required BigInt price,
-      required DateTime expiresAt,
-      required String feePaymentId,
-      required String feeHex}) async {
-    final body = {
-      'data': {
-        'psbt_hex': psbtHex,
-        'seller_address': sellerAddress,
-        "asset_utxo_id": assetUtxoId.toString(),
-        "asset_utxo_value": assetUtxoValue,
-        "asset_name": assetName,
-        "asset_quantity": assetQuantity.toString(),
-        "price": price.toString(),
-        "expires_at": expiresAt.toIso8601String(),
-      },
-      "payment": {
-        "feePaymentId": feePaymentId,
-        "psbtHex": feeHex,
-      }
-    };
-
-    return await _api._atomicSwapSale(body);
-  }
+  // Future<DataWrapper<AtomicSwapSaleResponse>> atomicSwapSale(
+  //     {required String psbtHex,
+  //     required String sellerAddress,
+  //     required UtxoID assetUtxoId,
+  //     required BigInt assetUtxoValue,
+  //     required String assetName,
+  //     required BigInt assetQuantity,
+  //     required BigInt price,
+  //     required DateTime expiresAt,
+  //     required String feePaymentId,
+  //     required String feeHex}) async {
+  //   print("\n\n\n\n\n");
+  //   print("expiresAt: $expiresAt");
+  //   print("expiresAt UTC: ${expiresAt.toUtc()}");
+  //   print("expiresAt 8601: ${expiresAt.toIso8601String()}");
+  //   print("expiresAt UTC - 8601: ${expiresAt.toUtc().toIso8601String()}");
+  //
+  //   final body = {
+  //     'data': {
+  //       'psbt_hex': psbtHex,
+  //       'seller_address': sellerAddress,
+  //       "asset_utxo_id": assetUtxoId.toString(),
+  //       "asset_utxo_value": assetUtxoValue,
+  //       "asset_name": assetName,
+  //       "asset_quantity": assetQuantity.toString(),
+  //       "price": price.toString(),
+  //       "expires_at": expiresAt.toUtc().toIso8601String(),
+  //     },
+  //     "payment": {
+  //       "feePaymentId": feePaymentId,
+  //       "psbtHex": feeHex,
+  //     }
+  //   };
+  //
+  //   return await _api._atomicSwapSale(body);
+  // }
 }

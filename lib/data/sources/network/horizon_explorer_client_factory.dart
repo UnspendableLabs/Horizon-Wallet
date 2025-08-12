@@ -15,7 +15,7 @@ class HorizonExplorerClientFactory {
       () => HorizonExplorerApi(
         Dio(
           BaseOptions(
-            baseUrl: config.horizonExplorerApi,
+            baseUrl: config.horizonMarketApi,
             connectTimeout: const Duration(seconds: 5),
             receiveTimeout: const Duration(seconds: 3),
           ),
@@ -27,5 +27,5 @@ class HorizonExplorerClientFactory {
   void clear() => _cache.clear();
 
   String _cacheKey(HttpConfig config) =>
-      '${config.runtimeType}:${config.horizonExplorerApi}';
+      '${config.runtimeType}:${config.horizonMarketApi}';
 }

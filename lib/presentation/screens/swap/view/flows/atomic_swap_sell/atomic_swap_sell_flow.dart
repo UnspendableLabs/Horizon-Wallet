@@ -39,6 +39,7 @@ class AttachedAtomicSwapSell extends AtomicSwapSellVariant {
   final int quantity;
   final UtxoID utxoId;
   final String utxoAddress;
+  final bool divisible;
 
   AttachedAtomicSwapSell({
     required this.asset,
@@ -46,6 +47,7 @@ class AttachedAtomicSwapSell extends AtomicSwapSellVariant {
     required this.quantity,
     required this.utxoId,
     required this.utxoAddress,
+    required this.divisible,
   });
 }
 
@@ -97,6 +99,7 @@ extension AtomicSwapSellVariantX on AssetBalanceFormModel {
           quantityNormalized: entry.quantityNormalized,
           quantity: entry.quantity,
           utxoId: UtxoID.fromString(entry.utxo!),
+          divisible: multiAddressBalance.assetInfo.divisible,
           utxoAddress: entry.utxoAddress!,
         ),
       );
@@ -440,6 +443,8 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
 
                           final atomicSwap = await $(
                               widget._atomicSwapRepository.atomicSwapCreateT(
+                                  assetDivisible:
+                                      swapSellDetails.sellDetails.divisible,
                                   httpConfig: widget.httpConfig,
                                   psbtHex: signedSwapPsbt,
                                   sellerAddress: sellerAddress.address,
@@ -664,10 +669,10 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
   }
 
   Future<void> _launchExplorer(
-    String hash,
+    String swapID,
     HttpConfig httpConfig,
   ) async {
-    final uri = Uri.parse("${httpConfig.btcExplorer}/tx/$hash");
+    final uri = Uri.parse("${httpConfig.horizonMarket}/atomic-swaps/$swapID");
     if (!await launchUrl(uri)) {
       throw Exception('Could not launch $uri');
     }

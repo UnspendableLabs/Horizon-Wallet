@@ -149,7 +149,6 @@ class CreatePsbtSignHandler extends StatelessWidget {
                             onPressed: () {
                               Navigator.of(context).pop();
                             },
-
                             child: AppIcons.closeIcon(
                               context: context,
                               width: 24,
@@ -163,18 +162,18 @@ class CreatePsbtSignHandler extends StatelessWidget {
                             () => const SizedBox.shrink(),
                             (unsignedPsbtHex) => BlocProvider(
                                 create: (context) => SignPsbtBloc(
-                                      httpConfig: session.httpConfig,
-                                      addresses: session.addresses,
-                                      passwordRequired: settings
-                                          .requirePasswordForCryptoOperations,
-                                      unsignedPsbt: unsignedPsbtHex,
-                                      signInputs: {
-                                        address: [0]
-                                      },
-                                      sighashTypes: [
-                                        0x03 | 0x80, // single | anyone_can_pay
-                                      ],
-                                    ),
+                                        httpConfig: session.httpConfig,
+                                        addresses: session.addresses,
+                                        passwordRequired: settings
+                                            .requirePasswordForCryptoOperations,
+                                        unsignedPsbt: unsignedPsbtHex,
+                                        signInputs: {
+                                          address: [1]
+                                        },
+                                        sighashTypes: [
+                                          // single | anyone_can_pay | none
+                                          0x03 | 0x80 | 0x02,
+                                        ]),
                                 child: SignPsbtForm(
                                   key: Key(unsignedPsbtHex),
                                   passwordRequired: settings
