@@ -483,35 +483,36 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
   }
 
   @override
-  Future<DataWrapper<AtomicSwapBuyResponse>> _atomicSwapSale(
+  Future<DataWrapper<AtomicSwapSaleResponse>> _atomicSwapSale(
       Map<String, dynamic> body) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     final _data = <String, dynamic>{};
     _data.addAll(body);
-    final _options = _setStreamType<DataWrapper<AtomicSwapBuyResponse>>(Options(
+    final _options =
+        _setStreamType<DataWrapper<AtomicSwapSaleResponse>>(Options(
       method: 'POST',
       headers: _headers,
       extra: _extra,
     )
-        .compose(
-          _dio.options,
-          '/atomic-swaps',
-          queryParameters: queryParameters,
-          data: _data,
-        )
-        .copyWith(
-            baseUrl: _combineBaseUrls(
-          _dio.options.baseUrl,
-          baseUrl,
-        )));
+            .compose(
+              _dio.options,
+              '/atomic-swaps',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late DataWrapper<AtomicSwapBuyResponse> _value;
+    late DataWrapper<AtomicSwapSaleResponse> _value;
     try {
-      _value = DataWrapper<AtomicSwapBuyResponse>.fromJson(
+      _value = DataWrapper<AtomicSwapSaleResponse>.fromJson(
         _result.data!,
-        (json) => AtomicSwapBuyResponse.fromJson(json as Map<String, dynamic>),
+        (json) => AtomicSwapSaleResponse.fromJson(json as Map<String, dynamic>),
       );
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);
