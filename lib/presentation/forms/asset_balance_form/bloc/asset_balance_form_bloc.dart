@@ -1,7 +1,12 @@
 import 'package:equatable/equatable.dart';
+import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/entities/remote_data.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
+import 'package:horizon/domain/repositories/atomic_swap_repository.dart';
 import 'package:formz/formz.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AssetBalanceFormOption {
@@ -16,6 +21,14 @@ sealed class AssetBalanceFormEvent extends Equatable {
 
   @override
   List<Object?> get props => [];
+}
+
+class AssetBalanceFormRequested extends AssetBalanceFormEvent {
+  final List<String> addresses;
+
+  const AssetBalanceFormRequested({
+    required this.addresses,
+  });
 }
 
 class AssetBalanceSelected extends AssetBalanceFormEvent {
@@ -56,12 +69,15 @@ class BalanceInput
 class AssetBalanceFormModel with FormzMixin {
   final MultiAddressBalance multiAddressBalance;
 
+  final RemoteData<Map<String, bool>> utxoSwapMap;
+
   final BalanceInput balanceInput;
 
   final FormzSubmissionStatus submissionStatus;
 
   AssetBalanceFormModel(
-      {required this.multiAddressBalance,
+      {required this.utxoSwapMap,
+      required this.multiAddressBalance,
       required this.balanceInput,
       required this.submissionStatus});
 
@@ -72,65 +88,85 @@ class AssetBalanceFormModel with FormzMixin {
     MultiAddressBalance? multiAddressBalance,
     BalanceInput? balanceInput,
     FormzSubmissionStatus? submissionStatus,
+    RemoteData<Map<String, bool>>? utxoSwapMap,
   }) {
     return AssetBalanceFormModel(
+      utxoSwapMap: utxoSwapMap ?? this.utxoSwapMap,
       multiAddressBalance: multiAddressBalance ?? this.multiAddressBalance,
       submissionStatus: submissionStatus ?? this.submissionStatus,
       balanceInput: balanceInput ?? this.balanceInput,
     );
   }
-
-  // Either<String, AtomicSwapSellVariant> get atomicSwapSellVariant {
-  //   if (balanceInput.value == null) {
-  //     return left("Balance input is null");
-  //   }
-  //
-  //   if (balanceInput.value!.entry.address != null) {
-  //     return right(
-  //       UnattachedAtomicSwapSell(
-  //         address: balanceInput.value!.entry.address!,
-  //         asset: multiAddressBalance.asset,
-  //         quantityNormalized: balanceInput.value!.entry.quantityNormalized,
-  //         quantity: balanceInput.value!.entry.quantity,
-  //         description: multiAddressBalance.assetInfo.description,
-  //         divisible: multiAddressBalance.assetInfo.divisible,
-  //       ),
-  //     );
-  //   }
-  //
-  //   if (balanceInput.value!.entry.utxo != null &&
-  //       balanceInput.value!.entry.utxoAddress != null) {
-  //     return right(
-  //       AttachedAtomicSwapSell(
-  //         asset: multiAddressBalance.asset,
-  //         quantityNormalized: balanceInput.value!.entry.quantityNormalized,
-  //         quantity: balanceInput.value!.entry.quantity,
-  //         utxo: balanceInput.value!.entry.utxo!,
-  //         utxoAddress: balanceInput.value!.entry.utxoAddress!,
-  //       ),
-  //     );
-  //   }
-  //
-  //   return left("Invalid balance input");
-  // }
 }
 
 class AssetBalanceFormBloc
     extends Bloc<AssetBalanceFormEvent, AssetBalanceFormModel> {
-  AssetBalanceFormBloc({required MultiAddressBalance multiAddressBalance})
-      : super(AssetBalanceFormModel(
+  final AtomicSwapRepository _atomicSwapRepository;
+
+  final HttpConfig httpConfig;
+
+  AssetBalanceFormBloc(
+      {AtomicSwapRepository? atomicSwapRepository,
+      required this.httpConfig,
+      required List<String> addresses,
+      required MultiAddressBalance multiAddressBalance})
+      : _atomicSwapRepository =
+            atomicSwapRepository ?? GetIt.I<AtomicSwapRepository>(),
+        super(AssetBalanceFormModel(
+          utxoSwapMap: const Initial(),
           multiAddressBalance: multiAddressBalance,
           balanceInput: const BalanceInput.pure(),
           submissionStatus: FormzSubmissionStatus.initial,
         )) {
+    on<AssetBalanceFormRequested>(_handleAssetBalanceFormRequested);
     on<AssetBalanceSelected>(_handleAssetBalanceSelected);
     on<SubmitClicked>(_handleSubmitClicked);
+
+    // TODO: technically we could refetch on a timer
+    add(AssetBalanceFormRequested(addresses: addresses));
+  }
+
+  _handleAssetBalanceFormRequested(
+    AssetBalanceFormRequested event,
+    Emitter<AssetBalanceFormModel> emit,
+  ) async {
+    emit(state.copyWith(utxoSwapMap: const Loading()));
+
+    final task = TaskEither<String, Map<String, bool>>.Do(($) async {
+      final tasks = event.addresses.map((address) {
+        return _atomicSwapRepository.getUtxoSwapMapT(
+            httpConfig: httpConfig,
+            sellerAddress: address,
+            onError: (error, stacktrace) {
+              return "There was an error fetching the utxo swap map";
+            });
+      });
+
+      return await $(TaskEither.sequenceList(tasks.toList())
+          .map((listOfMaps) => listOfMaps.fold<Map<String, bool>>(
+                {},
+                (acc, map) => {...acc, ...map},
+              )));
+    });
+
+    final result = await task.run();
+
+    final nextState = result.fold(
+      (error) => state.copyWith(utxoSwapMap: Failure(error)),
+      (utxoSwapMap) => state.copyWith(utxoSwapMap: Success(utxoSwapMap)),
+    );
+
+    emit(nextState);
   }
 
   _handleAssetBalanceSelected(
     AssetBalanceSelected event,
     Emitter<AssetBalanceFormModel> emit,
   ) {
+    if (state.utxoSwapMap.getOrNull() == null) {
+      return;
+    }
+
     emit(state.copyWith(
       balanceInput: BalanceInput.dirty(value: event.option),
     ));
@@ -140,10 +176,13 @@ class AssetBalanceFormBloc
     SubmitClicked event,
     Emitter<AssetBalanceFormModel> emit,
   ) {
+    if (state.utxoSwapMap.getOrNull() == null) {
+      return;
+    }
+
     if (state.balanceInput.value == null) {
       return;
     }
-    // TODO: more extensive validations here
 
     emit(state.copyWith(
       submissionStatus: FormzSubmissionStatus.success,

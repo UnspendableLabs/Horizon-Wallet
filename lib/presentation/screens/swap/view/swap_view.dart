@@ -142,26 +142,6 @@ class _SwapFlowViewState extends State<SwapFlowView> {
                     receiveAsset: receiveAsset,
                     giveBalance: giveBalance,
                   )),
-
-                // AtomicSwapSell(giveBalance: var balance) => MaterialPage(
-                //       child: FlowStep(
-                //     title: "Choose your asset / address",
-                //     widthFactor: .3,
-                //     body: AssetBalanceFormProvider(
-                //       multiAddressBalance: balance,
-                //       child: (actions, state) => Column(
-                //         children: [
-                //           AssetBalanceSuccessHandler(onSubmit: (option) {
-                //             print(option);
-                //           }),
-                //           AssetBalanceForm(
-                //             state: state,
-                //             actions: actions,
-                //           ),
-                //         ],
-                //       ),
-                //     ),
-                //   )),
                 _ => throw UnimplementedError("Swap type not implemented")
               })
         ]

@@ -225,6 +225,9 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
             title: "Choose your asset / address",
             widthFactor: .4,
             body: AssetBalanceFormProvider(
+              httpConfig: widget.httpConfig,
+              addresses:
+                  widget.addresses.map((address) => address.address).toList(),
               multiAddressBalance: widget.balances,
               child: (actions, state) => Column(
                 children: [

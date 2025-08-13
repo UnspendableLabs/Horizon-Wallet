@@ -185,6 +185,8 @@ class _SendViewState extends State<SendView> {
                         fit: BoxFit.fitHeight,
                       )),
                   body: AssetBalanceFormProvider(
+                    addresses: session.addresses.map((a) => a.address).toList(),
+                    httpConfig: session.httpConfig,
                     multiAddressBalance: balance,
                     child: (actions, state) => Column(
                       children: [

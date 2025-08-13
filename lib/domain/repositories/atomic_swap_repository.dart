@@ -26,6 +26,11 @@ import 'package:horizon/domain/entities/http_config.dart';
 // };
 
 abstract class AtomicSwapRepository {
+  Future<Map<String, bool>> getUtxoSwapMap({
+    required HttpConfig httpConfig,
+    required String sellerAddress,
+  });
+
   Future<AtomicSwapCreate> atomicSwapCreate({
     required HttpConfig httpConfig,
     required String psbtHex,
@@ -149,6 +154,21 @@ extension AtomicSwapRepositoryX on AtomicSwapRepository {
         asset: asset,
         orderBy: orderBy,
         order: order,
+      ),
+      (error, stacktrace) =>
+          onError != null ? onError(error, stacktrace) : error.toString(),
+    );
+  }
+
+  TaskEither<String, Map<String, bool>> getUtxoSwapMapT({
+    required HttpConfig httpConfig,
+    required String sellerAddress,
+    String Function(Object error, StackTrace stacktrace)? onError,
+  }) {
+    return TaskEither.tryCatch(
+      () => getUtxoSwapMap(
+        httpConfig: httpConfig,
+        sellerAddress: sellerAddress,
       ),
       (error, stacktrace) =>
           onError != null ? onError(error, stacktrace) : error.toString(),

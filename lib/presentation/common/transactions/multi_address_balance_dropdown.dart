@@ -12,9 +12,11 @@ class MultiAddressBalanceDropdown extends StatelessWidget {
   final bool loading;
   final bool useModal;
   final Widget Function(MultiAddressBalanceEntry)? selectedItemBuilder;
+  final Map<String, bool>? utxoSwapMap;
 
   const MultiAddressBalanceDropdown({
     super.key,
+    this.utxoSwapMap,
     required this.balances,
     required this.onChanged,
     required this.selectedValue,
@@ -69,11 +71,40 @@ class MultiAddressBalanceDropdown extends StatelessWidget {
                   children: [
                     Text(addressEntry.address ?? addressEntry.utxo!,
                         style: Theme.of(context).textTheme.bodySmall),
-                    Text(addressEntry.quantityNormalized,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleSmall!
-                            .copyWith(fontWeight: FontWeight.normal)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(addressEntry.quantityNormalized,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleSmall!
+                                .copyWith(fontWeight: FontWeight.normal)),
+                        utxoSwapMap != null &&
+                                addressEntry.utxo != null &&
+                                utxoSwapMap!.containsKey(addressEntry.utxo!) &&
+                                utxoSwapMap![addressEntry.utxo!] == true
+                            ? Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(24),
+                                    border: Border.all(
+                                        color: transparentWhite8, width: 1)),
+                                child: const Text("Already listed"))
+                            : const SizedBox.shrink()
+                      ],
+                    ),
+
+                    // utxoSwapMap.fold3(
+                    //      onNone: () => const Text("none"),
+                    //      onFailure: (_) => const Text("failuire"),
+                    //      onReplete: (utxoSwapMap) {
+                    //        return entry.utxo != null &&
+                    //                utxoSwapMap.containsKey(entry.utxo!) &&
+                    //                utxoSwapMap[entry.utxo!] == true
+                    //            ? const Text("Swap exists")
+                    //            : const Text("huh");
+                    //      })
                   ],
                 ),
               ))

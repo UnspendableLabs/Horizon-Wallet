@@ -152,18 +152,19 @@ class OnChainPaymentModel {
   }
 }
 
-// @JsonSerializable(fieldRename: FieldRename.snake)
-// class OnChainPaymentResponse {
-//   final OnChainPaymentModel data;
-//
-//   OnChainPaymentResponse({
-//     required this.data,
-//   });
-//
-//   factory OnChainPaymentResponse.fromJson(Map<String, dynamic> json) {
-//     return _$OnChainPaymentResponseFromJson(json);
-//   }
-// }
+@JsonSerializable()
+class UtxosWithOpenSwapsResponse {
+  final Map<String, bool> map;
+
+  UtxosWithOpenSwapsResponse({required this.map});
+
+  factory UtxosWithOpenSwapsResponse.fromJson(Map<String, dynamic> json) =>
+      UtxosWithOpenSwapsResponse(
+        map: json.map((key, value) => MapEntry(key, value as bool)),
+      );
+
+  Map<String, dynamic> toJson() => map;
+}
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class AtomicSwapModel {
@@ -265,6 +266,20 @@ class AtomicSwapCreateResponseData {
   }
 }
 
+@JsonSerializable()
+class UtxoSwapMapResponse {
+  final Map<String, bool> map;
+
+  UtxoSwapMapResponse({required this.map});
+
+  factory UtxoSwapMapResponse.fromJson(Map<String, dynamic> json) =>
+      UtxoSwapMapResponse(
+        map: json.map((key, value) => MapEntry(key, value as bool)),
+      );
+
+  Map<String, dynamic> toJson() => map;
+}
+
 @RestApi()
 abstract class HorizonExplorerApii {
   factory HorizonExplorerApii(Dio dio, {String baseUrl}) = _HorizonExplorerApii;
@@ -287,6 +302,10 @@ abstract class HorizonExplorerApii {
   Future<DataWrapper<AtomicSwapCreateResponseData>> _createSwap(
     @Body() Map<String, dynamic> body,
   );
+
+  @GET('/atomic-swaps/asset-utxo-id')
+  Future<DataWrapper<UtxoSwapMapResponse>> getUtxoSwapMap(
+      @Query('seller_address') String sellerAddressk);
 
   @GET('/atomic-swaps')
   Future<DataWrapper<AtomicSwapListResponseData>> _getAtomicSwapsRaw([
@@ -319,6 +338,12 @@ class HorizonExplorerApi {
     bool? showLarge,
   }) {
     return _api.getAssetSrc(asset, description, showLarge);
+  }
+
+  Future<DataWrapper<UtxoSwapMapResponse>> getUtxoSwapMap({
+    required String sellerAddress,
+  }) {
+    return _api.getUtxoSwapMap(sellerAddress);
   }
 
   Future<List<AssetSearchResult>> searchAssets({required String query}) async {
@@ -399,6 +424,14 @@ class HorizonExplorerApi {
     return await _api._atomicSwapBuy(id, body);
   }
 
+  // public async atomicSwapAssetUtxoIdReadAll(
+  //   seller_address: string,
+  // ): Promise<Record<string, true>> {
+  //   return this.request(
+  //     "GET",
+  //     `/atomic-swaps/asset-utxo-id?seller_address=${seller_address}`,
+  //   );
+  // }
   // Future<DataWrapper<AtomicSwapSaleResponse>> atomicSwapSale(
   //     {required String psbtHex,
   //     required String sellerAddress,

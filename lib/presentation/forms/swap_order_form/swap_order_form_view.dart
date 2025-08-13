@@ -187,7 +187,7 @@ class _SwapOrderFormProviderState extends State<SwapOrderFormProvider> {
         httpConfig: widget.httpConfig,
       ),
       widget._orderRepository.getByPairTE(
-       status: "open",
+        status: "open",
         giveAsset: widget.getAsset,
         getAsset: widget.giveAsset,
         httpConfig: widget.httpConfig,
@@ -699,7 +699,7 @@ class AssetPill extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: transparentWhite8, width: 1)),
+              border: Border.all(color: redErrorTextTransparent, width: 1)),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

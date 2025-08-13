@@ -1,4 +1,6 @@
 import 'package:horizon/domain/entities/multi_address_balance.dart';
+import 'package:horizon/domain/entities/http_config.dart';
+import 'package:horizon/domain/entities/remote_data.dart';
 
 import 'package:formz/formz.dart';
 import "package:fpdart/fpdart.dart";
@@ -20,6 +22,9 @@ class AssetBalanceFormActions {
 }
 
 class AssetBalanceFormProvider extends StatelessWidget {
+  final List<String> addresses;
+  final HttpConfig httpConfig;
+
   final MultiAddressBalance multiAddressBalance;
 
   final Widget Function(
@@ -27,6 +32,8 @@ class AssetBalanceFormProvider extends StatelessWidget {
 
   const AssetBalanceFormProvider({
     super.key,
+    required this.httpConfig,
+    required this.addresses,
     required this.child,
     required this.multiAddressBalance,
   });
@@ -34,7 +41,10 @@ class AssetBalanceFormProvider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(create: (context) {
-      return AssetBalanceFormBloc(multiAddressBalance: multiAddressBalance);
+      return AssetBalanceFormBloc(
+          addresses: addresses,
+          httpConfig: httpConfig,
+          multiAddressBalance: multiAddressBalance);
     }, child: BlocBuilder<AssetBalanceFormBloc, AssetBalanceFormModel>(
       builder: (context, state) {
         return child(
@@ -111,41 +121,45 @@ class AssetBalanceForm extends StatelessWidget {
       commonHeightSizedBox,
       Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          child: MultiAddressBalanceDropdown(
-              balances: state.multiAddressBalance,
-              selectedItemBuilder: (entry) => Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "${entry.quantityNormalized} ${state.multiAddressBalance.asset}",
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme
-                              .extension<CustomThemeExtension>()
-                              ?.mutedDescriptionTextColor,
-                        ),
+          child: state.utxoSwapMap.fold3(
+              onNone: () => const Text("Loading UTXO swaps..."),
+              onFailure: (_) => const Text("Failed to load UTXO swaps"),
+              onReplete: (utxoSwapMap) => MultiAddressBalanceDropdown(
+                  utxoSwapMap: utxoSwapMap,
+                  balances: state.multiAddressBalance,
+                  selectedItemBuilder: (entry) => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "${entry.quantityNormalized} ${state.multiAddressBalance.asset}",
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme
+                                  .extension<CustomThemeExtension>()
+                                  ?.mutedDescriptionTextColor,
+                            ),
+                          ),
+                          Text(
+                            // TODO: i don't love this, period
+                            entry.address ?? entry.utxo!,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              fontSize: 10,
+                              color: theme
+                                  .extension<CustomThemeExtension>()
+                                  ?.offColorText,
+                            ),
+                          ),
+                        ],
                       ),
-                      Text(
-                        // TODO: i don't love this, period
-                        entry.address ?? entry.utxo!,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          fontSize: 10,
-                          color: theme
-                              .extension<CustomThemeExtension>()
-                              ?.offColorText,
-                        ),
+                  onChanged: (value) {
+                    actions.onBalanceSelected(
+                      AssetBalanceFormOption(
+                        entry: value!,
                       ),
-                    ],
-                  ),
-              onChanged: (value) {
-                actions.onBalanceSelected(
-                  AssetBalanceFormOption(
-                    entry: value!,
-                  ),
-                );
-              },
-              selectedValue: state.balanceInput.value?.entry,
-              loading: false)),
+                    );
+                  },
+                  selectedValue: state.balanceInput.value?.entry,
+                  loading: false))),
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: HorizonButton(

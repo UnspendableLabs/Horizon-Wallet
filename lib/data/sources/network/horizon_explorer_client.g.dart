@@ -143,6 +143,18 @@ Map<String, dynamic> _$OnChainPaymentModelToJson(
       'feePaymentId': instance.feePaymentId,
     };
 
+UtxosWithOpenSwapsResponse _$UtxosWithOpenSwapsResponseFromJson(
+        Map<String, dynamic> json) =>
+    UtxosWithOpenSwapsResponse(
+      map: Map<String, bool>.from(json['map'] as Map),
+    );
+
+Map<String, dynamic> _$UtxosWithOpenSwapsResponseToJson(
+        UtxosWithOpenSwapsResponse instance) =>
+    <String, dynamic>{
+      'map': instance.map,
+    };
+
 AtomicSwapModel _$AtomicSwapModelFromJson(Map<String, dynamic> json) =>
     AtomicSwapModel(
       id: json['id'] as String,
@@ -221,6 +233,17 @@ Map<String, dynamic> _$AtomicSwapCreateResponseDataToJson(
         AtomicSwapCreateResponseData instance) =>
     <String, dynamic>{
       'id': instance.id,
+    };
+
+UtxoSwapMapResponse _$UtxoSwapMapResponseFromJson(Map<String, dynamic> json) =>
+    UtxoSwapMapResponse(
+      map: Map<String, bool>.from(json['map'] as Map),
+    );
+
+Map<String, dynamic> _$UtxoSwapMapResponseToJson(
+        UtxoSwapMapResponse instance) =>
+    <String, dynamic>{
+      'map': instance.map,
     };
 
 // **************************************************************************
@@ -396,6 +419,45 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
   }
 
   @override
+  Future<DataWrapper<UtxoSwapMapResponse>> getUtxoSwapMap(
+      String sellerAddressk) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'seller_address': sellerAddressk
+    };
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<DataWrapper<UtxoSwapMapResponse>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+        .compose(
+          _dio.options,
+          '/atomic-swaps/asset-utxo-id',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late DataWrapper<UtxoSwapMapResponse> _value;
+    try {
+      _value = DataWrapper<UtxoSwapMapResponse>.fromJson(
+        _result.data!,
+        (json) => UtxoSwapMapResponse.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
   Future<DataWrapper<AtomicSwapListResponseData>> _getAtomicSwapsRaw([
     String? assetName,
     String? orderBy,
@@ -519,31 +581,6 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
       rethrow;
     }
     return _value;
-  }
-
-  RequestOptions newRequestOptions(Object? options) {
-    if (options is RequestOptions) {
-      return options as RequestOptions;
-    }
-    if (options is Options) {
-      return RequestOptions(
-        method: options.method,
-        sendTimeout: options.sendTimeout,
-        receiveTimeout: options.receiveTimeout,
-        extra: options.extra,
-        headers: options.headers,
-        responseType: options.responseType,
-        contentType: options.contentType.toString(),
-        validateStatus: options.validateStatus,
-        receiveDataWhenStatusError: options.receiveDataWhenStatusError,
-        followRedirects: options.followRedirects,
-        maxRedirects: options.maxRedirects,
-        requestEncoder: options.requestEncoder,
-        responseDecoder: options.responseDecoder,
-        path: '',
-      );
-    }
-    return RequestOptions(path: '');
   }
 
   RequestOptions _setStreamType<T>(RequestOptions requestOptions) {

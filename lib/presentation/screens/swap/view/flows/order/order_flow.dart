@@ -96,6 +96,8 @@ class _OrderFlowViewState extends State<OrderFlowView> {
                 widthFactor: .4,
                 body: AssetBalanceFormProvider(
                     multiAddressBalance: widget.giveBalance,
+                    addresses: widget.addresses.map((e) => e.address).toList(),
+                    httpConfig: session.httpConfig,
                     child: (actions, state) => Column(children: [
                           AssetBalanceSuccessHandler<MultiAddressBalanceEntry>(
                             mapSuccess: (state) =>

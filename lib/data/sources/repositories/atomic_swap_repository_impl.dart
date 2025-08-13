@@ -1,13 +1,11 @@
 import 'package:get_it/get_it.dart';
 import "package:horizon/domain/repositories/atomic_swap_repository.dart";
 import 'package:horizon/domain/entities/atomic_swap/on_chain_payment.dart';
-import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap_create.dart';
 import 'package:horizon/data/sources/network/horizon_explorer_client_factory.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap_buy.dart';
-import 'package:horizon/domain/entities/atomic_swap/atomic_swap_sale.dart';
 
 class AtomicSwapRepositoryImpl implements AtomicSwapRepository {
   final HorizonExplorerClientFactory _horizonExplorerClientFactory;
@@ -16,6 +14,20 @@ class AtomicSwapRepositoryImpl implements AtomicSwapRepository {
     HorizonExplorerClientFactory? horizonExplorerClientFactory,
   }) : _horizonExplorerClientFactory = horizonExplorerClientFactory ??
             GetIt.I<HorizonExplorerClientFactory>();
+
+  @override
+  Future<Map<String, bool>> getUtxoSwapMap({
+    required HttpConfig httpConfig,
+    required String sellerAddress,
+  }) async {
+    final client = _horizonExplorerClientFactory.getClient(httpConfig);
+
+    final res = await client.getUtxoSwapMap(
+      sellerAddress: sellerAddress,
+    );
+
+    return res.data.map;
+  }
 
   @override
   Future<AtomicSwapCreate> atomicSwapCreate({
