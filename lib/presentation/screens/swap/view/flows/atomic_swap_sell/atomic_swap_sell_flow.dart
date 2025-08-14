@@ -113,11 +113,13 @@ class SwapSellConfirmationDetails {
   final BigInt btcPrice;
   final String signedPsbt;
   final AttachedAtomicSwapSell sellDetails;
+  final DateTime? expiresAt;
 
   const SwapSellConfirmationDetails({
     required this.btcPrice,
     required this.signedPsbt,
     required this.sellDetails,
+    required this.expiresAt,
   });
 }
 
@@ -319,6 +321,8 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                                   (model) => model.copyWith(
                                     swapSellConfirmationDetails: Option.of(
                                         SwapSellConfirmationDetails(
+                                            expiresAt:
+                                                createPsbtSuccess.expiryDate,
                                             signedPsbt:
                                                 createPsbtSuccess.signedPsbtHex,
                                             btcPrice:
@@ -446,20 +450,20 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
 
                           final atomicSwap = await $(
                               widget._atomicSwapRepository.atomicSwapCreateT(
-                                  assetDivisible:
-                                      swapSellDetails.sellDetails.divisible,
-                                  httpConfig: widget.httpConfig,
-                                  psbtHex: signedSwapPsbt,
-                                  sellerAddress: sellerAddress.address,
-                                  assetUtxoId: assetUtxoId.toString(),
-                                  feePaymentPsbtHex: a.signedPsbtHex,
-                                  feePaymentId: a.id,
-                                  price: btcPrice.toInt(), // TODO
-                                  assetQuantity: assetQuantity,
-                                  assetUtxoValue: utxoValue,
-                                  assetName: swapSellDetails.sellDetails.asset,
-                                  expiresAt: DateTime.now()
-                                      .add(const Duration(days: 7))));
+                            assetDivisible:
+                                swapSellDetails.sellDetails.divisible,
+                            httpConfig: widget.httpConfig,
+                            psbtHex: signedSwapPsbt,
+                            sellerAddress: sellerAddress.address,
+                            assetUtxoId: assetUtxoId.toString(),
+                            feePaymentPsbtHex: a.signedPsbtHex,
+                            feePaymentId: a.id,
+                            price: btcPrice.toInt(), // TODO
+                            assetQuantity: assetQuantity,
+                            assetUtxoValue: utxoValue,
+                            assetName: swapSellDetails.sellDetails.asset,
+                            expiresAt: swapSellDetails.expiresAt,
+                          ));
 
                           return atomicSwap.id;
 
@@ -648,8 +652,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                                     onNone: () => () {},
                                     onFailure: (_) => () {},
                                     onReplete: (hash) => () {
-                                          _launchExplorer(
-                                              hash, widget.httpConfig);
+                                          context.go("/dashboard");
                                         }),
                                 child: TextButtonContent(value: "Close"),
                                 disabled: state.fold3(

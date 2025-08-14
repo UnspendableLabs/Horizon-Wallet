@@ -83,7 +83,7 @@ class CreatePsbtFormModel with FormzMixin {
         showSignPsbtModal:
             showSignPsbtModal.getOrElse(() => this.showSignPsbtModal),
         btcPriceInput: btcPriceInput ?? this.btcPriceInput,
-        expiryDate: expiryDate,
+        expiryDate: expiryDate ?? this.expiryDate,
         submissionStatus: submissionStatus ?? this.submissionStatus,
         error: error ?? this.error,
         signedPsbt: signedPsbt ?? this.signedPsbt,
@@ -247,47 +247,19 @@ class CreatePsbtFormBloc
 
     final result = await task.run();
 
-    print("result $result");
-    await result.fold((err) {
-      print(err);
-      emit(state.copyWith(
+    final nextState = result.fold((err) {
+      return state.copyWith(
           error: err.toString(),
-          submissionStatus: FormzSubmissionStatus.failure));
+          submissionStatus: FormzSubmissionStatus.failure);
     }, (psbtHex) {
-      print(psbtHex);
-      emit(state.copyWith(
+      return state.copyWith(
         unsignedPsbtHex: Option.of(psbtHex),
         showSignPsbtModal: const Option.of(true),
-      ));
+      );
       // submissionStatus: FormzSubmissionStatus.success));
     });
 
-    //   final pk = await $(_getPK());
-    //
-    //   final signedHex =
-    //       await $(TaskEither.fromEither(_transactionService.signPsbtT(
-    //           psbtHex: newSalePsbtHex,
-    //           inputPrivateKeyMap: {0: pk},
-    //           sighashTypes: [
-    //             0x03 | 0x80, // single | anyone_can_pay
-    //           ],
-    //           httpConfig: httpConfig,
-    //           onError: (_err) => "Error signing PSBT: ${_err.toString()}")));
-    //
-    //   return signedHex;
-    // });
-    //
-    // final result = await task.run();
-    //
-    // result.fold((err) {
-    //   emit(state.copyWith(
-    //       error: err.toString(),
-    //       submissionStatus: FormzSubmissionStatus.failure));
-    // }, (psbtHex) {
-    //   emit(state.copyWith(
-    //       signedPsbt: psbtHex,
-    //       submissionStatus: FormzSubmissionStatus.success));
-    // });
+    emit(nextState);
   }
 
   void _onCloseSignPsbtModalClicked(
@@ -299,46 +271,5 @@ class CreatePsbtFormBloc
       unsignedPsbtHex: const None(),
       submissionStatus: FormzSubmissionStatus.initial,
     ));
-  }
-
-  // TODO: this is still reasonably dependency heavy
-  // and should be abstracted out into it's own service basically
-  TaskEither<String, String> _getPK() {
-    // TODO: for now all signing is uses "InMemoryKey" decryption
-    final DecryptionStrategy decryptionStrategy = InMemoryKey();
-    return switch (address.derivation) {
-      Bip32Path(value: var value) => _walletConfigRepository
-          .getCurrentT((_) => "invariant: could not read wallet config")
-          .flatMap((walletConfig) => _seedService
-              .getForWalletConfigT(
-                  walletConfig: walletConfig,
-                  decryptionStrategy: decryptionStrategy,
-                  onError: (_) => "invairant: could not derive seed")
-              .flatMap((seed) => _addressService.deriveAddressPrivateKeyWIPT(
-                    path: Bip32Path(value: value),
-                    seed: seed,
-                    network: httpConfig.network,
-                  ))),
-      WIF(value: var value) => switch (decryptionStrategy) {
-          Password(password: var password) => _encryptionService.decryptT(
-              data: value,
-              password: password,
-              onError: (_, __) => "Invalid password"),
-          InMemoryKey() => _inMemoryKeyRepository
-              .getMapT(
-                  onError: (_, __) =>
-                      "invariant: failed to read in memory key map")
-              // TODO: this lookup needs to be consistent, either by encyptedWIF or address
-              .flatMap((map) => TaskEither.fromOption(
-                  Option.fromNullable(map[address.address]),
-                  () =>
-                      "invariant: decryption key not found for address: ${address.address}"))
-              .flatMap((decryptionKey) => _encryptionService.decryptWithKeyT(
-                  data: value,
-                  key: decryptionKey,
-                  onError: (_, __) =>
-                      "failed to decrypt wif for address: ${address.address}")),
-        }
-    };
   }
 }

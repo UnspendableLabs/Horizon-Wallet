@@ -374,7 +374,7 @@ class HorizonExplorerApi {
     required String assetName,
     required int assetQuantity,
     required int price,
-    required DateTime expiresAt,
+    required DateTime? expiresAt,
     required String feePaymentId,
     required String feePaymentPsbtHex,
     required bool divisible,
@@ -391,7 +391,7 @@ class HorizonExplorerApi {
               ? assetQuantity
               : assetQuantity * 1e8, // always 1 for atomic swaps
           'price': price, // in sats
-          'expires_at': expiresAt.toUtc().toIso8601String(),
+          'expires_at': expiresAt?.toUtc().toIso8601String(),
         },
         "payment": {
           "feePaymentId": feePaymentId,

@@ -40,7 +40,7 @@ class AtomicSwapRepositoryImpl implements AtomicSwapRepository {
     required bool assetDivisible,
     required int assetQuantity,
     required int price,
-    required DateTime expiresAt,
+    required DateTime? expiresAt,
     required String feePaymentId,
     required String feePaymentPsbtHex,
   }) async {
