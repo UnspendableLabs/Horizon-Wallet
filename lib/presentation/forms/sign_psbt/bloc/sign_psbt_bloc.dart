@@ -28,6 +28,9 @@ import 'package:horizon/domain/services/seed_service.dart';
 import "./sign_psbt_state.dart";
 import "./sign_psbt_event.dart";
 
+const dummyTxID =
+    "0000000000000000000000000000000000000000000000000000000000000000";
+
 class AssetCredit {
   final String asset;
   final int quantity;
@@ -215,11 +218,14 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
       final decoded = await _bitcoindService.decoderawtransaction(
           transactionHex, httpConfig);
 
-      Either<Failure, List<AugmentedInput>> inputs =
+      Either<Failure, List<Option<AugmentedInput>>> inputs =
           await TaskEither.traverseListWithIndex(decoded.vin, (vin, index) {
-        print("vin: ${vin.txid}");
+        return TaskEither<Failure, Option<AugmentedInput>>.Do(($) async {
+          if (vin.txid == dummyTxID && vin.vout == 0) {
+            // this is a dummy input, skip it
+            return $(TaskEither.right(const Option.none()));
+          }
 
-        return TaskEither<Failure, AugmentedInput>.Do(($) async {
           final getTransactionTask = _bitcoinRepository
               .getTransactionT(
                   txid: vin.txid,
@@ -248,18 +254,23 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
           final signatureRequired =
               signInputs[address]?.contains(index) ?? false;
 
-          return $(TaskEither.right(AugmentedInput(
+          return $(TaskEither.right(Option.of(AugmentedInput(
               address: address,
               vin: vin,
               prevOut: prevout,
               balances: balances,
-              signatureRequired: signatureRequired)));
+              signatureRequired: signatureRequired))));
         });
       }).run();
 
-      final augmentedInputs = inputs.getOrElse((error) {
+      List<Option<AugmentedInput>> augmentedInputs_ = inputs.getOrElse((error) {
         throw error;
       });
+
+      List<AugmentedInput> augmentedInputs = augmentedInputs_
+          .where((input) => input.isSome())
+          .map((input) => input.getOrElse(() => throw Exception("Invariant")))
+          .toList();
 
       // append asset balances to output that has same value as input
       final augmentedOutputs = decoded.vout
