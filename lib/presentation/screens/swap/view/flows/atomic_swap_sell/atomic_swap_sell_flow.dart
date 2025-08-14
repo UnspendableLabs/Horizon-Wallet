@@ -256,7 +256,11 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                       child: FlowStep(
                     leading: IconButton(
                       onPressed: () {
-                        Navigator.of(context).pop();
+                        _controller.update(
+                          (model) => model.copyWith(
+                            atomicSwapSellVariant: const Option.none(),
+                          ),
+                        );
                       },
                       icon: AppIcons.backArrowIcon(
                         context: context,
@@ -265,6 +269,16 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                         fit: BoxFit.fitHeight,
                       ),
                     ),
+                    trailing: IconButton(
+                        onPressed: () {
+                          context.pop();
+                        },
+                        icon: AppIcons.closeIcon(
+                          context: context,
+                          width: 24,
+                          height: 24,
+                          fit: BoxFit.fitHeight,
+                        )),
                     title: "Attach assets to swap",
                     widthFactor: .5,
                     body: AssetAttachFormProvider(
@@ -307,6 +321,16 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                             fit: BoxFit.fitHeight,
                           ),
                         ),
+                        trailing: IconButton(
+                            onPressed: () {
+                              context.pop();
+                            },
+                            icon: AppIcons.closeIcon(
+                              context: context,
+                              width: 24,
+                              height: 24,
+                              fit: BoxFit.fitHeight,
+                            )),
                         title: "Create PSBT",
                         widthFactor: .8,
                         body: CreatePsbtFormProvider(
@@ -352,6 +376,30 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
               }),
           model.swapSellConfirmationDetails.map((details) => MaterialPage(
                 child: FlowStep(
+                    leading: IconButton(
+                        onPressed: () {
+                          _controller.update(
+                            (model) => model.copyWith(
+                              swapSellConfirmationDetails: const Option.none(),
+                            ),
+                          );
+                        },
+                        icon: AppIcons.backArrowIcon(
+                          context: context,
+                          width: 24,
+                          height: 24,
+                          fit: BoxFit.fitHeight,
+                        )),
+                    trailing: IconButton(
+                        onPressed: () {
+                          context.pop();
+                        },
+                        icon: AppIcons.closeIcon(
+                          context: context,
+                          width: 24,
+                          height: 24,
+                          fit: BoxFit.fitHeight,
+                        )),
                     title: "Post Listing",
                     widthFactor: .9,
                     body: SwapCreateListingFormProvider(
@@ -388,283 +436,295 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
               )),
           model.onChainPaymentDetails.map(
             (a) => MaterialPage(
-                child: Scaffold(
-                    appBar: PreferredSize(
-                        preferredSize: const Size.fromHeight(72),
-                        child: Container(
-                          height: 46,
-                          width: double.infinity,
-                          padding: const EdgeInsets.only(
-                              left: 12, top: 0, bottom: 0, right: 12),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              IconButton(
-                                onPressed: () {
-                                  context.go("/dashboard");
-                                },
-                                icon: AppIcons.closeIcon(
-                                  context: context,
-                                  width: 24,
-                                  height: 24,
-                                  fit: BoxFit.fitHeight,
-                                ),
-                              ),
-                            ],
-                          ),
-                        )),
-                    body: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: RemoteDataTaskEitherBuilder(
-                            task: TaskEither<String, String>.Do(($) async {
-                          final swapSellDetails =
-                              model.swapSellConfirmationDetails.getOrThrow();
+                child: RemoteDataTaskEitherBuilder(
+                    task: TaskEither<String, String>.Do(($) async {
+              final swapSellDetails =
+                  model.swapSellConfirmationDetails.getOrThrow();
 
-                          final signedSwapPsbt = swapSellDetails.signedPsbt;
+              final signedSwapPsbt = swapSellDetails.signedPsbt;
 
-                          final sellerAddress = widget.addresses.firstWhere(
-                              (address) =>
-                                  address.address ==
-                                  swapSellDetails.sellDetails.utxoAddress);
+              final sellerAddress = widget.addresses.firstWhere((address) =>
+                  address.address == swapSellDetails.sellDetails.utxoAddress);
 
-                          final assetUtxoId =
-                              swapSellDetails.sellDetails.utxoId;
+              final assetUtxoId = swapSellDetails.sellDetails.utxoId;
 
-                          final utxoMap = await $(
-                              widget._utxoRepository.getUTXOMapForAddressT(
-                            httpConfig: widget.httpConfig,
-                            address: sellerAddress,
-                          ));
+              final utxoMap =
+                  await $(widget._utxoRepository.getUTXOMapForAddressT(
+                httpConfig: widget.httpConfig,
+                address: sellerAddress,
+              ));
 
-                          final utxo = utxoMap[assetUtxoId.toString()];
+              final utxo = utxoMap[assetUtxoId.toString()];
 
-                          // if for some reason a recent attach isn't in the mempool,
-                          // we can fallback to `defaultEnvelopeSize`
-                          int utxoValue =
-                              utxo?.value ?? widget._config.defaultEnvelopeSize;
+              // if for some reason a recent attach isn't in the mempool,
+              // we can fallback to `defaultEnvelopeSize`
+              int utxoValue = utxo?.value ?? widget._config.defaultEnvelopeSize;
 
-                          final btcPrice = swapSellDetails.btcPrice;
+              final btcPrice = swapSellDetails.btcPrice;
 
-                          final assetQuantity =
-                              swapSellDetails.sellDetails.quantity;
+              final assetQuantity = swapSellDetails.sellDetails.quantity;
 
-                          final atomicSwap = await $(
-                              widget._atomicSwapRepository.atomicSwapCreateT(
-                            assetDivisible:
-                                swapSellDetails.sellDetails.divisible,
-                            httpConfig: widget.httpConfig,
-                            psbtHex: signedSwapPsbt,
-                            sellerAddress: sellerAddress.address,
-                            assetUtxoId: assetUtxoId.toString(),
-                            feePaymentPsbtHex: a.signedPsbtHex,
-                            feePaymentId: a.id,
-                            price: btcPrice.toInt(), // TODO
-                            assetQuantity: assetQuantity,
-                            assetUtxoValue: utxoValue,
-                            assetName: swapSellDetails.sellDetails.asset,
-                            expiresAt: swapSellDetails.expiresAt,
-                          ));
+              final atomicSwap =
+                  await $(widget._atomicSwapRepository.atomicSwapCreateT(
+                assetDivisible: swapSellDetails.sellDetails.divisible,
+                httpConfig: widget.httpConfig,
+                psbtHex: signedSwapPsbt,
+                sellerAddress: sellerAddress.address,
+                assetUtxoId: assetUtxoId.toString(),
+                feePaymentPsbtHex: a.signedPsbtHex,
+                feePaymentId: a.id,
+                price: btcPrice.toInt(), // TODO
+                assetQuantity: assetQuantity,
+                assetUtxoValue: utxoValue,
+                assetName: swapSellDetails.sellDetails.asset,
+                expiresAt: swapSellDetails.expiresAt,
+              ));
 
-                          return atomicSwap.id;
+              return atomicSwap.id;
 
-                          // return hash;
-                        }), builder: (context, state, retry) {
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              AnimatedSwitcher(
-                                  duration: const Duration(milliseconds: 500),
-                                  child: state.fold3(
-                                    onNone: () => Center(
-                                        child: Lottie.asset(
-                                      "assets/lottie/txn_success_anim.json",
-                                      width: 127,
-                                      key: const ValueKey('lottie'),
-                                    )),
-                                    onReplete: (_) =>
-                                        Center(child: TxnSuccessAnimation()),
-                                    onFailure: (err) => TransactionError(
-                                      errorMessage: err.toString(),
-                                      onErrorButtonAction: retry,
-                                      buttonText: "Retry",
-                                    ),
-                                  )),
-                              commonHeightSizedBox,
-                              state.fold3(
-                                onNone: () => Text(
-                                  "Creating swap...",
-                                  style:
-                                      Theme.of(context).textTheme.titleMedium,
-                                ),
-                                onFailure: (_) => SizedBox.shrink(),
-                                onReplete: (hash) => Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Text("Successfully created swap",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleMedium!),
-                                  ],
-                                ),
-                              ),
-                              commonHeightSizedBox,
-                              commonHeightSizedBox,
-                              Container(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 14.0),
-                                height: 56,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(18),
-                                  border: Border.all(
-                                    color: Theme.of(context)
-                                            .inputDecorationTheme
-                                            .outlineBorder
-                                            ?.color ??
-                                        transparentBlack8,
+              // return hash;
+            }), builder: (context, state, retry) {
+              bool disabled = switch (state) {
+                Initial() => false,
+                Loading() => true,
+                Failure() => false,
+                Success() => true,
+                Refreshing() => true,
+              };
+
+              return Scaffold(
+                appBar: PreferredSize(
+                    preferredSize: const Size.fromHeight(72),
+                    child: Container(
+                      height: 46,
+                      width: double.infinity,
+                      padding: const EdgeInsets.only(
+                          left: 12, top: 0, bottom: 0, right: 12),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          disabled
+                              ? const SizedBox.shrink()
+                              : IconButton(
+                                  onPressed: () {
+                                    _controller.update(
+                                      // i need to disable this button if submission
+                                      // is success, but the state is lower
+                                      // in the tree
+                                      (model) => model.copyWith(
+                                        onChainPaymentDetails:
+                                            const Option.none(),
+                                      ),
+                                    );
+                                  },
+                                  icon: AppIcons.backArrowIcon(
+                                    context: context,
+                                    width: 24,
+                                    height: 24,
+                                    fit: BoxFit.fitHeight,
                                   ),
                                 ),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: Padding(
-                                        padding:
-                                            const EdgeInsets.only(left: 8.0),
-                                        child: RichText(
-                                          text: TextSpan(
-                                            children: [
-                                              TextSpan(
-                                                text: 'Swap id: ',
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .labelSmall
-                                                    ?.copyWith(
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      color: Theme.of(context)
-                                                          .textTheme
-                                                          .labelSmall
-                                                          ?.color,
-                                                    ),
-                                              ),
-                                              TextSpan(
-                                                text: state.fold3(
-                                                    onNone: () => '',
-                                                    onFailure: (_) => '',
-                                                    onReplete: (hash) =>
-                                                        hash.replaceRange(
-                                                            6,
-                                                            hash.length - 6,
-                                                            '...')),
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .bodySmall
-                                                    ?.copyWith(
-                                                      color: Theme.of(context)
-                                                          .textTheme
-                                                          .bodySmall
-                                                          ?.color,
-                                                    ),
-                                              ),
-                                            ],
-                                          ),
-                                          overflow: TextOverflow.visible,
-                                          maxLines: 1,
-                                        ),
+                          IconButton(
+                            onPressed: () {
+                              context.go("/dashboard");
+                            },
+                            icon: AppIcons.closeIcon(
+                              context: context,
+                              width: 24,
+                              height: 24,
+                              fit: BoxFit.fitHeight,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )),
+                body: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 500),
+                          child: state.fold3(
+                            onNone: () => Center(
+                                child: Lottie.asset(
+                              "assets/lottie/txn_success_anim.json",
+                              width: 127,
+                              key: const ValueKey('lottie'),
+                            )),
+                            onReplete: (_) =>
+                                Center(child: TxnSuccessAnimation()),
+                            onFailure: (err) => TransactionError(
+                              errorMessage: err.toString(),
+                              onErrorButtonAction: retry,
+                              buttonText: "Retry",
+                            ),
+                          )),
+                      commonHeightSizedBox,
+                      state.fold3(
+                        onNone: () => Text(
+                          "Creating swap...",
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        onFailure: (_) => SizedBox.shrink(),
+                        onReplete: (hash) => Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text("Successfully created swap",
+                                style:
+                                    Theme.of(context).textTheme.titleMedium!),
+                          ],
+                        ),
+                      ),
+                      commonHeightSizedBox,
+                      commonHeightSizedBox,
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 14.0),
+                        height: 56,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: Theme.of(context)
+                                    .inputDecorationTheme
+                                    .outlineBorder
+                                    ?.color ??
+                                transparentBlack8,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.only(left: 8.0),
+                                child: RichText(
+                                  text: TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: 'Swap id: ',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelSmall
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w500,
+                                              color: Theme.of(context)
+                                                  .textTheme
+                                                  .labelSmall
+                                                  ?.color,
+                                            ),
+                                      ),
+                                      TextSpan(
+                                        text: state.fold3(
+                                            onNone: () => '',
+                                            onFailure: (_) => '',
+                                            onReplete: (hash) =>
+                                                hash.replaceRange(
+                                                    6, hash.length - 6, '...')),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(
+                                              color: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall
+                                                  ?.color,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                  overflow: TextOverflow.visible,
+                                  maxLines: 1,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: TextButton(
+                                style: Theme.of(context)
+                                    .textButtonTheme
+                                    .style
+                                    ?.copyWith(
+                                      backgroundColor: WidgetStateProperty.all(
+                                        transparentPurple8,
+                                      ),
+                                      padding: WidgetStateProperty.all(
+                                        const EdgeInsets.symmetric(
+                                            horizontal: 10, vertical: 12),
                                       ),
                                     ),
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(right: 8.0),
-                                      child: TextButton(
-                                        style: Theme.of(context)
-                                            .textButtonTheme
-                                            .style
-                                            ?.copyWith(
-                                              backgroundColor:
-                                                  WidgetStateProperty.all(
-                                                transparentPurple8,
-                                              ),
-                                              padding: WidgetStateProperty.all(
-                                                const EdgeInsets.symmetric(
-                                                    horizontal: 10,
-                                                    vertical: 12),
-                                              ),
+                                onPressed: state.fold3(
+                                    onNone: () => () {},
+                                    onFailure: (_) => () {},
+                                    onReplete: (hash) => () {
+                                          Clipboard.setData(
+                                              ClipboardData(text: hash));
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                  'swap id copied to clipboard'),
+                                              duration: Duration(seconds: 2),
                                             ),
-                                        onPressed: state.fold3(
-                                            onNone: () => () {},
-                                            onFailure: (_) => () {},
-                                            onReplete: (hash) => () {
-                                                  Clipboard.setData(
-                                                      ClipboardData(
-                                                          text: hash));
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(
-                                                    const SnackBar(
-                                                      content: Text(
-                                                          'swap id copied to clipboard'),
-                                                      duration:
-                                                          Duration(seconds: 2),
-                                                    ),
-                                                  );
-                                                }),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            AppIcons.copyIcon(
-                                              context: context,
-                                              width: 16,
-                                              height: 16,
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Text(
-                                              'COPY',
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodySmall,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
+                                          );
+                                        }),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    AppIcons.copyIcon(
+                                      context: context,
+                                      width: 16,
+                                      height: 16,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'COPY',
+                                      style:
+                                          Theme.of(context).textTheme.bodySmall,
                                     ),
                                   ],
                                 ),
                               ),
-                              const SizedBox(height: 28),
-                              HorizonButton(
-                                onPressed: state.fold3(
-                                    onNone: () => () {},
-                                    onFailure: (_) => () {},
-                                    onReplete: (hash) => () {
-                                          _launchExplorer(
-                                              hash, widget.httpConfig);
-                                        }),
-                                disabled: state.fold3(
-                                  onNone: () => true,
-                                  onFailure: (_) => true,
-                                  onReplete: (_) => false,
-                                ),
-                                child: TextButtonContent(value: "View Swap"),
-                                variant: ButtonVariant.black,
-                              ),
-                              commonHeightSizedBox,
-                              HorizonButton(
-                                onPressed: state.fold3(
-                                    onNone: () => () {},
-                                    onFailure: (_) => () {},
-                                    onReplete: (hash) => () {
-                                          context.go("/dashboard");
-                                        }),
-                                child: TextButtonContent(value: "Close"),
-                                disabled: state.fold3(
-                                  onNone: () => true,
-                                  onFailure: (_) => true,
-                                  onReplete: (_) => false,
-                                ),
-                                variant: ButtonVariant.black,
-                              ),
-                            ],
-                          );
-                        })))),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                      HorizonButton(
+                        onPressed: state.fold3(
+                            onNone: () => () {},
+                            onFailure: (_) => () {},
+                            onReplete: (hash) => () {
+                                  _launchExplorer(hash, widget.httpConfig);
+                                }),
+                        disabled: state.fold3(
+                          onNone: () => true,
+                          onFailure: (_) => true,
+                          onReplete: (_) => false,
+                        ),
+                        child: TextButtonContent(value: "View Swap"),
+                        variant: ButtonVariant.black,
+                      ),
+                      commonHeightSizedBox,
+                      HorizonButton(
+                        onPressed: state.fold3(
+                            onNone: () => () {},
+                            onFailure: (_) => () {},
+                            onReplete: (hash) => () {
+                                  context.go("/dashboard");
+                                }),
+                        child: TextButtonContent(value: "Close"),
+                        disabled: state.fold3(
+                          onNone: () => true,
+                          onFailure: (_) => true,
+                          onReplete: (_) => false,
+                        ),
+                        variant: ButtonVariant.black,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            })),
           )
         ]
             .filter((page) => page.isSome())
