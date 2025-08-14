@@ -88,9 +88,9 @@ class MultiAddressBalanceDropdown extends StatelessWidget {
                                     horizontal: 12, vertical: 8),
                                 decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(24),
-                                    border: Border.all(
-                                        color: transparentWhite8, width: 1)),
-                                child: const Text("Already listed"))
+                                    border: Border.all(color: red2, width: 1)),
+                                child: const Text("Listed",
+                                    style: TextStyle(color: red1)))
                             : const SizedBox.shrink()
                       ],
                     ),

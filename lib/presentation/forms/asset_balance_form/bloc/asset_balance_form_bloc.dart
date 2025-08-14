@@ -66,12 +66,49 @@ class BalanceInput
   }
 }
 
+sealed class UtxoSwapInputError {}
+
+class UtxoSwapInputErrorRequired extends UtxoSwapInputError {}
+
+class UtxoSwapInputErrorListed extends UtxoSwapInputError {
+  // eventually let's embed the swapUUID so we can render
+  // a link to it in the error;
+
+  // final String swapUUID;
+  UtxoSwapInputErrorListed(
+      // {required this.swapUUID}
+      );
+}
+
+// enum UtxoSwapInputError { required, listed }
+
+class UtxoSwapInput
+    extends FormzInput<AssetBalanceFormOption?, UtxoSwapInputError> {
+  final Map<String, bool>? utxoSwapMap;
+  const UtxoSwapInput.pure({this.utxoSwapMap}) : super.pure(null);
+  const UtxoSwapInput.dirty(
+      {required AssetBalanceFormOption? value, this.utxoSwapMap})
+      : super.dirty(value);
+
+  @override
+  UtxoSwapInputError? validator(AssetBalanceFormOption? value) {
+    if (value == null) return UtxoSwapInputErrorRequired();
+    if (utxoSwapMap != null &&
+        value.entry.utxo != null &&
+        utxoSwapMap![value.entry.utxo] == true) {
+      return UtxoSwapInputErrorListed();
+    }
+    return null;
+  }
+}
+
 class AssetBalanceFormModel with FormzMixin {
   final MultiAddressBalance multiAddressBalance;
 
   final RemoteData<Map<String, bool>> utxoSwapMap;
 
   final BalanceInput balanceInput;
+  final UtxoSwapInput utxoSwapInput;
 
   final FormzSubmissionStatus submissionStatus;
 
@@ -79,23 +116,25 @@ class AssetBalanceFormModel with FormzMixin {
       {required this.utxoSwapMap,
       required this.multiAddressBalance,
       required this.balanceInput,
+      required this.utxoSwapInput,
       required this.submissionStatus});
 
   @override
-  List<FormzInput> get inputs => [balanceInput];
+  List<FormzInput> get inputs => [balanceInput, utxoSwapInput];
 
   AssetBalanceFormModel copyWith({
     MultiAddressBalance? multiAddressBalance,
     BalanceInput? balanceInput,
+    UtxoSwapInput? utxoSwapInput,
     FormzSubmissionStatus? submissionStatus,
     RemoteData<Map<String, bool>>? utxoSwapMap,
   }) {
     return AssetBalanceFormModel(
-      utxoSwapMap: utxoSwapMap ?? this.utxoSwapMap,
-      multiAddressBalance: multiAddressBalance ?? this.multiAddressBalance,
-      submissionStatus: submissionStatus ?? this.submissionStatus,
-      balanceInput: balanceInput ?? this.balanceInput,
-    );
+        utxoSwapMap: utxoSwapMap ?? this.utxoSwapMap,
+        multiAddressBalance: multiAddressBalance ?? this.multiAddressBalance,
+        submissionStatus: submissionStatus ?? this.submissionStatus,
+        balanceInput: balanceInput ?? this.balanceInput,
+        utxoSwapInput: utxoSwapInput ?? this.utxoSwapInput);
   }
 }
 
@@ -116,6 +155,7 @@ class AssetBalanceFormBloc
           utxoSwapMap: const Initial(),
           multiAddressBalance: multiAddressBalance,
           balanceInput: const BalanceInput.pure(),
+          utxoSwapInput: const UtxoSwapInput.pure(),
           submissionStatus: FormzSubmissionStatus.initial,
         )) {
     on<AssetBalanceFormRequested>(_handleAssetBalanceFormRequested);
@@ -163,12 +203,16 @@ class AssetBalanceFormBloc
     AssetBalanceSelected event,
     Emitter<AssetBalanceFormModel> emit,
   ) {
-    if (state.utxoSwapMap.getOrNull() == null) {
+    final utxoSwapMap = state.utxoSwapMap.getOrNull();
+    if (utxoSwapMap == null) {
       return;
     }
 
     emit(state.copyWith(
       balanceInput: BalanceInput.dirty(value: event.option),
+      utxoSwapInput:
+          UtxoSwapInput.dirty(value: event.option, utxoSwapMap: utxoSwapMap),
+      submissionStatus: FormzSubmissionStatus.failure,
     ));
   }
 
@@ -176,13 +220,7 @@ class AssetBalanceFormBloc
     SubmitClicked event,
     Emitter<AssetBalanceFormModel> emit,
   ) {
-    if (state.utxoSwapMap.getOrNull() == null) {
-      return;
-    }
-
-    if (state.balanceInput.value == null) {
-      return;
-    }
+    if (!state.isValid) return;
 
     emit(state.copyWith(
       submissionStatus: FormzSubmissionStatus.success,

@@ -160,6 +160,10 @@ class AssetBalanceForm extends StatelessWidget {
                   },
                   selectedValue: state.balanceInput.value?.entry,
                   loading: false))),
+      switch (state.utxoSwapInput.error) {
+        UtxoSwapInputErrorListed() => const Text("Listing exists"),
+        _ => const SizedBox.shrink()
+      },
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: HorizonButton(
