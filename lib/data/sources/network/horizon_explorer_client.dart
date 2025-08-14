@@ -400,7 +400,18 @@ class HorizonExplorerApi {
       }
     };
 
-    return await _api._createSwap(body);
+    try {
+      final res = await _api._createSwap(body);
+      return res;
+    } on DioException catch (e) {
+      if (e.response?.data != null && e.response?.data["error"] != null) {
+        throw Exception(e.response?.data["error"]);
+      } else {
+        rethrow;
+      }
+    } catch (e) {
+      rethrow;
+    }
   }
 
 // TODO: this is a misnomer
