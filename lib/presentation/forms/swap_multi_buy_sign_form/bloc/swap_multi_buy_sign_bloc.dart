@@ -198,23 +198,23 @@ class AtomicSwapSignModel with FormzMixin {
       };
 }
 
-class SwapBuySignFormModel {
+class SwapMultiBuySignFormModel {
   final int swapIndex;
   final List<AtomicSwapSignModel> atomicSwaps;
   final bool allSigned;
 
-  SwapBuySignFormModel({
+  SwapMultiBuySignFormModel({
     required this.swapIndex,
     required this.atomicSwaps,
     required this.allSigned,
   });
 
-  SwapBuySignFormModel copyWith({
+  SwapMultiBuySignFormModel copyWith({
     int? swapIndex,
     List<AtomicSwapSignModel>? atomicSwaps,
     Option<bool> allSigned = const Option.none(),
   }) {
-    return SwapBuySignFormModel(
+    return SwapMultiBuySignFormModel(
         swapIndex: swapIndex ?? this.swapIndex,
         atomicSwaps: atomicSwaps ?? this.atomicSwaps,
         allSigned: allSigned.fold(() => this.allSigned, (value) => value));
@@ -230,41 +230,41 @@ class SwapBuySignFormModel {
   }
 }
 
-sealed class SwapBuySignFormEvent extends Equatable {
-  const SwapBuySignFormEvent();
+sealed class SwapMultiBuySignFormEvent extends Equatable {
+  const SwapMultiBuySignFormEvent();
 
   @override
   List<Object?> get props => [];
 }
 
-class SignatureCompleted extends SwapBuySignFormEvent {
+class SignatureCompleted extends SwapMultiBuySignFormEvent {
   final String signedPsbtHex;
 
   const SignatureCompleted({required this.signedPsbtHex});
 }
 
-class SubmitClicked extends SwapBuySignFormEvent {}
+class SubmitClicked extends SwapMultiBuySignFormEvent {}
 
-class CloseSignPsbtModalClicked extends SwapBuySignFormEvent {
+class CloseSignPsbtModalClicked extends SwapMultiBuySignFormEvent {
   const CloseSignPsbtModalClicked();
 }
 
-class FeeOptionChanged extends SwapBuySignFormEvent {
+class FeeOptionChanged extends SwapMultiBuySignFormEvent {
   final FeeOption value;
   const FeeOptionChanged(this.value);
   @override
   List<Object?> get props => [value];
 }
 
-class SwapBuySignFormBloc
-    extends Bloc<SwapBuySignFormEvent, SwapBuySignFormModel> {
+class SwapMultiBuySignFormBloc
+    extends Bloc<SwapMultiBuySignFormEvent, SwapMultiBuySignFormModel> {
   final HttpConfig httpConfig;
   final TransactionService _transactionService;
   final UtxoRepository _utxoRepository;
   final BitcoinRepository _bitcoinRepository;
   final AtomicSwapRepository _atomicSwapRepository;
 
-  SwapBuySignFormBloc({
+  SwapMultiBuySignFormBloc({
     required FeeEstimates feeEstimates,
     required List<AtomicSwap> atomicSwaps,
     required AddressV2 address,
@@ -279,7 +279,7 @@ class SwapBuySignFormBloc
         _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>(),
         _atomicSwapRepository =
             atomicSwapRepository ?? GetIt.I<AtomicSwapRepository>(),
-        super(SwapBuySignFormModel(
+        super(SwapMultiBuySignFormModel(
             allSigned: false,
             swapIndex: 0,
             atomicSwaps: atomicSwaps
@@ -300,7 +300,7 @@ class SwapBuySignFormBloc
 
   void _handleCloseSignPsbtModalClicked(
     CloseSignPsbtModalClicked event,
-    Emitter<SwapBuySignFormModel> emit,
+    Emitter<SwapMultiBuySignFormModel> emit,
   ) {
     emit(
       updateSwapAtIndex(
@@ -315,7 +315,7 @@ class SwapBuySignFormBloc
 
   _handleSubmitClicked(
     SubmitClicked event,
-    Emitter<SwapBuySignFormModel> emit,
+    Emitter<SwapMultiBuySignFormModel> emit,
   ) async {
     updateSwapAtIndex(
       state.swapIndex,
@@ -406,7 +406,7 @@ class SwapBuySignFormBloc
 
   void _onFeeOptionChanged(
     FeeOptionChanged event,
-    Emitter<SwapBuySignFormModel> emit,
+    Emitter<SwapMultiBuySignFormModel> emit,
   ) {
     emit(
       updateSwapAtIndex(
@@ -419,7 +419,7 @@ class SwapBuySignFormBloc
 
   void _handleSignatureCompleted(
     SignatureCompleted event,
-    Emitter<SwapBuySignFormModel> emit,
+    Emitter<SwapMultiBuySignFormModel> emit,
   ) async {
     emit(
       updateSwapAtIndex(
@@ -473,7 +473,7 @@ class SwapBuySignFormBloc
     }
   }
 
-  SwapBuySignFormModel updateSwapAtIndex(
+  SwapMultiBuySignFormModel updateSwapAtIndex(
     int index,
     AtomicSwapSignModel Function(AtomicSwapSignModel) update,
   ) {

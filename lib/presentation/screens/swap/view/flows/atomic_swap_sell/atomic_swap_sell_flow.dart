@@ -213,6 +213,17 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
         return [
           Option.of(MaterialPage(
               child: FlowStep(
+            trailing: IconButton(
+              onPressed: () {
+                context.go("/dashboard");
+              },
+              icon: AppIcons.closeIcon(
+                context: context,
+                width: 24,
+                height: 24,
+                fit: BoxFit.fitHeight,
+              ),
+            ),
             leading: IconButton(
               onPressed: () {
                 Navigator.of(context).pop();

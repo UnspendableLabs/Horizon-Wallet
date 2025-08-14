@@ -2,6 +2,7 @@ import "package:flutter/cupertino.dart";
 import "package:horizon/domain/entities/utxo.dart";
 import "package:horizon/domain/entities/http_config.dart";
 import "package:horizon/domain/entities/bitcoin_tx.dart";
+import "package:horizon/domain/entities/atomic_swap/atomic_swap.dart";
 import 'package:fpdart/fpdart.dart';
 
 class MakeRBFResponse {
@@ -126,6 +127,17 @@ abstract class TransactionService {
     required int change,
   });
 
+  Future<MakeBuyPsbtReturn> makeMultiBuyPsbt({
+    required HttpConfig httpConfig,
+    required String buyerAddress,
+    required List<(AtomicSwap, BitcoinTx)> swapsWithSellerTransactions,
+    required List<UtxoWithTransaction> utxosWithBuyerTransactions,
+    required double feeRate,
+    required int royaltyAmount,
+    String? royaltyAddress,
+    String? detachData,
+  });
+
   Future<String> embedWitnessData(
       {required String psbtHex,
       required Map<int, (String, String)> inputPrivateKeyMap,
@@ -139,6 +151,32 @@ class TransactionServiceException implements Exception {
 }
 
 extension TransactionServiceX on TransactionService {
+  TaskEither<String, MakeBuyPsbtReturn> makeMultiBuyPsbtT({
+    required HttpConfig httpConfig,
+    required String buyerAddress,
+    required List<(AtomicSwap, BitcoinTx)> swapsWithSellerTransactions,
+    required List<UtxoWithTransaction> utxosWithBuyerTransactions,
+    required double feeRate,
+    required int royaltyAmount,
+    String? royaltyAddress,
+    String? detachData,
+    required String Function(Object error) onError,
+  }) {
+    return TaskEither.tryCatch(
+      () => makeMultiBuyPsbt(
+        httpConfig: httpConfig,
+        buyerAddress: buyerAddress,
+        swapsWithSellerTransactions: swapsWithSellerTransactions,
+        utxosWithBuyerTransactions: utxosWithBuyerTransactions,
+        feeRate: feeRate,
+        royaltyAmount: royaltyAmount,
+        royaltyAddress: royaltyAddress,
+        detachData: detachData,
+      ),
+      (e, _) => onError(e),
+    );
+  }
+
   TaskEither<String, MakeBuyPsbtReturn> makeBuyPsbtT({
     required String buyerAddress,
     required String sellerAddress,

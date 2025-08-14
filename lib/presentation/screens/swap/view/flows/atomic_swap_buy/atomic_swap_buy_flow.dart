@@ -16,6 +16,7 @@ import "package:horizon/presentation/forms/asset_pair_form/bloc/form/asset_pair_
 import 'package:horizon/presentation/forms/swap_slider_form/swap_slider_form_view.dart';
 import 'package:horizon/presentation/forms/swap_presign_form/swap_presign_form_view.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:go_router/go_router.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/presentation/forms/swap_buy_sign_form/bloc/swap_buy_sign_bloc.dart';
 import 'package:horizon/presentation/forms/swap_buy_sign_form/swap_buy_sign_form_view.dart';
@@ -143,6 +144,17 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
         return [
           Option.of(MaterialPage(
               child: FlowStep(
+            trailing: IconButton(
+              onPressed: () {
+                context.go("/dashboard");
+              },
+              icon: AppIcons.closeIcon(
+                context: context,
+                width: 24,
+                height: 24,
+                fit: BoxFit.fitHeight,
+              ),
+            ),
             leading: IconButton(
               onPressed: () {
                 Navigator.of(context).pop();
@@ -193,6 +205,17 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
                       fit: BoxFit.fitHeight,
                     ),
                   ),
+                  trailing: IconButton(
+                    onPressed: () {
+                      context.go("/dashboard");
+                    },
+                    icon: AppIcons.closeIcon(
+                      context: context,
+                      width: 24,
+                      height: 24,
+                      fit: BoxFit.fitHeight,
+                    ),
+                  ),
                   title: "Swap",
                   widthFactor: .6,
                   body: SwapSliderFormProvider(
@@ -210,6 +233,17 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
                           ))))),
           model.atomicSwaps.map((atomicSwaps) => MaterialPage(
               child: FlowStep(
+                  trailing: IconButton(
+                    onPressed: () {
+                      context.go("/dashboard");
+                    },
+                    icon: AppIcons.closeIcon(
+                      context: context,
+                      width: 24,
+                      height: 24,
+                      fit: BoxFit.fitHeight,
+                    ),
+                  ),
                   leading: IconButton(
                     onPressed: () {
                       _controller.update((model) =>

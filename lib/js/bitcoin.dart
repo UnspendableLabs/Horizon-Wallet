@@ -72,10 +72,8 @@ extension type PsbtCache._(JSObject _) implements JSObject {
   external int get fee;
 }
 
-
-
 extension type PsbtOptions._(JSObject o) implements JSObject {
-  external PsbtOptions({ JSAny network });
+  external PsbtOptions({JSAny network});
 }
 
 extension type Psbt._(JSObject _) implements JSObject {
@@ -107,6 +105,7 @@ extension type Psbt._(JSObject _) implements JSObject {
   external int getFee();
 
   external int get inputCount;
+  external int get outputCount;
 
   @JS("__CACHE")
   external PsbtCache get cache;

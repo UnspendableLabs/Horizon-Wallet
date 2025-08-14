@@ -6,7 +6,9 @@ import 'package:convert/convert.dart';
 import 'dart:convert';
 import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
+
 import 'package:horizon/domain/entities/utxo.dart';
+import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import "package:horizon/domain/entities/bitcoin_tx.dart";
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
@@ -21,6 +23,65 @@ import 'package:horizon/presentation/common/shared_util.dart';
 import 'dart:math';
 
 import 'dart:js_interop';
+
+int calculateTxBytesFeeWithRate(
+  int vinsLength,
+  int voutsLength,
+  double feeRate, {
+  int includeChangeOutput = 1,
+}) {
+  const int baseTxSize = 10;
+  const int inSize = 68; // 180 for legacy
+  const int outSize = 31; // 34 for legacy
+
+  final int txSize = baseTxSize +
+      vinsLength * inSize +
+      voutsLength * outSize +
+      includeChangeOutput * outSize;
+
+  final double fee = txSize.toDouble() * feeRate;
+
+  return fee.round();
+}
+
+int calculateOpReturnOutputSize(String dataHex) {
+  // Decode hex string to bytes
+  final dataBuffer = Uint8List.fromList(HEX.decode(dataHex));
+  final dataLength = dataBuffer.length;
+
+  int size = 8;
+
+  int scriptLength = 1 +
+      (dataLength < 76
+          ? 1
+          : dataLength < 256
+              ? 2
+              : 3) +
+      dataLength;
+  size += scriptLength < 253 ? 1 : 3; // varint for script length
+  size += scriptLength; // actual script
+
+  return size;
+}
+
+int calculateTxBytesFeeWithOpReturn(
+    {required int inputCount,
+    required int outputCount,
+    required double feeRate,
+    int opReturnSize = 0}) {
+  final baseFee = calculateTxBytesFeeWithRate(
+    inputCount,
+    outputCount,
+    feeRate,
+  );
+
+  final opReturnFee = opReturnSize.toDouble() * feeRate;
+
+  return baseFee + opReturnFee.round();
+}
+
+// TODO: ref config
+const DUST = 546;
 
 void logRaw(String meta, Object jsObject) {
   print("meta");
@@ -91,6 +152,178 @@ class TransactionServiceWeb implements TransactionService {
   final bitcoinRepository = GetIt.I.get<BitcoinRepository>();
 
   TransactionServiceWeb();
+
+  @override
+  Future<MakeBuyPsbtReturn> makeMultiBuyPsbt({
+    required HttpConfig httpConfig,
+    required String buyerAddress,
+    required List<(AtomicSwap, BitcoinTx)> swapsWithSellerTransactions,
+    required List<UtxoWithTransaction> utxosWithBuyerTransactions,
+    required double feeRate,
+    required int royaltyAmount,
+    String? royaltyAddress,
+    String? detachData,
+  }) async {
+    // can only do multi swap with P2WPKH seller inputs
+    if (swapsWithSellerTransactions.length > 1) {
+      for (var i = 0; i < swapsWithSellerTransactions.length; i++) {
+        AtomicSwap swap = swapsWithSellerTransactions[i].$1;
+        BitcoinTx sellerTransaction = swapsWithSellerTransactions[i].$2;
+        UtxoID assetUtxoID = swap.assetUtxoId;
+        Vout sellerOutput = sellerTransaction.vout[assetUtxoID.vout];
+        if (isP2PKHScript(scriptHex: sellerOutput.scriptpubkey)) {
+          throw TransactionServiceException("""
+	    Multi-swap transactions do not support P2PKH seller inputs.
+	    Seller input ${i + 1} (${assetUtxoID.toString()}) uses P2PKH script.
+	    Please use SegWit addresses for multi-swap transactions.
+	    """);
+        }
+      }
+    }
+
+    bitcoinjs.Psbt psbt = bitcoinjs.Psbt(bitcoinjs.PsbtOptions(
+      network: httpConfig.network.toJS,
+    ));
+
+    List<int> inputIndices = [];
+    BigInt totalInputValue = BigInt.zero;
+    BigInt totalOutputValue = BigInt.zero;
+
+    int opReturnOutputSize = 0;
+    if (detachData != null) {
+      opReturnOutputSize =
+          calculateOpReturnOutputSize(detachData); // convert string to hex
+    }
+
+    // add primary buyer input at index 0
+    // this is the destination for all assets
+    final primaryUtxo = utxosWithBuyerTransactions.first.utxo;
+    final primaryTx = utxosWithBuyerTransactions.first.transaction;
+
+    bitcoinjs.TxInput primaryBuyerInput = await createInputConfig(
+      utxo: UtxoID(
+        txid: primaryUtxo.txid,
+        vout: primaryUtxo.vout,
+      ),
+      vout: primaryTx.vout[primaryUtxo.vout],
+      sighashType: SIGHASH_ALL,
+      bitcoinRepository: bitcoinRepository,
+      httpConfig: httpConfig,
+    );
+
+    psbt.addInput(primaryBuyerInput);
+    inputIndices.add(0);
+    totalInputValue += BigInt.from(primaryUtxo.value);
+
+    for (var i = 0; i < swapsWithSellerTransactions.length; i++) {
+      AtomicSwap swap = swapsWithSellerTransactions[i].$1;
+      BitcoinTx sellerTransaction = swapsWithSellerTransactions[i].$2;
+      UtxoID sellerUtxoID = swap.assetUtxoId;
+
+      bitcoinjs.TxInput sellerInput = await createInputConfig(
+        utxo: sellerUtxoID,
+        vout: sellerTransaction.vout[sellerUtxoID.vout],
+        sighashType: SIGHASH_SINGLE | SIGHASH_ANYONECANPAY,
+        bitcoinRepository: bitcoinRepository,
+        httpConfig: httpConfig,
+      );
+
+      psbt.addInput(sellerInput);
+      totalInputValue +=
+          BigInt.from(sellerTransaction.vout[sellerUtxoID.vout].value);
+    }
+
+    if (detachData != null) {
+      throw Exception("detachData is not supported in multi-buy PSBT yet");
+    } else {
+      psbt.addOutput(bitcoinjs.TxOutput.make(
+        address: buyerAddress,
+        value: 546,
+      ));
+      totalOutputValue += BigInt.from(546);
+    }
+
+    // add payment outputs to sellers
+    for (var i = 0; i < swapsWithSellerTransactions.length; i++) {
+      final swap = swapsWithSellerTransactions[i].$1;
+
+      psbt.addOutput(bitcoinjs.TxOutput.make(
+          address: swap.sellerAddress, value: swap.price.quantity.toInt()));
+
+      totalOutputValue += BigInt.from(swap.price.quantity.toInt());
+    }
+
+    // add royalty payment if needed
+    if (royaltyAmount > 546 && royaltyAddress != null) {
+      psbt.addOutput(bitcoinjs.TxOutput.make(
+        address: royaltyAddress,
+        value: royaltyAmount,
+      ));
+
+      totalOutputValue += BigInt.from(royaltyAmount);
+    }
+
+    // add additional inputs if  need to cover outputs + fees
+    for (var i = 1; i < utxosWithBuyerTransactions.length; i++) {
+      final utxo = utxosWithBuyerTransactions[i].utxo;
+      final tx = utxosWithBuyerTransactions[i].transaction;
+
+      final estimatedFee = calculateTxBytesFeeWithOpReturn(
+          inputCount: psbt.inputCount,
+          outputCount: psbt.outputCount,
+          feeRate: feeRate,
+          opReturnSize: opReturnOutputSize);
+
+      final totalRequired = totalOutputValue + BigInt.from(estimatedFee);
+
+      if (totalInputValue >= totalRequired) {
+        break;
+      }
+
+      final additionalInput = await createInputConfig(
+        utxo: UtxoID(
+          txid: utxo.txid,
+          vout: utxo.vout,
+        ),
+        vout: tx.vout[utxo.vout],
+        sighashType: SIGHASH_ALL,
+        bitcoinRepository: bitcoinRepository,
+        httpConfig: httpConfig,
+      );
+
+      psbt.addInput(additionalInput);
+      inputIndices.add(psbt.inputCount - 1);
+      totalInputValue += BigInt.from(utxo.value);
+    }
+
+    final finalEstimatedFee = calculateTxBytesFeeWithOpReturn(
+        inputCount: psbt.inputCount,
+        outputCount: psbt.outputCount,
+        feeRate: feeRate,
+        opReturnSize: opReturnOutputSize);
+    final finalTotalRequired =
+        totalOutputValue + BigInt.from(finalEstimatedFee);
+
+    if (totalInputValue < finalTotalRequired) {
+      throw TransactionServiceException(
+          'Insufficient funds: total input ${totalInputValue.toString()} is less than total required ${finalTotalRequired.toString()} (outputs + fee ${finalEstimatedFee.toString()})');
+    }
+
+    final change =
+        totalInputValue - totalOutputValue - BigInt.from(finalEstimatedFee);
+
+    if (change >= BigInt.from(546)) {
+      psbt.addOutput(bitcoinjs.TxOutput.make(
+        address: buyerAddress,
+        value: change.toInt(),
+      ));
+    }
+
+    return MakeBuyPsbtReturn(
+      psbtHex: psbt.toHex(),
+      inputsToSign: inputIndices,
+    );
+  }
 
   @override
   Future<MakeBuyPsbtReturn> makeBuyPsbt({

@@ -19,7 +19,7 @@ import 'package:horizon/domain/entities/fee_estimates.dart';
 
 import 'package:horizon/domain/repositories/fee_estimates_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
-import "./bloc/swap_buy_sign_bloc.dart";
+import "./bloc/swap_multi_buy_sign_bloc.dart";
 
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
@@ -27,13 +27,13 @@ import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
 import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
 
-class SwapBuySignFormActions {
+class SwapMultiBuySignFormActions {
   final VoidCallback onSubmitClicked;
   final VoidCallback onCloseSignPsbtModalClicked;
   final Function(FeeOption feeOptin) onFeeOptionChanged;
   final Function(String signedPsbtHex) onSignatureCompleted;
 
-  SwapBuySignFormActions({
+  SwapMultiBuySignFormActions({
     required this.onCloseSignPsbtModalClicked,
     required this.onSubmitClicked,
     required this.onFeeOptionChanged,
@@ -41,7 +41,7 @@ class SwapBuySignFormActions {
   });
 }
 
-class SwapBuySignFormProvider extends StatelessWidget {
+class SwapMultiBuySignFormProvider extends StatelessWidget {
   final HttpConfig httpConfig;
   final List<AtomicSwap> atomicSwaps;
   final String assetName;
@@ -49,11 +49,11 @@ class SwapBuySignFormProvider extends StatelessWidget {
   final AddressV2 address;
 
   final Widget Function(
-    SwapBuySignFormActions actions,
+    SwapMultiBuySignFormActions actions,
     SwapBuySignFormModel state,
   ) child;
 
-  SwapBuySignFormProvider({
+  SwapMultiBuySignFormProvider({
     super.key,
     required this.child,
     required this.httpConfig,
@@ -84,7 +84,7 @@ class SwapBuySignFormProvider extends StatelessWidget {
                   child: BlocBuilder<SwapBuySignFormBloc, SwapBuySignFormModel>(
                       builder: (context, state) {
                     return child(
-                        SwapBuySignFormActions(
+                        SwapMultiBuySignFormActions(
                             onCloseSignPsbtModalClicked: () => context
                                 .read<SwapBuySignFormBloc>()
                                 .add(const CloseSignPsbtModalClicked()),
@@ -231,7 +231,7 @@ class CreateBuyPsbtSignHandler extends StatelessWidget {
 }
 
 class SwapBuySignForm extends StatefulWidget {
-  final SwapBuySignFormActions actions;
+  final SwapMultiBuySignFormActions actions;
   final SwapBuySignFormModel state;
 
   const SwapBuySignForm(
