@@ -497,7 +497,7 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
   }
 
   @override
-  Future<DataWrapper<AtomicSwapBuyResponse>> _atomicSwapBuy(
+  Future<DataWrapper<List<AtomicSwapBuyResponse>>> _atomicSwapBuy(
     String id,
     Map<String, dynamic> body,
   ) async {
@@ -506,28 +506,34 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
     final _headers = <String, dynamic>{};
     final _data = <String, dynamic>{};
     _data.addAll(body);
-    final _options = _setStreamType<DataWrapper<AtomicSwapBuyResponse>>(Options(
+    final _options =
+        _setStreamType<DataWrapper<List<AtomicSwapBuyResponse>>>(Options(
       method: 'PUT',
       headers: _headers,
       extra: _extra,
     )
-        .compose(
-          _dio.options,
-          '/atomic-swaps/${id}/multi-buy',
-          queryParameters: queryParameters,
-          data: _data,
-        )
-        .copyWith(
-            baseUrl: _combineBaseUrls(
-          _dio.options.baseUrl,
-          baseUrl,
-        )));
+            .compose(
+              _dio.options,
+              '/atomic-swaps/${id}/multi-buy',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late DataWrapper<AtomicSwapBuyResponse> _value;
+    late DataWrapper<List<AtomicSwapBuyResponse>> _value;
     try {
-      _value = DataWrapper<AtomicSwapBuyResponse>.fromJson(
+      _value = DataWrapper<List<AtomicSwapBuyResponse>>.fromJson(
         _result.data!,
-        (json) => AtomicSwapBuyResponse.fromJson(json as Map<String, dynamic>),
+        (json) => json is List<dynamic>
+            ? json
+                .map<AtomicSwapBuyResponse>((i) =>
+                    AtomicSwapBuyResponse.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
       );
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);
@@ -573,6 +579,31 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
       rethrow;
     }
     return _value;
+  }
+
+  RequestOptions newRequestOptions(Object? options) {
+    if (options is RequestOptions) {
+      return options as RequestOptions;
+    }
+    if (options is Options) {
+      return RequestOptions(
+        method: options.method,
+        sendTimeout: options.sendTimeout,
+        receiveTimeout: options.receiveTimeout,
+        extra: options.extra,
+        headers: options.headers,
+        responseType: options.responseType,
+        contentType: options.contentType.toString(),
+        validateStatus: options.validateStatus,
+        receiveDataWhenStatusError: options.receiveDataWhenStatusError,
+        followRedirects: options.followRedirects,
+        maxRedirects: options.maxRedirects,
+        requestEncoder: options.requestEncoder,
+        responseDecoder: options.responseDecoder,
+        path: '',
+      );
+    }
+    return RequestOptions(path: '');
   }
 
   RequestOptions _setStreamType<T>(RequestOptions requestOptions) {

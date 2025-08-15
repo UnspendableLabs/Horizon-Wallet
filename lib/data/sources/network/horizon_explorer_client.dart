@@ -309,7 +309,7 @@ abstract class HorizonExplorerApii {
   ]);
 
   @PUT('/atomic-swaps/{id}/multi-buy')
-  Future<DataWrapper<AtomicSwapBuyResponse>> _atomicSwapBuy(
+  Future<DataWrapper<List<AtomicSwapBuyResponse>>> _atomicSwapBuy(
     @Path('id') String id,
     @Body() Map<String, dynamic> body,
   );
@@ -420,7 +420,7 @@ class HorizonExplorerApi {
     return await _api._getAtomicSwapsRaw(assetName, orderBy, order);
   }
 
-  Future<DataWrapper<AtomicSwapBuyResponse>> atomicSwapMultiBuy({
+  Future<DataWrapper<List<AtomicSwapBuyResponse>>> atomicSwapMultiBuy({
     required List<String> ids,
     required String buyerAddress,
     required String psbtHex,
@@ -432,7 +432,17 @@ class HorizonExplorerApi {
       }
     };
 
-    return await _api._atomicSwapBuy(ids.join(","), body);
+    try {
+      return await _api._atomicSwapBuy(ids.join(","), body);
+    } on DioException catch (e) {
+      if (e.response?.data != null && e.response?.data["error"] != null) {
+        throw Exception(e.response?.data["error"]);
+      } else {
+        rethrow;
+      }
+    } catch (e) {
+      rethrow;
+    }
   }
 
   // public async atomicSwapAssetUtxoIdReadAll(

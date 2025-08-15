@@ -254,7 +254,7 @@ class TransactionServiceWeb implements TransactionService {
     }
 
     // add royalty payment if needed
-    if (royaltyAmount > 546 && royaltyAddress != null) {
+    if (royaltyAmount >= 546 && royaltyAddress != null) {
       psbt.addOutput(bitcoinjs.TxOutput.make(
         address: royaltyAddress,
         value: royaltyAmount,
@@ -268,14 +268,11 @@ class TransactionServiceWeb implements TransactionService {
       final utxo = utxosWithBuyerTransactions[i].utxo;
       final tx = utxosWithBuyerTransactions[i].transaction;
 
-      print("psbt.inputCOunt: ${psbt.inputCount}");
-      print("psbt.outputCount: ${psbt.outputCount}");
-
       final estimatedFee = calculateTxBytesFeeWithOpReturn(
-          inputCount: psbt.inputCount,
-          outputCount: psbt.outputCount,
           feeRate: feeRate.toDouble(),
-          opReturnSize: opReturnOutputSize);
+          opReturnSize: opReturnOutputSize,
+          outputCount: psbt.outputCount,
+          inputCount: psbt.inputCount);
 
       final totalRequired = totalOutputValue + BigInt.from(estimatedFee);
 

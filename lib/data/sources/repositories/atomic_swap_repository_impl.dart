@@ -100,7 +100,7 @@ class AtomicSwapRepositoryImpl implements AtomicSwapRepository {
   }
 
   @override
-  Future<AtomicSwapBuy> atomicSwapMultiBuy({
+  Future<List<AtomicSwapBuy>> atomicSwapMultiBuy({
     required HttpConfig httpConfig,
     required List<String> ids,
     required String psbtHex,
@@ -114,10 +114,12 @@ class AtomicSwapRepositoryImpl implements AtomicSwapRepository {
       buyerAddress: buyerAddress,
     );
 
-    return AtomicSwapBuy(
-      atomicSwapId: res.data.atomicSwap.id,
-      buyerAddress: res.data.buyerAddress,
-      txId: res.data.txId,
-    );
+    return res.data
+        .map((buy) => AtomicSwapBuy(
+              atomicSwapId: buy.atomicSwap.id,
+              buyerAddress: buy.buyerAddress,
+              txId: buy.txId,
+            ))
+        .toList();
   }
 }

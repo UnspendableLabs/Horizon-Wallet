@@ -46,7 +46,7 @@ abstract class AtomicSwapRepository {
     required bool assetDivisible,
   });
 
-  Future<AtomicSwapBuy> atomicSwapMultiBuy({
+  Future<List<AtomicSwapBuy>> atomicSwapMultiBuy({
     required HttpConfig httpConfig,
     required List<String> ids,
     required String psbtHex,
@@ -104,7 +104,7 @@ extension AtomicSwapRepositoryX on AtomicSwapRepository {
     );
   }
 
-  TaskEither<String, AtomicSwapBuy> atomicSwapMultiBuyT({
+  TaskEither<String, List<AtomicSwapBuy>> atomicSwapMultiBuyT({
     required HttpConfig httpConfig,
     required List<String> ids,
     required String psbtHex,
