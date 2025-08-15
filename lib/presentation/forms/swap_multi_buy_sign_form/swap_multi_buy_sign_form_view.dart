@@ -50,7 +50,7 @@ class SwapMultiBuySignFormProvider extends StatelessWidget {
 
   final Widget Function(
     SwapMultiBuySignFormActions actions,
-    SwapBuySignFormModel state,
+    SwapMultiBuySignFormModel state,
   ) child;
 
   SwapMultiBuySignFormProvider({
@@ -76,26 +76,26 @@ class SwapMultiBuySignFormProvider extends StatelessWidget {
             onRefreshing: (_) => const Center(
                 child: CircularProgressIndicator()), // should not happen
             onSuccess: (feeEstimates) => BlocProvider(
-                  create: (context) => SwapBuySignFormBloc(
+                  create: (context) => SwapMultiBuySignFormBloc(
                       httpConfig: session.httpConfig,
                       address: address,
                       feeEstimates: feeEstimates,
                       atomicSwaps: atomicSwaps),
-                  child: BlocBuilder<SwapBuySignFormBloc, SwapBuySignFormModel>(
-                      builder: (context, state) {
+                  child: BlocBuilder<SwapMultiBuySignFormBloc,
+                      SwapMultiBuySignFormModel>(builder: (context, state) {
                     return child(
                         SwapMultiBuySignFormActions(
                             onCloseSignPsbtModalClicked: () => context
-                                .read<SwapBuySignFormBloc>()
+                                .read<SwapMultiBuySignFormBloc>()
                                 .add(const CloseSignPsbtModalClicked()),
                             onFeeOptionChanged: (option) => context
-                                .read<SwapBuySignFormBloc>()
+                                .read<SwapMultiBuySignFormBloc>()
                                 .add(FeeOptionChanged(option)),
                             onSubmitClicked: () => context
-                                .read<SwapBuySignFormBloc>()
+                                .read<SwapMultiBuySignFormBloc>()
                                 .add(SubmitClicked()),
                             onSignatureCompleted: (signedPsbtHex) => context
-                                .read<SwapBuySignFormBloc>()
+                                .read<SwapMultiBuySignFormBloc>()
                                 .add(SignatureCompleted(
                                     signedPsbtHex: signedPsbtHex))),
                         state);
@@ -110,12 +110,12 @@ class SwapMultiBuySignFormProvider extends StatelessWidget {
   }
 }
 
-class CreateBuyPsbtSignHandler extends StatelessWidget {
+class CreateMultiBuyPsbtSignHandler extends StatelessWidget {
   final Function(String signedPsbtHex) onSuccess;
   final VoidCallback onClose;
   final String address;
 
-  const CreateBuyPsbtSignHandler(
+  const CreateMultiBuyPsbtSignHandler(
       {super.key,
       required this.onSuccess,
       required this.onClose,
@@ -125,11 +125,11 @@ class CreateBuyPsbtSignHandler extends StatelessWidget {
   Widget build(context) {
     final session = context.read<SessionStateCubit>().state.successOrThrow();
 
-    return BlocListener<SwapBuySignFormBloc, SwapBuySignFormModel>(
+    return BlocListener<SwapMultiBuySignFormBloc, SwapMultiBuySignFormModel>(
         listener: (context, state) async {
           final settings = GetIt.I<SettingsRepository>();
 
-          if (state.current.showSignPsbtModal) {
+          if (state.showSignPsbtModal) {
             final result = await WoltModalSheet.show(
                 context: context,
                 modalTypeBuilder: (_) => WoltModalType.bottomSheet(),
@@ -148,7 +148,7 @@ class CreateBuyPsbtSignHandler extends StatelessWidget {
                           hasTopBarLayer: false,
                           // pageTitle: Text("Sign PSBT",
                           //     style: Theme.of(context).textTheme.headlineSmall),
-                          child: state.current.psbtWithArgs.fold(
+                          child: state.psbtWithArgs.fold(
                             () => const SizedBox.shrink(),
                             (psbtWithArgs) => BlocProvider(
                                 create: (context) => SignPsbtBloc(
@@ -191,7 +191,7 @@ class CreateBuyPsbtSignHandler extends StatelessWidget {
                           hasTopBarLayer: false,
                           // pageTitle: Text("Sign PSBT",
                           //     style: Theme.of(context).textTheme.headlineSmall),
-                          child: state.current.psbtWithArgs.fold(
+                          child: state.psbtWithArgs.fold(
                             () => const SizedBox.shrink(),
                             (psbtWithArgs) => BlocProvider(
                                 create: (context) => SignPsbtBloc(
@@ -230,18 +230,18 @@ class CreateBuyPsbtSignHandler extends StatelessWidget {
   }
 }
 
-class SwapBuySignForm extends StatefulWidget {
+class SwapMultiBuySignForm extends StatefulWidget {
   final SwapMultiBuySignFormActions actions;
-  final SwapBuySignFormModel state;
+  final SwapMultiBuySignFormModel state;
 
-  const SwapBuySignForm(
+  const SwapMultiBuySignForm(
       {required this.actions, required this.state, super.key});
 
   @override
-  State<SwapBuySignForm> createState() => _SwapBuySignFormState();
+  State<SwapMultiBuySignForm> createState() => _SwapMultiBuySignFormState();
 }
 
-class _SwapBuySignFormState extends State<SwapBuySignForm> {
+class _SwapMultiBuySignFormState extends State<SwapMultiBuySignForm> {
   _renderProperty(label, value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -291,53 +291,59 @@ class _SwapBuySignFormState extends State<SwapBuySignForm> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _renderProperty("Transaction Type", "atomic swap buy"),
-                    _renderProperty("Rate", widget.state.current.rateString),
-                    _renderProperty("Swap Completion", "Execute immediately"),
-                    _renderPropertyWidget(
-                        "You'll send",
-                        Row(
-                          children: [
-                            QuantityText(
-                                quantity: widget.state.current.atomicSwap.price
-                                    .normalizedPretty(precision: 8),
-                                style: const TextStyle(fontSize: 16)),
-                            const SizedBox(width: 8),
-                            appIcons.assetIcon(
-                                httpConfig: session.httpConfig,
-                                context: context,
-                                assetName: "BTC",
-                                width: 12,
-                                height: 12),
-                            const SizedBox(width: 4),
-                            Text("BTC"),
-                          ],
-                        )),
-                    _renderProperty("And when", "Transaction is confirmed"),
-                    _renderPropertyWidget(
-                        "You'll receive",
-                        Row(
-                          children: [
-                            QuantityText(
-                                quantity: widget
-                                    .state.current.atomicSwap.assetQuantity
-                                    .normalizedPretty(precision: 8),
-                                style: const TextStyle(fontSize: 16)),
-                            const SizedBox(width: 8),
-                            appIcons.assetIcon(
-                                httpConfig: session.httpConfig,
-                                context: context,
-                                assetName:
-                                    widget.state.current.atomicSwap.assetName,
-                                width: 12,
-                                height: 12),
-                            const SizedBox(width: 4),
-                            Text(widget.state.current.atomicSwap.assetName,
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  fontSize: 16,
-                                )),
-                          ],
-                        )),
+                    ...widget.state.atomicSwaps
+                        .map((current) => Column(children: [
+                              _renderProperty(
+                                  "Transaction Type", "atomic swap buy"),
+                              _renderProperty("Rate", "TK Rate String"),
+                              _renderProperty(
+                                  "Swap Completion", "Execute immediately"),
+                              _renderPropertyWidget(
+                                  "You'll send",
+                                  Row(
+                                    children: [
+                                      QuantityText(
+                                          quantity: current.price
+                                              .normalizedPretty(precision: 8),
+                                          style: const TextStyle(fontSize: 16)),
+                                      const SizedBox(width: 8),
+                                      appIcons.assetIcon(
+                                          httpConfig: session.httpConfig,
+                                          context: context,
+                                          assetName: "BTC",
+                                          width: 12,
+                                          height: 12),
+                                      const SizedBox(width: 4),
+                                      Text("BTC"),
+                                    ],
+                                  )),
+                              _renderProperty(
+                                  "And when", "Transaction is confirmed"),
+                              _renderPropertyWidget(
+                                  "You'll receive",
+                                  Row(
+                                    children: [
+                                      QuantityText(
+                                          quantity: current.assetQuantity
+                                              .normalizedPretty(precision: 8),
+                                          style: const TextStyle(fontSize: 16)),
+                                      const SizedBox(width: 8),
+                                      appIcons.assetIcon(
+                                          httpConfig: session.httpConfig,
+                                          context: context,
+                                          assetName: current.assetName,
+                                          width: 12,
+                                          height: 12),
+                                      const SizedBox(width: 4),
+                                      Text(current.assetName,
+                                          style: theme.textTheme.titleMedium
+                                              ?.copyWith(
+                                            fontSize: 16,
+                                          )),
+                                    ],
+                                  ))
+                            ]))
+                        .toList(),
                     const SizedBox(
                       height: 14,
                     ),
@@ -348,12 +354,11 @@ class _SwapBuySignFormState extends State<SwapBuySignForm> {
                       thickness: 1,
                     ),
                     TransactionFeeSelection(
-                      selectedFeeOption:
-                          widget.state.current.feeOptionInput.value,
+                      selectedFeeOption: widget.state.feeOptionInput.value,
                       onFeeOptionSelected: (value) {
                         widget.actions.onFeeOptionChanged(value);
                       },
-                      feeEstimates: widget.state.current.feeEstimates,
+                      feeEstimates: widget.state.feeEstimates,
                     ),
                     // CollapsableWidget(
                     //   title: "Fee Details",
@@ -381,49 +386,14 @@ class _SwapBuySignFormState extends State<SwapBuySignForm> {
                     //   ),
                     // ),
                     commonHeightSizedBox,
-                    Text("${widget.state.current.signatureStatus}"),
+                    Text("${widget.state.signatureStatus}"),
                     HorizonButton(
-                        disabled: widget.state.current.signatureStatus
-                            .isInProgressOrSuccess,
+                        disabled:
+                            widget.state.signatureStatus.isInProgressOrSuccess,
                         onPressed: () {
                           widget.actions.onSubmitClicked();
                         },
-                        child: widget.state.current.broadcastStatus.isInProgress
-                            ? WidgetButtonContent(
-                                value: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10),
-                                    child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        const CircularProgressIndicator(),
-                                        const SizedBox(width: 4),
-                                        Text("Broadcasting",
-                                            style: theme.textTheme.titleSmall),
-                                      ],
-                                    )))
-                            : widget.state.current.broadcastStatus.isSuccess
-                                ? WidgetButtonContent(
-                                    value: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 10),
-                                        child: Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            AppIcons.checkCircleIcon(
-                                              context: context,
-                                              width: 24,
-                                              height: 24,
-                                            ),
-                                            const SizedBox(width: 4),
-                                            Text("Success",
-                                                style:
-                                                    theme.textTheme.titleSmall),
-                                          ],
-                                        )))
-                                : TextButtonContent(value: "Sign and Submit")),
+                        child: TextButtonContent(value: "Sign and Submit")),
                     commonHeightSizedBox,
                   ],
                 )))

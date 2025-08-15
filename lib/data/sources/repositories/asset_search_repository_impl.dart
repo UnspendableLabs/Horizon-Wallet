@@ -72,27 +72,6 @@ class AssetSearchRepositoryImpl implements AssetSearchRepository {
       {required HttpConfig httpConfig, required String term}) async {
 // {"data":["XCP","A10748947519108282879","A2977114591417842298","A7644917367163002844","A9571979917063295926"]}
 
-    print("is this being called?");
-    print(httpConfig);
-
-    if (httpConfig.network.isTestnet4) {
-      print("huh?");
-      return [
-        AssetSearchResult(name: "XCP", description: "Counterparty"),
-        AssetSearchResult(
-            name: "A10748947519108282879", description: "Test Asset 1"),
-        AssetSearchResult(
-            name: "A2977114591417842298", description: "Test Asset 2"),
-        AssetSearchResult(
-            name: "A7644917367163002844", description: "Test Asset 3"),
-        AssetSearchResult(
-            name: "A9571979917063295926", description: "Test Asset 4"),
-      ];
-    } else {
-       print("it's noite testnt???");
-
-    }
-
     Searcheable<Map<String, dynamic>> searchResult = await client
         .index('search-index')
         .search(term, const SearchQuery(filter: ["kind = 'asset'"]));

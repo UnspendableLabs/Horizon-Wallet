@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
 import 'package:equatable/equatable.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:horizon/extensions.dart';
+import "package:horizon/domain/entities/bitcoin_tx.dart";
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/atomic_swap_repository.dart';
@@ -199,35 +199,53 @@ class AtomicSwapSignModel with FormzMixin {
 }
 
 class SwapMultiBuySignFormModel {
-  final int swapIndex;
-  final List<AtomicSwapSignModel> atomicSwaps;
-  final bool allSigned;
+  final AddressV2 address;
+  final List<AtomicSwap> atomicSwaps;
+  final FeeEstimates feeEstimates;
+  final FeeOptionInput feeOptionInput;
+  final FormzSubmissionStatus signatureStatus;
+  final Option<String> error;
+  final Option<MakeBuyPsbtReturn> psbtWithArgs;
+  final bool showSignPsbtModal;
 
   SwapMultiBuySignFormModel({
-    required this.swapIndex,
+    required this.address,
     required this.atomicSwaps,
-    required this.allSigned,
+    required this.feeEstimates,
+    required this.feeOptionInput,
+    required this.signatureStatus,
+    required this.error,
+    required this.psbtWithArgs,
+    required this.showSignPsbtModal,
   });
 
-  SwapMultiBuySignFormModel copyWith({
-    int? swapIndex,
-    List<AtomicSwapSignModel>? atomicSwaps,
-    Option<bool> allSigned = const Option.none(),
-  }) {
+  SwapMultiBuySignFormModel copyWith(
+      {AddressV2? address,
+      List<AtomicSwap>? atomicSwaps,
+      FeeEstimates? feeEstimates,
+      FeeOptionInput? feeOptionInput,
+      FormzSubmissionStatus? signatureStatus,
+      Option<String>? error,
+      Option<MakeBuyPsbtReturn>? psbtWithArgs,
+      bool? showSignPsbtModal}) {
     return SwapMultiBuySignFormModel(
-        swapIndex: swapIndex ?? this.swapIndex,
-        atomicSwaps: atomicSwaps ?? this.atomicSwaps,
-        allSigned: allSigned.fold(() => this.allSigned, (value) => value));
+      address: address ?? this.address,
+      atomicSwaps: atomicSwaps ?? this.atomicSwaps,
+      feeEstimates: feeEstimates ?? this.feeEstimates,
+      feeOptionInput: feeOptionInput ?? this.feeOptionInput,
+      signatureStatus: signatureStatus ?? this.signatureStatus,
+      error: error ?? this.error,
+      psbtWithArgs: psbtWithArgs ?? this.psbtWithArgs,
+      showSignPsbtModal: showSignPsbtModal ?? this.showSignPsbtModal,
+    );
   }
 
-  AtomicSwapSignModel get current => atomicSwaps[swapIndex];
-
-  Option<AtomicSwapSignModel> get next {
-    if (swapIndex + 1 < atomicSwaps.length) {
-      return Option.of(atomicSwaps[swapIndex + 1]);
-    }
-    return const Option.none();
-  }
+  num get getSatsPerVByte => switch (feeOptionInput.value) {
+        Slow() => feeEstimates.slow,
+        Medium() => feeEstimates.medium,
+        Fast() => feeEstimates.fast,
+        Custom(fee: var value) => value
+      };
 }
 
 sealed class SwapMultiBuySignFormEvent extends Equatable {
@@ -262,7 +280,7 @@ class SwapMultiBuySignFormBloc
   final TransactionService _transactionService;
   final UtxoRepository _utxoRepository;
   final BitcoinRepository _bitcoinRepository;
-  final AtomicSwapRepository _atomicSwapRepository;
+  // final AtomicSwapRepository _atomicSwapRepository;
 
   SwapMultiBuySignFormBloc({
     required FeeEstimates feeEstimates,
@@ -277,21 +295,18 @@ class SwapMultiBuySignFormBloc
             transactionService ?? GetIt.I<TransactionService>(),
         _utxoRepository = utxoRepository ?? GetIt.I<UtxoRepository>(),
         _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>(),
-        _atomicSwapRepository =
-            atomicSwapRepository ?? GetIt.I<AtomicSwapRepository>(),
+        // _atomicSwapRepository =
+        //     atomicSwapRepository ?? GetIt.I<AtomicSwapRepository>(),
         super(SwapMultiBuySignFormModel(
-            allSigned: false,
-            swapIndex: 0,
-            atomicSwaps: atomicSwaps
-                .map((swap) => AtomicSwapSignModel(
-                    address: address,
-                    atomicSwap: swap,
-                    feeEstimates: feeEstimates,
-                    feeOptionInput: FeeOptionInput.pure(),
-                    psbtWithArgs: const Option.none(),
-                    showSignPsbtModal: false,
-                    error: const Option.none()))
-                .toList())) {
+          address: address,
+          atomicSwaps: atomicSwaps,
+          signatureStatus: FormzSubmissionStatus.initial,
+          feeOptionInput: FeeOptionInput.pure(),
+          feeEstimates: feeEstimates,
+          psbtWithArgs: const Option.none(),
+          error: const Option.none(),
+          showSignPsbtModal: false,
+        )) {
     on<SubmitClicked>(_handleSubmitClicked);
     on<FeeOptionChanged>(_onFeeOptionChanged);
     on<CloseSignPsbtModalClicked>(_handleCloseSignPsbtModalClicked);
@@ -302,184 +317,152 @@ class SwapMultiBuySignFormBloc
     CloseSignPsbtModalClicked event,
     Emitter<SwapMultiBuySignFormModel> emit,
   ) {
-    emit(
-      updateSwapAtIndex(
-          state.swapIndex,
-          (swap) => swap.copyWith(
-                showSignPsbtModal: Option.of(false),
-                psbtWithArgs: Option.none(),
-                signatureStatus: FormzSubmissionStatus.initial,
-              )),
-    );
+    emit(state.copyWith(
+      showSignPsbtModal: false,
+      psbtWithArgs: const Option.none(),
+      signatureStatus: FormzSubmissionStatus.initial,
+    ));
   }
 
   _handleSubmitClicked(
     SubmitClicked event,
     Emitter<SwapMultiBuySignFormModel> emit,
   ) async {
-    updateSwapAtIndex(
-      state.swapIndex,
-      (swap) =>
-          swap.copyWith(signatureStatus: FormzSubmissionStatus.inProgress),
-    );
+    emit(state.copyWith(
+      signatureStatus: FormzSubmissionStatus.inProgress,
+    ));
 
+    // TODO: royalties; detachData
     final task = TaskEither<String, MakeBuyPsbtReturn>.Do(($) async {
-      AddressV2 buyerAddress = state.current.address;
-      String sellerAddress = state.current.atomicSwap.sellerAddress;
-      int assetUtxoValue = state.current.atomicSwap.assetUtxoValue;
-      num satsPerVByte = state.current.getSatsPerVByte;
+      AddressV2 buyerAddress = state.address;
 
-      final utxoMap = await $(_utxoRepository.getUnattachedUTXOMapForAddressT(
-        httpConfig: httpConfig,
-        address: buyerAddress,
-      ));
+      num satsPerVByte = state.getSatsPerVByte;
 
-      final selected =
-          await $(TaskEither.fromEither(selectUtxosForTargetWithFeeT(
-        utxoSet: utxoMap.values.toList(),
-        targetAmount: state.current.atomicSwap.price.quantity,
-        feeRate: satsPerVByte.toInt(), // convert to JS BigInt,
-        voutsLength: 1,
-        includeChangeOutput: 1,
-      )));
+      // ignore  royalities fo now
+      int royaltyAmount = 0;
 
-      // chat i need to map this to UtxoWithTransaction(utxo: utxo: transation: transaction)
-      final utxosWithTransactions = await $(TaskEither.sequenceList(
-        selected.utxos
-            .map((utxo) => _bitcoinRepository
-                .getTransactionT(
+      List<(AtomicSwap, BitcoinTx)> swapsWithTransactions =
+          await $(TaskEither.sequenceList(state.atomicSwaps
+              .map((swap) => _bitcoinRepository
+                  .getTransactionT(
                     httpConfig: httpConfig,
-                    txid: utxo.txid,
+                    txid: swap.assetUtxoId.txid,
                     onError: (error) =>
-                        'Failed to get transaction for UTXO: ${utxo.txid}:${utxo.vout}')
-                .map((bitcoinTransaction) => UtxoWithTransaction(
-                    utxo: utxo, transaction: bitcoinTransaction)))
-            .toList(),
+                        'Failed to get transaction for atomic swap UTXO: ${swap.assetUtxoId.txid}',
+                  )
+                  .map((tx) => (swap, tx)))
+              .toList()));
+
+      List<UtxoWithTransaction> utxosWithTransactions = await $(_utxoRepository
+          .getUnattachedUTXOMapForAddressT(
+            httpConfig: httpConfig,
+            address: buyerAddress,
+          )
+          .map((m) => m.values.toList())
+          .flatMap(
+            (utxos) => TaskEither.sequenceList(
+              utxos
+                  .map((utxo) => _bitcoinRepository
+                      .getTransactionT(
+                        httpConfig: httpConfig,
+                        txid: utxo.txid,
+                        onError: (error) =>
+                            'Failed to get transaction for UTXO: ${utxo.txid}:${utxo.vout}',
+                      )
+                      .map((bitcoinTransaction) => UtxoWithTransaction(
+                          utxo: utxo, transaction: bitcoinTransaction)))
+                  .toList(),
+            ),
+          ));
+
+      return await $(_transactionService.makeMultiBuyPsbtT(
+        buyerAddress: buyerAddress.address,
+        swapsWithSellerTransactions: swapsWithTransactions,
+        utxosWithBuyerTransactions: utxosWithTransactions,
+        httpConfig: httpConfig,
+        royaltyAmount: royaltyAmount,
+        feeRate: satsPerVByte.toDouble(),
+        onError: (error, st) =>
+            'Failed to create PSBT for multi-buy: $error \n\n$st',
       ));
-
-      // TODO: could be run in parallel with above
-      final sellerTransaction = await $(
-        _bitcoinRepository.getTransactionT(
-          httpConfig: httpConfig,
-          txid: state.current.atomicSwap.assetUtxoId.txid,
-          onError: (error) =>
-              'Failed to get transaction for seller UTXO: ${state.current.atomicSwap.assetUtxoId.txid}',
-        ),
-      );
-
-      return await $(
-        _transactionService.makeBuyPsbtT(
-          buyerAddress: buyerAddress.address,
-          sellerAddress: sellerAddress,
-          utxos: utxosWithTransactions,
-          httpConfig: httpConfig,
-          utxoAssetValue: assetUtxoValue,
-          sellerTransaction: sellerTransaction,
-          sellerUtxoID: state.current.atomicSwap.assetUtxoId,
-          price: state.current.atomicSwap.price.quantity
-              .toInt(), // TODO: convert to JS BigInt
-          change: selected.change.toInt(), // TODO: compute change
-          onError: (error) =>
-              'Failed to create PSBT for buy transaction: $error',
-        ),
-      );
     });
 
     final result = await task.run();
 
-    result.fold((error) {
-      emit(updateSwapAtIndex(
-          state.swapIndex,
-          (swap) => swap.copyWith(
-                signatureStatus: FormzSubmissionStatus.failure,
-                error: Option.of(error),
-              )));
-    },
-        (unsignedPsbtWithArgs) => emit(updateSwapAtIndex(
-            state.swapIndex,
-            (swap) => swap.copyWith(
-                  signatureStatus: FormzSubmissionStatus.inProgress,
-                  psbtWithArgs: Option.of(unsignedPsbtWithArgs),
-                  showSignPsbtModal: const Option.of(true),
-                ))));
+    final nextState = result.fold((error) {
+      print("error: $error");
+      return state.copyWith(
+        signatureStatus: FormzSubmissionStatus.failure,
+        error: Option.of(error),
+      );
+    }, (unsignedPsbtWithArgs) {
+      return state.copyWith(
+        signatureStatus: FormzSubmissionStatus.inProgress,
+        psbtWithArgs: Option.of(unsignedPsbtWithArgs),
+        showSignPsbtModal: true,
+      );
+    });
+
+    emit(nextState);
   }
 
   void _onFeeOptionChanged(
     FeeOptionChanged event,
     Emitter<SwapMultiBuySignFormModel> emit,
   ) {
-    emit(
-      updateSwapAtIndex(
-          state.swapIndex,
-          (swap) => swap.copyWith(
-                feeOptionInput: FeeOptionInput.dirty(event.value),
-              )),
-    );
+    emit(state.copyWith(
+      feeOptionInput: FeeOptionInput.dirty(event.value),
+    ));
   }
 
   void _handleSignatureCompleted(
     SignatureCompleted event,
     Emitter<SwapMultiBuySignFormModel> emit,
   ) async {
-    emit(
-      updateSwapAtIndex(
-          state.swapIndex,
-          (swap) => swap.copyWith(
-                showSignPsbtModal: const Option.of(false),
-                signatureStatus: FormzSubmissionStatus.success,
-                broadcastStatus: FormzSubmissionStatus.inProgress,
-              )),
-    );
+    emit(state.copyWith(
+      showSignPsbtModal: false,
+      signatureStatus: FormzSubmissionStatus.success,
+    ));
 
-    final task = _atomicSwapRepository
-        .atomicSwapBuyT(
-            httpConfig: httpConfig,
-            id: state.current.atomicSwap.id,
-            psbtHex: event.signedPsbtHex,
-            buyerAddress: state.current.address.address)
-        .minimumDuration(Duration(seconds: 1, milliseconds: 500));
-
-    final result = await task.run();
-
-    if (result.isLeft()) {
-      // final error = result.getLeft();
-
-      updateSwapAtIndex(
-          state.swapIndex,
-          (swap) => swap.copyWith(
-                broadcastStatus: FormzSubmissionStatus.failure,
-                // error: Option.of(error).getOrThrow(),
-              ));
-    } else {
-      // final success = result.getRight().getOrThrow();
-
-      emit(updateSwapAtIndex(
-          state.swapIndex,
-          (swap) => swap.copyWith(
-                broadcastStatus: FormzSubmissionStatus.success,
-              )));
-      await Future.delayed(const Duration(seconds: 1));
-
-      if (state.next.isNone()) {
-        emit(state.copyWith(allSigned: const Option.of(true)));
-        return;
-      } else {
-        emit(
-          state.copyWith(
-            swapIndex: state.swapIndex + 1,
-          ),
-        );
-      }
-    }
-  }
-
-  SwapMultiBuySignFormModel updateSwapAtIndex(
-    int index,
-    AtomicSwapSignModel Function(AtomicSwapSignModel) update,
-  ) {
-    final updated = update(state.atomicSwaps[index]);
-    final newSwaps = List<AtomicSwapSignModel>.from(state.atomicSwaps);
-    newSwaps[index] = updated;
-    return state.copyWith(atomicSwaps: newSwaps);
+    // final task = _atomicSwapRepository
+    //     .atomicSwapMultiBuyT(
+    //         httpConfig: httpConfig,
+    //         ids: state.atomicSwaps.map((swap) => swap.id).toList(),
+    //         psbtHex: event.signedPsbtHex,
+    //         buyerAddress: state.address.address)
+    //     .minimumDuration(const Duration(seconds: 1, milliseconds: 500));
+    //
+    // final result = await task.run();
+    //
+    // if (result.isLeft()) {
+    //   // final error = result.getLeft();
+    //
+    //   updateSwapAtIndex(
+    //       state.swapIndex,
+    //       (swap) => swap.copyWith(
+    //             broadcastStatus: FormzSubmissionStatus.failure,
+    //             // error: Option.of(error).getOrThrow(),
+    //           ));
+    // } else {
+    //   // final success = result.getRight().getOrThrow();
+    //
+    //   emit(updateSwapAtIndex(
+    //       state.swapIndex,
+    //       (swap) => swap.copyWith(
+    //             broadcastStatus: FormzSubmissionStatus.success,
+    //           )));
+    //   await Future.delayed(const Duration(seconds: 1));
+    //
+    //   if (state.next.isNone()) {
+    //     emit(state.copyWith(allSigned: const Option.of(true)));
+    //     return;
+    //   } else {
+    //     emit(
+    //       state.copyWith(
+    //         swapIndex: state.swapIndex + 1,
+    //       ),
+    //     );
+    //   }
+    // }
   }
 }

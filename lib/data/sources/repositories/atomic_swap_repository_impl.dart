@@ -100,16 +100,16 @@ class AtomicSwapRepositoryImpl implements AtomicSwapRepository {
   }
 
   @override
-  Future<AtomicSwapBuy> atomicSwapBuy({
+  Future<AtomicSwapBuy> atomicSwapMultiBuy({
     required HttpConfig httpConfig,
-    required String id,
+    required List<String> ids,
     required String psbtHex,
     required String buyerAddress,
   }) async {
     final client = _horizonExplorerClientFactory.getClient(httpConfig);
 
-    final res = await client.atomicSwapBuy(
-      id: id,
+    final res = await client.atomicSwapMultiBuy(
+      ids: ids,
       psbtHex: psbtHex,
       buyerAddress: buyerAddress,
     );

@@ -159,7 +159,7 @@ class TransactionServiceWeb implements TransactionService {
     required String buyerAddress,
     required List<(AtomicSwap, BitcoinTx)> swapsWithSellerTransactions,
     required List<UtxoWithTransaction> utxosWithBuyerTransactions,
-    required double feeRate,
+    required num feeRate,
     required int royaltyAmount,
     String? royaltyAddress,
     String? detachData,
@@ -268,10 +268,13 @@ class TransactionServiceWeb implements TransactionService {
       final utxo = utxosWithBuyerTransactions[i].utxo;
       final tx = utxosWithBuyerTransactions[i].transaction;
 
+      print("psbt.inputCOunt: ${psbt.inputCount}");
+      print("psbt.outputCount: ${psbt.outputCount}");
+
       final estimatedFee = calculateTxBytesFeeWithOpReturn(
           inputCount: psbt.inputCount,
           outputCount: psbt.outputCount,
-          feeRate: feeRate,
+          feeRate: feeRate.toDouble(),
           opReturnSize: opReturnOutputSize);
 
       final totalRequired = totalOutputValue + BigInt.from(estimatedFee);
@@ -299,7 +302,7 @@ class TransactionServiceWeb implements TransactionService {
     final finalEstimatedFee = calculateTxBytesFeeWithOpReturn(
         inputCount: psbt.inputCount,
         outputCount: psbt.outputCount,
-        feeRate: feeRate,
+        feeRate: feeRate.toDouble(),
         opReturnSize: opReturnOutputSize);
     final finalTotalRequired =
         totalOutputValue + BigInt.from(finalEstimatedFee);

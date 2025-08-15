@@ -160,7 +160,7 @@ extension TransactionServiceX on TransactionService {
     required int royaltyAmount,
     String? royaltyAddress,
     String? detachData,
-    required String Function(Object error) onError,
+    required String Function(Object error, StackTrace st) onError,
   }) {
     return TaskEither.tryCatch(
       () => makeMultiBuyPsbt(
@@ -173,7 +173,7 @@ extension TransactionServiceX on TransactionService {
         royaltyAddress: royaltyAddress,
         detachData: detachData,
       ),
-      (e, _) => onError(e),
+      (e, st) => onError(e, st),
     );
   }
 

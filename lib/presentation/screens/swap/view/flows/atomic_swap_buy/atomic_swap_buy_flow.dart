@@ -18,8 +18,8 @@ import 'package:horizon/presentation/forms/swap_presign_form/swap_presign_form_v
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
-import 'package:horizon/presentation/forms/swap_buy_sign_form/bloc/swap_buy_sign_bloc.dart';
-import 'package:horizon/presentation/forms/swap_buy_sign_form/swap_buy_sign_form_view.dart';
+import 'package:horizon/presentation/forms/swap_multi_buy_sign_form/bloc/swap_multi_buy_sign_bloc.dart';
+import 'package:horizon/presentation/forms/swap_multi_buy_sign_form/swap_multi_buy_sign_form_view.dart';
 // CHAT this compnent is oveflowing.
 
 import 'package:horizon/presentation/common/transactions/success_animation.dart';
@@ -278,7 +278,7 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
                     ),
                   )))),
           model.atomicSwapsToSign.map((atomciSwapsToSign) => MaterialPage(
-              child: SwapBuySignFormProvider(
+              child: SwapMultiBuySignFormProvider(
                   address: widget.addresses.firstWhere(
                     (address) =>
                         address.address ==
@@ -290,10 +290,7 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
                   child: (actions, state) => FlowStep(
                       leading: IconButton(
                         onPressed: () {
-                          if (state.current.signatureStatus
-                                  .isInProgressOrSuccess ||
-                              state.current.broadcastStatus
-                                  .isInProgressOrSuccess) {
+                          if (state.signatureStatus.isInProgressOrSuccess) {
                             return;
                           }
 
@@ -306,20 +303,17 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
                           fit: BoxFit.fitHeight,
                         ),
                       ),
-                      title:
-                          "Sign Transaction ( ${state.swapIndex + 1} / ${state.atomicSwaps.length} )",
+                      title: "Sign Transaction",
                       widthFactor: .9,
                       body: Column(
                         children: [
-                          CreateBuyPsbtSignHandler(
+                          CreateMultiBuyPsbtSignHandler(
                               onSuccess: actions.onSignatureCompleted,
                               onClose: () {
                                 actions.onCloseSignPsbtModalClicked();
                               },
-                              address: state.current.address.address),
-                          SwapBuySignForm(
-                            key: Key(
-                                "swap_buy_sign_form_${state.current.atomicSwap.id}"),
+                              address: state.address.address),
+                          SwapMultiBuySignForm(
                             state: state,
                             actions: actions,
                           ),

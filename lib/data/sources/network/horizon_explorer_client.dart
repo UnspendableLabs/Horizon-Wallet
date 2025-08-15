@@ -420,8 +420,8 @@ class HorizonExplorerApi {
     return await _api._getAtomicSwapsRaw(assetName, orderBy, order);
   }
 
-  Future<DataWrapper<AtomicSwapBuyResponse>> atomicSwapBuy({
-    required String id,
+  Future<DataWrapper<AtomicSwapBuyResponse>> atomicSwapMultiBuy({
+    required List<String> ids,
     required String buyerAddress,
     required String psbtHex,
   }) async {
@@ -432,7 +432,7 @@ class HorizonExplorerApi {
       }
     };
 
-    return await _api._atomicSwapBuy(id, body);
+    return await _api._atomicSwapBuy(ids.join(","), body);
   }
 
   // public async atomicSwapAssetUtxoIdReadAll(

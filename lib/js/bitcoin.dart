@@ -105,7 +105,13 @@ extension type Psbt._(JSObject _) implements JSObject {
   external int getFee();
 
   external int get inputCount;
-  external int get outputCount;
+
+  int get outputCount => txOutputs.length;
+
+  // outputCount isn't actually defined.
+  // i need to call  outupts.length
+
+  external JSArray<JSAny> get txOutputs;
 
   @JS("__CACHE")
   external PsbtCache get cache;
