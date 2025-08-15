@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'dart:convert';
 import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:horizon/domain/entities/asset_search_result.dart';
 import 'package:horizon/domain/entities/atomic_swap/on_chain_payment.dart';
@@ -74,54 +75,47 @@ class AssetSrcResponse {
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
-class AssetSearchResultModelHit {
-  final String asset;
-  final String assetLongname;
-  final String description;
-  final String issuer;
-  final String source;
+class AssetSearchResultModel {
+  final String name;
+  final String href;
+  final String? image;
+  final String? collectionName;
+  final String? collectionSlug;
 
-  AssetSearchResultModelHit({
-    required this.asset,
-    required this.assetLongname,
-    required this.description,
-    required this.issuer,
-    required this.source,
+  AssetSearchResultModel({
+    required this.name,
+    required this.href,
+    this.image,
+    this.collectionName,
+    this.collectionSlug,
   });
 
-  factory AssetSearchResultModelHit.fromJson(Map<String, dynamic> json) {
-    return _$AssetSearchResultModelHitFromJson(json);
-  }
-}
-
-@JsonSerializable(fieldRename: FieldRename.snake)
-class AssetSearchResultModel {
-  final String type;
-  final String href;
-  final AssetSearchResultModelHit hit;
-
-  AssetSearchResultModel(
-      {required this.type, required this.href, required this.hit});
-
-  factory AssetSearchResultModel.fromJson(Map<String, dynamic> json) {
-    return _$AssetSearchResultModelFromJson(json);
-  }
+  factory AssetSearchResultModel.fromJson(Map<String, dynamic> json) =>
+      _$AssetSearchResultModelFromJson(json);
 
   AssetSearchResult toEntity() {
-    return AssetSearchResult(
-      name: hit.asset,
-      description: hit.description,
-    );
+    return AssetSearchResult(name: name, description: image ?? "");
   }
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
-class AssetSearchResponse {
-  final List<AssetSearchResultModel> results;
-  AssetSearchResponse({required this.results});
+class SearchResults {
+  final List<AssetSearchResultModel> assets;
 
-  factory AssetSearchResponse.fromJson(Map<String, dynamic> json) =>
-      _$AssetSearchResponseFromJson(json);
+  SearchResults({required this.assets});
+
+  factory SearchResults.fromJson(Map<String, dynamic> json) =>
+      _$SearchResultsFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class SearchResponse {
+  final SearchResults results;
+  SearchResponse({required this.results});
+
+  factory SearchResponse.fromJson(Map<String, dynamic> json) {
+    return _$SearchResponseFromJson(json);
+  }
 }
 
 @JsonSerializable()
@@ -292,7 +286,7 @@ abstract class HorizonExplorerApii {
   );
 
   @GET('/explorer/search')
-  Future<AssetSearchResponse> _searchAssetsRaw(@Query('s') String query);
+  Future<String> _searchAssetsRaw(@Query('s') String query);
 
   @POST('/on-chain-payment')
   Future<DataWrapper<OnChainPaymentModel>> _createOnChainPayment(
@@ -347,8 +341,14 @@ class HorizonExplorerApi {
   }
 
   Future<List<AssetSearchResult>> searchAssets({required String query}) async {
-    final json = await _api._searchAssetsRaw(query);
-    return json.results.map((a) => a.toEntity()).toList();
+    final jsonString = await _api._searchAssetsRaw(query);
+
+    // TODO: this shouldn't be necessary, need to change
+    final json = jsonDecode(jsonString);
+
+    final parsed = SearchResponse.fromJson(json);
+
+    return parsed.results.assets.map((a) => a.toEntity()).toList();
   }
 
   Future<DataWrapper<OnChainPaymentModel>> createOnChainPayment({

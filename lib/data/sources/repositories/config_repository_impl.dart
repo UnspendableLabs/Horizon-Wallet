@@ -63,28 +63,4 @@ class ConfigImpl implements Config {
     const envValue = String.fromEnvironment('HORIZON_DEFAULT_ENVELOPE_SIZE');
     return envValue.isNotEmpty ? int.parse(envValue) : 546;
   }
-
-  @override
-  Option<MeilisearchConfig> get meilisearchConfigMainnet {
-    const api = String.fromEnvironment('HORIZON_MEILISEARCH_API_MAINNET');
-    const key = String.fromEnvironment('HORIZON_MEILISEARCH_KEY_MAINNET');
-
-    if (api.isEmpty || key.isEmpty) {
-      return Option.none();
-    }
-
-    return Option.of(MeilisearchConfig(api: api, key: key));
-  }
-
-  @override
-  Option<MeilisearchConfig> get meilisearchConfigTestnet {
-    const api = String.fromEnvironment('HORIZON_MEILISEARCH_API_TESTNET');
-    const key = String.fromEnvironment('HORIZON_MEILISEARCH_KEY_TESTNET');
-
-    if (api.isEmpty || key.isEmpty) {
-      return Option.none();
-    }
-
-    return Option.of(MeilisearchConfig(api: api, key: key));
-  }
 }

@@ -73,53 +73,45 @@ Map<String, dynamic> _$AssetSrcResponseToJson(AssetSrcResponse instance) =>
       'src': instance.src,
     };
 
-AssetSearchResultModelHit _$AssetSearchResultModelHitFromJson(
-        Map<String, dynamic> json) =>
-    AssetSearchResultModelHit(
-      asset: json['asset'] as String,
-      assetLongname: json['asset_longname'] as String,
-      description: json['description'] as String,
-      issuer: json['issuer'] as String,
-      source: json['source'] as String,
-    );
-
-Map<String, dynamic> _$AssetSearchResultModelHitToJson(
-        AssetSearchResultModelHit instance) =>
-    <String, dynamic>{
-      'asset': instance.asset,
-      'asset_longname': instance.assetLongname,
-      'description': instance.description,
-      'issuer': instance.issuer,
-      'source': instance.source,
-    };
-
 AssetSearchResultModel _$AssetSearchResultModelFromJson(
         Map<String, dynamic> json) =>
     AssetSearchResultModel(
-      type: json['type'] as String,
+      name: json['name'] as String,
       href: json['href'] as String,
-      hit: AssetSearchResultModelHit.fromJson(
-          json['hit'] as Map<String, dynamic>),
+      image: json['image'] as String?,
+      collectionName: json['collection_name'] as String?,
+      collectionSlug: json['collection_slug'] as String?,
     );
 
 Map<String, dynamic> _$AssetSearchResultModelToJson(
         AssetSearchResultModel instance) =>
     <String, dynamic>{
-      'type': instance.type,
+      'name': instance.name,
       'href': instance.href,
-      'hit': instance.hit,
+      'image': instance.image,
+      'collection_name': instance.collectionName,
+      'collection_slug': instance.collectionSlug,
     };
 
-AssetSearchResponse _$AssetSearchResponseFromJson(Map<String, dynamic> json) =>
-    AssetSearchResponse(
-      results: (json['results'] as List<dynamic>)
+SearchResults _$SearchResultsFromJson(Map<String, dynamic> json) =>
+    SearchResults(
+      assets: (json['assets'] as List<dynamic>)
           .map(
               (e) => AssetSearchResultModel.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
 
-Map<String, dynamic> _$AssetSearchResponseToJson(
-        AssetSearchResponse instance) =>
+Map<String, dynamic> _$SearchResultsToJson(SearchResults instance) =>
+    <String, dynamic>{
+      'assets': instance.assets,
+    };
+
+SearchResponse _$SearchResponseFromJson(Map<String, dynamic> json) =>
+    SearchResponse(
+      results: SearchResults.fromJson(json['results'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$SearchResponseToJson(SearchResponse instance) =>
     <String, dynamic>{
       'results': instance.results,
     };
@@ -308,12 +300,12 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
   }
 
   @override
-  Future<AssetSearchResponse> _searchAssetsRaw(String query) async {
+  Future<String> _searchAssetsRaw(String query) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{r's': query};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<AssetSearchResponse>(Options(
+    final _options = _setStreamType<String>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
@@ -329,10 +321,10 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
           _dio.options.baseUrl,
           baseUrl,
         )));
-    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late AssetSearchResponse _value;
+    final _result = await _dio.fetch<String>(_options);
+    late String _value;
     try {
-      _value = AssetSearchResponse.fromJson(_result.data!);
+      _value = _result.data!;
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);
       rethrow;
