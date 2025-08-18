@@ -1,5 +1,9 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:horizon/domain/entities/action.dart' as URLAction;
+import 'package:horizon/domain/entities/failure.dart';
+import 'package:horizon/extensions.dart';
+import 'package:horizon/domain/entities/action.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 import 'package:dio/dio.dart';
@@ -56,6 +60,8 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:web/web.dart' as web;
 import 'package:horizon/presentation/common/themes.dart';
 import 'package:horizon/presentation/screens/action_handler/action_handler_view.dart';
+
+num redirectCount = 0;
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -129,7 +135,7 @@ class BottomTabNavigation extends StatelessWidget {
 
   const BottomTabNavigation({super.key, required this.currentIndex});
 
-  static const tabRoutes = ['/dashboard', '/settings'];
+  static const tabRoutes = ['/#', '/settings'];
 
   @override
   Widget build(BuildContext context) {
@@ -299,13 +305,8 @@ class BottomNavItem extends StatelessWidget {
 class AppRouter {
   static GoRouter router = GoRouter(
       navigatorKey: _rootNavigatorKey,
-      initialLocation: "/dashboard",
+      initialLocation: "/",
       routes: <RouteBase>[
-        GoRoute(
-            path: "/",
-            builder: (context, state) {
-              return const LoadingScreen();
-            }),
         // if (GetIt.instance<Config>().isDatabaseViewerEnabled)
         GoRoute(
           path: "/db",
@@ -402,7 +403,18 @@ class AppRouter {
           },
           routes: [
             GoRoute(
-              path: "/dashboard",
+                path: "/rpc/get-addresses",
+                builder: (context, state) {
+                  final actionRepository = GetIt.instance<ActionRepository>();
+
+                  final action = actionRepository.dequeue().getOrThrow();
+
+                  return ActionHandlerShell(
+                      child: GetAddressesPage(
+                          action: action as URLAction.RPCGetAddressesAction));
+                }),
+            GoRoute(
+              path: "/",
               builder: (context, state) {
                 return const Scaffold(
                   body: PortfolioView(),
@@ -459,7 +471,7 @@ class AppRouter {
                                 height: 24,
                                 fit: BoxFit.fitHeight),
                             onPressed: () {
-                              context.go("/dashboard");
+                              context.go("/");
                             }),
                       ),
                     ),
@@ -562,9 +574,11 @@ class AppRouter {
       ],
       errorBuilder: (context, state) => ErrorScreen(
             error: state.error,
-            onGoHome: () => context.go('/dashboard'),
+            onGoHome: () => context.go('/'),
           ),
       redirect: (context, state) async {
+        redirectCount++;
+
         if (state.matchedLocation == "/db") {
           return "/db";
         }
@@ -579,6 +593,16 @@ class AppRouter {
 
         final session = context.read<SessionStateCubit>();
 
+        final actionParam = state.uri.queryParameters['action'];
+
+        final ActionRepository actionRepository =
+            GetIt.instance<ActionRepository>();
+        if (actionParam != null) {
+          actionRepository
+              .fromString(actionParam)
+              .fold(noop1, (action) => actionRepository.enqueue(action));
+        }
+
         final path = session.state.maybeWhen(
             loggedOut: () => "/login",
             onboarding: (onboarding) {
@@ -589,37 +613,49 @@ class AppRouter {
                 importPK: () => "/onboarding/import-pk",
               );
             },
+            loading: () {
+              // TODO: maybe we change this to peak?
+
+              final action = actionRepository.peek();
+
+              final actionPath = action.fold(
+                  () => null,
+                  (action) => switch (action) {
+                        RPCGetAddressesAction() => "/rpc/get-addresses",
+                        RPCSignMessageAction() => "/rpc/sign-message",
+                        RPCSignPsbtAction() => "/rpc/sign-psbt",
+                        _ => null
+                      });
+
+              if (actionPath != null) {
+                return actionPath;
+              }
+
+              return "/#";
+            },
             success: (data) {
-              Future.delayed(const Duration(milliseconds: 500), () {
-                session.initialized();
-              });
+              final action = actionRepository.peek();
 
-              // TODO: remove later
-              if (state.matchedLocation.startsWith("/demo")) {
-                return state.matchedLocation;
-              }
+              final actionPath = action.fold(
+                  () => null,
+                  (action) => switch (action) {
+                        RPCGetAddressesAction() => "/rpc/get-addresses",
+                        RPCSignMessageAction() => "/rpc/sign-message",
+                        RPCSignPsbtAction() => "/rpc/sign-psbt",
+                        _ => null
+                      });
 
-              if (data.redirect) {
-                return "/dashboard";
+              if (actionPath != null) {
+                return actionPath;
               }
+              return null;
+              // if (data.redirect) {
+              //   return "/";
+              // }
             },
             // if the session state is not yet loaded, show a loading screen
-            orElse: () => "/");
+            orElse: () => null);
 
-        // final actionParam = state.uri.queryParameters['action'];
-
-        final actionParam = "getAddresses:ext,1423360735,asdfaf";
-        //
-        // print("actionParam: $actionParam");
-
-        if (actionParam != null) {
-          final ActionRepository actionRepository =
-              GetIt.instance<ActionRepository>();
-          actionRepository.fromString(actionParam).map((x) {
-            print(x);
-            return x;
-          }).fold(noop1, (action) => actionRepository.enqueue(action));
-        }
         return path;
       });
 }
@@ -654,20 +690,6 @@ class ErrorScreen extends StatelessWidget {
 
 void main() {
   final href = web.window.location.href;
-
-  final actionPattern = RegExp(r'[?&]action=');
-
-  if (actionPattern.hasMatch(href)) {
-    setup();
-    runZonedGuarded(() async {
-      WidgetsFlutterBinding.ensureInitialized();
-      await initSettings();
-      runApp(ActionHandlerApp());
-    }, (error, stackTrace) {
-      print(error);
-    });
-    return;
-  }
 
   setup();
   DialogHelper.init(_rootNavigatorKey);
@@ -1149,6 +1171,21 @@ class MyApp extends StatelessWidget {
         },
         child: BlocBuilder<ThemeBloc, ThemeMode>(
           builder: (context, themeMode) {
+            final session = context.watch<SessionStateCubit>().state;
+
+            bool loadingWidget = session.maybeWhen(
+              initial: () => true,
+              orElse: () => false,
+            );
+
+            if (loadingWidget) {
+              return const Directionality(
+                  textDirection: TextDirection.ltr,
+                  child: Center(
+                      child: SizedBox(
+                          width: 440, height: 700, child: LoadingScreen())));
+            }
+
             final app = MaterialApp.router(
               theme: buildLightTheme(),
               darkTheme: buildDarkTheme(),

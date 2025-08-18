@@ -148,8 +148,12 @@ class SessionStateCubit extends Cubit<SessionState> {
     }
   }
 
-  void initialize() async {
-    emit(const SessionState.loading());
+  void initialize({bool loggingIn = false}) async {
+    // loading really means logging in.
+
+    if (loggingIn) {
+      emit(const SessionState.loading());
+    }
 
     try {
       final sessionState = await _getSessionState();
@@ -187,7 +191,6 @@ class SessionStateCubit extends Cubit<SessionState> {
               await _addressV2Repository.getByAccount(currentAccount);
 
           emit(SessionState.success(SessionStateSuccess(
-            redirect: true,
             httpConfig: httpConfigForNetwork(walletConfig.network),
             walletConfig: walletConfig,
             decryptionKey: decryptionKey,
@@ -198,25 +201,27 @@ class SessionStateCubit extends Cubit<SessionState> {
           return;
       }
     } catch (error) {
+      print("error $error");
       emit(SessionState.error(error.toString()));
     }
   }
 
-  void initialized() {
-    final state_ = state.when(
-        initial: () => state,
-        loading: () => state,
-        error: (_) => state,
-        loggedOut: () => state,
-        onboarding: (_) => state,
-        success: (stateInner) =>
-            SessionState.success(stateInner.copyWith(redirect: false)));
-
-    emit(state_);
-  }
+  // void initialized() {
+  //   final state_ = state.when(
+  //       initial: () => state,
+  //       loading: () => state,
+  //       error: (_) => state,
+  //       loggedOut: () => state,
+  //       onboarding: (_) => state,
+  //       success: (stateInner) => SessionState.success(stateInner.copyWith()));
+  //
+  //   emit(state_);
+  // }
 
   void onNetworkChanged(Network network, [VoidCallback? cb]) async {
+    print("before read wallet");
     WalletConfig current = await _walletConfigRepository.getCurrent();
+    print("aftre");
 
     WalletConfig walletConfig = await _walletConfigRepository.findOrCreate(
       basePath: current.basePath,
@@ -246,7 +251,6 @@ class SessionStateCubit extends Cubit<SessionState> {
     SessionStateSuccess success = state.successOrThrow();
 
     emit(SessionState.success(success.copyWith(
-      redirect: false, // not sure about this....
       walletConfig: walletConfig,
       httpConfig: httpConfigForNetwork(walletConfig.network),
       // wallet: wallet,
@@ -358,7 +362,6 @@ class SessionStateCubit extends Cubit<SessionState> {
       SessionStateSuccess success = state.successOrThrow();
 
       emit(SessionState.success(success.copyWith(
-        redirect: false, // not sure about this....
         // wallet: wallet,
         accounts: accounts,
         addresses: addresses,

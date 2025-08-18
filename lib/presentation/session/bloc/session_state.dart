@@ -39,13 +39,12 @@ class SessionStateSuccess with _$SessionStateSuccess {
 
   @override
   String toString() {
-    return 'SessionStateSuccess(redirect: $redirect, decryptionKey: <REDACTED>, accounts: $accounts, addresses: $addresses)';
+    return 'SessionStateSuccess(decryptionKey: <REDACTED>, accounts: $accounts, addresses: $addresses)';
   }
 
   const factory SessionStateSuccess({
     required HttpConfig httpConfig,
     required AccountV2? currentAccount,
-    required bool redirect,
     // required Wallet wallet,
     required String decryptionKey,
     required List<AccountV2> accounts,

@@ -1009,8 +1009,7 @@ abstract class _LoggedOut implements SessionState {
 /// @nodoc
 mixin _$SessionStateSuccess {
   HttpConfig get httpConfig => throw _privateConstructorUsedError;
-  AccountV2? get currentAccount => throw _privateConstructorUsedError;
-  bool get redirect =>
+  AccountV2? get currentAccount =>
       throw _privateConstructorUsedError; // required Wallet wallet,
   String get decryptionKey => throw _privateConstructorUsedError;
   List<AccountV2> get accounts => throw _privateConstructorUsedError;
@@ -1033,7 +1032,6 @@ abstract class $SessionStateSuccessCopyWith<$Res> {
   $Res call(
       {HttpConfig httpConfig,
       AccountV2? currentAccount,
-      bool redirect,
       String decryptionKey,
       List<AccountV2> accounts,
       List<AddressV2> addresses,
@@ -1057,7 +1055,6 @@ class _$SessionStateSuccessCopyWithImpl<$Res, $Val extends SessionStateSuccess>
   $Res call({
     Object? httpConfig = null,
     Object? currentAccount = freezed,
-    Object? redirect = null,
     Object? decryptionKey = null,
     Object? accounts = null,
     Object? addresses = null,
@@ -1072,10 +1069,6 @@ class _$SessionStateSuccessCopyWithImpl<$Res, $Val extends SessionStateSuccess>
           ? _value.currentAccount
           : currentAccount // ignore: cast_nullable_to_non_nullable
               as AccountV2?,
-      redirect: null == redirect
-          ? _value.redirect
-          : redirect // ignore: cast_nullable_to_non_nullable
-              as bool,
       decryptionKey: null == decryptionKey
           ? _value.decryptionKey
           : decryptionKey // ignore: cast_nullable_to_non_nullable
@@ -1107,7 +1100,6 @@ abstract class _$$SessionStateSuccessImplCopyWith<$Res>
   $Res call(
       {HttpConfig httpConfig,
       AccountV2? currentAccount,
-      bool redirect,
       String decryptionKey,
       List<AccountV2> accounts,
       List<AddressV2> addresses,
@@ -1129,7 +1121,6 @@ class __$$SessionStateSuccessImplCopyWithImpl<$Res>
   $Res call({
     Object? httpConfig = null,
     Object? currentAccount = freezed,
-    Object? redirect = null,
     Object? decryptionKey = null,
     Object? accounts = null,
     Object? addresses = null,
@@ -1144,10 +1135,6 @@ class __$$SessionStateSuccessImplCopyWithImpl<$Res>
           ? _value.currentAccount
           : currentAccount // ignore: cast_nullable_to_non_nullable
               as AccountV2?,
-      redirect: null == redirect
-          ? _value.redirect
-          : redirect // ignore: cast_nullable_to_non_nullable
-              as bool,
       decryptionKey: null == decryptionKey
           ? _value.decryptionKey
           : decryptionKey // ignore: cast_nullable_to_non_nullable
@@ -1174,7 +1161,6 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
   const _$SessionStateSuccessImpl(
       {required this.httpConfig,
       required this.currentAccount,
-      required this.redirect,
       required this.decryptionKey,
       required final List<AccountV2> accounts,
       required final List<AddressV2> addresses,
@@ -1186,8 +1172,6 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
   final HttpConfig httpConfig;
   @override
   final AccountV2? currentAccount;
-  @override
-  final bool redirect;
 // required Wallet wallet,
   @override
   final String decryptionKey;
@@ -1219,8 +1203,6 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
                 other.httpConfig == httpConfig) &&
             (identical(other.currentAccount, currentAccount) ||
                 other.currentAccount == currentAccount) &&
-            (identical(other.redirect, redirect) ||
-                other.redirect == redirect) &&
             (identical(other.decryptionKey, decryptionKey) ||
                 other.decryptionKey == decryptionKey) &&
             const DeepCollectionEquality().equals(other._accounts, _accounts) &&
@@ -1235,7 +1217,6 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
       runtimeType,
       httpConfig,
       currentAccount,
-      redirect,
       decryptionKey,
       const DeepCollectionEquality().hash(_accounts),
       const DeepCollectionEquality().hash(_addresses),
@@ -1255,7 +1236,6 @@ abstract class _SessionStateSuccess implements SessionStateSuccess {
   const factory _SessionStateSuccess(
       {required final HttpConfig httpConfig,
       required final AccountV2? currentAccount,
-      required final bool redirect,
       required final String decryptionKey,
       required final List<AccountV2> accounts,
       required final List<AddressV2> addresses,
@@ -1264,9 +1244,7 @@ abstract class _SessionStateSuccess implements SessionStateSuccess {
   @override
   HttpConfig get httpConfig;
   @override
-  AccountV2? get currentAccount;
-  @override
-  bool get redirect; // required Wallet wallet,
+  AccountV2? get currentAccount; // required Wallet wallet,
   @override
   String get decryptionKey;
   @override

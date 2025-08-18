@@ -95,8 +95,15 @@ class ActionRepositoryImpl implements ActionRepository {
   }
 
   @override
-  Option<Action> dequeue() {
+  Option<Action> peek() {
     return Option.fromNullable(_currentAction);
+  }
+
+  @override
+  Option<Action> dequeue() {
+    final action = _currentAction;
+    _currentAction = null; // Clear the action after dequeuing
+    return Option.fromNullable(action);
   }
 
   List<int>? _parseSighashTypes(String sighashTypesStr) {

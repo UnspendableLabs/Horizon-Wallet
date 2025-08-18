@@ -56,7 +56,8 @@ class _LoginFormState extends State<LoginForm> {
         listener: (context, state) {
       if (state.status.isSuccess) {
         final session = context.read<SessionStateCubit>();
-        session.initialize();
+
+        session.initialize(loggingIn: true);
       }
       if (state.status.isFailure) {
         setState(() {

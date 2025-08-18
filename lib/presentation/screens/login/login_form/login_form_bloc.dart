@@ -6,6 +6,7 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/mnemonic_repository.dart';
+import 'package:horizon/domain/repositories/wallet_config_repository.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/extensions.dart';
 
@@ -69,14 +70,18 @@ class LoginFormBloc extends Bloc<FormEvent, FormState> {
   final ImportedAddressRepository importedAddressRepository;
   final ImportedAddressService importedAddressService;
   final MnemonicRepository _mnemonicRepository;
+  final WalletConfigRepository _walletConfigRepository;
 
   LoginFormBloc(
       {required this.importedAddressService,
       required this.importedAddressRepository,
       required this.encryptionService,
       required this.inMemoryKeyRepository,
-      MnemonicRepository? mnemonicRepository})
-      : _mnemonicRepository =
+      MnemonicRepository? mnemonicRepository,
+      WalletConfigRepository? walletConfigRepository})
+      : _walletConfigRepository =
+            walletConfigRepository ?? GetIt.I<WalletConfigRepository>(),
+        _mnemonicRepository =
             mnemonicRepository ?? GetIt.I<MnemonicRepository>(),
         super(FormState()) {
     on<PasswordChanged>(_onPasswordChanged);
@@ -104,10 +109,14 @@ class LoginFormBloc extends Bloc<FormEvent, FormState> {
 
       final encryptedMnemonic = (await _mnemonicRepository.get()).getOrThrow();
 
+      await encryptionService.decrypt(encryptedMnemonic, password);
+
       String decryptionKey =
           await encryptionService.getDecryptionKey(encryptedMnemonic, password);
 
       await inMemoryKeyRepository.setMnemonicKey(key: decryptionKey);
+
+      final wallet = await _walletConfigRepository.getCurrent();
 
       // TODO: audit this
       final importedAddresses = await importedAddressRepository.getAll();
@@ -122,6 +131,8 @@ class LoginFormBloc extends Bloc<FormEvent, FormState> {
       }
 
       await inMemoryKeyRepository.setMap(map: importedAddressMap);
+
+      print("success ${state.password.value}");
 
       emit(
         state.copyWith(

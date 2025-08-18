@@ -231,7 +231,7 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
       if (_bottomTabController.index == 1) {
         context.go('/settings');
       } else {
-        context.go('/dashboard');
+        context.go('/');
       }
     });
 
