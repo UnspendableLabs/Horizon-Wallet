@@ -48,7 +48,7 @@ ThemeData buildLightTheme() {
     fontFamily: 'Montserrat',
     brightness: Brightness.light,
     scaffoldBackgroundColor: offWhite,
-    dialogTheme: DialogTheme(
+    dialogTheme: DialogThemeData(
       backgroundColor: white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
@@ -213,7 +213,7 @@ ThemeData buildDarkTheme() {
     fontFamily: 'Montserrat',
     brightness: Brightness.dark,
     scaffoldBackgroundColor: offBlack,
-    dialogTheme: DialogTheme(
+    dialogTheme: DialogThemeData(
       backgroundColor: black,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
@@ -327,4 +327,5 @@ ThemeData buildDarkTheme() {
       CustomThemeExtension.dark,
     },
   );
-} 
+}
+
