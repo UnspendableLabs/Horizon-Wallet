@@ -575,61 +575,61 @@ void setup() {
   """));
 
   injector.registerLazySingleton<RPCSignPsbtSuccessCallback>(
-      () => (args) => GetIt.I<Logger>().debug("""
-               RPCGetSignPsbtSuccessCallback called with:
-                  tabId: ${args.tabId}
-                  requestId: ${args.requestId}
-                  signedPsbt: ${args.signedPsbt}
-          """));
-  //     () => config.isWebExtension
-  //         ? (args) {
-  //             chrome.tabs.sendMessage(
-  //               args.tabId,
-  //               {"id": args.requestId, "hex": args.signedPsbt},
-  //               null,
-  //             );
+      // () => (args) => GetIt.I<Logger>().debug("""
+      //          RPCGetSignPsbtSuccessCallback called with:
+      //             tabId: ${args.tabId}
+      //             requestId: ${args.requestId}
+      //             signedPsbt: ${args.signedPsbt}
+      //     """));
+      () => config.isWebExtension
+          ? (args) {
+              chrome.tabs.sendMessage(
+                args.tabId,
+                {"id": args.requestId, "hex": args.signedPsbt},
+                null,
+              );
+
+              Future.delayed(const Duration(seconds: 0), html.window.close);
+            }
+          : (args) => GetIt.I<Logger>().debug("""
+           RPCGetSignPsbtSuccessCallback called with:
+              tabId: ${args.tabId}
+              requestId: ${args.requestId}
+              signedPsbt: ${args.signedPsbt}
+      """));
   //
-  //             Future.delayed(const Duration(seconds: 0), html.window.close);
-  //           }
-  //         : (args) => GetIt.I<Logger>().debug("""
-  //          RPCGetSignPsbtSuccessCallback called with:
-  //             tabId: ${args.tabId}
-  //             requestId: ${args.requestId}
-  //             signedPsbt: ${args.signedPsbt}
-  //     """));
-  //
-  // injector.registerLazySingleton<RPCSignMessageSuccessCallback>(
-  //     () => (args) => GetIt.I<Logger>().debug("""
-  //              RPCSignMessageSuccessCallback called with:
-  //                 tabId: ${args.tabId}
-  //                 requestId: ${args.requestId}
-  //                 signature: ${args.signature}
-  //                 messageHash: ${args.messageHash}
-  //                 address: ${args.address}
-  //         """));
-  // () => config.isWebExtension
-  //     ? (args) {
-  //         chrome.tabs.sendMessage(
-  //           args.tabId,
-  //           {
-  //             "id": args.requestId,
-  //             "signature": args.signature,
-  //             "messageHash": args.messageHash,
-  //             "address": args.address
-  //           },
-  //           null,
-  //         );
-  //
-  //         Future.delayed(const Duration(seconds: 0), html.window.close);
-  //       }
-  //     : (args) => GetIt.I<Logger>().debug("""
-  //          RPCSignMessageSuccessCallback called with:
-  //             tabId: ${args.tabId}
-  //             requestId: ${args.requestId}
-  //             signature: ${args.signature}
-  //             messageHash: ${args.messageHash}
-  //             address: ${args.address}
-  //     """));
+  injector.registerLazySingleton<RPCSignMessageSuccessCallback>(
+      //     () => (args) => GetIt.I<Logger>().debug("""
+      //              RPCSignMessageSuccessCallback called with:
+      //                 tabId: ${args.tabId}
+      //                 requestId: ${args.requestId}
+      //                 signature: ${args.signature}
+      //                 messageHash: ${args.messageHash}
+      //                 address: ${args.address}
+      //         """));
+      () => config.isWebExtension
+          ? (args) {
+              chrome.tabs.sendMessage(
+                args.tabId,
+                {
+                  "id": args.requestId,
+                  "signature": args.signature,
+                  "messageHash": args.messageHash,
+                  "address": args.address
+                },
+                null,
+              );
+
+              Future.delayed(const Duration(seconds: 0), html.window.close);
+            }
+          : (args) => GetIt.I<Logger>().debug("""
+           RPCSignMessageSuccessCallback called with:
+              tabId: ${args.tabId}
+              requestId: ${args.requestId}
+              signature: ${args.signature}
+              messageHash: ${args.messageHash}
+              address: ${args.address}
+      """));
 
   injector.registerLazySingleton<VersionRepository>(() => config.isWebExtension
       ? VersionRepositoryExtensionImpl(

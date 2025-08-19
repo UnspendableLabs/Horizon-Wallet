@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:horizon/domain/entities/action.dart' as URLAction;
 import 'package:horizon/domain/entities/failure.dart';
+import 'package:horizon/domain/entities/extension_rpc.dart';
 import 'package:horizon/extensions.dart';
 import 'package:horizon/domain/entities/action.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
@@ -60,6 +61,12 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:web/web.dart' as web;
 import 'package:horizon/presentation/common/themes.dart';
 import 'package:horizon/presentation/screens/action_handler/action_handler_view.dart';
+
+import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
+import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
+
+import 'package:horizon/presentation/forms/sign_message/bloc/sign_message_bloc.dart';
+import 'package:horizon/presentation/forms/sign_message/view/sign_message_form.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -412,6 +419,89 @@ class AppRouter {
                           action: action as URLAction.RPCGetAddressesAction));
                 }),
             GoRoute(
+                path: "/rpc/sign-psbt",
+                builder: (context, state) {
+                  final session =
+                      context.watch<SessionStateCubit>().state.successOrThrow();
+
+                  final actionRepository = GetIt.I<ActionRepository>();
+
+                  final action = actionRepository.dequeue().getOrThrow()
+                      as RPCSignPsbtAction;
+
+                  return BlocProvider(
+                      create: (_) => SignPsbtBloc(
+                            addresses: session.addresses,
+                            httpConfig: session.httpConfig,
+                            passwordRequired: GetIt.I<SettingsRepository>()
+                                .requirePasswordForCryptoOperations,
+                            signInputs: action.signInputs,
+                            sighashTypes: action.sighashTypes,
+                            unsignedPsbt: action.psbt,
+                          ),
+                      child: ActionHandlerShell(
+                          child: SignPsbtForm(
+                        key: Key(action.psbt),
+                        passwordRequired: GetIt.I<SettingsRepository>()
+                            .requirePasswordForCryptoOperations,
+                        onSuccess: (signedPsbtHex) {
+                          final callback =
+                              GetIt.I<RPCSignPsbtSuccessCallback>();
+
+                          callback(RPCSignPsbtSuccessCallbackArgs(
+                              tabId: action.tabId,
+                              requestId: action.requestId,
+                              signedPsbt: signedPsbtHex));
+
+                          if (GetIt.I<Config>().isWebExtension) {
+                            web.window.close();
+                          }
+                        },
+                      )));
+                }),
+            GoRoute(
+                path: "/rpc/sign-message",
+                builder: (context, state) {
+                  final session =
+                      context.watch<SessionStateCubit>().state.successOrThrow();
+
+                  final actionRepository = GetIt.I<ActionRepository>();
+
+                  final action = actionRepository.dequeue().getOrThrow()
+                      as RPCSignMessageAction;
+
+                  return BlocProvider(
+                      create: (_) => SignMessageBloc(
+                            address: session.addresses.first,
+                            message: action.message,
+                            httpConfig: session.httpConfig,
+                            passwordRequired: GetIt.I<SettingsRepository>()
+                                .requirePasswordForCryptoOperations,
+                          ),
+                      child: ActionHandlerShell(
+                          child: SignMessageForm(
+                        key: Key(action.message),
+                        passwordRequired: GetIt.I<SettingsRepository>()
+                            .requirePasswordForCryptoOperations,
+                        onSuccess: (signature) {
+                          final callback =
+                              GetIt.I<RPCSignMessageSuccessCallback>();
+
+                          callback(RPCSignMessageSuccessCallbackArgs(
+                            address: session.addresses.first.address,
+                            tabId: action.tabId,
+                            requestId: action.requestId,
+                            signature: signature,
+                            messageHash: action.message,
+                          ));
+
+                          if (GetIt.I<Config>().isWebExtension) {
+                            web.window.close();
+                          }
+                        },
+                      )));
+                }),
+            GoRoute(
               path: "/",
               builder: (context, state) {
                 return const Scaffold(
@@ -598,9 +688,20 @@ class AppRouter {
         final session = context.read<SessionStateCubit>();
 
         final actionParam = state.uri.queryParameters['action'];
+        // // print("actionParam: $actionParam");
+
+        // final actionParam =
+        //     "signMessage:ext,1423373097,bb542e03-af4e-44ca-b026-44b8a8afeac9,97122496-7d18-11f0-9fc7-2f9733e534f2,tb1q4zepxe42rkhq00l72tzk73seuqw9ydckgynzv5";
+
+        //
+        //
+        //
+        // print("actionParam: $actionParam");
 
         // final actionParam = "getAddresses:ext,0,1";
-
+        // final actionParam =
+        //     "signPsbt:ext,1423373097,ddc38fce-13e4-4d70-ba1d-0f5162c54835,70736274ff01009a020000000200000000000000000000000000000000000000000000000000000000000000000000000000ffffffff1e8728d1ea12bfa4bed9fea098e6a06a1f3422bfc5c71afceb94d650b2e829f10000000000ffffffff020000000000000000160014a8b21366aa1dae07bffe52c56f4619e01c523716e803000000000000160014a8b21366aa1dae07bffe52c56f4619e01c5237160000000000010304020000000001011f2202000000000000160014a8b21366aa1dae07bffe52c56f4619e01c52371601030483000000000000,eyJ0YjFxNHplcHhlNDJya2hxMDBsNzJ0ems3M3NldXF3OXlkY2tneW56djUiOlsxXX0=,WzEzMSwxLDJd";
+        // //
         final ActionRepository actionRepository =
             GetIt.instance<ActionRepository>();
         if (actionParam != null) {
@@ -669,6 +770,8 @@ class AppRouter {
             },
             // if the session state is not yet loaded, show a loading screen
             orElse: () => null);
+
+        print("path: $path");
 
         return path;
       });

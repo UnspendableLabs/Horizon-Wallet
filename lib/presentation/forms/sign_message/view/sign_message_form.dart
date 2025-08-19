@@ -5,6 +5,9 @@ import 'package:horizon/presentation/forms/sign_message/bloc/sign_message_bloc.d
 import 'package:horizon/presentation/forms/sign_message/bloc/sign_message_state.dart';
 import 'package:horizon/presentation/forms/sign_message/bloc/sign_message_event.dart';
 
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart'
+    as HorizonUI;
+
 class SignMessageForm extends StatefulWidget {
   final bool passwordRequired;
 
@@ -77,15 +80,19 @@ class _SignMessageFormState extends State<SignMessageForm> {
 
                 const SizedBox(height: 20),
                 // Submit Button
-                ElevatedButton(
+
+                HorizonUI.HorizonButton(
+                  width: 120,
+                  height: 32,
                   onPressed: state.submissionStatus.isInProgressOrSuccess
                       ? null
                       : () => context
                           .read<SignMessageBloc>()
                           .add(SignMessageSubmitted()),
                   child: state.submissionStatus.isInProgress
-                      ? const CircularProgressIndicator()
-                      : const Text('Sign Message'),
+                      ? HorizonUI.WidgetButtonContent(
+                          value: const CircularProgressIndicator())
+                      : HorizonUI.TextButtonContent(value: 'Sign Message'),
                 ),
                 const SizedBox(height: 20),
                 // Status/Error Message

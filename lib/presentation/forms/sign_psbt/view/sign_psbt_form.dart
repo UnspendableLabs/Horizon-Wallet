@@ -8,6 +8,8 @@ import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_state.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_event.dart';
 
 // example import
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart'
+    as HorizonUI;
 
 class SignPsbtForm extends StatefulWidget {
   final bool passwordRequired;
@@ -203,14 +205,17 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                ElevatedButton(
+                HorizonUI.HorizonButton(
+                  width: 120,
+                  height: 32,
                   onPressed: state.submissionStatus.isInProgressOrSuccess
                       ? null
                       : () =>
                           context.read<SignPsbtBloc>().add(SignPsbtSubmitted()),
                   child: state.submissionStatus.isInProgress
-                      ? const CircularProgressIndicator()
-                      : const Text('Sign PSBT'),
+                      ? HorizonUI.WidgetButtonContent(
+                          value: const CircularProgressIndicator())
+                      : HorizonUI.TextButtonContent(value: 'Sign PSBT'),
                 ),
               ],
             ),

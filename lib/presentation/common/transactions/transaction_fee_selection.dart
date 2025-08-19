@@ -93,7 +93,7 @@ class _TransactionFeeSelectionState extends State<TransactionFeeSelection> {
             const SizedBox(height: 12),
             Center(
               child: HorizonButton(
-                width: 92,
+                width: 120,
                 height: 32,
                 borderRadius: 12,
                 variant: ButtonVariant.purple,
