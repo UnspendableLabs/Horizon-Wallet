@@ -137,7 +137,7 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage> {
         state.createState.maybeWhen(
           success: () {
             final session = context.read<SessionStateCubit>();
-            session.initialize();
+            session.initialize(loggingIn: true);
           },
           orElse: () {},
         );

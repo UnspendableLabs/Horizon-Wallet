@@ -50,7 +50,7 @@ class _OnboardingImportPageState extends State<OnboardingImportPage> {
           orElse: () => false,
           success: () {
             final session = context.read<SessionStateCubit>();
-            session.initialize();
+            session.initialize(loggingIn: true);
           },
         );
       },

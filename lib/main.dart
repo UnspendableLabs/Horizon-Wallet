@@ -61,8 +61,6 @@ import 'package:web/web.dart' as web;
 import 'package:horizon/presentation/common/themes.dart';
 import 'package:horizon/presentation/screens/action_handler/action_handler_view.dart';
 
-num redirectCount = 0;
-
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 // Future<void> setupRegtestWallet() async {
@@ -405,7 +403,7 @@ class AppRouter {
             GoRoute(
                 path: "/rpc/get-addresses",
                 builder: (context, state) {
-                  final actionRepository = GetIt.instance<ActionRepository>();
+                  final actionRepository = GetIt.I<ActionRepository>();
 
                   final action = actionRepository.dequeue().getOrThrow();
 
@@ -577,8 +575,6 @@ class AppRouter {
             onGoHome: () => context.go('/'),
           ),
       redirect: (context, state) async {
-        redirectCount++;
-
         if (state.matchedLocation == "/db") {
           return "/db";
         }
@@ -591,9 +587,19 @@ class AppRouter {
           return "/tos";
         }
 
+        final preAuthRoutes = {
+          '/login',
+          '/onboarding',
+          '/onboarding/create',
+          '/onboarding/import',
+          '/onboarding/import-pk',
+        };
+
         final session = context.read<SessionStateCubit>();
 
         final actionParam = state.uri.queryParameters['action'];
+
+        // final actionParam = "getAddresses:ext,0,1";
 
         final ActionRepository actionRepository =
             GetIt.instance<ActionRepository>();
@@ -648,6 +654,14 @@ class AppRouter {
               if (actionPath != null) {
                 return actionPath;
               }
+
+              final isPreAuthRoute =
+                  preAuthRoutes.contains(state.matchedLocation);
+
+              if (isPreAuthRoute) {
+                return "/";
+              }
+
               return null;
               // if (data.redirect) {
               //   return "/";

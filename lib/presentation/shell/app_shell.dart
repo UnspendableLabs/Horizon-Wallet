@@ -235,7 +235,7 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
       }
     });
 
-    final action = widget.actionRepository.dequeue();
+    final action = widget.actionRepository.peek();
     action.fold(noop, (action) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _getHandler(action)();
