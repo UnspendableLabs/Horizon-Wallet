@@ -15,12 +15,14 @@ class BasePath {
   static final horizon = BasePath((Network network) => switch (network) {
         Network.mainnet => horizonMainnet,
         Network.testnet4 => horizonTestnet,
+        Network.signet => horizonTestnet,
       });
 
   // counterwallet / freewallet
   static final legacy = BasePath((Network network) => switch (network) {
         Network.mainnet => legacy_,
         Network.testnet4 => legacy_,
+        Network.signet => legacy_,
       });
 
   String serialize() {
@@ -34,7 +36,8 @@ class BasePath {
     }
     return BasePath((Network network) => switch (network) {
           Network.mainnet => parts[0],
-          Network.testnet4 => parts[1]
+          Network.testnet4 => parts[1],
+          Network.signet => parts[1],
         });
   }
 }

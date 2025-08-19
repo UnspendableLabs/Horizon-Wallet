@@ -24,6 +24,7 @@ sealed class HttpConfig {
 
   static Mainnet mainnet() => Mainnet();
   static Testnet4 testnet4() => Testnet4();
+  static Signet signet() => Signet();
 }
 
 class Mainnet extends HttpConfig {
@@ -44,13 +45,27 @@ class Testnet4 extends HttpConfig {
       : super(
           network: Network.testnet4,
           counterparty: "https://testnet4.counterparty.io:44000/v2/",
-          // esplora: "https://testnet4.counterparty.io:43000",
-          esplora: "https://mempool.space/testnet4/api",
+          esplora: "https://testnet4.counterparty.io:43000",
+          // esplora: "https://mempool.space/testnet4/api",
           btcExplorer: "https://mempool.space/testnet4",
           horizonMarket:
               "https://horizon-market-testnet.vercel.app", // TODO: link to testnet
           horizonMarketApi: "https://horizon-market-testnet.vercel.app/api",
           mempoolSpaceApi: "https://mempool.space/testnet4/api/v1",
+        );
+}
+
+class Signet extends HttpConfig {
+  Signet()
+      : super(
+          network: Network.signet,
+          counterparty: "https://signet.counterparty.io:34000/v2/",
+          esplora: "https://signet.counterparty.io:33000",
+          btcExplorer: "https://mempool.space/signet",
+          horizonMarket:
+              "https://horizon-market-signet.vercel.app", // TODO: link to testnet
+          horizonMarketApi: "https://horizon-market-signet.vercel.app/api",
+          mempoolSpaceApi: "https://mempool.space/signet/api/v1",
         );
 }
 

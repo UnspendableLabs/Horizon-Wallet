@@ -1,7 +1,7 @@
 import "package:collection/collection.dart";
 import "package:fpdart/fpdart.dart";
 
-enum Network { mainnet, testnet4 }
+enum Network { mainnet, testnet4, signet }
 
 extension NetworkX on Network {
   static Option<Network> fromString(String value) {
@@ -10,8 +10,7 @@ extension NetworkX on Network {
     ));
   }
 
-
-  bool  get isMainnet {
+  bool get isMainnet {
     return this == Network.mainnet;
   }
 
@@ -19,7 +18,7 @@ extension NetworkX on Network {
     return this == Network.testnet4;
   }
 
-
+  bool get isSignet {
+    return this == Network.signet;
+  }
 }
-
-// CHAT I WANT TO ADD A STATIC fromString and toString method

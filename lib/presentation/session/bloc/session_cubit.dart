@@ -38,22 +38,9 @@ HttpConfig httpConfigForNetwork(Network network) {
   return switch (network) {
     Network.mainnet => Mainnet(),
     Network.testnet4 => Testnet4(),
+    Network.signet => Signet(),
     // Network.custom => const Custom(esplora: 'http://localhost:3000'),
   };
-}
-
-V2Api counterpartyClientForNetwork(Network network) {
-  return V2Api(Dio(BaseOptions(
-    baseUrl: switch (network) {
-      Network.mainnet => 'https://api.unspendablelabs.com:4000/v2',
-      Network.testnet4 => 'https://testnet4.counterparty.io:44000/v2/',
-    },
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    connectTimeout: const Duration(seconds: 5),
-    receiveTimeout: const Duration(seconds: 3),
-  )));
 }
 
 sealed class GetSessionStateResponse {}

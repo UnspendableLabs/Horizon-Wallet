@@ -12,11 +12,13 @@ extension NetworkX on n.Network {
   c.Network get toJS => switch (this) {
         n.Network.mainnet => bitcoin,
         n.Network.testnet4 => testnet,
+        n.Network.signet => testnet,
       };
 
   String get toBech32Prefix => switch (this) {
         n.Network.mainnet => bitcoin.bech32,
         n.Network.testnet4 => testnet.bech32,
+        n.Network.signet => testnet.bech32,
       };
 }
 
