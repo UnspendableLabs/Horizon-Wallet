@@ -60,7 +60,7 @@ class AccountsScreen extends StatelessWidget {
                         context
                             .read<SessionStateCubit>()
                             .onAccountChanged(account, () {
-                          context.go("/dashboard");
+                          context.go("/");
                         });
 
                         // TODO: this isn't totally ideal
