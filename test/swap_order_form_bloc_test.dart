@@ -1586,8 +1586,8 @@ List<TestCase> generateTestCases() {
         getDivisible: true,
         buyOrders: [],
         sellOrders: [],
-        amountInput: "200",
-        priceInput: "0.5",
+        amountInput: "200", // i want to get 200 of get
+        priceInput: "0.5", // i am willing to pay .5 give per get
         expectedOrders: [
           SimulatedOrderCreate(
               give: AssetQuantity(
@@ -1904,7 +1904,7 @@ List<TestCase> generateTestCases() {
               getRemaining: 40 * TenToTheEigth.value)
         ],
         sellOrders: [],
-        amountInput: "275",
+        amountInput: "275", // i want to get 275 total of asset
         priceInput: "1.1",
         expectedOrders: [
           SimulatedOrderMatch(

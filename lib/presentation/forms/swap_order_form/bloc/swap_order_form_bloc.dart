@@ -711,6 +711,9 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
       BigInt tx1GetQuantity = state.getQuantityInput.value.quantity;
 
       BigInt tx1GiveRemaining = tx1GiveQuantity;
+
+      print("\n\n initial \t tx1 give remaining: $tx1GiveRemaining");
+
       BigInt tx1GetRemaining = tx1GetQuantity;
 
       final giveDivisible = state.giveAsset.divisible;
@@ -805,14 +808,14 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
         print("tx1GiveRemaining $tx1GiveRemaining");
       }
 
-      print("tx1GiveQUantity: $tx1GiveQuantity");
-      print("tx1GiveQUantity: $tx1GetQuantity");
-
-      final tx1PriceMax = switch (state.priceType) {
-        PriceType.give => Rational(tx1GetQuantity, tx1GiveQuantity),
-        PriceType.get => Rational(tx1GiveQuantity, tx1GetQuantity)
-      };
-
+      // print("tx1GiveQUantity: $tx1GiveQuantity");
+      // print("tx1GiveQUantity: $tx1GetQuantity");
+      //
+      // final tx1PriceMax = switch (state.priceType) {
+      //   PriceType.give => Rational(tx1GetQuantity, tx1GiveQuantity),
+      //   PriceType.get => Rational(tx1GiveQuantity, tx1GetQuantity)
+      // };
+      //
       if (state.amountType == AmountType.give &&
           tx1GiveRemaining > BigInt.zero) {
         final getAmount = tx1GetRemaining;
@@ -826,6 +829,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
 
         print("case 1");
         print("tx1getRemaining: $tx1GetRemaining");
+        // print("tx1PriceMax: $tx1PriceMax");
         simulatedOrders.add(SimulatedOrderCreate(
             give: AssetQuantity(
                 divisible: giveDivisible, quantity: tx1GiveRemaining),
@@ -834,11 +838,26 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
       }
 
       if (state.amountType == AmountType.get && tx1GetRemaining > BigInt.zero) {
-        print("case2");
+        // given that amount type is get
+        print("case 2");
+        print("tx1GetRemaining: $tx1GetRemaining");
+        print("price: $price");
+        print("giveDivisible: $giveDivisible");
+        print("getDivisible: $getDivisible");
+
+        final giveQuantity = switch ((giveDivisible, getDivisible)) {
+          (true, false) =>
+            ((price * Rational(tx1GetRemaining)) * TenToTheEigth.rational)
+                .toBigInt(),
+          (false, true) =>
+            ((price * Rational(tx1GetRemaining)) / TenToTheEigth.rational)
+                .toBigInt(),
+          _ => (price * Rational(tx1GetRemaining)).toBigInt()
+        };
 
         simulatedOrders.add(SimulatedOrderCreate(
-            give: AssetQuantity(
-                divisible: giveDivisible, quantity: tx1GiveRemaining),
+            give:
+                AssetQuantity(divisible: giveDivisible, quantity: giveQuantity),
             get: AssetQuantity(
                 divisible: getDivisible, quantity: tx1GetRemaining)));
       }
