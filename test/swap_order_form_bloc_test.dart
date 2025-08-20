@@ -13,6 +13,16 @@ import 'package:horizon/presentation/forms/swap_order_form/bloc/swap_order_form_
 import 'package:horizon/domain/repositories/order_repository.dart';
 import 'package:mocktail/mocktail.dart';
 
+class FakeMultiAddressBalanceEntry extends Fake
+    implements MultiAddressBalanceEntry {
+  int _quantity;
+
+  FakeMultiAddressBalanceEntry(this._quantity);
+
+  @override
+  int get quantity => _quantity;
+}
+
 Matcher equalsSimulatedOrders(List<SimulatedOrder> expected) {
   return predicate<List<SimulatedOrder>>(
     (actual) => _equalsByValue(expected, actual),
@@ -2915,6 +2925,8 @@ void main() {
               FakeAsset(asset: 'GET', divisible: testCase.getDivisible);
 
           final bloc = SwapOrderFormBloc(
+            // this is a bit of a hack, for now we just assume a reasonably high balance
+            giveAssetBalance: FakeMultiAddressBalanceEntry(100000000000),
             orderRepository: MockOrderRepository(
               buys: testCase.buyOrders,
               sells: testCase.sellOrders,
