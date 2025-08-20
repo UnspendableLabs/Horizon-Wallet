@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/utils/app_icons.dart';
+import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:get_it/get_it.dart';
 import 'package:fpdart/fpdart.dart' hide Order, State;
 import 'package:horizon/domain/repositories/order_repository.dart';
@@ -158,10 +159,13 @@ class SwapOrderFormProvider extends StatefulWidget {
     SwapOrderFormModel state,
   ) child;
 
+  final MultiAddressBalanceEntry multiAddressBalanceEntry;
+
   SwapOrderFormProvider(
       {super.key,
       AssetRepository? assetRepository,
       OrderRepository? orderRepository,
+      required this.multiAddressBalanceEntry,
       required this.child,
       required this.httpConfig,
       required this.address,
@@ -208,6 +212,7 @@ class _SwapOrderFormProviderState extends State<SwapOrderFormProvider> {
                 Center(child: Text("unspecified error: $error")),
             onReplete: (data) => BlocProvider(
                   create: (_) => SwapOrderFormBloc(
+                    giveAssetBalance: widget.multiAddressBalanceEntry,
                     address: widget.address,
                     httpConfig: widget.httpConfig,
                     giveAsset: data[0] as Asset,

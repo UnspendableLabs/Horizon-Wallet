@@ -131,6 +131,7 @@ class _OrderFlowViewState extends State<OrderFlowView> {
                   title: "Limit Order",
                   widthFactor: .4,
                   body: SwapOrderFormProvider(
+                      multiAddressBalanceEntry: giveBalanceEntry,
                       address: widget.addresses.firstWhere((address) =>
                           address.address ==
                           (giveBalanceEntry.address ??

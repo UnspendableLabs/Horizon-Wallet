@@ -550,13 +550,11 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     required Asset giveAsset,
     required List<Order> buyOrders,
     required List<Order> sellOrders,
+    required MultiAddressBalanceEntry giveAssetBalance,
     OrderRepository? orderRepository,
   })  : _orderRepository = orderRepository ?? GetIt.I<OrderRepository>(),
         super(SwapOrderFormModel(
-            giveAssetBalance: MultiAddressBalanceEntry(
-                address: address.address,
-                quantity: 100 * TenToTheEigth.value,
-                quantityNormalized: "100.00000000"),
+            giveAssetBalance: giveAssetBalance,
             amountInput: AmountInput.pure(),
             priceInput: PriceInput.pure(),
             amountType: AmountType.get,
