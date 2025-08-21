@@ -569,9 +569,10 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     on<AmountInputChanged>(_handleAmountInputChanged);
     on<PriceInputChanged>(_handlePriceInputChanged);
     on<RelativePriceButtonClicked>(_handleRelativePriceValueClicked);
-    on<SimulatedOrdersRequested>(_handleSimulateOrdersRequested,
-        transformer: debounce<SimulatedOrdersRequested>(
-            const Duration(milliseconds: 300)));
+    on<SimulatedOrdersRequested>(_handleSimulateOrdersRequested
+        // transformer: debounce<SimulatedOrdersRequested>(
+        //     const Duration(milliseconds: 300)));
+        );
   }
 
   _handleRelativePriceValueClicked(
@@ -729,6 +730,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
 
         BigInt tx1GiveQuantity = state.giveQuantityInput.value.quantity;
         BigInt tx1GetQuantity = state.getQuantityInput.value.quantity;
+
         BigInt tx1GiveRemaining = tx1GiveQuantity;
         BigInt tx1GetRemaining = tx1GetQuantity;
         print(
@@ -739,6 +741,11 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
 
         final simulatedOrders = <SimulatedOrder>[];
         for (final tx0 in buyOrdersFiltered) {
+          if (tx1GetRemaining <= BigInt.zero) {
+            print("⏭️ Skipping order (no remaining quantity)");
+            break;
+          }
+
           final tx0GiveRemaining = Rational.fromInt(tx0.giveRemaining);
           final tx0Price = Rational.fromInt(tx0.getQuantity, tx0.giveQuantity);
           final tx1InversePrice = Rational(tx1GiveRemaining, tx1GetRemaining);
@@ -755,7 +762,11 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
             tx0GiveRemaining,
             Rational(tx1GiveRemaining) / tx0Price,
           ]);
+
           final backwardQuantity = forwardQuantity * tx0Price;
+          print("Backwardquantity = forwardQuantity * tx0Price");
+          print("                   ${forwardQuantity} * ${tx0Price}");
+
           print(
               "🔄 forwardQuantity=$forwardQuantity, backwardQuantity=$backwardQuantity");
 
