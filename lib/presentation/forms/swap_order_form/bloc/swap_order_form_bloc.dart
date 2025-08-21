@@ -220,41 +220,48 @@ class SwapOrderFormModel with FormzMixin {
   AssetQuantity giveAssetQuantityWhenAmountGet({required Rational price}) {
     // CHAT Help me finish this refactor
 
-    final desiredGetAmount = toRawUnits(
-      Rational.tryParse(amountInput.value) ?? Rational.zero,
-      getAsset.divisible,
-    );
+    try {
+      final desiredGetAmount = toRawUnits(
+        Rational.tryParse(amountInput.value) ?? Rational.zero,
+        getAsset.divisible,
+      );
 
-    Rational totalGet = Rational.zero;
+      Rational totalGet = Rational.zero;
 
-    Rational totalGive = Rational.zero;
+      Rational totalGive = Rational.zero;
 
-    for (final order in buyOrders) {
-      if (totalGet >= desiredGetAmount) {
-        break;
+      for (final order in buyOrders) {
+        if (totalGet >= desiredGetAmount) {
+          break;
+        }
+        final matchPrice =
+            Rational.fromInt(order.getQuantity, order.giveQuantity);
+
+        final orderGiveRemaining = Rational(BigInt.from(order.giveRemaining));
+
+        final getAmount = rationalMinList(
+            [orderGiveRemaining, (desiredGetAmount - totalGet)]);
+
+        totalGet += getAmount;
+
+        totalGive += matchPrice * getAmount;
       }
-      final matchPrice =
-          Rational.fromInt(order.getQuantity, order.giveQuantity);
 
-      final orderGiveRemaining = Rational(BigInt.from(order.giveRemaining));
+      if (desiredGetAmount - totalGet > Rational.zero) {
+        Rational quantity = adjustForDivisibility(desiredGetAmount - totalGet,
+            fromDivisible: getAsset.divisible,
+            toDivisible: giveAsset.divisible);
 
-      final getAmount =
-          rationalMinList([orderGiveRemaining, (desiredGetAmount - totalGet)]);
+        totalGive += quantity * price;
+      }
 
-      totalGet += getAmount;
+      return AssetQuantity(
+          divisible: giveAsset.divisible, quantity: totalGive.toBigInt());
+    } catch (e, cs) {
+      print("\n\n\n\${e}\n\n\n${cs}");
 
-      totalGive += matchPrice * getAmount;
+      rethrow;
     }
-
-    if (desiredGetAmount - totalGet > Rational.zero) {
-      Rational quantity = adjustForDivisibility(desiredGetAmount - totalGet,
-          fromDivisible: getAsset.divisible, toDivisible: giveAsset.divisible);
-
-      totalGive += quantity * price;
-    }
-
-    return AssetQuantity(
-        divisible: giveAsset.divisible, quantity: totalGive.toBigInt());
   }
 
   GiveQuantityInput get giveQuantityInput => switch ((amountType, priceType)) {
@@ -277,7 +284,8 @@ class SwapOrderFormModel with FormzMixin {
         ((AmountType.get, PriceType.get)) => GiveQuantityInput.dirty(
             // TODO: rename
             value: giveAssetQuantityWhenAmountGet(
-                price: Rational.parse(priceInput.value).inverse),
+                price: Rational.tryParse(priceInput.value)?.inverse ??
+                    Rational.zero),
             userBalance: AssetQuantity(
               divisible: giveAsset.divisible,
               quantity: BigInt.from(giveAssetBalance.quantity),
@@ -448,6 +456,14 @@ class SwapOrderFormModel with FormzMixin {
 
   Asset get priceAsset {
     return priceType == PriceType.give ? giveAsset : getAsset;
+  }
+
+  Asset get priceNumeratorAsset {
+    return priceType == PriceType.give ? giveAsset : getAsset;
+  }
+
+  Asset get priceDenominatorAsset {
+    return priceType == PriceType.give ? getAsset : giveAsset;
   }
 
   Option<String> get amountInputError {

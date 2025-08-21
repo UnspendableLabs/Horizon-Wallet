@@ -470,41 +470,45 @@ class _OrderInputs extends State<OrderInputs> {
         builder: (context, state) {
           return Column(
             children: [
-              Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(4, 0, 0, 8),
-                    child: Text(
-                        widget.state.amountType == AmountType.get
-                            ? "You're buying"
-                            : "You're selling",
-                        style: theme.textTheme.titleSmall!.copyWith(
-                          color: theme
-                              .extension<CustomThemeExtension>()!
-                              .mutedDescriptionTextColor,
-                        )),
-                  ),
-                ],
-              ),
               HorizonCard(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                child: Column(
                   children: [
-                    Expanded(
-                        child: QuantityInputV2(
-                            style: const TextStyle(fontSize: 16),
-                            divisible: widget.state.amountInputDivisibility,
-                            controller: _amountController,
-                            onChanged: (value) {
-                              widget.actions.onAmountChanged(value);
-                            })),
-                    AssetPill(
-                        onTap: widget.onClickAmountAsset,
-                        asset: widget.amountAsset,
-                        appIcons: appIcons,
-                        session: session,
-                        theme: theme),
+                    Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(4, 0, 0, 8),
+                          child: Text(
+                              widget.state.amountType == AmountType.get
+                                  ? "You're buying"
+                                  : "You're selling",
+                              style: theme.textTheme.titleSmall!.copyWith(
+                                color: theme
+                                    .extension<CustomThemeExtension>()!
+                                    .mutedDescriptionTextColor,
+                              )),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                            child: QuantityInputV2(
+                                style: const TextStyle(fontSize: 16),
+                                divisible: widget.state.amountInputDivisibility,
+                                controller: _amountController,
+                                onChanged: (value) {
+                                  widget.actions.onAmountChanged(value);
+                                })),
+                        AssetPill(
+                            onTap: widget.onClickAmountAsset,
+                            asset: widget.amountAsset,
+                            appIcons: appIcons,
+                            session: session,
+                            theme: theme),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -513,93 +517,93 @@ class _OrderInputs extends State<OrderInputs> {
                 padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
                 child: Column(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(4, 0, 0, 8),
-                          child: Text(
-                              "At ${_limitPriceController.text} ${widget.priceString}",
-                              style: theme.textTheme.titleSmall!.copyWith(
-                                color: theme
-                                    .extension<CustomThemeExtension>()!
-                                    .mutedDescriptionTextColor,
-                              )),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 8),
-                          child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Container(
-                                  height: 28,
-                                  width: 48,
-                                  child: HorizonButton(
-                                    child: TextButtonContent(
-                                        value: 'Floor',
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                        )),
-                                    height: 28,
-                                    borderRadius: 18,
-                                    variant: ButtonVariant.black,
-                                    onPressed: () {
-                                      widget.actions
-                                          .onRelativePriceButtonClicked(
-                                        RelativePriceValue.floor,
-                                      );
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                Container(
-                                  height: 28,
-                                  width: 48,
-                                  child: HorizonButton(
-                                    child: TextButtonContent(
-                                        value: '+1',
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                        )),
-                                    height: 28,
-                                    borderRadius: 18,
-                                    variant: ButtonVariant.black,
-                                    onPressed: () {
-                                      widget.actions
-                                          .onRelativePriceButtonClicked(
-                                        RelativePriceValue.plus1,
-                                      );
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                Container(
-                                  height: 28,
-                                  width: 48,
-                                  child: HorizonButton(
-                                    child: TextButtonContent(
-                                        value: '+3',
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                        )),
-                                    height: 28,
-                                    borderRadius: 18,
-                                    variant: ButtonVariant.black,
-                                    onPressed: () {
-                                      widget.actions
-                                          .onRelativePriceButtonClicked(
-                                        RelativePriceValue.plus3,
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ]),
-                        ),
-                      ],
-                    ),
                     HorizonCard(
                       child: Column(
                         children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // Padding(
+                              //   padding: const EdgeInsets.fromLTRB(4, 0, 0, 8),
+                              //   child: Text(
+                              //       "At ${_limitPriceController.text} ${widget.priceString}",
+                              //       style: theme.textTheme.titleSmall!.copyWith(
+                              //         color: theme
+                              //             .extension<CustomThemeExtension>()!
+                              //             .mutedDescriptionTextColor,
+                              //       )),
+                              // ),
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(0, 0, 0, 8),
+                                child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      Container(
+                                        height: 28,
+                                        width: 48,
+                                        child: HorizonButton(
+                                          child: TextButtonContent(
+                                              value: 'Floor',
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                              )),
+                                          height: 28,
+                                          borderRadius: 18,
+                                          variant: ButtonVariant.black,
+                                          onPressed: () {
+                                            widget.actions
+                                                .onRelativePriceButtonClicked(
+                                              RelativePriceValue.floor,
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Container(
+                                        height: 28,
+                                        width: 48,
+                                        child: HorizonButton(
+                                          child: TextButtonContent(
+                                              value: '+1',
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                              )),
+                                          height: 28,
+                                          borderRadius: 18,
+                                          variant: ButtonVariant.black,
+                                          onPressed: () {
+                                            widget.actions
+                                                .onRelativePriceButtonClicked(
+                                              RelativePriceValue.plus1,
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Container(
+                                        height: 28,
+                                        width: 48,
+                                        child: HorizonButton(
+                                          child: TextButtonContent(
+                                              value: '+3',
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                              )),
+                                          height: 28,
+                                          borderRadius: 18,
+                                          variant: ButtonVariant.black,
+                                          onPressed: () {
+                                            widget.actions
+                                                .onRelativePriceButtonClicked(
+                                              RelativePriceValue.plus3,
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ]),
+                              ),
+                            ],
+                          ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -612,9 +616,11 @@ class _OrderInputs extends State<OrderInputs> {
                                       onChanged: (value) {
                                         widget.actions.onPriceChanged(value);
                                       })),
-                              AssetPill(
+                              PriceToggle(
                                   onTap: widget.onClickPriceAsset,
-                                  asset: widget.priceAsset,
+                                  numerator: widget.state.priceNumeratorAsset,
+                                  denominator:
+                                      widget.state.priceDenominatorAsset,
                                   appIcons: appIcons,
                                   session: session,
                                   theme: theme),
@@ -676,6 +682,67 @@ class _OrderInputs extends State<OrderInputs> {
   }
 }
 
+class PriceToggle extends StatelessWidget {
+  const PriceToggle(
+      {super.key,
+      required this.appIcons,
+      required this.session,
+      required this.theme,
+      required this.numerator,
+      required this.denominator,
+      this.onTap});
+
+  final VoidCallback? onTap;
+  final AppIcons appIcons;
+  final SessionStateSuccess session;
+  final ThemeData theme;
+  final Asset numerator;
+  final Asset denominator;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: InkWell(
+        onTap: () {
+          onTap?.call();
+        },
+        borderRadius: BorderRadius.circular(24),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: transparentWhite8, width: 1)),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // appIcons.assetIcon(
+              //     httpConfig: session.httpConfig,
+              //     assetName: numerator.asset,
+              //     context: context,
+              //     width: 24,
+              //     height: 24),
+              // const SizedBox(width: 8),
+              Text(numerator.displayName.toUpperCase(),
+                  style: theme.textTheme.titleMedium!.copyWith(
+                    fontSize: 12,
+                  )),
+              const SizedBox(width: 2),
+              const Text("/"),
+              const SizedBox(width: 2),
+              Text(denominator.displayName.toUpperCase(),
+                  style: theme.textTheme.titleMedium!.copyWith(
+                    fontSize: 12,
+                  )),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class AssetPill extends StatelessWidget {
   const AssetPill(
       {super.key,
@@ -683,8 +750,10 @@ class AssetPill extends StatelessWidget {
       required this.session,
       required this.theme,
       required this.asset,
+      this.displayOverride,
       this.onTap});
 
+  final String? displayOverride;
   final VoidCallback? onTap;
   final AppIcons appIcons;
   final SessionStateSuccess session;
@@ -704,7 +773,7 @@ class AssetPill extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: redErrorTextTransparent, width: 1)),
+              border: Border.all(color: transparentWhite8, width: 1)),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -716,7 +785,7 @@ class AssetPill extends StatelessWidget {
                   width: 24,
                   height: 24),
               const SizedBox(width: 8),
-              Text(asset.displayName.toUpperCase(),
+              Text(displayOverride ?? asset.displayName.toUpperCase(),
                   style: theme.textTheme.titleMedium!.copyWith(
                     fontSize: 12,
                   )),
