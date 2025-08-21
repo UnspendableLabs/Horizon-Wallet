@@ -5908,6 +5908,7 @@ class _V2Api implements V2Api {
     CursorModel? cursor,
     int? limit,
     int? offset,
+    String? sort,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -5917,6 +5918,7 @@ class _V2Api implements V2Api {
       r'cursor': cursor?.toJson(),
       r'limit': limit,
       r'offset': offset,
+      r'sort': sort,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};

@@ -3215,7 +3215,6 @@ class ComposeIssuanceVerbose extends ComposeIssuance {
   final SignedTxEstimatedSizeModel signedTxEstimatedSize;
   final String psbt;
 
-
   ComposeIssuanceVerbose({
     required this.psbt,
     required super.rawtransaction,
@@ -3635,7 +3634,6 @@ class SendTxVerbose extends SendTx {
   final int btcFee;
   final SignedTxEstimatedSizeModel signedTxEstimatedSize;
   final String psbt;
-
 
   const SendTxVerbose({
     required this.params,
@@ -5275,6 +5273,7 @@ abstract class V2Api {
     @Query("cursor") CursorModel? cursor,
     @Query("limit") int? limit,
     @Query("offset") int? offset,
+    @Query("sort") String? sort,
   ]);
 
   @GET("/addresses/{address}/orders?verbose=true")

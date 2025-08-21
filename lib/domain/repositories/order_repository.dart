@@ -12,6 +12,7 @@ abstract class OrderRepository {
       {required String giveAsset,
       required String getAsset,
       String? status,
+      String? sort,
       required HttpConfig httpConfig});
 }
 
@@ -35,6 +36,7 @@ extension OrderRepositoryExtension on OrderRepository {
       {required String giveAsset,
       required String getAsset,
       String? status,
+      String? sort,
       required HttpConfig httpConfig,
       String Function(Object error, StackTrace stacktrace)? onError}) {
     return TaskEither.tryCatch(
@@ -42,6 +44,7 @@ extension OrderRepositoryExtension on OrderRepository {
               giveAsset: giveAsset,
               getAsset: getAsset,
               status: status,
+              sort: sort,
               httpConfig: httpConfig,
             ),
         (error, callsack) =>

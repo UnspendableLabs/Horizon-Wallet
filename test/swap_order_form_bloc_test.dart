@@ -67,6 +67,7 @@ class MockOrderRepository implements OrderRepository {
       {required HttpConfig httpConfig,
       required String giveAsset,
       required String getAsset,
+      String? sort,
       String? status}) async {
     if (giveAsset == "GET") {
       return buys;
@@ -79,6 +80,7 @@ class MockOrderRepository implements OrderRepository {
       {required HttpConfig httpConfig,
       required String giveAsset,
       required String getAsset,
+      String? sort,
       String? status}) {
     return TaskEither.tryCatch(
         () => getByPair(

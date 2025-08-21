@@ -346,14 +346,14 @@ class SwapOrderForm extends StatelessWidget {
                                     get: final get
                                   ) =>
                                     SelectableText(
-                                        "match: give ${give.normalizedPretty()} ${state.giveAsset.displayName} / get ${get.normalizedPretty()} ${state.getAsset.displayName}",
+                                        "match: give ${give.normalizedPretty()} ${state.giveAsset.displayName} / get ${get.normalized()} ${state.getAsset.displayName}",
                                         style: theme.textTheme.bodySmall),
                                   SimulatedOrderCreate(
                                     give: final give,
                                     get: final get
                                   ) =>
                                     SelectableText(
-                                        "match create: give ${give.normalizedPretty()} ${state.giveAsset.displayName} / get ${get.normalizedPretty()} ${state.getAsset.displayName}",
+                                        "match create: give ${give.normalizedPretty()} ${state.giveAsset.displayName} / get ${get.normalized()} ${state.getAsset.displayName}",
                                         style: theme.textTheme.bodySmall),
                                 })
                             .toList()))

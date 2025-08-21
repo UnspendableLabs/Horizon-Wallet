@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'dart:math' hide log;
 import 'package:get_it/get_it.dart';
 import 'package:fpdart/fpdart.dart' hide Order;
 import 'package:formz/formz.dart';
@@ -656,227 +656,352 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     );
   }
 
-  _handleSimulateOrdersRequested(
+  Future<void> _handleSimulateOrdersRequested(
     SimulatedOrdersRequested event,
     Emitter<SwapOrderFormModel> emit,
   ) async {
+    print("⏳ [_handleSimulateOrdersRequested] Start with state: "
+        "priceInput=${state.priceInput.value}, "
+        "amountInput=${state.amountInput.value}, "
+        "priceType=${state.priceType}, "
+        "amountType=${state.amountType}, "
+        "giveAsset=${state.giveAsset.asset} (div=${state.giveAsset.divisible}), "
+        "getAsset=${state.getAsset.asset} (div=${state.getAsset.divisible})");
+
     if (Rational.tryParse(state.priceInput.value) == null ||
         Rational.tryParse(state.amountInput.value) == null) {
+      print("⚠️ Invalid input: Could not parse price or amount as Rational");
       return;
     }
 
     emit(state.copyWith(simulatedOrders: const Loading()));
+    print("➡️ Emitted Loading() for simulatedOrders");
 
     final task =
         TaskEither<String, (List<Order>, List<Order>, List<SimulatedOrder>)>.Do(
-            ($) async {
-      final result = await $(TaskEither.sequenceList([
-        _orderRepository.getByPairTE(
-          status: "open",
-          giveAsset: state.getAsset.asset,
-          getAsset: state.giveAsset.asset,
-          httpConfig: httpConfig,
-        ),
-        _orderRepository.getByPairTE(
-          giveAsset: state.giveAsset.asset,
-          getAsset: state.getAsset.asset,
-          status: "open",
-          httpConfig: httpConfig,
-        ),
-      ]));
+      ($) async {
+        print("🔍 Fetching orders from repository...");
+        final result = await $(TaskEither.sequenceList([
+          _orderRepository.getByPairTE(
+              status: "open",
+              giveAsset: state.getAsset.asset,
+              getAsset: state.giveAsset.asset,
+              httpConfig: httpConfig,
+              sort: "give_price"),
+          _orderRepository.getByPairTE(
+            giveAsset: state.giveAsset.asset,
+            getAsset: state.getAsset.asset,
+            status: "open",
+            httpConfig: httpConfig,
+          ),
+        ]));
 
-      final buyOrders = result[0];
-      final sellOrders = result[1];
+        final buyOrders = result[0];
+        final sellOrders = result[1];
 
-      final price = switch (state.priceType) {
-        PriceType.give => Rational.parse(state.priceInput.value),
-        PriceType.get => Rational.parse(state.priceInput.value).inverse,
-      };
+        // print("first buy order ${buyOrders.first.giveQuantity}");
+        print("📥 Orders fetched: "
+            "buyOrders=${buyOrders.length}, sellOrders=${sellOrders.length}");
 
-      final priceFilter = Rational(
+        final price = switch (state.priceType) {
+          PriceType.give => Rational.parse(state.priceInput.value),
+          PriceType.get => Rational.parse(state.priceInput.value).inverse,
+        };
+        print(
+            "💲 Computed price=${price.toString()} (from priceType=${state.priceType})");
+
+        final priceFilter = Rational(
           state.giveAsset.divisible
               ? price.numerator * TenToTheEigth.bigIntValue
               : price.numerator,
           state.getAsset.divisible
               ? price.denominator * TenToTheEigth.bigIntValue
-              : price.denominator);
+              : price.denominator,
+        );
+        print("🔎 priceFilter=$priceFilter");
 
-      final buyOrdersFiltered = buyOrders
-          .where((order) =>
-              Rational.fromInt(order.getQuantity, order.giveQuantity) <=
-              priceFilter)
-          .toList();
+        final buyOrdersFiltered = buyOrders
+            .where((order) =>
+                Rational.fromInt(order.getQuantity, order.giveQuantity) <=
+                priceFilter)
+            .toList();
+        print("📊 Filtered buyOrders=${buyOrdersFiltered.length}");
 
-      BigInt tx1GiveQuantity = state.giveQuantityInput.value.quantity;
-      BigInt tx1GetQuantity = state.getQuantityInput.value.quantity;
-
-      BigInt tx1GiveRemaining = tx1GiveQuantity;
-
-      print("\n\n initial \t tx1 give remaining: $tx1GiveRemaining");
-
-      BigInt tx1GetRemaining = tx1GetQuantity;
-
-      final giveDivisible = state.giveAsset.divisible;
-      final getDivisible = state.getAsset.divisible;
-
-      final candidateMatches = buyOrdersFiltered;
-      final simulatedOrders = <SimulatedOrder>[];
-
-      for (final tx0 in candidateMatches) {
-        print("\n\nnew loop:");
-        print("\t\ttx1GetRemaining: $tx1GetRemaining");
-        final tx0GiveRemaining = Rational.fromInt(tx0.giveRemaining);
-        final tx0Price = Rational.fromInt(tx0.getQuantity, tx0.giveQuantity);
-        final tx1InversePrice = Rational(tx1GiveRemaining, tx1GetRemaining);
-
-        print("\t\t x1GiveRemaining: $tx1GiveRemaining");
-        print("\t\t x1InversePrice: $tx1InversePrice");
-        print("\t\t x1GiveRemaining: $tx1GiveRemaining");
-        print("\t\t x0Price: $tx0Price");
-        print("\t\t\t\t x0Price: $tx0Price");
-
-        if (tx0Price > tx1InversePrice) {
-          print("\n\nwe are continuing");
-          print("\t\ttx1GiveRemaining: $tx1GiveRemaining");
-          print("\t\ttx1GetRemaining: $tx1GetRemaining");
-          print("\t\ttx0Price: $tx0Price");
-          print("\t\ttx1InversePrice: $tx1InversePrice");
-
-          continue;
-        }
-
-        print("\n\n\ntx0GiveRemaining: $tx0GiveRemaining");
-        print("tx1GiveRemaining: $tx1GiveRemaining");
-
+        BigInt tx1GiveQuantity = state.giveQuantityInput.value.quantity;
+        BigInt tx1GetQuantity = state.getQuantityInput.value.quantity;
+        BigInt tx1GiveRemaining = tx1GiveQuantity;
+        BigInt tx1GetRemaining = tx1GetQuantity;
         print(
-            "tx1GiveRemaining / tx0Price: ${(Rational(tx1GiveRemaining) / tx0Price)}");
-        print("tx0Price $tx0Price");
+            "🎯 Target quantities: give=$tx1GiveQuantity, get=$tx1GetQuantity");
 
-        print("tx1GetRemaining: $tx1GetRemaining");
+        final giveDivisible = state.giveAsset.divisible;
+        final getDivisible = state.getAsset.divisible;
 
-        Rational forwardQuantity = rationalMinList([
-          tx0GiveRemaining,
-          Rational(tx1GiveRemaining) / tx0Price,
-        ]);
+        final simulatedOrders = <SimulatedOrder>[];
+        for (final tx0 in buyOrdersFiltered) {
+          final tx0GiveRemaining = Rational.fromInt(tx0.giveRemaining);
+          final tx0Price = Rational.fromInt(tx0.getQuantity, tx0.giveQuantity);
+          final tx1InversePrice = Rational(tx1GiveRemaining, tx1GetRemaining);
 
-        Rational backwardQuantity = (forwardQuantity * tx0Price);
+          print("➡️ Candidate order: giveRemaining=$tx0GiveRemaining, "
+              "price=$tx0Price vs tx1InversePrice=$tx1InversePrice");
 
-        if (forwardQuantity == Rational.zero) {
-          continue;
+          if (tx0Price > tx1InversePrice) {
+            print("⏭️ Skipping order (tx0Price > tx1InversePrice)");
+            continue;
+          }
+
+          final forwardQuantity = rationalMinList([
+            tx0GiveRemaining,
+            Rational(tx1GiveRemaining) / tx0Price,
+          ]);
+          final backwardQuantity = forwardQuantity * tx0Price;
+          print(
+              "🔄 forwardQuantity=$forwardQuantity, backwardQuantity=$backwardQuantity");
+
+          if (forwardQuantity == Rational.zero ||
+              backwardQuantity == Rational.zero) {
+            print("⏭️ Skipping order (zero match quantities)");
+            continue;
+          }
+
+          tx1GiveRemaining -= backwardQuantity.toBigInt();
+          tx1GetRemaining -= forwardQuantity.toBigInt();
+          print("📉 Remaining after match: "
+              "give=$tx1GiveRemaining, get=$tx1GetRemaining");
+
+          simulatedOrders.add(SimulatedOrderMatch(
+            give: AssetQuantity(
+                divisible: giveDivisible,
+                quantity: backwardQuantity.toBigInt()),
+            get: AssetQuantity(
+                divisible: getDivisible, quantity: forwardQuantity.toBigInt()),
+          ));
         }
 
-        if (backwardQuantity == Rational.zero) {
-          continue;
-        }
-
-        // Rational forwardQuantity = switch ((
-        //   state.giveAsset.divisible,
-        //   state.getAsset.divisible
-        // )) {
-        //   (false, true) => forwardQuantity_,
-        //   _ => forwardQuantity_
-        // };
-        //
-        // Rational backwardQuantity = switch ((
-        //   state.giveAsset.divisible,
-        //   state.getAsset.divisible
-        // )) {
-        //   (true, false) => backwardQuantity_,
-        //   _ => backwardQuantity_
-        // };
-
-        print("backward_quantity_ $backwardQuantity");
-        print("backward_quantity $backwardQuantity");
-
-        print("forward_quantity_ $forwardQuantity");
-        print("forward_quantity $forwardQuantity");
-
-        tx1GiveRemaining -= backwardQuantity.toBigInt();
-        tx1GetRemaining -= forwardQuantity.toBigInt();
-
-        simulatedOrders.add(SimulatedOrderMatch(
-          give: AssetQuantity(
-            divisible: giveDivisible,
-            quantity: backwardQuantity.toBigInt(),
-          ),
-          get: AssetQuantity(
-            divisible: getDivisible,
-            quantity: forwardQuantity.toBigInt(),
-          ),
-        ));
-
-        print("tx1GiveRemaining $tx1GiveRemaining");
-      }
-
-      // print("tx1GiveQUantity: $tx1GiveQuantity");
-      // print("tx1GiveQUantity: $tx1GetQuantity");
-      //
-      // final tx1PriceMax = switch (state.priceType) {
-      //   PriceType.give => Rational(tx1GetQuantity, tx1GiveQuantity),
-      //   PriceType.get => Rational(tx1GiveQuantity, tx1GetQuantity)
-      // };
-      //
-      if (state.amountType == AmountType.give &&
-          tx1GiveRemaining > BigInt.zero) {
-        final getAmount = tx1GetRemaining;
-
-        final getQuantity = switch ((giveDivisible, getDivisible)) {
-          (true, true) => getAmount,
-          (true, false) => getAmount,
-          (false, true) => getAmount,
-          (false, false) => getAmount
-        };
-
-        print("case 1");
-        print("tx1getRemaining: $tx1GetRemaining");
-        // print("tx1PriceMax: $tx1PriceMax");
-        simulatedOrders.add(SimulatedOrderCreate(
+        // handle leftovers
+        if (state.amountType == AmountType.give &&
+            tx1GiveRemaining > BigInt.zero) {
+          final getQuantity = tx1GetRemaining;
+          print("➕ Adding leftover SimulatedOrderCreate (amountType=give): "
+              "give=$tx1GiveRemaining, get=$getQuantity");
+          simulatedOrders.add(SimulatedOrderCreate(
             give: AssetQuantity(
                 divisible: giveDivisible, quantity: tx1GiveRemaining),
-            get:
-                AssetQuantity(divisible: getDivisible, quantity: getQuantity)));
-      }
+            get: AssetQuantity(divisible: getDivisible, quantity: getQuantity),
+          ));
+        }
 
-      if (state.amountType == AmountType.get && tx1GetRemaining > BigInt.zero) {
-        // given that amount type is get
-        print("case 2");
-        print("tx1GetRemaining: $tx1GetRemaining");
-        print("price: $price");
-        print("giveDivisible: $giveDivisible");
-        print("getDivisible: $getDivisible");
-
-        final giveQuantity = switch ((giveDivisible, getDivisible)) {
-          (true, false) =>
-            ((price * Rational(tx1GetRemaining)) * TenToTheEigth.rational)
-                .toBigInt(),
-          (false, true) =>
-            ((price * Rational(tx1GetRemaining)) / TenToTheEigth.rational)
-                .toBigInt(),
-          _ => (price * Rational(tx1GetRemaining)).toBigInt()
-        };
-
-        simulatedOrders.add(SimulatedOrderCreate(
+        if (state.amountType == AmountType.get &&
+            tx1GetRemaining > BigInt.zero) {
+          final giveQuantity = switch ((giveDivisible, getDivisible)) {
+            (true, false) =>
+              ((price * Rational(tx1GetRemaining)) * TenToTheEigth.rational)
+                  .toBigInt(),
+            (false, true) =>
+              ((price * Rational(tx1GetRemaining)) / TenToTheEigth.rational)
+                  .toBigInt(),
+            _ => (price * Rational(tx1GetRemaining)).toBigInt(),
+          };
+          print("➕ Adding leftover SimulatedOrderCreate (amountType=get): "
+              "give=$giveQuantity, get=$tx1GetRemaining");
+          simulatedOrders.add(SimulatedOrderCreate(
             give:
                 AssetQuantity(divisible: giveDivisible, quantity: giveQuantity),
             get: AssetQuantity(
-                divisible: getDivisible, quantity: tx1GetRemaining)));
-      }
-      return (buyOrders, sellOrders, simulatedOrders);
-    });
+                divisible: getDivisible, quantity: tx1GetRemaining),
+          ));
+        }
+
+        print(
+            "✅ Simulation complete: simulatedOrders=${simulatedOrders.length}");
+        return (buyOrders, sellOrders, simulatedOrders);
+      },
+    );
 
     final result = await task.run();
+    print("📦 Task completed: success=${result.isRight()}");
 
     final nextState = result.fold(
-      (error) => state.copyWith(simulatedOrders: Failure(error)),
-      (success) => state.copyWith(
-        buyOrders: success.$1,
-        sellOrders: success.$2,
-        simulatedOrders: Success(success.$3),
-      ),
+      (error) {
+        print("❌ Simulation failed: $error");
+        return state.copyWith(simulatedOrders: Failure(error));
+      },
+      (success) {
+        print("🎉 Simulation succeeded: "
+            "buyOrders=${success.$1.length}, sellOrders=${success.$2.length}, "
+            "simulatedOrders=${success.$3.length}");
+        return state.copyWith(
+          buyOrders: success.$1,
+          sellOrders: success.$2,
+          simulatedOrders: Success(success.$3),
+        );
+      },
     );
 
     emit(nextState);
+    print(
+        "📤 Emitted new state with simulatedOrders=${nextState.simulatedOrders}");
   }
+
+  //
+  // _handleSimulateOrdersRequested(
+  //   SimulatedOrdersRequested event,
+  //   Emitter<SwapOrderFormModel> emit,
+  // ) async {
+  //   if (Rational.tryParse(state.priceInput.value) == null ||
+  //       Rational.tryParse(state.amountInput.value) == null) {
+  //     return;
+  //   }
+  //
+  //   emit(state.copyWith(simulatedOrders: const Loading()));
+  //
+  //   final task =
+  //       TaskEither<String, (List<Order>, List<Order>, List<SimulatedOrder>)>.Do(
+  //           ($) async {
+  //     final result = await $(TaskEither.sequenceList([
+  //       _orderRepository.getByPairTE(
+  //         status: "open",
+  //         giveAsset: state.getAsset.asset,
+  //         getAsset: state.giveAsset.asset,
+  //         httpConfig: httpConfig,
+  //       ),
+  //       _orderRepository.getByPairTE(
+  //         giveAsset: state.giveAsset.asset,
+  //         getAsset: state.getAsset.asset,
+  //         status: "open",
+  //         httpConfig: httpConfig,
+  //       ),
+  //     ]));
+  //
+  //     final buyOrders = result[0];
+  //     final sellOrders = result[1];
+  //
+  //     final price = switch (state.priceType) {
+  //       PriceType.give => Rational.parse(state.priceInput.value),
+  //       PriceType.get => Rational.parse(state.priceInput.value).inverse,
+  //     };
+  //
+  //     final priceFilter = Rational(
+  //         state.giveAsset.divisible
+  //             ? price.numerator * TenToTheEigth.bigIntValue
+  //             : price.numerator,
+  //         state.getAsset.divisible
+  //             ? price.denominator * TenToTheEigth.bigIntValue
+  //             : price.denominator);
+  //
+  //     final buyOrdersFiltered = buyOrders
+  //         .where((order) =>
+  //             Rational.fromInt(order.getQuantity, order.giveQuantity) <=
+  //             priceFilter)
+  //         .toList();
+  //
+  //     BigInt tx1GiveQuantity = state.giveQuantityInput.value.quantity;
+  //     BigInt tx1GetQuantity = state.getQuantityInput.value.quantity;
+  //
+  //     BigInt tx1GiveRemaining = tx1GiveQuantity;
+  //
+  //     BigInt tx1GetRemaining = tx1GetQuantity;
+  //
+  //     final giveDivisible = state.giveAsset.divisible;
+  //     final getDivisible = state.getAsset.divisible;
+  //
+  //     final candidateMatches = buyOrdersFiltered;
+  //     final simulatedOrders = <SimulatedOrder>[];
+  //
+  //     for (final tx0 in candidateMatches) {
+  //       final tx0GiveRemaining = Rational.fromInt(tx0.giveRemaining);
+  //       final tx0Price = Rational.fromInt(tx0.getQuantity, tx0.giveQuantity);
+  //
+  //       final tx1InversePrice = Rational(tx1GiveRemaining, tx1GetRemaining);
+  //
+  //       if (tx0Price > tx1InversePrice) {
+  //         continue;
+  //       }
+  //
+  //       Rational forwardQuantity = rationalMinList([
+  //         tx0GiveRemaining,
+  //         Rational(tx1GiveRemaining) / tx0Price,
+  //       ]);
+  //
+  //       Rational backwardQuantity = (forwardQuantity * tx0Price);
+  //
+  //       if (forwardQuantity == Rational.zero) {
+  //         continue;
+  //       }
+  //
+  //       if (backwardQuantity == Rational.zero) {
+  //         continue;
+  //       }
+  //
+  //       tx1GiveRemaining -= backwardQuantity.toBigInt();
+  //       tx1GetRemaining -= forwardQuantity.toBigInt();
+  //
+  //       simulatedOrders.add(SimulatedOrderMatch(
+  //         give: AssetQuantity(
+  //           divisible: giveDivisible,
+  //           quantity: backwardQuantity.toBigInt(),
+  //         ),
+  //         get: AssetQuantity(
+  //           divisible: getDivisible,
+  //           quantity: forwardQuantity.toBigInt(),
+  //         ),
+  //       ));
+  //     }
+  //
+  //     if (state.amountType == AmountType.give &&
+  //         tx1GiveRemaining > BigInt.zero) {
+  //       final getAmount = tx1GetRemaining;
+  //
+  //       final getQuantity = switch ((giveDivisible, getDivisible)) {
+  //         (true, true) => getAmount,
+  //         (true, false) => getAmount,
+  //         (false, true) => getAmount,
+  //         (false, false) => getAmount
+  //       };
+  //
+  //       simulatedOrders.add(SimulatedOrderCreate(
+  //           give: AssetQuantity(
+  //               divisible: giveDivisible, quantity: tx1GiveRemaining),
+  //           get:
+  //               AssetQuantity(divisible: getDivisible, quantity: getQuantity)));
+  //     }
+  //
+  //     if (state.amountType == AmountType.get && tx1GetRemaining > BigInt.zero) {
+  //       // given that amount type is get
+  //
+  //       final giveQuantity = switch ((giveDivisible, getDivisible)) {
+  //         (true, false) =>
+  //           ((price * Rational(tx1GetRemaining)) * TenToTheEigth.rational)
+  //               .toBigInt(),
+  //         (false, true) =>
+  //           ((price * Rational(tx1GetRemaining)) / TenToTheEigth.rational)
+  //               .toBigInt(),
+  //         _ => (price * Rational(tx1GetRemaining)).toBigInt()
+  //       };
+  //
+  //       simulatedOrders.add(SimulatedOrderCreate(
+  //           give:
+  //               AssetQuantity(divisible: giveDivisible, quantity: giveQuantity),
+  //           get: AssetQuantity(
+  //               divisible: getDivisible, quantity: tx1GetRemaining)));
+  //     }
+  //     return (buyOrders, sellOrders, simulatedOrders);
+  //   });
+  //
+  //   final result = await task.run();
+  //
+  //   final nextState = result.fold(
+  //     (error) => state.copyWith(simulatedOrders: Failure(error)),
+  //     (success) => state.copyWith(
+  //       buyOrders: success.$1,
+  //       sellOrders: success.$2,
+  //       simulatedOrders: Success(success.$3),
+  //     ),
+  //   );
+  //
+  //   emit(nextState);
+  // }
 }
 
 EventTransformer<E> debounce<E>(Duration duration) {
