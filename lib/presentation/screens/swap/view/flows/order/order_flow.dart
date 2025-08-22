@@ -21,11 +21,16 @@ import 'package:horizon/presentation/session/bloc/session_state.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import "./order_flow_sign_view.dart";
+import "./order_flow_sign_bloc.dart";
+
 class OrderModel extends Equatable {
   Option<MultiAddressBalanceEntry> giveBalance;
+  Option<SubmitParams> orderParams;
 
   OrderModel({
     required this.giveBalance,
+    required this.orderParams,
   });
 
   @override
@@ -34,9 +39,11 @@ class OrderModel extends Equatable {
   OrderModel copyWith({
     // TODO: this really just needs to be address...
     Option<MultiAddressBalanceEntry>? giveBalance,
+    Option<SubmitParams>? orderParams,
   }) {
     return OrderModel(
       giveBalance: giveBalance ?? this.giveBalance,
+      orderParams: orderParams ?? this.orderParams,
     );
   }
 }
@@ -68,7 +75,8 @@ class _OrderFlowViewState extends State<OrderFlowView> {
   void initState() {
     super.initState();
     _controller = OrderFlowController(
-        initialState: OrderModel(giveBalance: Option.none()));
+        initialState:
+            OrderModel(giveBalance: Option.none(), orderParams: Option.none()));
   }
 
   @override
@@ -131,6 +139,11 @@ class _OrderFlowViewState extends State<OrderFlowView> {
                   title: "Limit Order",
                   widthFactor: .4,
                   body: SwapOrderFormProvider(
+                      onSubmitClicked: (params) {
+                        _controller.update((model) => model.copyWith(
+                              orderParams: Option.of(params),
+                            ));
+                      },
                       multiAddressBalanceEntry: giveBalanceEntry,
                       address: widget.addresses.firstWhere((address) =>
                           address.address ==
@@ -140,7 +153,52 @@ class _OrderFlowViewState extends State<OrderFlowView> {
                       getAsset: widget.receiveAsset.name,
                       giveAsset: widget.giveBalance.asset,
                       child: (actions, state) =>
-                          SwapOrderForm(actions: actions, state: state)))))
+                          SwapOrderForm(actions: actions, state: state))))),
+          model.orderParams.map((params) => MaterialPage(
+                child: FlowStep(
+                    leading: IconButton(
+                      onPressed: () {
+                        _controller.update((model) =>
+                            model.copyWith(orderParams: Option.none()));
+                      },
+                      icon: AppIcons.backArrowIcon(
+                        context: context,
+                        width: 24,
+                        height: 24,
+                        fit: BoxFit.fitHeight,
+                      ),
+                    ),
+                    title: "Review Transaction",
+                    widthFactor: .7,
+                    body: OrderFlowSignProvider(
+                        address: widget.addresses.firstWhere((address) =>
+                            address.address ==
+                            model.giveBalance.getOrThrow().address!),
+                        getQuantity: params.getQuantity,
+                        giveQuantity: params.giveQuantity,
+                        giveAsset: widget.giveBalance.asset,
+                        getAsset: widget.receiveAsset.name,
+                        child: (actions, state) => Builder(builder: (context) {
+                              return Column(
+                                children: [
+                                  OrderSignHandler(
+                                    address:
+                                        model.giveBalance.getOrThrow().address!,
+                                    onSuccess: (value) {
+                                      print(value);
+                                    },
+                                    onClose: () {
+                                      actions.onCloseSignModalClicked();
+                                    },
+                                  ),
+                                  OrderFlowSignView(
+                                    actions: actions,
+                                    state: state,
+                                  )
+                                ],
+                              );
+                            }))),
+              ))
         ]
             .filter((page) => page.isSome())
             .map((page) => page.getOrThrow())

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
+import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:horizon/presentation/common/expiry_selector.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
@@ -187,14 +188,27 @@ class _OrderRow extends StatelessWidget {
   }
 }
 
+class SubmitParams {
+  final AssetQuantity giveQuantity;
+  final AssetQuantity getQuantity;
+  final SimulatedOrders simulatedOrders;
+
+  SubmitParams({
+    required this.giveQuantity,
+    required this.getQuantity,
+    required this.simulatedOrders,
+  });
+}
+
 class SwapOrderFormActions {
   final VoidCallback onClickAmountAsset;
   final VoidCallback onClickPriceAsset;
-  final VoidCallback onSubmitClicked;
+  final Function(SubmitParams params) onSubmitClicked;
   final Function(String value) onAmountChanged;
   final Function(String value) onPriceChanged;
   final Function(RelativePriceValue value) onRelativePriceButtonClicked;
   final Function(DateTime? date) onExpiryChanged;
+  // final Function(ContinueParams params)? onContinueClicked;
 
   SwapOrderFormActions({
     required this.onSubmitClicked,
@@ -212,6 +226,7 @@ class SwapOrderFormProvider extends StatefulWidget {
   final AssetRepository _assetRepository;
 
   final String giveAsset;
+  final Function(SubmitParams params) onSubmitClicked;
 
   final String getAsset;
   final AddressV2 address;
@@ -228,6 +243,7 @@ class SwapOrderFormProvider extends StatefulWidget {
       {super.key,
       AssetRepository? assetRepository,
       OrderRepository? orderRepository,
+      required this.onSubmitClicked,
       required this.multiAddressBalanceEntry,
       required this.child,
       required this.httpConfig,
@@ -295,7 +311,8 @@ class _SwapOrderFormProviderState extends State<SwapOrderFormProvider> {
                             onRelativePriceButtonClicked: (value) => context
                                 .read<SwapOrderFormBloc>()
                                 .add(RelativePriceButtonClicked(value: value)),
-                            onSubmitClicked: () => print("submit clicked"),
+                            onSubmitClicked: (submitParams) =>
+                                widget.onSubmitClicked(submitParams),
                             onAmountChanged: (value) {
                               context
                                   .read<SwapOrderFormBloc>()
@@ -394,6 +411,33 @@ class SwapOrderForm extends StatelessWidget {
               children: [
                 // chat i ned this text to be copyable
 
+                // state.simulatedOrders.fold(
+                //     onInitial: () => const SizedBox.shrink(),
+                //     onLoading: () => const Center(
+                //           child: CircularProgressIndicator(),
+                //         ),
+                //     onFailure: (error) => Text(error.toString()),
+                //     onRefreshing: (_) => const Center(
+                //           child: CircularProgressIndicator(),
+                //         ),
+                //     onSuccess: (orders) => Column(children: [
+                //           ...orders.map((order) {
+                //             return switch (order) {
+                //               SimulatedOrderMatch(
+                //                 give: var give,
+                //                 get: var get
+                //               ) =>
+                //                 Text(
+                //                     "Match give: ${give.normalized()}, get: ${get.normalized()}"),
+                //               SimulatedOrderCreate(
+                //                 give: var give,
+                //                 get: var get
+                //               ) =>
+                //                 Text(
+                //                     "Match give: ${give.normalized()}, get: ${get.normalized()}"),
+                //             };
+                //           }).toList()
+                //         ])),
                 state.simulatedOrders.fold(
                     onInitial: () => const SizedBox.shrink(),
                     onLoading: () => const Center(
@@ -403,37 +447,11 @@ class SwapOrderForm extends StatelessWidget {
                     onRefreshing: (_) => const Center(
                           child: CircularProgressIndicator(),
                         ),
-                    onSuccess: (orders) => Column(children: [
-                          ...orders.map((order) {
-                            return switch (order) {
-                              SimulatedOrderMatch(
-                                give: var give,
-                                get: var get
-                              ) =>
-                                Text(
-                                    "Match give: ${give.normalized()}, get: ${get.normalized()}"),
-                              SimulatedOrderCreate(
-                                give: var give,
-                                get: var get
-                              ) =>
-                                Text(
-                                    "Match give: ${give.normalized()}, get: ${get.normalized()}"),
-                            };
-                          }).toList()
-                        ])),
-                state.simulatedOrderSummary.fold(
-                    onInitial: () => const SizedBox.shrink(),
-                    onLoading: () => const Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                    onFailure: (error) => Text(error.toString()),
-                    onRefreshing: (_) => const Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                    onSuccess: (summary) => Column(children: [
+                    onSuccess: (simulatedOrders) => Column(children: [
                           _SummaryRow(
                             label: "Total Give",
-                            value: summary.totalGive.normalized(),
+                            value:
+                                simulatedOrders.summary.totalGive.normalized(),
                             theme: theme,
                             error: switch (state.giveQuantityInput.error) {
                               GiveQuantityInputError.insufficientBalance => "",
@@ -442,17 +460,19 @@ class SwapOrderForm extends StatelessWidget {
                           ),
                           _SummaryRow(
                             label: "Total Get",
-                            value: summary.totalGet.normalized(),
+                            value:
+                                simulatedOrders.summary.totalGet.normalized(),
                             theme: theme,
                           ),
                           _SummaryRow(
                             label: "Immediate",
-                            value: summary.getNow.normalized(),
+                            value: simulatedOrders.summary.getNow.normalized(),
                             theme: theme,
                           ),
                           _SummaryRow(
                             label: "Deferred",
-                            value: summary.getLater.normalized(),
+                            value:
+                                simulatedOrders.summary.getLater.normalized(),
                             theme: theme,
                           ),
                           // CHAT: Help me polish this order UI
@@ -460,19 +480,35 @@ class SwapOrderForm extends StatelessWidget {
               ],
             ),
 
+            commonHeightSizedBox,
+
             // Add more form fields as needed
           ],
         ),
-        Text(state.amountInput.error?.toString() ?? ""),
-        Text(state.priceInput.error?.toString() ?? ""),
-        Text(state.maxGiveQuantityInput.value.toString() ?? ""),
-        Text(state.maxGiveQuantityInput.error?.toString() ?? ""),
-        Text(state.getQuantityInput.error?.toString() ?? ""),
+        // Text(state.amountInput.error?.toString() ?? ""),
+        // Text(state.priceInput.error?.toString() ?? ""),
+        // Text(state.maxGiveQuantityInput.value.toString() ?? ""),
+        // Text(state.maxGiveQuantityInput.error?.toString() ?? ""),
+        // Text(state.getQuantityInput.error?.toString() ?? ""),
 
         HorizonButton(
-            disabled: state.isNotValid,
+            disabled: state.simulatedOrders.maybeWhen(
+              onSuccess: (_) => false,
+              orElse: () => true,
+            ),
             onPressed: () {
-              print("click");
+              final cb = state.simulatedOrders.maybeWhen(
+                onSuccess: (simulatedOrders) {
+                  return () => actions.onSubmitClicked(SubmitParams(
+                        giveQuantity: state.giveQuantityInput.value,
+                        getQuantity: state.getQuantityInput.value,
+                        simulatedOrders: simulatedOrders,
+                      ));
+                },
+                orElse: () => null,
+              );
+
+              cb != null && cb();
             },
             child: TextButtonContent(value: "Continue")),
       ],
@@ -797,9 +833,9 @@ class PriceToggle extends StatelessWidget {
       required this.theme,
       required this.numerator,
       required this.denominator,
-      this.onTap});
+      required this.onTap});
 
-  final VoidCallback? onTap;
+  final VoidCallback onTap;
   final AppIcons appIcons;
   final SessionStateSuccess session;
   final ThemeData theme;
@@ -812,7 +848,7 @@ class PriceToggle extends StatelessWidget {
       cursor: SystemMouseCursors.click,
       child: InkWell(
         onTap: () {
-          onTap?.call();
+          onTap();
         },
         borderRadius: BorderRadius.circular(24),
         child: Container(
@@ -858,10 +894,10 @@ class AssetPill extends StatelessWidget {
       required this.theme,
       required this.asset,
       this.displayOverride,
-      this.onTap});
+      required this.onTap});
 
   final String? displayOverride;
-  final VoidCallback? onTap;
+  final VoidCallback onTap;
   final AppIcons appIcons;
   final SessionStateSuccess session;
   final ThemeData theme;
@@ -873,7 +909,7 @@ class AssetPill extends StatelessWidget {
       cursor: SystemMouseCursors.click,
       child: InkWell(
         onTap: () {
-          onTap?.call();
+          onTap();
         },
         borderRadius: BorderRadius.circular(24),
         child: Container(

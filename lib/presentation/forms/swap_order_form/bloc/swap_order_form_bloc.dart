@@ -142,6 +142,43 @@ class GetQuantityInput
 
 enum OrderViewModelSide { buy, sell }
 
+class SimulatedOrders {
+  Asset getAsset;
+  Asset giveAsset;
+  List<SimulatedOrder> orders;
+
+  SimulatedOrders(
+      {required this.orders, required this.getAsset, required this.giveAsset});
+
+  @override
+  String toString() {
+    return 'SimulatedOrders(orders: $orders)';
+  }
+
+  SimulatedOrderSummary get summary {
+    final totalGive = orders.fold(
+      AssetQuantity(divisible: giveAsset.divisible, quantity: BigInt.zero),
+      (prev, order) => prev + order.give,
+    );
+
+    final getNow = orders.whereType<SimulatedOrderMatch>().fold(
+          AssetQuantity(divisible: getAsset.divisible, quantity: BigInt.zero),
+          (prev, order) => prev + order.get,
+        );
+
+    final getCreate = orders.whereType<SimulatedOrderCreate>().fold(
+          AssetQuantity(divisible: getAsset.divisible, quantity: BigInt.zero),
+          (prev, order) => prev + order.get,
+        );
+
+    return SimulatedOrderSummary(
+      totalGive: totalGive,
+      getNow: getNow,
+      getLater: getCreate,
+    );
+  }
+}
+
 class OrderViewModel {
   final OrderViewModelSide side;
   final AssetQuantity quantity;
@@ -197,7 +234,7 @@ extension OrderViewModelExtension on Order {
 }
 
 class SwapOrderFormModel with FormzMixin {
-  final RemoteData<List<SimulatedOrder>> simulatedOrders;
+  final RemoteData<SimulatedOrders> simulatedOrders;
 
   final MultiAddressBalanceEntry giveAssetBalance;
 
@@ -230,35 +267,6 @@ class SwapOrderFormModel with FormzMixin {
     required this.sellOrders,
     required this.priceType,
   });
-
-  RemoteData<SimulatedOrderSummary> get simulatedOrderSummary {
-    if (amountInput.value.isEmpty || priceInput.value.isEmpty) {
-      return const Initial();
-    }
-
-    return simulatedOrders.map((orders) {
-      final totalGive = orders.fold(
-        AssetQuantity(divisible: giveAsset.divisible, quantity: BigInt.zero),
-        (prev, order) => prev + order.give,
-      );
-
-      final getNow = orders.whereType<SimulatedOrderMatch>().fold(
-            AssetQuantity(divisible: getAsset.divisible, quantity: BigInt.zero),
-            (prev, order) => prev + order.get,
-          );
-
-      final getCreate = orders.whereType<SimulatedOrderCreate>().fold(
-            AssetQuantity(divisible: getAsset.divisible, quantity: BigInt.zero),
-            (prev, order) => prev + order.get,
-          );
-
-      return SimulatedOrderSummary(
-        totalGive: totalGive,
-        getNow: getNow,
-        getLater: getCreate,
-      );
-    });
-  }
 
   AssetQuantity giveAssetQuantityWhenAmountGet({required Rational price}) {
     try {
@@ -310,11 +318,11 @@ class SwapOrderFormModel with FormzMixin {
         divisible: giveAsset.divisible,
         quantity: BigInt.from(giveAssetBalance.quantity));
 
-    return simulatedOrderSummary.fold3(
+    return simulatedOrders.fold3(
         onNone: () => GiveQuantityInput.pure(userBalance: userBalance),
         onFailure: (_) => GiveQuantityInput.pure(userBalance: userBalance),
         onReplete: (summary) => GiveQuantityInput.dirty(
-            value: summary.totalGive, userBalance: userBalance));
+            value: summary.summary.totalGive, userBalance: userBalance));
   }
 
   GiveQuantityInput get maxGiveQuantityInput =>
@@ -465,7 +473,7 @@ class SwapOrderFormModel with FormzMixin {
     AmountType? amountType,
     PriceType? priceType,
     GetQuantityInput? getQuantityInput,
-    RemoteData<List<SimulatedOrder>>? simulatedOrders,
+    RemoteData<SimulatedOrders>? simulatedOrders,
     Option<DateTime>? expiry,
   }) {
     return SwapOrderFormModel(
@@ -969,7 +977,10 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
         return state.copyWith(
           buyOrders: success.$1,
           sellOrders: success.$2,
-          simulatedOrders: Success(success.$3),
+          simulatedOrders: Success(SimulatedOrders(
+              giveAsset: state.giveAsset,
+              getAsset: state.getAsset,
+              orders: success.$3)),
         );
       },
     );
