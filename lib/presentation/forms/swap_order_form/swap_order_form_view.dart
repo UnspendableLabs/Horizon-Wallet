@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
+import 'package:horizon/presentation/common/expiry_selector.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:get_it/get_it.dart';
@@ -26,6 +27,66 @@ import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter/services.dart';
+
+class _SummaryRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final ThemeData theme;
+  final String? error;
+
+  const _SummaryRow({
+    required this.label,
+    required this.value,
+    required this.theme,
+    this.error,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final muted =
+        theme.extension<CustomThemeExtension>()!.mutedDescriptionTextColor;
+    final isError = error != null;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                label,
+                style: theme.textTheme.bodySmall!.copyWith(
+                  color: isError ? Colors.red : muted,
+                ),
+              ),
+              SelectableText(
+                value,
+                textAlign: TextAlign.right,
+                style: theme.textTheme.bodySmall!.copyWith(
+                  color: isError ? Colors.red : null,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            ],
+          ),
+          if (isError && error!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(
+                error!,
+                style: theme.textTheme.bodySmall!.copyWith(
+                  color: Colors.red,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
 
 class LimitPriceInput extends StatelessWidget {
   final TextEditingController controller;
@@ -133,6 +194,7 @@ class SwapOrderFormActions {
   final Function(String value) onAmountChanged;
   final Function(String value) onPriceChanged;
   final Function(RelativePriceValue value) onRelativePriceButtonClicked;
+  final Function(DateTime? date) onExpiryChanged;
 
   SwapOrderFormActions({
     required this.onSubmitClicked,
@@ -141,6 +203,7 @@ class SwapOrderFormActions {
     required this.onAmountChanged,
     required this.onPriceChanged,
     required this.onRelativePriceButtonClicked,
+    required this.onExpiryChanged,
   });
 }
 
@@ -224,6 +287,11 @@ class _SwapOrderFormProviderState extends State<SwapOrderFormProvider> {
                     builder: (context, state) {
                       return widget.child(
                         SwapOrderFormActions(
+                            onExpiryChanged: (value) {
+                              context
+                                  .read<SwapOrderFormBloc>()
+                                  .add(ExpiryChanged(value: value));
+                            },
                             onRelativePriceButtonClicked: (value) => context
                                 .read<SwapOrderFormBloc>()
                                 .add(RelativePriceButtonClicked(value: value)),
@@ -293,6 +361,16 @@ class SwapOrderForm extends StatelessWidget {
         // Replace with actual form layout
         Column(
           children: [
+            OrderBookView(
+              priceType: state.priceType,
+              priceString: state.priceString,
+              giveAsset: state.giveAsset,
+              getAsset: state.getAsset,
+              buyOrders: state.buyOrdersView,
+              sellOrders: state.sellOrdersView,
+            ),
+            commonHeightSizedBox,
+            commonHeightSizedBox,
             OrderInputs(
               actions: actions,
               state: state,
@@ -306,29 +384,16 @@ class SwapOrderForm extends StatelessWidget {
               buyOrders: state.buyOrdersView,
               sellOrders: state.sellOrdersView,
             ),
-            OrderBookView(
-              priceType: state.priceType,
-              priceString: state.priceString,
-              giveAsset: state.giveAsset,
-              getAsset: state.getAsset,
-              buyOrders: state.buyOrdersView,
-              sellOrders: state.sellOrdersView,
-            ),
+
+            commonHeightSizedBox,
+            ExpirySelector(onChange: (date) {
+              actions.onExpiryChanged(date);
+            }),
+            commonHeightSizedBox,
             Column(
               children: [
                 // chat i ned this text to be copyable
-                SelectableText(
-                    "give quantity normalized: ${state.giveQuantityInput.value.normalizedPretty()}",
-                    style: theme.textTheme.bodySmall),
-                SelectableText(
-                    "give quantity raw: ${state.giveQuantityInput.value.quantity}",
-                    style: theme.textTheme.bodySmall),
-                SelectableText(
-                    "get quantity normalized: ${state.getQuantityInput.value.normalizedPretty()}",
-                    style: theme.textTheme.bodySmall),
-                SelectableText(
-                    "get quantity raw: ${state.getQuantityInput.value.quantity}",
-                    style: theme.textTheme.bodySmall),
+
                 state.simulatedOrders.fold(
                     onInitial: () => const SizedBox.shrink(),
                     onLoading: () => const Center(
@@ -338,36 +403,78 @@ class SwapOrderForm extends StatelessWidget {
                     onRefreshing: (_) => const Center(
                           child: CircularProgressIndicator(),
                         ),
-                    onSuccess: (simulatedOrders) => Column(
-                        children: simulatedOrders
-                            .map((order) => switch (order) {
-                                  SimulatedOrderMatch(
-                                    give: final give,
-                                    get: final get
-                                  ) =>
-                                    SelectableText(
-                                        "match: give ${give.normalizedPretty()} ${state.giveAsset.displayName} / get ${get.normalized()} ${state.getAsset.displayName}",
-                                        style: theme.textTheme.bodySmall),
-                                  SimulatedOrderCreate(
-                                    give: final give,
-                                    get: final get
-                                  ) =>
-                                    SelectableText(
-                                        "match create: give ${give.normalizedPretty()} ${state.giveAsset.displayName} / get ${get.normalized()} ${state.getAsset.displayName}",
-                                        style: theme.textTheme.bodySmall),
-                                })
-                            .toList()))
+                    onSuccess: (orders) => Column(children: [
+                          ...orders.map((order) {
+                            return switch (order) {
+                              SimulatedOrderMatch(
+                                give: var give,
+                                get: var get
+                              ) =>
+                                Text(
+                                    "Match give: ${give.normalized()}, get: ${get.normalized()}"),
+                              SimulatedOrderCreate(
+                                give: var give,
+                                get: var get
+                              ) =>
+                                Text(
+                                    "Match give: ${give.normalized()}, get: ${get.normalized()}"),
+                            };
+                          }).toList()
+                        ])),
+                state.simulatedOrderSummary.fold(
+                    onInitial: () => const SizedBox.shrink(),
+                    onLoading: () => const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                    onFailure: (error) => Text(error.toString()),
+                    onRefreshing: (_) => const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                    onSuccess: (summary) => Column(children: [
+                          _SummaryRow(
+                            label: "Total Give",
+                            value: summary.totalGive.normalized(),
+                            theme: theme,
+                            error: switch (state.giveQuantityInput.error) {
+                              GiveQuantityInputError.insufficientBalance => "",
+                              _ => null,
+                            },
+                          ),
+                          _SummaryRow(
+                            label: "Total Get",
+                            value: summary.totalGet.normalized(),
+                            theme: theme,
+                          ),
+                          _SummaryRow(
+                            label: "Immediate",
+                            value: summary.getNow.normalized(),
+                            theme: theme,
+                          ),
+                          _SummaryRow(
+                            label: "Deferred",
+                            value: summary.getLater.normalized(),
+                            theme: theme,
+                          ),
+                          // CHAT: Help me polish this order UI
+                        ]))
               ],
             ),
 
             // Add more form fields as needed
           ],
         ),
+        Text(state.amountInput.error?.toString() ?? ""),
+        Text(state.priceInput.error?.toString() ?? ""),
+        Text(state.maxGiveQuantityInput.value.toString() ?? ""),
+        Text(state.maxGiveQuantityInput.error?.toString() ?? ""),
+        Text(state.getQuantityInput.error?.toString() ?? ""),
 
-        ElevatedButton(
-          onPressed: state.isValid ? actions.onSubmitClicked : null,
-          child: const Text("Submit Order"),
-        ),
+        HorizonButton(
+            disabled: state.isNotValid,
+            onPressed: () {
+              print("click");
+            },
+            child: TextButtonContent(value: "Continue")),
       ],
     );
   }
@@ -548,7 +655,7 @@ class _OrderInputs extends State<OrderInputs> {
                                                 fontSize: 12,
                                               )),
                                           height: 28,
-                                          borderRadius: 18,
+                                          borderRadius: 8,
                                           variant: ButtonVariant.black,
                                           onPressed: () {
                                             widget.actions
@@ -569,7 +676,7 @@ class _OrderInputs extends State<OrderInputs> {
                                                 fontSize: 12,
                                               )),
                                           height: 28,
-                                          borderRadius: 18,
+                                          borderRadius: 8,
                                           variant: ButtonVariant.black,
                                           onPressed: () {
                                             widget.actions
@@ -590,7 +697,7 @@ class _OrderInputs extends State<OrderInputs> {
                                                 fontSize: 12,
                                               )),
                                           height: 28,
-                                          borderRadius: 18,
+                                          borderRadius: 8,
                                           variant: ButtonVariant.black,
                                           onPressed: () {
                                             widget.actions
@@ -828,73 +935,66 @@ class OrderBookView extends StatelessWidget {
     final itemCount = 1 + sellOrders.length + 1 + buyOrders.length;
     final theme = Theme.of(context);
 
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(0, 32, 0, 0),
-          child: HorizonCard(
-            child: ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: itemCount,
-              itemBuilder: (context, index) {
-                if (index == 0) {
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                          child: Text("Price (${priceString.toUpperCase()})",
-                              textAlign: TextAlign.left,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: theme
-                                    .extension<CustomThemeExtension>()!
-                                    .mutedDescriptionTextColor,
-                              ))),
-                      Expanded(
-                          child: Text("Volume",
-                              textAlign: TextAlign.right,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: theme
-                                    .extension<CustomThemeExtension>()!
-                                    .mutedDescriptionTextColor,
-                              ))),
-                    ],
-                  );
-                }
+    return HorizonCard(
+      child: ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: itemCount,
+        itemBuilder: (context, index) {
+          if (index == 0) {
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                    child: Text("Price (${priceString.toUpperCase()})",
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: theme
+                              .extension<CustomThemeExtension>()!
+                              .mutedDescriptionTextColor,
+                        ))),
+                Expanded(
+                    child: Text("Volume",
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: theme
+                              .extension<CustomThemeExtension>()!
+                              .mutedDescriptionTextColor,
+                        ))),
+              ],
+            );
+          }
 
-                final buyCount = buyOrders.length;
-                final sellStartIndex = 1 + buyCount + 1;
+          final buyCount = buyOrders.length;
+          final sellStartIndex = 1 + buyCount + 1;
 
-                if (index == 1 + buyCount) {
-                  return const Divider();
-                }
+          if (index == 1 + buyCount) {
+            return const Divider();
+          }
 
-                if (index > 0 && index < 1 + buyCount) {
-                  final buy = buyOrders[index - 1];
-                  return _OrderRow(
-                    quantity: buy.quantity.normalized(precision: 8),
-                    price: priceType == PriceType.give
-                        ? buy.price.normalized(precision: 8)
-                        : buy.invertedPrice.normalized(precision: 8),
-                    color: Colors.red,
-                  );
-                }
+          if (index > 0 && index < 1 + buyCount) {
+            final buy = buyOrders[index - 1];
+            return _OrderRow(
+              quantity: buy.quantity.normalized(precision: 8),
+              price: priceType == PriceType.give
+                  ? buy.price.normalized(precision: 8)
+                  : buy.invertedPrice.normalized(precision: 8),
+              color: Colors.red,
+            );
+          }
 
-                final sell = sellOrders[index - sellStartIndex];
-                return _OrderRow(
-                  quantity: sell.quantity.normalized(precision: 8),
-                  price: priceType == PriceType.give
-                      ? sell.price.normalized(precision: 8)
-                      : sell.invertedPrice.normalized(precision: 8),
-                  color: Colors.green,
-                );
-              },
-            ),
-          ),
-        ),
-      ],
+          final sell = sellOrders[index - sellStartIndex];
+          return _OrderRow(
+            quantity: sell.quantity.normalized(precision: 8),
+            price: priceType == PriceType.give
+                ? sell.price.normalized(precision: 8)
+                : sell.invertedPrice.normalized(precision: 8),
+            color: Colors.green,
+          );
+        },
+      ),
     );
   }
 }

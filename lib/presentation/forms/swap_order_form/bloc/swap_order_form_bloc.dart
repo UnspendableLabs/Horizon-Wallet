@@ -18,6 +18,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/repositories/order_repository.dart';
 import 'package:horizon/common/constants.dart';
 
+class SimulatedOrderSummary {
+  AssetQuantity totalGive;
+  AssetQuantity getNow;
+  AssetQuantity getLater;
+
+  SimulatedOrderSummary(
+      {required this.totalGive, required this.getNow, required this.getLater});
+
+  AssetQuantity get totalGet => getNow + getLater;
+}
+
 Rational adjustForDivisibility(Rational amount,
     {required bool fromDivisible, required bool toDivisible}) {
   if (fromDivisible && !toDivisible) {
@@ -202,7 +213,10 @@ class SwapOrderFormModel with FormzMixin {
   final AmountInput amountInput;
   final PriceInput priceInput;
 
+  final Option<DateTime> expiry;
+
   const SwapOrderFormModel({
+    required this.expiry,
     required this.simulatedOrders,
     required this.giveAssetBalance,
     required this.amountInput,
@@ -217,9 +231,36 @@ class SwapOrderFormModel with FormzMixin {
     required this.priceType,
   });
 
-  AssetQuantity giveAssetQuantityWhenAmountGet({required Rational price}) {
-    // CHAT Help me finish this refactor
+  RemoteData<SimulatedOrderSummary> get simulatedOrderSummary {
+    if (amountInput.value.isEmpty || priceInput.value.isEmpty) {
+      return const Initial();
+    }
 
+    return simulatedOrders.map((orders) {
+      final totalGive = orders.fold(
+        AssetQuantity(divisible: giveAsset.divisible, quantity: BigInt.zero),
+        (prev, order) => prev + order.give,
+      );
+
+      final getNow = orders.whereType<SimulatedOrderMatch>().fold(
+            AssetQuantity(divisible: getAsset.divisible, quantity: BigInt.zero),
+            (prev, order) => prev + order.get,
+          );
+
+      final getCreate = orders.whereType<SimulatedOrderCreate>().fold(
+            AssetQuantity(divisible: getAsset.divisible, quantity: BigInt.zero),
+            (prev, order) => prev + order.get,
+          );
+
+      return SimulatedOrderSummary(
+        totalGive: totalGive,
+        getNow: getNow,
+        getLater: getCreate,
+      );
+    });
+  }
+
+  AssetQuantity giveAssetQuantityWhenAmountGet({required Rational price}) {
     try {
       final desiredGetAmount = toRawUnits(
         Rational.tryParse(amountInput.value) ?? Rational.zero,
@@ -264,7 +305,20 @@ class SwapOrderFormModel with FormzMixin {
     }
   }
 
-  GiveQuantityInput get giveQuantityInput => switch ((amountType, priceType)) {
+  GiveQuantityInput get giveQuantityInput {
+    final userBalance = AssetQuantity(
+        divisible: giveAsset.divisible,
+        quantity: BigInt.from(giveAssetBalance.quantity));
+
+    return simulatedOrderSummary.fold3(
+        onNone: () => GiveQuantityInput.pure(userBalance: userBalance),
+        onFailure: (_) => GiveQuantityInput.pure(userBalance: userBalance),
+        onReplete: (summary) => GiveQuantityInput.dirty(
+            value: summary.totalGive, userBalance: userBalance));
+  }
+
+  GiveQuantityInput get maxGiveQuantityInput =>
+      switch ((amountType, priceType)) {
         ((AmountType.give, _)) => GiveQuantityInput.dirty(
             value: AssetQuantity.fromNormalizedStringSafe(
                     divisible: giveAsset.divisible, input: amountInput.value)
@@ -398,23 +452,26 @@ class SwapOrderFormModel with FormzMixin {
 
   @override
   List<FormzInput> get inputs =>
-      [amountInput, priceInput, giveQuantityInput, getQuantityInput];
+      [amountInput, priceInput, getQuantityInput, giveQuantityInput];
 
-  SwapOrderFormModel copyWith(
-      {MultiAddressBalanceEntry? giveAssetBalance,
-      AmountInput? amountInput,
-      PriceInput? priceInput,
-      Asset? giveAsset,
-      Asset? getAsset,
-      List<Order>? buyOrders,
-      List<Order>? sellOrders,
-      AmountType? amountType,
-      PriceType? priceType,
-      GetQuantityInput? getQuantityInput,
-      RemoteData<List<SimulatedOrder>>? simulatedOrders}) {
+  SwapOrderFormModel copyWith({
+    MultiAddressBalanceEntry? giveAssetBalance,
+    AmountInput? amountInput,
+    PriceInput? priceInput,
+    Asset? giveAsset,
+    Asset? getAsset,
+    List<Order>? buyOrders,
+    List<Order>? sellOrders,
+    AmountType? amountType,
+    PriceType? priceType,
+    GetQuantityInput? getQuantityInput,
+    RemoteData<List<SimulatedOrder>>? simulatedOrders,
+    Option<DateTime>? expiry,
+  }) {
     return SwapOrderFormModel(
       // giveQuantityInput: giveQuantityInput ?? this.giveQuantityInput,
       // receiveQuantityInput: receiveQuantityInput ?? this.receiveQuantityInput,
+      expiry: expiry ?? this.expiry,
       simulatedOrders: simulatedOrders ?? this.simulatedOrders,
       giveAssetBalance: giveAssetBalance ?? this.giveAssetBalance,
       priceInput: priceInput ?? this.priceInput,
@@ -472,7 +529,7 @@ class SwapOrderFormModel with FormzMixin {
     }
 
     final error = amountType == AmountType.give
-        ? giveQuantityInput.error
+        ? maxGiveQuantityInput.error
         : getQuantityInput.error;
 
     return Option.fromNullable(error?.toString());
@@ -550,6 +607,12 @@ class PriceInputChanged extends SwapOrderFormEvent {
   const PriceInputChanged({required this.value});
 }
 
+class ExpiryChanged extends SwapOrderFormEvent {
+  final DateTime? value;
+
+  const ExpiryChanged({this.value});
+}
+
 class SimulatedOrdersRequested extends SwapOrderFormEvent {}
 
 class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
@@ -570,6 +633,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     OrderRepository? orderRepository,
   })  : _orderRepository = orderRepository ?? GetIt.I<OrderRepository>(),
         super(SwapOrderFormModel(
+            expiry: none(),
             giveAssetBalance: giveAssetBalance,
             amountInput: AmountInput.pure(),
             priceInput: PriceInput.pure(),
@@ -585,24 +649,27 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     on<AmountInputChanged>(_handleAmountInputChanged);
     on<PriceInputChanged>(_handlePriceInputChanged);
     on<RelativePriceButtonClicked>(_handleRelativePriceValueClicked);
-    on<SimulatedOrdersRequested>(_handleSimulateOrdersRequested
-        // transformer: debounce<SimulatedOrdersRequested>(
-        //     const Duration(milliseconds: 300)));
-        );
+    on<SimulatedOrdersRequested>(_handleSimulateOrdersRequested);
+    on<ExpiryChanged>(_handleExpiryChanged);
   }
 
   _handleRelativePriceValueClicked(
     RelativePriceButtonClicked event,
     Emitter<SwapOrderFormModel> emit,
   ) {
-    final floorOrder = state.buyOrders.firstOrNull;
+    final floorOrders = state.buyOrders
+      ..sort((a, b) => b.getPriceNormalized.compareTo(a.getPriceNormalized));
+
+    final floorOrder = floorOrders.firstOrNull;
+
     if (floorOrder == null) return;
 
-    final basePrice = floorOrder.giveRemaining / floorOrder.getRemaining;
-
     // Determine how to display the base price (inverted if get-denominated)
-    final displayPrice =
-        state.priceType == PriceType.give ? 1 / basePrice : basePrice;
+    final displayPrice = state.priceType == PriceType.give
+        ? Decimal.parse(floorOrder.getQuantityNormalized) /
+            Decimal.parse(floorOrder.giveQuantityNormalized)
+        : Decimal.parse(floorOrder.giveQuantityNormalized) /
+            Decimal.parse(floorOrder.getQuantityNormalized);
 
     final adjustmentFactor = switch ((event.value, state.priceType)) {
       (RelativePriceValue.floor, _) => 1.0,
@@ -613,10 +680,51 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
       (RelativePriceValue.plus3, PriceType.get) => 0.97,
       (RelativePriceValue.plus5, PriceType.get) => 0.95,
     };
+
+    final adjustmentFactorDecimal = Decimal.parse(adjustmentFactor.toString());
+
     add(PriceInputChanged(
-        value: (displayPrice * adjustmentFactor).toStringAsFixed(8)));
+        value: (displayPrice.toDecimal() * adjustmentFactorDecimal)
+            .toStringAsFixed(8)));
 
     // floor price
+  }
+  // _handleRelativePriceValueClicked(
+  //   RelativePriceButtonClicked event,
+  //   Emitter<SwapOrderFormModel> emit,
+  // ) {
+  //   final floorOrder = state.buyOrders.firstOrNull;
+  //   if (floorOrder == null) return;
+  //
+  //   final basePrice = floorOrder.giveRemaining / floorOrder.getRemaining;
+  //
+  //   // Determine how to display the base price (inverted if get-denominated)
+  //   final displayPrice =
+  //       state.priceType == PriceType.give ? 1 / basePrice : basePrice;
+  //
+  //   final adjustmentFactor = switch ((event.value, state.priceType)) {
+  //     (RelativePriceValue.floor, _) => 1.0,
+  //     (RelativePriceValue.plus1, PriceType.give) => 1.01,
+  //     (RelativePriceValue.plus3, PriceType.give) => 1.03,
+  //     (RelativePriceValue.plus5, PriceType.give) => 1.05,
+  //     (RelativePriceValue.plus1, PriceType.get) => 0.99,
+  //     (RelativePriceValue.plus3, PriceType.get) => 0.97,
+  //     (RelativePriceValue.plus5, PriceType.get) => 0.95,
+  //   };
+  //   add(PriceInputChanged(
+  //       value: (displayPrice * adjustmentFactor).toStringAsFixed(8)));
+  //
+  //   // floor price
+  // }
+
+  _handleExpiryChanged(
+    ExpiryChanged event,
+    Emitter<SwapOrderFormModel> emit,
+  ) {
+    Option<DateTime> expiry =
+        event.value != null ? Option.of(event.value!) : const Option.none();
+
+    emit(state.copyWith(expiry: expiry));
   }
 
   _handlePriceInputChanged(
@@ -744,7 +852,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
             .toList();
         print("📊 Filtered buyOrders=${buyOrdersFiltered.length}");
 
-        BigInt tx1GiveQuantity = state.giveQuantityInput.value.quantity;
+        BigInt tx1GiveQuantity = state.maxGiveQuantityInput.value.quantity;
         BigInt tx1GetQuantity = state.getQuantityInput.value.quantity;
 
         BigInt tx1GiveRemaining = tx1GiveQuantity;
