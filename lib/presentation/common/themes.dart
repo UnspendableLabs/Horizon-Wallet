@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 
@@ -323,9 +324,11 @@ ThemeData buildDarkTheme() {
         fontFamily: 'Montserrat',
       ),
     ),
-    extensions: const {
+    extensions: [
       CustomThemeExtension.dark,
-    },
+      WoltModalSheetThemeData(
+        backgroundColor: grey5,
+      )
+    ],
   );
 }
-

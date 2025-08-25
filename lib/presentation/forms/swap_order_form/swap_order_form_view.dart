@@ -24,6 +24,7 @@ import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:group_button/group_button.dart';
 
 import 'package:horizon/presentation/common/colors.dart';
+import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:flutter/material.dart';
 
@@ -378,15 +379,51 @@ class SwapOrderForm extends StatelessWidget {
         // Replace with actual form layout
         Column(
           children: [
-            OrderBookView(
-              priceType: state.priceType,
-              priceString: state.priceString,
-              giveAsset: state.giveAsset,
-              getAsset: state.getAsset,
-              buyOrders: state.buyOrdersView,
-              sellOrders: state.sellOrdersView,
+            Row(
+              children: [
+                TextButton(
+                  onPressed: () async {
+                    await WoltModalSheet.show(
+                        context: context,
+                        modalTypeBuilder: (_) => WoltModalType.bottomSheet(),
+                        pageListBuilder: (bottomSheetContext) => [
+                              WoltModalSheetPage(
+                                trailingNavBarWidget: TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: AppIcons.closeIcon(
+                                    context: context,
+                                    width: 24,
+                                    height: 24,
+                                  ),
+                                ),
+                                hasTopBarLayer: false,
+                                child: OrderBookView(
+                                  priceType: state.priceType,
+                                  priceString: state.priceString,
+                                  giveAsset: state.giveAsset,
+                                  getAsset: state.getAsset,
+                                  buyOrders: state.buyOrdersView,
+                                  sellOrders: state.sellOrdersView,
+                                ),
+                              )
+                            ]);
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 8.0, 0, 8.0),
+                    child: Text("View Order Book",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: theme
+                              .extension<CustomThemeExtension>()!
+                              .inputTextColor,
+                        )),
+                  ),
+                ),
+              ],
             ),
-            commonHeightSizedBox,
+
             commonHeightSizedBox,
             OrderInputs(
               actions: actions,
@@ -403,9 +440,11 @@ class SwapOrderForm extends StatelessWidget {
             ),
 
             commonHeightSizedBox,
+            commonHeightSizedBox,
             ExpirySelector(onChange: (date) {
               actions.onExpiryChanged(date);
             }),
+            commonHeightSizedBox,
             commonHeightSizedBox,
             Column(
               children: [
@@ -656,6 +695,7 @@ class _OrderInputs extends State<OrderInputs> {
                   ],
                 ),
               ),
+              commonHeightSizedBox,
               commonHeightSizedBox,
               // Text(state.amountInputError.fold(() => "", (a) => a)),
               Padding(
@@ -973,7 +1013,23 @@ class OrderBookView extends StatelessWidget {
     final itemCount = 1 + sellOrders.length + 1 + buyOrders.length;
     final theme = Theme.of(context);
 
-    return HorizonCard(
+    if (sellOrders.isEmpty && buyOrders.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Center(
+          child: Text(
+              "No open orders for ${giveAsset.displayName}/${getAsset.displayName}",
+              style: theme.textTheme.bodyMedium!.copyWith(
+                color: theme
+                    .extension<CustomThemeExtension>()!
+                    .mutedDescriptionTextColor,
+              )),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
       child: ListView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
