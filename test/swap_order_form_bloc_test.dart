@@ -129,6 +129,50 @@ class TestCase {
   )""";
 }
 
+List<TestCase> additionalTestCases() {
+  return [
+    TestCase(
+      description: "simulate observed xcp / gerper issue",
+      priceType: PriceType.give,
+      amountType: AmountType.give,
+      priceInput: "1.25", // at a max price of 1.25 xcp per gerper
+      amountInput: "9", // i want to spend 9 xcp
+      getDivisible: false,
+      giveDivisible: true,
+      sellOrders: [],
+      buyOrders: [
+        FakeOrder(
+            giveQuantity: 2,
+            getQuantity: 200000000,
+            giveRemaining: 2,
+            getRemaining: 200000000),
+        FakeOrder(
+            giveQuantity: 10,
+            giveRemaining: 10,
+            getQuantity: 1250000000,
+            getRemaining: 1250000000)
+      ],
+      expectedOrders: [
+        SimulatedOrderMatch(
+            give:
+                AssetQuantity(divisible: true, quantity: BigInt.from(2 * 10e7)),
+            get: AssetQuantity(divisible: false, quantity: BigInt.from(2))),
+
+        SimulatedOrderMatch(
+            give: AssetQuantity(
+                divisible: true, quantity: BigInt.from(6.25 * 10e7)),
+            get: AssetQuantity(divisible: false, quantity: BigInt.from(5))),
+
+        SimulatedOrderCreate(
+            give: AssetQuantity(divisible: true, quantity: BigInt.from(.75)),
+            get: AssetQuantity(divisible: false, quantity: BigInt.from(1))),
+
+        /// ????
+      ],
+    )
+  ];
+}
+
 List<TestCase> generateTestCases() {
   return [
     TestCase(
@@ -2914,7 +2958,7 @@ class FakeOrder extends Fake implements Order {
 
 void main() {
   group('SwapOrderFormBloc - Order Matching', () {
-    final allTestCases = generateTestCases();
+    final allTestCases = [...generateTestCases()];
 
     for (final testCase in allTestCases) {
       blocTest<SwapOrderFormBloc, SwapOrderFormModel>(
@@ -2966,7 +3010,8 @@ void main() {
 
               print("expected: ${testCase.expectedOrders}");
               print("  actual: $actual");
-              expect(actual, equalsSimulatedOrders(testCase.expectedOrders));
+              expect(actual.orders,
+                  equalsSimulatedOrders(testCase.expectedOrders));
             },
             orElse: () => fail(
                 'Expected success with orders but got: ${state.simulatedOrders}'),

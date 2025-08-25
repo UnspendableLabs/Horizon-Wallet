@@ -283,10 +283,14 @@ class SwapOrderFormModel with FormzMixin {
         if (totalGet >= desiredGetAmount) {
           break;
         }
+
+        print(
+            "giveAssetQUantityWHenAmontGet ${order.getQuantity}; ${order.giveQuantity}");
         final matchPrice =
             Rational.fromInt(order.getQuantity, order.giveQuantity);
 
-        final orderGiveRemaining = Rational(BigInt.from(order.giveRemaining));
+        final orderGiveRemaining = Rational(
+            BigInt.tryParse(order.giveRemaining.toString()) ?? BigInt.zero);
 
         final getAmount = rationalMinList(
             [orderGiveRemaining, (desiredGetAmount - totalGet)]);
@@ -380,6 +384,11 @@ class SwapOrderFormModel with FormzMixin {
     Rational totalGet = Rational.zero;
     Rational totalGive = Rational.zero;
 
+    if (price <= Rational.zero || giveAmount <= Rational.zero) {
+      return AssetQuantity(
+          divisible: getAsset.divisible, quantity: BigInt.zero);
+    }
+
     for (final order in buyOrders) {
       if (totalGive >= giveAmount) break;
 
@@ -416,7 +425,12 @@ class SwapOrderFormModel with FormzMixin {
   }
 
   AssetQuantity get getAssetQuantityWhenAmountGiveAndPriceGet {
-    Rational price = Rational.parse(priceInput.value);
+    Rational price = Rational.tryParse(priceInput.value) ?? Rational.zero;
+
+    if (price == Rational.zero) {
+      return AssetQuantity(
+          divisible: getAsset.divisible, quantity: BigInt.zero);
+    }
 
     Rational giveAmount = toRawUnits(
         Rational.tryParse(amountInput.value) ?? Rational.zero,
@@ -742,6 +756,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     final priceInput = PriceInput.dirty(value: event.value);
 
     emit(state.copyWith(
+      simulatedOrders: const Initial(),
       priceInput: priceInput,
     ));
 
@@ -758,6 +773,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
 
     emit(state.copyWith(
       amountInput: amountInput,
+      simulatedOrders: const Initial(),
     ));
 
     add(SimulatedOrdersRequested());
@@ -769,6 +785,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
   ) {
     emit(
       state.copyWith(
+          simulatedOrders: const Initial(),
           amountType: state.amountType == AmountType.give
               ? AmountType.get
               : AmountType.give,
@@ -782,6 +799,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
   ) {
     emit(
       state.copyWith(
+        simulatedOrders: const Initial(),
         priceInput: PriceInput.pure(),
         priceType:
             state.priceType == PriceType.give ? PriceType.get : PriceType.give,
@@ -884,7 +902,6 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
 
           print("➡️ Candidate order: giveRemaining=$tx0GiveRemaining, "
               "price=$tx0Price vs tx1InversePrice=$tx1InversePrice");
-
           if (tx0Price > tx1InversePrice) {
             print("⏭️ Skipping order (tx0Price > tx1InversePrice)");
             continue;

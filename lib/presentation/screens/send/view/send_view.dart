@@ -366,7 +366,7 @@ class _SendViewState extends State<SendView> {
                           children: [
                             IconButton(
                               onPressed: () {
-                                context.go("/dashboard");
+                                context.go("/");
                               },
                               icon: AppIcons.closeIcon(
                                 context: context,

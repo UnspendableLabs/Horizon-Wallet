@@ -215,7 +215,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
               child: FlowStep(
             trailing: IconButton(
               onPressed: () {
-                context.go("/dashboard");
+                context.go("/");
               },
               icon: AppIcons.closeIcon(
                 context: context,
@@ -538,7 +538,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                                 ),
                           IconButton(
                             onPressed: () {
-                              context.go("/dashboard");
+                              context.go("/");
                             },
                             icon: AppIcons.closeIcon(
                               context: context,
@@ -721,7 +721,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                             onNone: () => () {},
                             onFailure: (_) => () {},
                             onReplete: (hash) => () {
-                                  context.go("/dashboard");
+                                  context.go("/");
                                 }),
                         child: TextButtonContent(value: "Close"),
                         disabled: state.fold3(

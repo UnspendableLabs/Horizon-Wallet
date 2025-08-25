@@ -166,7 +166,7 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
               child: FlowStep(
             trailing: IconButton(
               onPressed: () {
-                context.go("/dashboard");
+                context.go("/");
               },
               icon: AppIcons.closeIcon(
                 context: context,
@@ -227,7 +227,7 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
                   ),
                   trailing: IconButton(
                     onPressed: () {
-                      context.go("/dashboard");
+                      context.go("/");
                     },
                     icon: AppIcons.closeIcon(
                       context: context,
@@ -255,7 +255,7 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
               child: FlowStep(
                   trailing: IconButton(
                     onPressed: () {
-                      context.go("/dashboard");
+                      context.go("/");
                     },
                     icon: AppIcons.closeIcon(
                       context: context,
@@ -407,7 +407,7 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
                                       ),
                                 IconButton(
                                   onPressed: () {
-                                    context.go("/dashboard");
+                                    context.go("/");
                                   },
                                   icon: AppIcons.closeIcon(
                                     context: context,
@@ -602,7 +602,7 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
                                   onNone: () => () {},
                                   onFailure: (_) => () {},
                                   onReplete: (hash) => () {
-                                        context.go("/dashboard");
+                                        context.go("/");
                                       }),
                               child: TextButtonContent(value: "Close"),
                               disabled: state.fold3(

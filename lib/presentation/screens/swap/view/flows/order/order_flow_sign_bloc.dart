@@ -182,19 +182,24 @@ class OrderComposeFormBloc
 
     final task = TaskEither<String, ComposeOrderResponse>.Do(($) async {
       final composeResponse = $(composeTransactionUseCase.callT(
-        feeRate: state
-            .getSatsPerVByte, // this is already defined on TransactionFormModelBase
-        source: state.sourceAddress,
-        params: ComposeOrderParams(
+          feeRate: state
+              .getSatsPerVByte, // this is already defined on TransactionFormModelBase
           source: state.sourceAddress,
-          giveAsset: state.giveAsset,
-          giveQuantity: state.giveQuantity.quantity.toInt(),
-          getAsset: state.getAsset,
-          getQuantity: state.getQuantity.quantity.toInt(),
-        ),
-        composeFn: composeRepository.composeOrder,
-        httpConfig: httpConfig,
-      ));
+          params: ComposeOrderParams(
+            source: state.sourceAddress,
+            giveAsset: state.giveAsset,
+            giveQuantity: state.giveQuantity.quantity.toInt(),
+            getAsset: state.getAsset,
+            getQuantity: state.getQuantity.quantity.toInt(),
+          ),
+          composeFn: composeRepository.composeOrder,
+          httpConfig: httpConfig,
+          onError: (error, _) {
+            if (error is ComposeTransactionException) {
+              return error.message;
+            }
+            return error.toString();
+          }));
 
       return composeResponse;
     });

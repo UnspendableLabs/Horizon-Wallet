@@ -492,10 +492,11 @@ class SwapOrderForm extends StatelessWidget {
         // Text(state.getQuantityInput.error?.toString() ?? ""),
 
         HorizonButton(
-            disabled: state.simulatedOrders.maybeWhen(
-              onSuccess: (_) => false,
-              orElse: () => true,
-            ),
+            disabled: state.isNotValid ||
+                state.simulatedOrders.maybeWhen(
+                  onSuccess: (_) => false,
+                  orElse: () => true,
+                ),
             onPressed: () {
               final cb = state.simulatedOrders.maybeWhen(
                 onSuccess: (simulatedOrders) {
@@ -655,7 +656,8 @@ class _OrderInputs extends State<OrderInputs> {
                   ],
                 ),
               ),
-              Text(state.amountInputError.fold(() => "", (a) => a)),
+              commonHeightSizedBox,
+              // Text(state.amountInputError.fold(() => "", (a) => a)),
               Padding(
                 padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
                 child: Column(

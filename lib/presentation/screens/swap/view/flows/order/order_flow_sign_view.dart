@@ -143,8 +143,8 @@ class _OrderFlowSignViewState extends State<OrderFlowSignView> {
             Row(
               children: [
                 QuantityText(
-                    quantity: widget.state.giveQuantity
-                        .normalizedPretty(precision: 8),
+                    quantity:
+                        widget.state.giveQuantity.normalized(precision: 8),
                     style: const TextStyle(fontSize: 16)),
                 const SizedBox(width: 8),
                 appIcons.assetIcon(
@@ -162,8 +162,7 @@ class _OrderFlowSignViewState extends State<OrderFlowSignView> {
             Row(
               children: [
                 QuantityText(
-                    quantity:
-                        widget.state.getQuantity.normalizedPretty(precision: 8),
+                    quantity: widget.state.getQuantity.normalized(precision: 8),
                     style: const TextStyle(fontSize: 16)),
                 const SizedBox(width: 8),
                 appIcons.assetIcon(
@@ -198,7 +197,14 @@ class _OrderFlowSignViewState extends State<OrderFlowSignView> {
             onPressed: () {
               widget.actions.onSubmitClicked();
             },
-            child: TextButtonContent(value: "Sign and Submit"))
+            child: TextButtonContent(value: "Sign and Submit")),
+        commonHeightSizedBox,
+        widget.state.error.fold(
+            () => SizedBox.shrink(),
+            (error) => Text(
+                  error,
+                  style: theme.textTheme.bodyMedium?.copyWith(color: red1),
+                ))
       ],
     );
   }

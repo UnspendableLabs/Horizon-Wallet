@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import "package:equatable/equatable.dart";
 import 'package:horizon/domain/entities/compose_fn.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
@@ -67,6 +68,12 @@ class ComposeTransactionUseCase {
       final R finalTx =
           await composeFn(feeRate, inputsSetForTx, params, httpConfig);
       return finalTx;
+    } on DioException catch (e) {
+      if (e.response?.data != null && e.response?.data["error"] != null) {
+        throw Exception(e.response?.data["error"]);
+      } else {
+        rethrow;
+      }
     } catch (e, stackTrace) {
       throw ComposeTransactionException(e.toString(), stackTrace);
     }
@@ -111,13 +118,13 @@ class ComposeTransactionUseCase {
   }
 
   TaskEither<String, R>
-      callT<P extends ComposeParams, R extends ComposeResponse>({
-    required num feeRate,
-    required String source,
-    required P params,
-    required ComposeFunction<P, R> composeFn,
-    required HttpConfig httpConfig,
-  }) {
+      callT<P extends ComposeParams, R extends ComposeResponse>(
+          {required num feeRate,
+          required String source,
+          required P params,
+          required ComposeFunction<P, R> composeFn,
+          required HttpConfig httpConfig,
+          String Function(Object error, StackTrace callstack)? onError}) {
     return TaskEither.tryCatch(
         () => call(
               feeRate: feeRate,
@@ -126,6 +133,6 @@ class ComposeTransactionUseCase {
               composeFn: composeFn,
               httpConfig: httpConfig,
             ),
-        (error, _) => error.toString());
+        onError ?? (e, _) => e.toString());
   }
 }
