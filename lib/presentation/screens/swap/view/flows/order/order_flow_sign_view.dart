@@ -138,8 +138,13 @@ class _OrderFlowSignViewState extends State<OrderFlowSignView> {
 
     return Column(
       children: [
+        Row(
+          children: [
+            _renderProperty("Transaction Type", "Open Limit Order"),
+          ],
+        ),
         _renderPropertyWidget(
-            "Give quantity",
+            "Sell",
             Row(
               children: [
                 QuantityText(
@@ -158,11 +163,13 @@ class _OrderFlowSignViewState extends State<OrderFlowSignView> {
               ],
             )),
         _renderPropertyWidget(
-            "Get quantity",
+            "Get",
             Row(
               children: [
                 QuantityText(
-                    quantity: widget.state.getQuantity.normalized(precision: 8),
+                    quantity:
+                        (widget.state.giveQuantity / widget.state.getQuantity)
+                            .normalized(precision: 8),
                     style: const TextStyle(fontSize: 16)),
                 const SizedBox(width: 8),
                 appIcons.assetIcon(
@@ -171,6 +178,10 @@ class _OrderFlowSignViewState extends State<OrderFlowSignView> {
                     assetName: widget.state.getAsset,
                     width: 12,
                     height: 12),
+                const SizedBox(width: 4),
+                Text(widget.state.giveAsset),
+                const SizedBox(width: 4),
+                Text("/"),
                 const SizedBox(width: 4),
                 Text(widget.state.getAsset),
               ],

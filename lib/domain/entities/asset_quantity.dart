@@ -60,6 +60,10 @@ class AssetQuantity extends Equatable {
   String normalizedPretty({int precision = 8}) {
     return normalized(precision: precision).replaceFirst(RegExp(r'\.?0*$'), '');
   }
+
+  AssetQuantity map(BigInt Function(BigInt) f) {
+    return AssetQuantity(divisible: divisible, quantity: f(quantity));
+  }
 }
 
 extension AssetQuantityOperators on AssetQuantity {

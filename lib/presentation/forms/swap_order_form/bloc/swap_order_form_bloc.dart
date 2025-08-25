@@ -329,6 +329,41 @@ class SwapOrderFormModel with FormzMixin {
             value: summary.summary.totalGive, userBalance: userBalance));
   }
 
+  // GetQuantityInput get getQuantityInputActual {
+  //   final give = giveQuantityInput.value;
+  //   final price = Rational.tryParse(priceInput.value);
+  //
+  //   print("getQuantityInputActual $price");
+  //
+  //   if (price == null || price == Rational.zero) {
+  //     return GetQuantityInput.pure(divisible: getAsset.divisible);
+  //   }
+  //   // priceType.get  means price is "getAsset / giveAsset"
+  //   final Rational getQty = switch (priceType) {
+  //     PriceType.give => Rational(give.quantity) / price,
+  //     PriceType.get => Rational(give.quantity) * price,
+  //   };
+  //
+  //   final x = GetQuantityInput.dirty(
+  //     value: AssetQuantity(
+  //       divisible: getAsset.divisible,
+  //       quantity: adjustForDivisibility(
+  //         getQty,
+  //         fromDivisible: giveAsset.divisible,
+  //         toDivisible: getAsset.divisible,
+  //       ).toBigInt(),
+  //     ),
+  //   );
+  //
+  //   print("\n\n\n");
+  //   print("give: $give");
+  //   print("price: $price");
+  //   print(x.value);
+  //   print(x.value.normalized(precision: 8));
+  //
+  //   return x;
+  // }
+
   GiveQuantityInput get maxGiveQuantityInput =>
       switch ((amountType, priceType)) {
         ((AmountType.give, _)) => GiveQuantityInput.dirty(

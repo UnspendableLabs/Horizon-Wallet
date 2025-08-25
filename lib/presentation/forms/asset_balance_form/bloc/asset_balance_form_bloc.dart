@@ -171,7 +171,6 @@ class AssetBalanceFormBloc
     Emitter<AssetBalanceFormModel> emit,
   ) async {
     emit(state.copyWith(utxoSwapMap: const Loading()));
-
     final task = TaskEither<String, Map<String, bool>>.Do(($) async {
       final tasks = event.addresses.map((address) {
         return _atomicSwapRepository.getUtxoSwapMapT(

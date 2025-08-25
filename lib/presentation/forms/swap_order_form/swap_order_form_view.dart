@@ -448,35 +448,6 @@ class SwapOrderForm extends StatelessWidget {
             commonHeightSizedBox,
             Column(
               children: [
-                // chat i ned this text to be copyable
-
-                // state.simulatedOrders.fold(
-                //     onInitial: () => const SizedBox.shrink(),
-                //     onLoading: () => const Center(
-                //           child: CircularProgressIndicator(),
-                //         ),
-                //     onFailure: (error) => Text(error.toString()),
-                //     onRefreshing: (_) => const Center(
-                //           child: CircularProgressIndicator(),
-                //         ),
-                //     onSuccess: (orders) => Column(children: [
-                //           ...orders.map((order) {
-                //             return switch (order) {
-                //               SimulatedOrderMatch(
-                //                 give: var give,
-                //                 get: var get
-                //               ) =>
-                //                 Text(
-                //                     "Match give: ${give.normalized()}, get: ${get.normalized()}"),
-                //               SimulatedOrderCreate(
-                //                 give: var give,
-                //                 get: var get
-                //               ) =>
-                //                 Text(
-                //                     "Match give: ${give.normalized()}, get: ${get.normalized()}"),
-                //             };
-                //           }).toList()
-                //         ])),
                 state.simulatedOrders.fold(
                     onInitial: () => const SizedBox.shrink(),
                     onLoading: () => const Center(

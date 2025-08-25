@@ -5,6 +5,11 @@ import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 
+class MultiAddressBalanceEntryFilter {
+  bool Function(MultiAddressBalanceEntry entry) filterFn;
+  MultiAddressBalanceEntryFilter({required this.filterFn});
+}
+
 class MultiAddressBalanceDropdown extends StatelessWidget {
   final MultiAddressBalance? balances;
   final void Function(MultiAddressBalanceEntry?) onChanged;
