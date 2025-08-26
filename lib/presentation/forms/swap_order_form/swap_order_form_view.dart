@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:horizon/common/constants.dart';
+import 'package:rational/rational.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:horizon/presentation/common/expiry_selector.dart';
@@ -459,7 +461,12 @@ class SwapOrderForm extends StatelessWidget {
                         ),
                     onSuccess: (simulatedOrders) => Column(children: [
                           _SummaryRow(
-                            label: "Total Give",
+                            label: "Receive",
+                            value: simulatedOrders.summary.getNow.normalized(),
+                            theme: theme,
+                          ),
+                          _SummaryRow(
+                            label: "Spend",
                             value:
                                 simulatedOrders.summary.totalGive.normalized(),
                             theme: theme,
@@ -469,22 +476,17 @@ class SwapOrderForm extends StatelessWidget {
                             },
                           ),
                           _SummaryRow(
-                            label: "Total Get",
+                            label: "Escrowed",
                             value:
-                                simulatedOrders.summary.totalGet.normalized(),
+                                simulatedOrders.summary.giveEscrow.normalized(),
                             theme: theme,
                           ),
-                          _SummaryRow(
-                            label: "Immediate",
-                            value: simulatedOrders.summary.getNow.normalized(),
-                            theme: theme,
-                          ),
-                          _SummaryRow(
-                            label: "Deferred",
-                            value:
-                                simulatedOrders.summary.getLater.normalized(),
-                            theme: theme,
-                          ),
+                          // _SummaryRow(
+                          //   label: "Deferred",
+                          //   value:
+                          //       simulatedOrders.summary.getLater.normalized(),
+                          //   theme: theme,
+                          // ),
                           // CHAT: Help me polish this order UI
                         ]))
               ],
@@ -495,11 +497,6 @@ class SwapOrderForm extends StatelessWidget {
             // Add more form fields as needed
           ],
         ),
-        // Text(state.amountInput.error?.toString() ?? ""),
-        // Text(state.priceInput.error?.toString() ?? ""),
-        // Text(state.maxGiveQuantityInput.value.toString() ?? ""),
-        // Text(state.maxGiveQuantityInput.error?.toString() ?? ""),
-        // Text(state.getQuantityInput.error?.toString() ?? ""),
 
         HorizonButton(
             disabled: state.isNotValid ||
@@ -512,7 +509,10 @@ class SwapOrderForm extends StatelessWidget {
                 onSuccess: (simulatedOrders) {
                   return () => actions.onSubmitClicked(SubmitParams(
                         giveQuantity: state.giveQuantityInput.value,
-                        getQuantity: state.getQuantityInput.value,
+                        getQuantity: AssetQuantity(
+                            quantity:
+                                state.getQuantityInputRational.value.toBigInt(),
+                            divisible: state.getAsset.divisible),
                         simulatedOrders: simulatedOrders,
                       ));
                 },
@@ -573,14 +573,6 @@ class _OrderInputs extends State<OrderInputs> {
     _amountController = TextEditingController();
     _limitPriceController = TextEditingController();
   }
-
-  // @override
-  // void didChangeDependencies() {
-  //   super.didChangeDependencies();
-  //   _amountController.text = widget.state.amountInput.value.normalizedPretty();
-  //   _limitPriceController.text =
-  //       widget.state.priceInput.value.normalizedPretty();
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -643,6 +635,9 @@ class _OrderInputs extends State<OrderInputs> {
                         ),
                       ],
                     ),
+                    Text(widget.state.getQuantityInputRational.error
+                            ?.toString() ??
+                        ""),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -1041,21 +1036,46 @@ class OrderBookView extends StatelessWidget {
 
           if (index > 0 && index < 1 + buyCount) {
             final buy = buyOrders[index - 1];
+
+            print("buy price: ${buy.price}, inverted: ${buy.invertedPrice}");
+
             return _OrderRow(
               quantity: buy.quantity.normalized(precision: 8),
               price: priceType == PriceType.give
                   ? buy.price.normalized(precision: 8)
-                  : buy.invertedPrice.normalized(precision: 8),
+                  // when get asset is not divisible we have to normalize the price
+                  : switch ((giveAsset.divisible, getAsset.divisible)) {
+                      (true, false) => (Rational(buy.invertedPrice.quantity) /
+                              TenToTheEigth.rational)
+                          .toDouble()
+                          .toString(),
+                      (false, true) => (Rational(buy.invertedPrice.quantity) *
+                              TenToTheEigth.rational)
+                          .toDouble()
+                          .toString(),
+                      _ => buy.invertedPrice.normalized(precision: 8),
+                    },
               color: Colors.red,
             );
           }
 
+          // TODO: i need to verify this
           final sell = sellOrders[index - sellStartIndex];
           return _OrderRow(
             quantity: sell.quantity.normalized(precision: 8),
             price: priceType == PriceType.give
                 ? sell.price.normalized(precision: 8)
-                : sell.invertedPrice.normalized(precision: 8),
+                : switch ((getAsset.divisible, giveAsset.divisible)) {
+                    (true, false) => (Rational(sell.invertedPrice.quantity) /
+                            TenToTheEigth.rational)
+                        .toDouble()
+                        .toString(),
+                    (false, true) => (Rational(sell.invertedPrice.quantity) *
+                            TenToTheEigth.rational)
+                        .toDouble()
+                        .toString(),
+                    _ => sell.invertedPrice.normalized(precision: 8),
+                  },
             color: Colors.green,
           );
         },

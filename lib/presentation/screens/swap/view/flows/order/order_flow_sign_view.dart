@@ -163,7 +163,7 @@ class _OrderFlowSignViewState extends State<OrderFlowSignView> {
               ],
             )),
         _renderPropertyWidget(
-            "Get",
+            "Price",
             Row(
               children: [
                 QuantityText(
