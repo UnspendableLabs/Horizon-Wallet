@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:horizon/domain/entities/action.dart' as URLAction;
 import 'package:horizon/domain/entities/failure.dart';
@@ -48,6 +49,7 @@ import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_c
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
 import 'package:horizon/presentation/screens/privacy_policy.dart';
 import 'package:horizon/presentation/screens/settings/settings_view.dart';
+import 'package:horizon/presentation/screens/tools/tools_view.dart';
 import 'package:horizon/presentation/screens/settings/sub_settings_view.dart';
 import 'package:horizon/presentation/screens/tos.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
@@ -175,16 +177,16 @@ class BottomTabNavigation extends StatelessWidget {
           _buildTab(
             context,
             index: 1,
-            selected: currentIndex == 1,
-            icon: AppIcons.settingsIcon(context: context),
+            selected: false,
+            icon: AppIcons.settingsIcon(context: context, color: Colors.grey),
             label: 'Settings',
             isDarkTheme: isDarkTheme,
           ),
           _buildTab(
             context,
             index: 2,
-            selected: currentIndex == 2,
-            icon: AppIcons.plusIcon(context: context),
+            selected: false,
+            icon: AppIcons.wrenchIcon(context: context, color: Colors.grey),
             label: 'Tools',
             isDarkTheme: isDarkTheme,
           ),
@@ -526,7 +528,7 @@ class AppRouter {
             GoRoute(
               path: "/tools",
               builder: (context, state) => const Scaffold(
-                body: Scaffold(body: Text("tools")),
+                body: ToolsView(),
                 // bottomNavigationBar: BottomTabNavigation(
                 //   currentIndex: 2,
                 // ),

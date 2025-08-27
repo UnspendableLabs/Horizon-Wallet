@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:horizon/presentation/forms/asset_balance_form/bloc/asset_balance_form_bloc.dart';
 import 'package:flutter/services.dart';
 import 'package:horizon/presentation/common/transactions/success_animation.dart';
 import 'package:horizon/presentation/common/transactions/transaction_error.dart';
@@ -123,6 +124,7 @@ class _OrderFlowViewState extends State<OrderFlowView> {
                 title: "Open Order",
                 widthFactor: .4,
                 body: AssetBalanceFormProvider(
+                    disallowSelections: const [DisallowSelection.balanceIsUtxo],
                     multiAddressBalance: widget.giveBalance,
                     addresses: widget.addresses.map((e) => e.address).toList(),
                     httpConfig: session.httpConfig,

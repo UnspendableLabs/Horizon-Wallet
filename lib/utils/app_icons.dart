@@ -36,6 +36,7 @@ class AppIcons {
   }
 
   static const String _iconPath = kDebugMode ? '/icons' : 'assets/icons';
+  static const String wrench = '$_iconPath/wrench.svg';
   static const String receive = '$_iconPath/receive.svg';
   static const String send = '$_iconPath/send.svg';
   static const String swap = '$_iconPath/swap.svg';
@@ -81,6 +82,9 @@ class AppIcons {
   static const String arrowDown = '$_iconPath/arrow_down.svg';
   static const String plusCircle = '$_iconPath/plus_circle.svg';
   static const String successCheck = '$_iconPath/txn_success_check.svg';
+  static const String cleaningBrush = '$_iconPath/cleaning_brush.svg';
+  static const String handCoins = '$_iconPath/hand_coins.svg';
+  static const String filePen = '$_iconPath/file_pen.svg';
 
   static Widget getIcon(
     String iconPath, {
@@ -114,6 +118,23 @@ class AppIcons {
     );
   }
 
+  static Widget wrenchIcon({
+    required BuildContext context,
+    double? width,
+    double? height,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      wrench,
+      context: context,
+      width: width,
+      height: height,
+      color: color,
+      fit: fit,
+    );
+  }
+
   static Widget receiveIcon({
     required BuildContext context,
     double? width,
@@ -123,6 +144,57 @@ class AppIcons {
   }) {
     return getIcon(
       receive,
+      context: context,
+      width: width,
+      height: height,
+      color: color,
+      fit: fit,
+    );
+  }
+
+  static Widget cleaningBrushIcon({
+    required BuildContext context,
+    double? width,
+    double? height,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      cleaningBrush,
+      context: context,
+      width: width,
+      height: height,
+      color: color,
+      fit: fit,
+    );
+  }
+
+  static Widget filePenIcon({
+    required BuildContext context,
+    double? width,
+    double? height,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      filePen,
+      context: context,
+      width: width,
+      height: height,
+      color: color,
+      fit: fit,
+    );
+  }
+
+  static Widget handCoinsIcon({
+    required BuildContext context,
+    double? width,
+    double? height,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      handCoins,
       context: context,
       width: width,
       height: height,

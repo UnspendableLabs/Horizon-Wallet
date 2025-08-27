@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:horizon/domain/entities/http_config.dart';
+import 'package:horizon/presentation/forms/asset_balance_form/bloc/asset_balance_form_bloc.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
@@ -238,6 +239,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
             title: "Choose your asset / address",
             widthFactor: .4,
             body: AssetBalanceFormProvider(
+              disallowSelections: const [DisallowSelection.listingExists],
               httpConfig: widget.httpConfig,
               addresses:
                   widget.addresses.map((address) => address.address).toList(),

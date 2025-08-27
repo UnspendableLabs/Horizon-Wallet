@@ -84,19 +84,31 @@ class MultiAddressBalanceDropdown extends StatelessWidget {
                                 .textTheme
                                 .titleSmall!
                                 .copyWith(fontWeight: FontWeight.normal)),
-                        utxoSwapMap != null &&
-                                addressEntry.utxo != null &&
-                                utxoSwapMap!.containsKey(addressEntry.utxo!) &&
-                                utxoSwapMap![addressEntry.utxo!] == true
-                            ? Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 8),
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(24),
-                                    border: Border.all(color: red2, width: 1)),
-                                child: const Text("Listed",
-                                    style: TextStyle(color: red1)))
-                            : const SizedBox.shrink()
+                        Row(children: [
+                          addressEntry.utxo != null
+                              ? Chip(
+                                  label: Text("utxo"),
+                                  labelStyle: const TextStyle(fontSize: 8),
+                                  padding: EdgeInsets.zero,
+                                  backgroundColor: black,
+                                )
+                              : SizedBox.shrink(),
+                          utxoSwapMap != null &&
+                                  addressEntry.utxo != null &&
+                                  utxoSwapMap!
+                                      .containsKey(addressEntry.utxo!) &&
+                                  utxoSwapMap![addressEntry.utxo!] == true
+                              ? Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 8),
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(24),
+                                      border:
+                                          Border.all(color: red2, width: 1)),
+                                  child: const Text("Listed",
+                                      style: TextStyle(color: red1)))
+                              : const SizedBox.shrink()
+                        ])
                       ],
                     ),
 

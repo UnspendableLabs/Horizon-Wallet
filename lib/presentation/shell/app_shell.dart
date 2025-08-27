@@ -138,6 +138,8 @@ class BottomTabNavigation extends StatelessWidget {
               isDarkTheme),
           _buildTab(context, controller.index == 1,
               AppIcons.settingsIcon(context: context), 'Settings', isDarkTheme),
+          _buildTab(context, controller.index == 2,
+              AppIcons.plusIcon(context: context), 'Tools', isDarkTheme),
         ],
       ),
     );
@@ -223,13 +225,15 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _bottomTabController = TabController(length: 2, vsync: this);
+    _bottomTabController = TabController(length: 3, vsync: this);
     _updateIndexFromRoute(widget.currentRoute);
 
     _bottomTabController.addListener(() {
       // Update URL when tab changes
       if (_bottomTabController.index == 1) {
         context.go('/settings');
+      } else if (_bottomTabController.index == 2) {
+        context.go('/tools');
       } else {
         context.go('/');
       }
@@ -243,6 +247,7 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
     // });
   }
 
+  // TODO: rip all this out
   void Function() _getHandler(URLAction.Action action) {
     // TODO: handle each PRC action as we add back transactions
     return switch (action) {

@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/common/transactions/multi_address_balance_dropdown.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
-import './bloc/asset_balance_form_bloc.dart';
+import 'package:horizon/presentation/forms/asset_balance_form/bloc/asset_balance_form_bloc.dart';
 
 class AssetBalanceFormActions {
   final Function(AssetBalanceFormOption value) onBalanceSelected;
@@ -24,6 +24,7 @@ class AssetBalanceFormActions {
 class AssetBalanceFormProvider extends StatelessWidget {
   final List<String> addresses;
   final HttpConfig httpConfig;
+  final List<DisallowSelection> disallowSelections;
 
   final MultiAddressBalance multiAddressBalance;
 
@@ -36,12 +37,14 @@ class AssetBalanceFormProvider extends StatelessWidget {
     required this.addresses,
     required this.child,
     required this.multiAddressBalance,
+    required this.disallowSelections,
   });
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(create: (context) {
       return AssetBalanceFormBloc(
+          disallowSelections: disallowSelections,
           addresses: addresses,
           httpConfig: httpConfig,
           multiAddressBalance: multiAddressBalance);
@@ -160,10 +163,19 @@ class AssetBalanceForm extends StatelessWidget {
                   },
                   selectedValue: state.balanceInput.value?.entry,
                   loading: false))),
-      switch (state.utxoSwapInput.error) {
-        UtxoSwapInputErrorListed() => const Text("Listing exists"),
-        _ => const SizedBox.shrink()
-      },
+      if (state.disallowSelections.contains(DisallowSelection.listingExists))
+        switch (state.swapExistsInput.error) {
+          UtxoSwapInputErrorListed() => const Text("Listing exists"),
+          // UtxoSwapInputErrorRequired() => const Text("Please select a source"),
+          _ => const SizedBox.shrink()
+        },
+      if (state.disallowSelections.contains(DisallowSelection.balanceIsUtxo))
+        switch (state.assetIsUtxoInput.error) {
+          AssetIsUtxoInputError.isUtxo => const Text("Cannot use UTXO asset"),
+          // AssetIsUtxoInputError.required =>
+          //   const Text("Please select a source"),
+          _ => const SizedBox.shrink()
+        },
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: HorizonButton(

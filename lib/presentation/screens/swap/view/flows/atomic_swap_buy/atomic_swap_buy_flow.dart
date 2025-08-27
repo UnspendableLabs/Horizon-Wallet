@@ -189,6 +189,7 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
             title: "Choose your BTC balance",
             widthFactor: .4,
             body: AssetBalanceFormProvider(
+              disallowSelections: const [],
               httpConfig: session.httpConfig,
               addresses: widget.addresses.map((e) => e.address).toList(),
               multiAddressBalance: widget.balances,

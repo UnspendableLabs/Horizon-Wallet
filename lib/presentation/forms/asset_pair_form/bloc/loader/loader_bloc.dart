@@ -57,8 +57,29 @@ class SwapFormLoaderFn extends Loader<SwapFormLoaderArgs, SwapFormLoaderData> {
     //     locked: false,
     //   ),
     // );
-
-    // multiAddressBalance.add(mockXCPBalance);
+    //
+    // final mockGerperBalance = MultiAddressBalance(
+    //   asset: "GERPER",
+    //   total: 100,
+    //   totalNormalized: "100",
+    //   assetLongname: "GERPER",
+    //   entries: [
+    //     MultiAddressBalanceEntry(
+    //       address: args.addresses.first.address,
+    //       quantityNormalized: "100",
+    //       quantity: 100,
+    //     )
+    //   ],
+    //   assetInfo: AssetInfo(
+    //     assetLongname: "GERPER",
+    //     description: "GERPER",
+    //     divisible: false,
+    //     owner: null,
+    //     locked: false,
+    //   ),
+    // );
+    //
+    // multiAddressBalance.add(mockGerperBalance);
 
     return SwapFormLoaderData(
       balances: multiAddressBalance,

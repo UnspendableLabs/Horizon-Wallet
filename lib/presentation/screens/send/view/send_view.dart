@@ -21,6 +21,7 @@ import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/extensions.dart';
 import 'package:horizon/presentation/common/transactions/transaction_successful.dart';
+import 'package:horizon/presentation/forms/asset_balance_form/bloc/asset_balance_form_bloc.dart';
 import 'package:horizon/presentation/common/transactions/transaction_error.dart';
 import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:horizon/presentation/forms/asset_balance_form/asset_balance_form_view.dart';
@@ -135,6 +136,7 @@ class _SendViewState extends State<SendView> {
                   httpConfig: session.httpConfig,
                   addresses: session.addresses,
                   child: (balances) {
+                    print("balances: $balances");
                     return Builder(builder: (context) {
                       return TokenSelectorFormProvider(
                         balances: balances,
@@ -185,6 +187,7 @@ class _SendViewState extends State<SendView> {
                         fit: BoxFit.fitHeight,
                       )),
                   body: AssetBalanceFormProvider(
+                    disallowSelections: const [DisallowSelection.balanceIsUtxo],
                     addresses: session.addresses.map((a) => a.address).toList(),
                     httpConfig: session.httpConfig,
                     multiAddressBalance: balance,

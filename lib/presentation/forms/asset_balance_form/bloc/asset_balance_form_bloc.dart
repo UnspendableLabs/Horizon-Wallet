@@ -82,11 +82,11 @@ class UtxoSwapInputErrorListed extends UtxoSwapInputError {
 
 // enum UtxoSwapInputError { required, listed }
 
-class UtxoSwapInput
+class SwapExistsInput
     extends FormzInput<AssetBalanceFormOption?, UtxoSwapInputError> {
   final Map<String, bool>? utxoSwapMap;
-  const UtxoSwapInput.pure({this.utxoSwapMap}) : super.pure(null);
-  const UtxoSwapInput.dirty(
+  const SwapExistsInput.pure({this.utxoSwapMap}) : super.pure(null);
+  const SwapExistsInput.dirty(
       {required AssetBalanceFormOption? value, this.utxoSwapMap})
       : super.dirty(value);
 
@@ -102,60 +102,101 @@ class UtxoSwapInput
   }
 }
 
+enum AssetIsUtxoInputError { isUtxo, required }
+
+class AssetIsUtxoInput
+    extends FormzInput<AssetBalanceFormOption?, AssetIsUtxoInputError> {
+  const AssetIsUtxoInput.pure() : super.pure(null);
+
+  const AssetIsUtxoInput.dirty({required AssetBalanceFormOption? value})
+      : super.dirty(value);
+
+  @override
+  AssetIsUtxoInputError? validator(AssetBalanceFormOption? value) {
+    if (value == null) return AssetIsUtxoInputError.required;
+    if (value.entry.utxo != null) {
+      return AssetIsUtxoInputError.isUtxo;
+    }
+    return null;
+  }
+}
+
 class AssetBalanceFormModel with FormzMixin {
+  final List<DisallowSelection> disallowSelections;
+
   final MultiAddressBalance multiAddressBalance;
 
   final RemoteData<Map<String, bool>> utxoSwapMap;
 
   final BalanceInput balanceInput;
-  final UtxoSwapInput utxoSwapInput;
+  final SwapExistsInput swapExistsInput;
+  final AssetIsUtxoInput assetIsUtxoInput;
 
   final FormzSubmissionStatus submissionStatus;
 
-  AssetBalanceFormModel(
-      {required this.utxoSwapMap,
-      required this.multiAddressBalance,
-      required this.balanceInput,
-      required this.utxoSwapInput,
-      required this.submissionStatus});
+  AssetBalanceFormModel({
+    required this.disallowSelections,
+    required this.utxoSwapMap,
+    required this.multiAddressBalance,
+    required this.balanceInput,
+    required this.swapExistsInput,
+    required this.assetIsUtxoInput,
+    required this.submissionStatus,
+  });
 
   @override
-  List<FormzInput> get inputs => [balanceInput, utxoSwapInput];
+  List<FormzInput> get inputs => [
+        balanceInput,
+        ...disallowSelections.map((a) => switch (a) {
+              DisallowSelection.listingExists => swapExistsInput,
+              DisallowSelection.balanceIsUtxo => assetIsUtxoInput,
+            })
+      ];
 
   AssetBalanceFormModel copyWith({
     MultiAddressBalance? multiAddressBalance,
     BalanceInput? balanceInput,
-    UtxoSwapInput? utxoSwapInput,
+    SwapExistsInput? utxoSwapInput,
+    AssetIsUtxoInput? assetIsUtxoInput,
     FormzSubmissionStatus? submissionStatus,
     RemoteData<Map<String, bool>>? utxoSwapMap,
+    List<DisallowSelection>? disallowSelections,
   }) {
     return AssetBalanceFormModel(
+        disallowSelections: disallowSelections ?? this.disallowSelections,
+        assetIsUtxoInput: assetIsUtxoInput ?? this.assetIsUtxoInput,
         utxoSwapMap: utxoSwapMap ?? this.utxoSwapMap,
         multiAddressBalance: multiAddressBalance ?? this.multiAddressBalance,
         submissionStatus: submissionStatus ?? this.submissionStatus,
         balanceInput: balanceInput ?? this.balanceInput,
-        utxoSwapInput: utxoSwapInput ?? this.utxoSwapInput);
+        swapExistsInput: utxoSwapInput ?? this.swapExistsInput);
   }
 }
+
+enum DisallowSelection { listingExists, balanceIsUtxo }
 
 class AssetBalanceFormBloc
     extends Bloc<AssetBalanceFormEvent, AssetBalanceFormModel> {
   final AtomicSwapRepository _atomicSwapRepository;
 
   final HttpConfig httpConfig;
+  final List<DisallowSelection> disallowSelections;
 
   AssetBalanceFormBloc(
       {AtomicSwapRepository? atomicSwapRepository,
       required this.httpConfig,
+      required this.disallowSelections,
       required List<String> addresses,
       required MultiAddressBalance multiAddressBalance})
       : _atomicSwapRepository =
             atomicSwapRepository ?? GetIt.I<AtomicSwapRepository>(),
         super(AssetBalanceFormModel(
           utxoSwapMap: const Initial(),
+          assetIsUtxoInput: const AssetIsUtxoInput.pure(),
+          disallowSelections: disallowSelections,
           multiAddressBalance: multiAddressBalance,
           balanceInput: const BalanceInput.pure(),
-          utxoSwapInput: const UtxoSwapInput.pure(),
+          swapExistsInput: const SwapExistsInput.pure(),
           submissionStatus: FormzSubmissionStatus.initial,
         )) {
     on<AssetBalanceFormRequested>(_handleAssetBalanceFormRequested);
@@ -207,10 +248,13 @@ class AssetBalanceFormBloc
       return;
     }
 
+    print("disallowSelections: ${state.disallowSelections}");
+
     emit(state.copyWith(
       balanceInput: BalanceInput.dirty(value: event.option),
       utxoSwapInput:
-          UtxoSwapInput.dirty(value: event.option, utxoSwapMap: utxoSwapMap),
+          SwapExistsInput.dirty(value: event.option, utxoSwapMap: utxoSwapMap),
+      assetIsUtxoInput: AssetIsUtxoInput.dirty(value: event.option),
       submissionStatus: FormzSubmissionStatus.failure,
     ));
   }
