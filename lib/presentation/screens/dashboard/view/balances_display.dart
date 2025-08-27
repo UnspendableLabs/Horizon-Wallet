@@ -274,75 +274,61 @@ class BalancesSliverState extends State<BalancesSliver> {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () {
-                              // Navigate to the asset details page
-                              context.push(
-                                  '/asset/${Uri.encodeComponent(balance.asset)}');
-                            },
-                            borderRadius: BorderRadius.circular(10),
-                            child: Container(
-                              height: 54,
-                              margin: const EdgeInsets.symmetric(vertical: 2),
-                              child: Row(
-                                children: [
-                                  const SizedBox(width: 10),
-                                  appIcons.assetIcon(
-                                      httpConfig: session.httpConfig,
-                                      assetName: balance.asset,
-                                      description:
-                                          balance.assetInfo.description,
-                                      context: context,
-                                      width: 34,
-                                      height: 34),
-                                  const SizedBox(width: 10),
-                                  // Asset name and details
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        SizedBox(
-                                          width: double.infinity,
-                                          child: MiddleTruncatedText(
-                                            text: balance.assetLongname ??
-                                                balance.asset,
-                                            width: 150,
-                                            charsToShow: isMobile ? 16 : 30,
-                                            style: const TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  // Amount and percentage
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      SelectableText(
-                                        numberWithCommas.format(double.parse(
-                                            balance.totalNormalized)),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: Container(
+                          height: 54,
+                          margin: const EdgeInsets.symmetric(vertical: 2),
+                          child: Row(
+                            children: [
+                              const SizedBox(width: 10),
+                              appIcons.assetIcon(
+                                  httpConfig: session.httpConfig,
+                                  assetName: balance.asset,
+                                  description: balance.assetInfo.description,
+                                  context: context,
+                                  width: 34,
+                                  height: 34),
+                              const SizedBox(width: 10),
+                              // Asset name and details
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: MiddleTruncatedText(
+                                        text: balance.assetLongname ??
+                                            balance.asset,
+                                        width: 150,
+                                        charsToShow: isMobile ? 16 : 30,
                                         style: const TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
                                         ),
                                       ),
-                                    ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // Amount and percentage
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SelectableText(
+                                    numberWithCommas.format(
+                                        double.parse(balance.totalNormalized)),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
-                                  const SizedBox(width: 4),
                                 ],
                               ),
-                            ),
+                              const SizedBox(width: 4),
+                            ],
                           ),
                         ),
                       ),

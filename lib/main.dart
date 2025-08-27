@@ -591,43 +591,43 @@ class AppRouter {
                 );
               },
             ),
-            GoRoute(
-              path: "/asset/:assetName",
-              pageBuilder: (context, state) {
-                final assetName = state.pathParameters['assetName'] ?? '';
-                final session = context.watch<SessionStateCubit>().state;
-
-                return CustomTransitionPage<void>(
-                  key: state.pageKey,
-                  child: BlocProvider(
-                    create: (context) => AssetViewBloc(
-                      httpConfig: session.successOrThrow().httpConfig,
-                      balanceRepository: GetIt.I<BalanceRepository>(),
-                      fairminterRepository: GetIt.I<FairminterRepository>(),
-                      addresses: session.allAddresses,
-                      asset: assetName,
-                    ),
-                    child: AssetView(
-                      assetName: assetName,
-                    ),
-                  ),
-                  transitionDuration: const Duration(milliseconds: 250),
-                  transitionsBuilder:
-                      (context, animation, secondaryAnimation, child) {
-                    return SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(0, 0.03),
-                        end: Offset.zero,
-                      ).animate(animation),
-                      child: FadeTransition(
-                        opacity: animation,
-                        child: child,
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
+            // GoRoute(
+            //   path: "/asset/:assetName",
+            //   pageBuilder: (context, state) {
+            //     final assetName = state.pathParameters['assetName'] ?? '';
+            //     final session = context.watch<SessionStateCubit>().state;
+            //
+            //     return CustomTransitionPage<void>(
+            //       key: state.pageKey,
+            //       child: BlocProvider(
+            //         create: (context) => AssetViewBloc(
+            //           httpConfig: session.successOrThrow().httpConfig,
+            //           balanceRepository: GetIt.I<BalanceRepository>(),
+            //           fairminterRepository: GetIt.I<FairminterRepository>(),
+            //           addresses: session.allAddresses,
+            //           asset: assetName,
+            //         ),
+            //         child: AssetView(
+            //           assetName: assetName,
+            //         ),
+            //       ),
+            //       transitionDuration: const Duration(milliseconds: 250),
+            //       transitionsBuilder:
+            //           (context, animation, secondaryAnimation, child) {
+            //         return SlideTransition(
+            //           position: Tween<Offset>(
+            //             begin: const Offset(0, 0.03),
+            //             end: Offset.zero,
+            //           ).animate(animation),
+            //           child: FadeTransition(
+            //             opacity: animation,
+            //             child: child,
+            //           ),
+            //         );
+            //       },
+            //     );
+            //   },
+            // ),
             GoRoute(
               path: "/atomic-swap",
               pageBuilder: (context, state) => CustomTransitionPage<void>(
