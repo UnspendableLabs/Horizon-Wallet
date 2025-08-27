@@ -140,7 +140,7 @@ class BottomTabNavigation extends StatelessWidget {
 
   const BottomTabNavigation({super.key, required this.currentIndex});
 
-  static const tabRoutes = ['/#', '/settings'];
+  static const tabRoutes = ['/#', '/settings', "/tools"];
 
   @override
   Widget build(BuildContext context) {
@@ -178,6 +178,14 @@ class BottomTabNavigation extends StatelessWidget {
             selected: currentIndex == 1,
             icon: AppIcons.settingsIcon(context: context),
             label: 'Settings',
+            isDarkTheme: isDarkTheme,
+          ),
+          _buildTab(
+            context,
+            index: 2,
+            selected: currentIndex == 2,
+            icon: AppIcons.plusIcon(context: context),
+            label: 'Tools',
             isDarkTheme: isDarkTheme,
           ),
         ],
@@ -372,6 +380,7 @@ class AppRouter {
         ShellRoute(
           builder: (BuildContext context, GoRouterState state, Widget child) {
             // Check session state before showing the shell
+
             return ValueChangeObserver(
               cacheKey: SettingsKeys.inactivityTimeout.toString(),
               defaultValue: 5,
@@ -515,12 +524,21 @@ class AppRouter {
               },
             ),
             GoRoute(
+              path: "/tools",
+              builder: (context, state) => const Scaffold(
+                body: Scaffold(body: Text("tools")),
+                // bottomNavigationBar: BottomTabNavigation(
+                //   currentIndex: 2,
+                // ),
+              ),
+            ),
+            GoRoute(
               path: "/settings",
               builder: (context, state) => Scaffold(
                 body: SettingsView(),
-                bottomNavigationBar: const BottomTabNavigation(
-                  currentIndex: 1,
-                ),
+                // bottomNavigationBar: const BottomTabNavigation(
+                //   currentIndex: 1,
+                // ),
               ),
             ),
             GoRoute(
