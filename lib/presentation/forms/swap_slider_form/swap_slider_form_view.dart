@@ -178,235 +178,198 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
 
     final cardHeight = 366.0;
 
-    return Column(
-      children: [
-        SizedBox(
-          height: cardHeight,
-          width: double.infinity,
-          child: HorizonCard(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      QuantityText(
-                        quantity: widget.state.selectedSwapsInput.totalQuantity
-                            .normalized(precision: 2),
-                        style: TextStyle(
-                          fontSize: 35,
-                          color: isInsufficientBalance ? redErrorText : null,
-                        ),
-                      ),
-                      Row(
+    return widget.state.atomicSwapListModel.fold3(
+        onNone: () => Center(
+            child: CircularProgressIndicator(color: theme.colorScheme.primary)),
+        onFailure: (_) =>
+            Text("Error loading swaps", style: theme.textTheme.bodyMedium),
+        onReplete: (model) => model.items.isEmpty
+            ? SizedBox(
+                height: cardHeight,
+                width: double.infinity,
+                child: HorizonCard(
+                  child: Center(
+                    child: Text("No swaps available",
+                        style: theme.textTheme.bodyMedium),
+                  ),
+                ),
+              )
+            : Column(
+                children: [
+                  SizedBox(
+                    height: cardHeight,
+                    width: double.infinity,
+                    child: HorizonCard(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Column(
                         children: [
-                          appIcons.assetIcon(
-                            httpConfig: session.httpConfig,
-                            assetName: widget.state.assetName,
-                            context: context,
-                            width: 24,
-                            height: 24,
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                QuantityText(
+                                  quantity: widget
+                                      .state.selectedSwapsInput.totalQuantity
+                                      .normalized(precision: 2),
+                                  style: TextStyle(
+                                    fontSize: 35,
+                                    color: isInsufficientBalance
+                                        ? redErrorText
+                                        : null,
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    appIcons.assetIcon(
+                                      httpConfig: session.httpConfig,
+                                      assetName: widget.state.assetName,
+                                      context: context,
+                                      width: 24,
+                                      height: 24,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      widget.state.assetName,
+                                      style: theme.textTheme.titleMedium!
+                                          .copyWith(fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            widget.state.assetName,
-                            style: theme.textTheme.titleMedium!
-                                .copyWith(fontSize: 12),
+                          const SizedBox(height: 20),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 20),
+                            child: Center(
+                              child: Opacity(
+                                opacity:
+                                    widget.state.sliderInput.selectionMode ==
+                                            SelectionMode.manual
+                                        ? 0.5
+                                        : 1,
+                                child: HorizonSlider(
+                                  value:
+                                      widget.state.sliderInput.value.toDouble(),
+                                  thumbColor: isInsufficientBalance
+                                      ? redErrorText
+                                      : null,
+                                  trackColor: isInsufficientBalance
+                                      ? redErrorText
+                                      : null,
+                                  min: 0,
+                                  max: model.items.length.toDouble(),
+                                  steps: model.items.length,
+                                  onChanged: (value) {
+                                    widget.actions.sliderDragged(value.toInt());
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20),
+                                  height: 34,
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text('Quantity',
+                                            style: theme.textTheme.bodySmall),
+                                      ),
+                                      Expanded(
+                                        child: Text(
+                                            'Price (sats/${widget.state.assetName})',
+                                            textAlign: TextAlign.right,
+                                            style: theme.textTheme.bodySmall),
+                                      ),
+                                      Expanded(
+                                        child: Text('Total',
+                                            textAlign: TextAlign.right,
+                                            style: theme.textTheme.bodySmall),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 10),
+                                    child: ListView.builder(
+                                      controller: _scrollController,
+                                      itemCount: model.items.length,
+                                      itemBuilder: (context, index) {
+                                        final swap = model.items[index];
+                                        return _buildRow(
+                                          swap.quantity,
+                                          swap.pricePerUnit,
+                                          swap.price,
+                                          swap.selected,
+                                          index,
+                                          isInsufficientBalance,
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: widget.state.atomicSwapListModel.fold(
-                    onFailure: (_) => Center(
-                      child: HorizonSlider(
-                        value: 0,
-                        min: 0,
-                        max: 100,
-                        onChanged: (value) {},
-                      ),
-                    ),
-                    onInitial: () => Center(
-                      child: HorizonSlider(
-                        value: 0,
-                        min: 0,
-                        max: 100,
-                        onChanged: (value) {},
-                      ),
-                    ),
-                    onLoading: () => Center(
-                      child: HorizonSlider(
-                        value: 0,
-                        min: 0,
-                        max: 100,
-                        onChanged: (value) {},
-                      ),
-                    ),
-                    onSuccess: (model) => Center(
-                      child: Opacity(
-                        opacity: widget.state.sliderInput.selectionMode ==
-                                SelectionMode.manual
-                            ? 0.5
-                            : 1,
-                        child: HorizonSlider(
-                          value: widget.state.sliderInput.value.toDouble(),
-                          thumbColor:
-                              isInsufficientBalance ? redErrorText : null,
-                          trackColor:
-                              isInsufficientBalance ? redErrorText : null,
-                          min: 0,
-                          max: model.items.length.toDouble(),
-                          steps: model.items.length,
-                          onChanged: (value) {
-                            widget.actions.sliderDragged(value.toInt());
-                          },
-                        ),
-                      ),
-                    ),
-                    onRefreshing: (model) => Center(
-                      child: HorizonSlider(
-                        value: widget.state.sliderInput.value.toDouble(),
-                        min: 0,
-                        max: model.items.length.toDouble(),
-                        steps: model.items.length + 1,
-                        onChanged: (value) {
-                          widget.actions.sliderDragged(value.toInt());
-                        },
-                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        height: 34,
-                        child: Row(
+                  commonHeightSizedBox,
+                  Text(
+                    widget.state.errorMessage ?? "",
+                    style: theme.textTheme.bodySmall!
+                        .copyWith(color: redErrorText),
+                  ),
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
                           children: [
-                            Expanded(
-                              child: Text('Quantity',
-                                  style: theme.textTheme.bodySmall),
-                            ),
-                            Expanded(
-                              child: Text(
-                                  'Price (sats/${widget.state.assetName})',
-                                  textAlign: TextAlign.right,
-                                  style: theme.textTheme.bodySmall),
-                            ),
-                            Expanded(
-                              child: Text('Total',
-                                  textAlign: TextAlign.right,
-                                  style: theme.textTheme.bodySmall),
-                            ),
+                            const Text("You Pay",
+                                style: TextStyle(fontSize: 14)),
+                            const SizedBox(width: 12),
+                            QuantityText(
+                                quantity:
+                                    "${widget.state.totalCostInput.value.normalized(precision: 8)} BTC",
+                                style: TextStyle(fontSize: 12)),
                           ],
                         ),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10),
-                          child: widget.state.atomicSwapListModel.fold(
-                            onInitial: () => Center(
-                              child: CircularProgressIndicator(
-                                color: theme.colorScheme.primary,
-                              ),
-                            ),
-                            onLoading: () => Center(
-                              child: CircularProgressIndicator(
-                                color: theme.colorScheme.primary,
-                              ),
-                            ),
-                            onSuccess: (model) => ListView.builder(
-                              controller: _scrollController,
-                              itemCount: model.items.length,
-                              itemBuilder: (context, index) {
-                                final swap = model.items[index];
-                                return _buildRow(
-                                  swap.quantity,
-                                  swap.pricePerUnit,
-                                  swap.price,
-                                  swap.selected,
-                                  index,
-                                  isInsufficientBalance,
-                                );
-                              },
-                            ),
-                            onRefreshing: (model) => ListView.builder(
-                              controller: _scrollController,
-                              itemCount: model.items.length,
-                              itemBuilder: (context, index) {
-                                final swap = model.items[index];
-                                return _buildRow(
-                                  swap.quantity,
-                                  swap.pricePerUnit,
-                                  swap.price,
-                                  swap.selected,
-                                  index,
-                                  isInsufficientBalance,
-                                );
-                              },
-                            ),
-                            onFailure: (error) => Text("Error: $error"),
-                          ),
-                        ),
-                      ),
-                    ],
+                        SatsToUsdDisplay(
+                            sats: widget.state.totalCostInput.value.quantity,
+                            child: (value) => Text(
+                                  "\$${value.toStringAsFixed(2)}",
+                                  textAlign: TextAlign.end,
+                                ))
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        commonHeightSizedBox,
-        Text(
-          widget.state.errorMessage ?? "",
-          style: theme.textTheme.bodySmall!.copyWith(color: redErrorText),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  const Text("You Pay", style: TextStyle(fontSize: 14)),
-                  const SizedBox(width: 12),
-                  QuantityText(
-                      quantity:
-                          "${widget.state.totalCostInput.value.normalized(precision: 8)} BTC",
-                      style: TextStyle(fontSize: 12)),
+                  commonHeightSizedBox,
+                  HorizonButton(
+                    child: TextButtonContent(value: "Swap"),
+                    disabled: !widget.state.isValid,
+                    onPressed: () {
+                      if (widget.state.isValid) {
+                        widget.actions.onSubmitClicked();
+                      }
+                    },
+                    variant: ButtonVariant.green,
+                  ),
                 ],
-              ),
-              SatsToUsdDisplay(
-                  sats: widget.state.totalCostInput.value.quantity,
-                  child: (value) => Text(
-                        "\$${value.toStringAsFixed(2)}",
-                        textAlign: TextAlign.end,
-                      ))
-            ],
-          ),
-        ),
-        commonHeightSizedBox,
-        HorizonButton(
-          child: TextButtonContent(value: "Swap"),
-          disabled: !widget.state.isValid,
-          onPressed: () {
-            if (widget.state.isValid) {
-              widget.actions.onSubmitClicked();
-            }
-          },
-          variant: ButtonVariant.green,
-        ),
-      ],
-    );
+              ));
   }
 
   Widget _buildRow(
