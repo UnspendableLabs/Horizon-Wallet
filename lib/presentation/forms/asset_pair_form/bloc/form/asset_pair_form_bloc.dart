@@ -293,9 +293,12 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
   _handleGiveAssetChanged(
       GiveAssetSelected event, Emitter<AssetPairFormModel> emit) {
     emit(state.copyWith(
-      submissionStatus: FormzSubmissionStatus.initial,
-      giveAssetInput: GiveAssetInput.dirty(value: event.value),
-    ));
+        submissionStatus: FormzSubmissionStatus.initial,
+        giveAssetInput: GiveAssetInput.dirty(value: event.value),
+        receiveAssetInput:
+            state.receiveAssetInput.value?.name == event.value.name
+                ? const ReceiveAssetInput.pure()
+                : state.receiveAssetInput));
   }
 
   _handleReceiveAssetInputClicked(
