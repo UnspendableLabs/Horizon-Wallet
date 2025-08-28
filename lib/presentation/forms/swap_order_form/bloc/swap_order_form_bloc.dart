@@ -345,11 +345,19 @@ class SwapOrderFormModel with FormzMixin {
       getAsset.divisible,
     );
 
+    print("desiredGetAmount $desiredGetAmount");
+
     Rational rational = adjustForDivisibility(desiredGetAmount * price,
         fromDivisible: getAsset.divisible, toDivisible: giveAsset.divisible);
 
-    return AssetQuantity(
-        divisible: giveAsset.divisible, quantity: rational.toBigInt());
+    if (giveAsset.divisible) {
+      return AssetQuantity(
+          divisible: giveAsset.divisible, quantity: rational.toBigInt());
+    } else {
+      // this needs to be ceiled due to edge case
+      return AssetQuantity(
+          divisible: giveAsset.divisible, quantity: rational.ceil());
+    }
 
     //   Rational totalGet = Rational.zero;
     //
@@ -1067,21 +1075,24 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
         print(
             "💲 Computed price=${price.toString()} (from priceType=${state.priceType})");
 
-        final priceFilter = Rational(
-          state.giveAsset.divisible
-              ? price.numerator * TenToTheEigth.bigIntValue
-              : price.numerator,
-          state.getAsset.divisible
-              ? price.denominator * TenToTheEigth.bigIntValue
-              : price.denominator,
-        );
+        // TODO: fix price filter
+        final priceFilter = price;
+
+        // final priceFilter = Rational(
+        //   state.giveAsset.divisible
+        //       ? price.numerator * TenToTheEigth.bigIntValue
+        //       : price.numerator,
+        //   state.getAsset.divisible
+        //       ? price.denominator * TenToTheEigth.bigIntValue
+        //       : price.denominator,
+        // );
         print("🔎 priceFilter=$priceFilter");
 
-        final buyOrdersFiltered = buyOrders
-            .where((order) =>
-                Rational.fromInt(order.getQuantity, order.giveQuantity) <=
-                priceFilter)
-            .toList();
+        final buyOrdersFiltered = buyOrders;
+        // .where((order) =>
+        //     Rational.fromInt(order.getQuantity, order.giveQuantity) <=
+        //     priceFilter)
+        // .toList();
         print("📊 Filtered buyOrders=${buyOrdersFiltered.length}");
 
         BigInt tx1GiveQuantity = state.maxGiveQuantityInput.value.quantity;
