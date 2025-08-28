@@ -715,7 +715,7 @@ class _OrderInputs extends State<OrderInputs> {
                                         width: 48,
                                         child: HorizonButton(
                                           child: TextButtonContent(
-                                              value: '+1',
+                                              value: '+5%',
                                               style: const TextStyle(
                                                 fontSize: 12,
                                               )),
@@ -725,7 +725,27 @@ class _OrderInputs extends State<OrderInputs> {
                                           onPressed: () {
                                             widget.actions
                                                 .onRelativePriceButtonClicked(
-                                              RelativePriceValue.plus1,
+                                              RelativePriceValue.plus5,
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                      Container(
+                                        height: 28,
+                                        width: 48,
+                                        child: HorizonButton(
+                                          child: TextButtonContent(
+                                              value: '+10%',
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                              )),
+                                          height: 28,
+                                          borderRadius: 8,
+                                          variant: ButtonVariant.black,
+                                          onPressed: () {
+                                            widget.actions
+                                                .onRelativePriceButtonClicked(
+                                              RelativePriceValue.plus10,
                                             );
                                           },
                                         ),
@@ -736,7 +756,7 @@ class _OrderInputs extends State<OrderInputs> {
                                         width: 48,
                                         child: HorizonButton(
                                           child: TextButtonContent(
-                                              value: '+3',
+                                              value: '+15%',
                                               style: const TextStyle(
                                                 fontSize: 12,
                                               )),
@@ -746,7 +766,7 @@ class _OrderInputs extends State<OrderInputs> {
                                           onPressed: () {
                                             widget.actions
                                                 .onRelativePriceButtonClicked(
-                                              RelativePriceValue.plus3,
+                                              RelativePriceValue.plus15,
                                             );
                                           },
                                         ),

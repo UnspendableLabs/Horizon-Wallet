@@ -807,9 +807,9 @@ class PriceTypeClicked extends SwapOrderFormEvent {}
 
 enum RelativePriceValue {
   floor,
-  plus1,
-  plus3,
   plus5,
+  plus10,
+  plus15,
 }
 
 class RelativePriceButtonClicked extends SwapOrderFormEvent {
@@ -896,12 +896,12 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
 
     final adjustmentFactor = switch ((event.value, state.priceType)) {
       (RelativePriceValue.floor, _) => 1.0,
-      (RelativePriceValue.plus1, PriceType.give) => 1.01,
-      (RelativePriceValue.plus3, PriceType.give) => 1.03,
       (RelativePriceValue.plus5, PriceType.give) => 1.05,
-      (RelativePriceValue.plus1, PriceType.get) => 0.99,
-      (RelativePriceValue.plus3, PriceType.get) => 0.97,
+      (RelativePriceValue.plus10, PriceType.give) => 1.10,
+      (RelativePriceValue.plus15, PriceType.give) => 1.15,
       (RelativePriceValue.plus5, PriceType.get) => 0.95,
+      (RelativePriceValue.plus10, PriceType.get) => 0.90,
+      (RelativePriceValue.plus15, PriceType.get) => 0.85,
     };
 
     final adjustmentFactorDecimal = Decimal.parse(adjustmentFactor.toString());
