@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:horizon/presentation/common/link.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:flutter/services.dart';
 import 'package:horizon/presentation/common/transactions/success_animation.dart';
@@ -136,7 +137,6 @@ class _SendViewState extends State<SendView> {
                   httpConfig: session.httpConfig,
                   addresses: session.addresses,
                   child: (balances) {
-                    print("balances: $balances");
                     return Builder(builder: (context) {
                       return TokenSelectorFormProvider(
                         balances: balances,
@@ -187,7 +187,10 @@ class _SendViewState extends State<SendView> {
                         fit: BoxFit.fitHeight,
                       )),
                   body: AssetBalanceFormProvider(
-                    disallowSelections: const [DisallowSelection.balanceIsUtxo],
+                    disallowSelections: const [
+                      DisallowSelection.balanceIsUtxo,
+                      DisallowSelection.listingExists
+                    ],
                     addresses: session.addresses.map((a) => a.address).toList(),
                     httpConfig: session.httpConfig,
                     multiAddressBalance: balance,
@@ -205,6 +208,15 @@ class _SendViewState extends State<SendView> {
                         AssetBalanceForm(
                           state: state,
                           actions: actions,
+                          balanceIsUTXOError: (utxoId) => Column(children: [
+                            Text("Cannot send UTXO-bound asset",
+                                style: TextStyle(color: red1)),
+                            SizedBox(height: 8),
+                            GradientLinkButton(
+                                href:
+                                    "${session.httpConfig.horizonMarket}/tools/detach?utxo=$utxoId",
+                                text: "Detach?")
+                          ]),
                         ),
                       ],
                     ),

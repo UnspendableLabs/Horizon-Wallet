@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:horizon/presentation/common/link.dart';
 import 'package:horizon/presentation/forms/asset_balance_form/bloc/asset_balance_form_bloc.dart';
 import 'package:flutter/services.dart';
 import 'package:horizon/presentation/common/transactions/success_animation.dart';
@@ -124,7 +125,10 @@ class _OrderFlowViewState extends State<OrderFlowView> {
                 title: "Open Order",
                 widthFactor: .4,
                 body: AssetBalanceFormProvider(
-                    disallowSelections: const [DisallowSelection.balanceIsUtxo],
+                    disallowSelections: const [
+                      DisallowSelection.listingExists,
+                      DisallowSelection.balanceIsUtxo,
+                    ],
                     multiAddressBalance: widget.giveBalance,
                     addresses: widget.addresses.map((e) => e.address).toList(),
                     httpConfig: session.httpConfig,
@@ -140,6 +144,15 @@ class _OrderFlowViewState extends State<OrderFlowView> {
                           AssetBalanceForm(
                             state: state,
                             actions: actions,
+                            balanceIsUTXOError: (utxoId) => Column(children: [
+                              Text("Cannot compose order with UTXO-bound asset",
+                                  style: TextStyle(color: red1)),
+                              SizedBox(height: 8),
+                              GradientLinkButton(
+                                  href:
+                                      "${session.httpConfig.horizonMarket}/tools/detach?utxo=$utxoId",
+                                  text: "Detach?")
+                            ]),
                           ),
                         ])),
               ),

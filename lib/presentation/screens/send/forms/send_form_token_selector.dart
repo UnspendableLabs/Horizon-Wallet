@@ -36,7 +36,6 @@ class SendFormLoader extends StatelessWidget {
         () => _balanceRepository.getBalancesForAddresses(
           httpConfig: session.httpConfig,
           addresses: addresses.map((a) => a.address).toList(),
-          type: BalanceType.address,
         ),
         (error, stackTrace) => 'Failed to load balances',
       ),

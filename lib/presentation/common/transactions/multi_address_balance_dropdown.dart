@@ -98,15 +98,16 @@ class MultiAddressBalanceDropdown extends StatelessWidget {
                                   utxoSwapMap!
                                       .containsKey(addressEntry.utxo!) &&
                                   utxoSwapMap![addressEntry.utxo!] == true
-                              ? Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 8),
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(24),
-                                      border:
-                                          Border.all(color: red2, width: 1)),
-                                  child: const Text("Listed",
-                                      style: TextStyle(color: red1)))
+                              ? Padding(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(4, 0, 0, 0),
+                                  child: Chip(
+                                    label: Text("listed"),
+                                    labelStyle: const TextStyle(fontSize: 8),
+                                    padding: EdgeInsets.zero,
+                                    backgroundColor: black,
+                                  ),
+                                )
                               : const SizedBox.shrink()
                         ])
                       ],

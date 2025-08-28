@@ -1,4 +1,5 @@
 import 'package:horizon/domain/entities/multi_address_balance.dart';
+import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 
@@ -7,6 +8,7 @@ import "package:fpdart/fpdart.dart";
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/transactions/multi_address_balance_dropdown.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/forms/asset_balance_form/bloc/asset_balance_form_bloc.dart';
@@ -109,9 +111,17 @@ class AssetBalanceSuccessHandler<T> extends StatelessWidget {
 class AssetBalanceForm extends StatelessWidget {
   final AssetBalanceFormModel state;
   final AssetBalanceFormActions actions;
+  final Widget Function(UtxoID utxoID) balanceIsUTXOError;
 
   const AssetBalanceForm(
-      {required this.state, required this.actions, super.key});
+      {this.balanceIsUTXOError = _defaultBalanceIsUTXOError,
+      required this.state,
+      required this.actions,
+      super.key});
+
+  static Widget _defaultBalanceIsUTXOError(UtxoID utxoID) {
+    return const Text("Cannot use UTX asset");
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -163,19 +173,7 @@ class AssetBalanceForm extends StatelessWidget {
                   },
                   selectedValue: state.balanceInput.value?.entry,
                   loading: false))),
-      if (state.disallowSelections.contains(DisallowSelection.listingExists))
-        switch (state.swapExistsInput.error) {
-          UtxoSwapInputErrorListed() => const Text("Listing exists"),
-          // UtxoSwapInputErrorRequired() => const Text("Please select a source"),
-          _ => const SizedBox.shrink()
-        },
-      if (state.disallowSelections.contains(DisallowSelection.balanceIsUtxo))
-        switch (state.assetIsUtxoInput.error) {
-          AssetIsUtxoInputError.isUtxo => const Text("Cannot use UTXO asset"),
-          // AssetIsUtxoInputError.required =>
-          //   const Text("Please select a source"),
-          _ => const SizedBox.shrink()
-        },
+      coalescedError(state),
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: HorizonButton(
@@ -189,5 +187,19 @@ class AssetBalanceForm extends StatelessWidget {
             )),
       )
     ]);
+  }
+
+  Widget coalescedError(AssetBalanceFormModel state) {
+    if (state.disallowSelections.contains(DisallowSelection.listingExists) &&
+        state.swapExistsInput.error is UtxoSwapInputErrorListed) {
+      return const Text("Listing exists", style: TextStyle(color: red1));
+    } else if (state.disallowSelections
+            .contains(DisallowSelection.balanceIsUtxo) &&
+        state.assetIsUtxoInput.error == AssetIsUtxoInputError.isUtxo) {
+      return balanceIsUTXOError(
+          UtxoID.fromString(state.balanceInput.value!.entry.utxo!));
+    } else {
+      return const SizedBox.shrink();
+    }
   }
 }
