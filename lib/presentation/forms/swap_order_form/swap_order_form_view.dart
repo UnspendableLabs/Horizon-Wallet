@@ -646,7 +646,8 @@ class _OrderInputs extends State<OrderInputs> {
                             child: QuantityInputV2(
                                 style: const TextStyle(fontSize: 16),
                                 divisible: widget.state.amountInputDivisibility,
-                                controller: _amountController,
+                                value: widget.state.amountInput.value,
+                                // controller: _amountController,
                                 onChanged: (value) {
                                   widget.actions.onAmountChanged(value);
                                 })),
@@ -785,10 +786,10 @@ class _OrderInputs extends State<OrderInputs> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Expanded(
-                                  child: LimitPriceInput(
+                                  child: QuantityInputV2(
                                       style: const TextStyle(fontSize: 16),
                                       divisible: true,
-                                      controller: _limitPriceController,
+				    value: widget.state.priceInput.value,
                                       onChanged: (value) {
                                         widget.actions.onPriceChanged(value);
                                       })),

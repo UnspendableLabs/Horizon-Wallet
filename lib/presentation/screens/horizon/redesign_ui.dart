@@ -7,6 +7,208 @@ import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/utils/app_icons.dart';
 
+class QuantityInputV2 extends StatefulWidget {
+  /// Controlled value from parent (single source of truth)
+  final String value;
+
+  /// Report sanitized changes to parent
+  final ValueChanged<String> onChanged;
+
+  final TextStyle? style;
+  final bool divisible; // allows 1.23 vs 123
+
+  const QuantityInputV2({
+    super.key,
+    required this.value,
+    required this.onChanged,
+    this.style,
+    this.divisible = false,
+  });
+
+  @override
+  State<QuantityInputV2> createState() => _QuantityInputV2State();
+}
+
+class _QuantityInputV2State extends State<QuantityInputV2> {
+  late final TextEditingController _controller;
+  late final List<TextInputFormatter> _formatters;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.value);
+    _formatters = [
+      _QuantityFormatter(maxFractionDigits: 8, allowDecimal: widget.divisible),
+    ];
+    _controller.addListener(_handleLocalChange);
+  }
+
+  @override
+  void didUpdateWidget(covariant QuantityInputV2 oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // If parent value changed externally, sync controller without losing caret.
+    if (widget.value != _controller.text) {
+      final baseOffset = _controller.selection.baseOffset;
+      final extentOffset = _controller.selection.extentOffset;
+      _controller.value = _controller.value.copyWith(
+        text: widget.value,
+        selection: TextSelection.collapsed(
+          offset: widget.value.length.clamp(0, widget.value.length),
+        ),
+        composing: TextRange.empty,
+      );
+      // Optional: Try to keep caret close to prior position if lengths are similar
+      if (baseOffset >= 0 &&
+          extentOffset >= 0 &&
+          widget.value.length >= baseOffset) {
+        _controller.selection = TextSelection.collapsed(
+          offset: baseOffset.clamp(0, widget.value.length),
+        );
+      }
+    }
+
+    // If divisibility changed, rebuild formatter
+    if (oldWidget.divisible != widget.divisible) {
+      _formatters = [
+        _QuantityFormatter(
+            maxFractionDigits: 8, allowDecimal: widget.divisible),
+      ];
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_handleLocalChange);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleLocalChange() {
+    final current = _controller.text;
+    if (current != widget.value) {
+      widget.onChanged(current);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final gradient = LinearGradient(
+      begin: Alignment.centerLeft,
+      end: Alignment.centerRight,
+      colors: isDark
+          ? const [goldenGradient1, yellow1, goldenGradient2, goldenGradient3]
+          : const [duskGradient2, duskGradient1],
+      stops: isDark ? const [0.0, .325, .65, 1.0] : const [0.0, 1.0],
+    );
+
+    final baseStyle = TextStyle(
+      fontFamily: 'Lato',
+      fontSize: widget.style?.fontSize ?? 14,
+      fontWeight: widget.style?.fontWeight ?? FontWeight.w400,
+      color: Colors.white, // solid for masking
+    );
+
+    return ShaderMask(
+      blendMode: BlendMode.srcIn,
+      shaderCallback: (bounds) => gradient.createShader(bounds),
+      child: TextField(
+        controller: _controller,
+        inputFormatters: _formatters,
+        keyboardType: TextInputType.numberWithOptions(
+          decimal: widget.divisible,
+          signed: false,
+        ),
+        smartDashesType: SmartDashesType.disabled,
+        smartQuotesType: SmartQuotesType.disabled,
+        textAlign: TextAlign.left,
+        style: baseStyle,
+        cursorColor: Colors.white,
+        decoration: const InputDecoration(
+          border: InputBorder.none,
+          isCollapsed: true,
+          contentPadding: EdgeInsets.zero,
+        ),
+      ),
+    );
+  }
+}
+
+/// A permissive-but-sanitizing formatter that:
+/// - Allows only digits (and one dot if allowDecimal)
+/// - Limits fraction length to [maxFractionDigits]
+/// - Allows intermediate states like "", ".", "0.", "123."
+/// - Converts commas to dots (useful for some keyboards)
+class _QuantityFormatter extends TextInputFormatter {
+  final int maxFractionDigits;
+  final bool allowDecimal;
+
+  _QuantityFormatter({
+    required this.maxFractionDigits,
+    required this.allowDecimal,
+  });
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    String text = newValue.text;
+
+    // Normalize comma to dot
+    if (allowDecimal && text.contains(',')) {
+      text = text.replaceAll(',', '.');
+    }
+
+    // Strip invalid chars
+    final buf = StringBuffer();
+    int dotCount = 0;
+    for (final ch in text.characters) {
+      if (_isDigit(ch)) {
+        buf.write(ch);
+      } else if (allowDecimal && ch == '.' && dotCount == 0) {
+        buf.write('.');
+        dotCount++;
+      }
+      // ignore everything else
+    }
+    text = buf.toString();
+
+    if (!allowDecimal) {
+      // No decimals allowed: digits only
+      return _withSelection(newValue, text);
+    }
+
+    // If there is a dot, clamp fraction length
+    final dotIndex = text.indexOf('.');
+    if (dotIndex >= 0) {
+      final int fractionLen = text.length - dotIndex - 1;
+      if (fractionLen > maxFractionDigits) {
+        text = text.substring(0, dotIndex + 1 + maxFractionDigits);
+      }
+    }
+
+    // Allow intermediate states: "", ".", "0.", "123."
+    // No further coercion here to avoid fighting the user.
+    return _withSelection(newValue, text);
+  }
+
+  bool _isDigit(String ch) =>
+      ch.codeUnitAt(0) ^ 0x30 <= 9 && ch.codeUnitAt(0) >= 0x30;
+
+  TextEditingValue _withSelection(TextEditingValue src, String text) {
+    final base = text.length;
+    return src.copyWith(
+      text: text,
+      selection: TextSelection.collapsed(offset: base),
+      composing: TextRange.empty,
+    );
+  }
+}
+
 String _stripLeadingZeros(String value, bool divisible) {
   if (value.isEmpty) return value;
 
@@ -1711,72 +1913,72 @@ class HorizonCard extends StatelessWidget {
 }
 // lib/presentation/common/transactions/gradient_quantity_input.dart
 
-class QuantityInputV2 extends StatelessWidget {
-  final TextEditingController controller;
-  final ValueChanged<String> onChanged;
-  final TextStyle? style;
-  final bool divisible; // allows 1.23 vs 123
-
-  const QuantityInputV2({
-    super.key,
-    required this.controller,
-    required this.onChanged,
-    this.style,
-    this.divisible = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    final gradient = LinearGradient(
-      begin: Alignment.centerLeft,
-      end: Alignment.centerRight,
-      colors: isDark
-          ? const [goldenGradient1, yellow1, goldenGradient2, goldenGradient3]
-          : const [duskGradient2, duskGradient1],
-      stops: isDark ? const [0.0, .325, .65, 1.0] : const [0.0, 1.0],
-    );
-
-    final baseStyle = TextStyle(
-      fontFamily: 'Lato',
-      fontSize: style?.fontSize ?? 14,
-      fontWeight: style?.fontWeight ?? FontWeight.w400,
-      color: Colors.white, // <- solid colour for masking
-    );
-
-    // TODO: we need this capability in a generic text input that can also take arbitrary styles.
-    // we keep reinventing the wheel
-    final fmt = divisible
-        ? FilteringTextInputFormatter.allow(
-            RegExp(r'^\d*\.?\d{0,8}$'),
-          )
-        : FilteringTextInputFormatter.digitsOnly;
-
-    return ShaderMask(
-      blendMode: BlendMode.srcIn, // keep only the text's alpha
-      shaderCallback: (bounds) => gradient.createShader(bounds),
-      child: TextField(
-        controller: controller,
-        inputFormatters: [fmt],
-        onChanged: onChanged,
-        keyboardType: TextInputType.numberWithOptions(
-          decimal: divisible,
-          signed: false,
-        ),
-        textAlign: TextAlign.left,
-        style: baseStyle,
-        cursorColor: Colors.white,
-        decoration: const InputDecoration(
-          border: InputBorder.none,
-          isCollapsed: true, // shrink to fit the text
-          contentPadding: EdgeInsets.zero,
-        ),
-      ),
-    );
-  }
-}
+// class QuantityInputV2 extends StatelessWidget {
+//   final TextEditingController controller;
+//   final ValueChanged<String> onChanged;
+//   final TextStyle? style;
+//   final bool divisible; // allows 1.23 vs 123
+//
+//   const QuantityInputV2({
+//     super.key,
+//     required this.controller,
+//     required this.onChanged,
+//     this.style,
+//     this.divisible = false,
+//   });
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     final theme = Theme.of(context);
+//     final isDark = theme.brightness == Brightness.dark;
+//
+//     final gradient = LinearGradient(
+//       begin: Alignment.centerLeft,
+//       end: Alignment.centerRight,
+//       colors: isDark
+//           ? const [goldenGradient1, yellow1, goldenGradient2, goldenGradient3]
+//           : const [duskGradient2, duskGradient1],
+//       stops: isDark ? const [0.0, .325, .65, 1.0] : const [0.0, 1.0],
+//     );
+//
+//     final baseStyle = TextStyle(
+//       fontFamily: 'Lato',
+//       fontSize: style?.fontSize ?? 14,
+//       fontWeight: style?.fontWeight ?? FontWeight.w400,
+//       color: Colors.white, // <- solid colour for masking
+//     );
+//
+//     // TODO: we need this capability in a generic text input that can also take arbitrary styles.
+//     // we keep reinventing the wheel
+//     final fmt = divisible
+//         ? FilteringTextInputFormatter.allow(
+//             RegExp(r'^\d*\.?\d{0,8}$'),
+//           )
+//         : FilteringTextInputFormatter.digitsOnly;
+//
+//     return ShaderMask(
+//       blendMode: BlendMode.srcIn, // keep only the text's alpha
+//       shaderCallback: (bounds) => gradient.createShader(bounds),
+//       child: TextField(
+//         controller: controller,
+//         inputFormatters: [fmt],
+//         onChanged: onChanged,
+//         keyboardType: TextInputType.numberWithOptions(
+//           decimal: divisible,
+//           signed: false,
+//         ),
+//         textAlign: TextAlign.left,
+//         style: baseStyle,
+//         cursorColor: Colors.white,
+//         decoration: const InputDecoration(
+//           border: InputBorder.none,
+//           isCollapsed: true, // shrink to fit the text
+//           contentPadding: EdgeInsets.zero,
+//         ),
+//       ),
+//     );
+//   }
+// }
 
 class QuantityText extends StatelessWidget {
   final String quantity;

@@ -981,9 +981,20 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     AmountInputChanged event,
     Emitter<SwapOrderFormModel> emit,
   ) {
+    // count trailing zeros
+    //
+
+    if (event.value.isEmpty) {
+      return;
+    }
+
+    print("\n \n \nAMOUNT INPUT CHANGED: ${event.value}");
+
     final amountInput = AmountInput.dirty(
       value: event.value,
     );
+    print(amountInput);
+    print("\n\n\n");
 
     emit(state.copyWith(
       amountInput: amountInput,

@@ -189,7 +189,7 @@ class _AssetAttachFormState extends State<AssetAttachForm> {
                     children: [
                       Expanded(
                           child: QuantityInputV2(
-                        controller: _quantityController,
+                        value: widget.state.attachQuantityInput.value,
                         onChanged: widget.actions.onAttachQuantityChanged,
                         style: const TextStyle(fontSize: 35),
                         divisible: widget.state.assetDivisibility,

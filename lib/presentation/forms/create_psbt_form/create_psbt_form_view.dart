@@ -292,8 +292,9 @@ class _CreatePsbtFormState extends State<CreatePsbtForm> {
                   child: QuantityInputV2(
                       style: const TextStyle(fontSize: 35),
                       divisible: true,
-                      controller:
-                          _btcController, // chat helpo me with a stateful controller hre,
+                      value: widget.state.btcPriceInput.value,
+                      // controller:
+                      //     _btcController, // chat helpo me with a stateful controller hre,
                       onChanged: (value) {
                         widget.actions.onBtcValueChanged(value);
                       })),
