@@ -693,6 +693,7 @@ class _OrderInputs extends State<OrderInputs> {
                                         height: 28,
                                         width: 48,
                                         child: HorizonButton(
+                                          disabled: !widget.state.hasBuyOrders,
                                           child: TextButtonContent(
                                               value: 'Floor',
                                               style: const TextStyle(
@@ -714,6 +715,7 @@ class _OrderInputs extends State<OrderInputs> {
                                         height: 28,
                                         width: 48,
                                         child: HorizonButton(
+                                          disabled: !widget.state.hasBuyOrders,
                                           child: TextButtonContent(
                                               value: '+5%',
                                               style: const TextStyle(
@@ -730,10 +732,12 @@ class _OrderInputs extends State<OrderInputs> {
                                           },
                                         ),
                                       ),
+                                      const SizedBox(width: 4),
                                       Container(
                                         height: 28,
                                         width: 48,
                                         child: HorizonButton(
+                                          disabled: !widget.state.hasBuyOrders,
                                           child: TextButtonContent(
                                               value: '+10%',
                                               style: const TextStyle(
@@ -755,6 +759,7 @@ class _OrderInputs extends State<OrderInputs> {
                                         height: 28,
                                         width: 48,
                                         child: HorizonButton(
+                                          disabled: !widget.state.hasBuyOrders,
                                           child: TextButtonContent(
                                               value: '+15%',
                                               style: const TextStyle(

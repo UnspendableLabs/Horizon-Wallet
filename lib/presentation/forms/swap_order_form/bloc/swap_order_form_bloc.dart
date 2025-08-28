@@ -337,6 +337,8 @@ class SwapOrderFormModel with FormzMixin {
   //       divisible: giveAsset.divisible, quantity: quantity.ceil());
   // }
 
+  bool get hasBuyOrders => buyOrders.isNotEmpty;
+
   AssetQuantity giveAssetQuantityWhenAmountGet({required Rational price}) {
     final desiredGetAmount = toRawUnits(
       Rational.tryParse(amountInput.value) ?? Rational.zero,
