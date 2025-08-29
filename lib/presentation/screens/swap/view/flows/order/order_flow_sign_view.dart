@@ -19,6 +19,7 @@ import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/repositories/fee_estimates_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/http_config.dart';
+import 'package:horizon/common/format.dart';
 import "./order_flow_sign_bloc.dart";
 import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
@@ -179,11 +180,11 @@ class _OrderFlowSignViewState extends State<OrderFlowSignView> {
                     width: 12,
                     height: 12),
                 const SizedBox(width: 4),
-                Text(widget.state.giveAsset),
+                Text(truncateAssetName(widget.state.giveAsset)),
                 const SizedBox(width: 4),
                 Text("/"),
                 const SizedBox(width: 4),
-                Text(widget.state.getAsset),
+                Text(truncateAssetName(widget.state.getAsset)),
               ],
             )),
         const SizedBox(
