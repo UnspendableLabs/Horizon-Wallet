@@ -334,17 +334,17 @@ class _SettingsViewState extends State<SettingsView> {
             context.push("/settings/resetWallet");
           },
         ),
-        SettingsItem(
-          title: 'Appearance',
-          icon:
-              AppIcons.spectaclesIcon(context: context, width: 24, height: 24),
-          trailing: ThemeToggle(
-            isDarkTheme: Theme.of(context).brightness == Brightness.dark,
-            onChanged: (value) {
-              context.read<ThemeBloc>().add(ThemeToggled());
-            },
-          ),
-        ),
+        // SettingsItem(
+        //   title: 'Appearance',
+        //   icon:
+        //       AppIcons.spectaclesIcon(context: context, width: 24, height: 24),
+        //   trailing: ThemeToggle(
+        //     isDarkTheme: Theme.of(context).brightness == Brightness.dark,
+        //     onChanged: (value) {
+        //       context.read<ThemeBloc>().add(ThemeToggled());
+        //     },
+        //   ),
+        // ),
         const SizedBox(height: 10),
         SettingsItem(
           title: 'Network',
