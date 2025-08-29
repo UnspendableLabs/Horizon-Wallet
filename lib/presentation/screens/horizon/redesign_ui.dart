@@ -6,6 +6,7 @@ import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/utils/app_icons.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 
 class QuantityInputV2 extends StatefulWidget {
   /// Controlled value from parent (single source of truth)
@@ -2064,7 +2065,7 @@ class QuantityText extends StatelessWidget {
         shaderCallback: (bounds) {
           return textGradient.createShader(bounds);
         },
-        child: Text(quantity, style: txtStyle));
+        child: AutoSizeText(quantity, maxLines: 1, style: txtStyle));
   }
 }
 

@@ -94,6 +94,7 @@ dependencies:
   meilisearch: ^0.17.0
   group_button: ^5.3.4
   lucide_icons: ^0.257.0
+  auto_size_text: ^3.0.0
 
 dev_dependencies:
   floor_generator: ^1.4.2

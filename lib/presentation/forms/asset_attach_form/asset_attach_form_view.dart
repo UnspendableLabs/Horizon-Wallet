@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:formz/formz.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
+import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
@@ -61,7 +62,7 @@ class AssetAttachFormProvider extends StatelessWidget {
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
 
     return RemoteDataTaskEitherBuilder<String, FeeEstimates>(
-        task:  _feeEstimatesRepository.getFeeEstimates(
+        task: _feeEstimatesRepository.getFeeEstimates(
             httpConfig: session.httpConfig),
         builder: (context, state, refresh) => state.fold(
             onInitial: () => const SizedBox.shrink(),
@@ -188,11 +189,14 @@ class _AssetAttachFormState extends State<AssetAttachForm> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Expanded(
-                          child: QuantityInputV2(
-                        value: widget.state.attachQuantityInput.value,
-                        onChanged: widget.actions.onAttachQuantityChanged,
-                        style: const TextStyle(fontSize: 35),
-                        divisible: widget.state.assetDivisibility,
+                          child: Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
+                        child: QuantityInputV2(
+                          value: widget.state.attachQuantityInput.value,
+                          onChanged: widget.actions.onAttachQuantityChanged,
+                          style: const TextStyle(fontSize: 35),
+                          divisible: widget.state.assetDivisibility,
+                        ),
                       )),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -206,7 +210,7 @@ class _AssetAttachFormState extends State<AssetAttachForm> {
                               width: 24,
                               height: 24),
                           const SizedBox(width: 8),
-                          Text(widget.state.assetName,
+                          Text(truncateAssetName(widget.state.assetName),
                               style: theme.textTheme.titleMedium!.copyWith(
                                 fontSize: 12,
                               )),
@@ -221,8 +225,7 @@ class _AssetAttachFormState extends State<AssetAttachForm> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Text(
-                          "${widget.state.assetBalanceNormalized} ${widget.state.assetName}",
+                      Text("${widget.state.assetBalanceNormalized}",
                           style: theme.textTheme.labelSmall
                               ?.copyWith(height: 1.2)),
                       const SizedBox(

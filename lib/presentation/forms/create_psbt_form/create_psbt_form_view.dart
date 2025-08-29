@@ -17,6 +17,7 @@ import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/extensions.dart';
+import 'package:horizon/common/format.dart';
 import './bloc/create_psbt_form_bloc.dart';
 
 // just putting this here for now
@@ -249,9 +250,12 @@ class _CreatePsbtFormState extends State<CreatePsbtForm> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
-                  child: QuantityText(
-                quantity: widget.quantityNormalized,
-                style: const TextStyle(fontSize: 35),
+                  child: Padding(
+                padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
+                child: QuantityText(
+                  quantity: widget.quantityNormalized,
+                  style: const TextStyle(fontSize: 35),
+                ),
               )),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -264,7 +268,7 @@ class _CreatePsbtFormState extends State<CreatePsbtForm> {
                       width: 24,
                       height: 24),
                   const SizedBox(width: 8),
-                  Text(widget.asset,
+                  Text((truncateAssetName(widget.asset)),
                       style: theme.textTheme.titleMedium!.copyWith(
                         fontSize: 12,
                       )),

@@ -65,3 +65,11 @@ String quantityRemoveTrailingZeros(String quantity) {
     double.parse(quantity),
   );
 }
+
+String truncateAssetName(String assetName) {
+  if (assetName.startsWith("A")) {
+    return "${assetName.substring(0, 4)}...${assetName.substring(assetName.length - 4)}";
+  }
+
+  return assetName;
+}
