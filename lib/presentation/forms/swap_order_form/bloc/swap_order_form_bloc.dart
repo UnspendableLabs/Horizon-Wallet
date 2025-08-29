@@ -930,12 +930,12 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
 
     final adjustmentFactorDecimal = Decimal.parse(adjustmentFactor.toString());
 
-    print("adjustmentFactorDecimal: $adjustmentFactorDecimal");
-
-    add(PriceInputChanged(
-        value: (displayPrice.toDecimal(scaleOnInfinitePrecision: 8) *
+    final Decimal result =
+        (displayPrice.toDecimal(scaleOnInfinitePrecision: 9) *
                 adjustmentFactorDecimal)
-            .toStringAsFixed(8)));
+            .ceil(scale: 8);
+
+    add(PriceInputChanged(value: result.toString()));
 
     // floor price
   }
