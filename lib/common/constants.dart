@@ -71,3 +71,5 @@ class TenToTheEigth {
   static BigInt bigIntValue = BigInt.from(100000000);
   static Rational rational = Rational(bigIntValue);
 }
+
+final dust = BigInt.from(546);

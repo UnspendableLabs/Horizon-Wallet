@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:decimal/decimal.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
+import 'package:horizon/common/constants.dart';
 
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/decryption_strategy.dart';
@@ -17,15 +18,24 @@ import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/address_service.dart';
 
-enum BtcPriceInputError { required, isNaN, isNegative }
+enum BtcPriceInputError { required, isNaN, isNegative, isDust }
 
 class BtcPriceInput extends FormzInput<String, BtcPriceInputError> {
-  const BtcPriceInput.pure() : super.pure('');
+  const BtcPriceInput.pure() : super.pure('0.00');
   const BtcPriceInput.dirty({required String value}) : super.dirty(value);
   @override
   BtcPriceInputError? validator(String value) {
     if (value.isEmpty) {
       return BtcPriceInputError.required;
+    }
+
+    BtcPriceInputError? dustError = asSats.fold(
+      () => null,
+      (sats) => sats <= dust ? BtcPriceInputError.isDust : null,
+    );
+
+    if (dustError != null) {
+      return dustError;
     }
 
     return asDecimal.fold(
@@ -165,8 +175,7 @@ class CreatePsbtFormBloc
           CreatePsbtFormModel(
             showSignPsbtModal: false,
             unsignedPsbtHex: const None(),
-            btcPriceInput:
-                const BtcPriceInput.dirty(value: "0.00"), // const value
+            btcPriceInput: const BtcPriceInput.pure(), // const value
             submissionStatus: FormzSubmissionStatus.initial,
           ),
         ) {
@@ -199,11 +208,13 @@ class CreatePsbtFormBloc
     BtcPriceInputChanged event,
     Emitter<CreatePsbtFormModel> emit,
   ) {
+    final btcPriceInput = BtcPriceInput.dirty(value: event.value);
+
     emit(
       state.copyWith(
         showSignPsbtModal: const Option.of(false),
         unsignedPsbtHex: const Option.none(),
-        btcPriceInput: BtcPriceInput.dirty(value: event.value), // mark it dirty
+        btcPriceInput: btcPriceInput, // mark it dirty
         submissionStatus: FormzSubmissionStatus.initial,
       ),
     );

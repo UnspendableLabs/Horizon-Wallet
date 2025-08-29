@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
 import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
@@ -324,14 +325,20 @@ class _CreatePsbtFormState extends State<CreatePsbtForm> {
           const SizedBox(
             height: 20,
           ),
-          if (widget.state.btcPriceInput.isValid)
-            SatsToUsdDisplay(
-                sats: widget.state.btcPriceInput.asSats
-                    .getOrElse(() => BigInt.zero),
-                child: (usdValue) => Text(
-                      '${usdValue.toStringAsFixed(2)} USD',
-                      style: theme.textTheme.labelSmall?.copyWith(height: 1.2),
-                    )),
+          if (!widget.state.btcPriceInput.isPure)
+            switch (widget.state.btcPriceInput.error) {
+              null => SatsToUsdDisplay(
+                  sats: widget.state.btcPriceInput.asSats
+                      .getOrElse(() => BigInt.zero),
+                  child: (usdValue) => Text(
+                        '${usdValue.toStringAsFixed(2)} USD',
+                        style:
+                            theme.textTheme.labelSmall?.copyWith(height: 1.2),
+                      )),
+              BtcPriceInputError.isDust => Text("price < dust ($dust sats)",
+                  style: theme.textTheme.labelSmall?.copyWith(height: 1.2)),
+              _ => const Text("")
+            }
         ],
       ),
     );
