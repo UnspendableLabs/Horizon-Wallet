@@ -199,7 +199,7 @@ class AssetAttachFormBloc
           assetBalance: assetBalance,
           assetDivisibility: assetDivisibility,
           attachQuantityInput: AttachQuantityInput.dirty(
-              value: assetBalanceNormalized,
+              value: "0",
               maxQuantity: BigInt.from(assetBalance),
               divisible: assetDivisibility),
           submissionStatus: FormzSubmissionStatus.initial,
