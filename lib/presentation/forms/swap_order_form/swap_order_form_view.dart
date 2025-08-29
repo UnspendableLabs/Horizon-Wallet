@@ -502,10 +502,7 @@ class SwapOrderForm extends StatelessWidget {
                 onSuccess: (simulatedOrders) {
                   return () => actions.onSubmitClicked(SubmitParams(
                         giveQuantity: state.giveQuantityInput.value,
-                        getQuantity: AssetQuantity(
-                            quantity:
-                                state.getQuantityInputRational.value.toBigInt(),
-                            divisible: state.getAsset.divisible),
+                        getQuantity: state.getQuantityInput.value,
                         simulatedOrders: simulatedOrders,
                       ));
                 },
