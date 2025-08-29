@@ -32,15 +32,15 @@ class QuantityInputV2 extends StatefulWidget {
 
 class _QuantityInputV2State extends State<QuantityInputV2> {
   late final TextEditingController _controller;
-  late final List<TextInputFormatter> _formatters;
+  // late final List<TextInputFormatter> _formatters;
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.value);
-    _formatters = [
-      _QuantityFormatter(maxFractionDigits: 8, allowDecimal: widget.divisible),
-    ];
+    // _formatters = [
+    //   _QuantityFormatter(maxFractionDigits: 8, allowDecimal: widget.divisible),
+    // ];
     _controller.addListener(_handleLocalChange);
   }
 
@@ -71,10 +71,10 @@ class _QuantityInputV2State extends State<QuantityInputV2> {
 
     // If divisibility changed, rebuild formatter
     if (oldWidget.divisible != widget.divisible) {
-      _formatters = [
-        _QuantityFormatter(
-            maxFractionDigits: 8, allowDecimal: widget.divisible),
-      ];
+      // _formatters = [
+      //   _QuantityFormatter(
+      //       maxFractionDigits: 8, allowDecimal: widget.divisible),
+      // ];
     }
   }
 
@@ -97,6 +97,10 @@ class _QuantityInputV2State extends State<QuantityInputV2> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    final formatters = [
+      _QuantityFormatter(maxFractionDigits: 8, allowDecimal: widget.divisible)
+    ];
+
     final gradient = LinearGradient(
       begin: Alignment.centerLeft,
       end: Alignment.centerRight,
@@ -118,7 +122,7 @@ class _QuantityInputV2State extends State<QuantityInputV2> {
       shaderCallback: (bounds) => gradient.createShader(bounds),
       child: TextField(
         controller: _controller,
-        inputFormatters: _formatters,
+        inputFormatters: formatters,
         keyboardType: TextInputType.numberWithOptions(
           decimal: widget.divisible,
           signed: false,

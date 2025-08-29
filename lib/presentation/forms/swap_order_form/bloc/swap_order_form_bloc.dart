@@ -811,6 +811,8 @@ sealed class SwapOrderFormEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+class MaxButtonClicked extends SwapOrderFormEvent {}
+
 class AmountTypeClicked extends SwapOrderFormEvent {}
 
 class PriceTypeClicked extends SwapOrderFormEvent {}
@@ -866,7 +868,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
         super(SwapOrderFormModel(
             expiry: none(),
             giveAssetBalance: giveAssetBalance,
-            amountInput: AmountInput.pure(),
+            amountInput: const AmountInput.dirty(value: "0"),
             priceInput: PriceInput.pure(),
             amountType: AmountType.get,
             priceType: PriceType.give,
@@ -882,6 +884,18 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     on<RelativePriceButtonClicked>(_handleRelativePriceValueClicked);
     on<SimulatedOrdersRequested>(_handleSimulateOrdersRequested);
     on<ExpiryChanged>(_handleExpiryChanged);
+    on<MaxButtonClicked>(_handleMaxButtonClicked);
+  }
+
+  _handleMaxButtonClicked(
+    MaxButtonClicked event,
+    Emitter<SwapOrderFormModel> emit,
+  ) {
+    if (state.amountType == AmountType.get) return;
+
+    emit(state.copyWith(
+        amountInput: AmountInput.dirty(
+            value: state.giveAssetBalance.quantityNormalized)));
   }
 
   _handleRelativePriceValueClicked(
@@ -1014,7 +1028,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
           amountType: state.amountType == AmountType.give
               ? AmountType.get
               : AmountType.give,
-          amountInput: AmountInput.pure()),
+          amountInput: const AmountInput.dirty(value: "0")),
     );
   }
 

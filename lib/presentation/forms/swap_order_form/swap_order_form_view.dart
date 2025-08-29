@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:horizon/common/format.dart';
+
 import 'package:rational/rational.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/asset_quantity.dart';
@@ -28,9 +30,60 @@ import 'package:group_button/group_button.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter/services.dart';
+
+class CustomButton extends StatelessWidget {
+  final String label;
+  final VoidCallback? onPressed;
+  final bool isDarkMode = true;
+  final bool disabled;
+
+  const CustomButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.disabled = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final Color backgroundColor = isDarkMode
+        ? const Color.fromARGB(19, 151, 112, 39)
+        : transparentPurple33;
+    final Color textColor = isDarkMode ? yellow1 : duskGradient2;
+
+    return MouseRegion(
+      cursor: disabled ? SystemMouseCursors.basic : SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: disabled ? null : onPressed,
+        child: Opacity(
+          opacity: disabled ? 0.5 : 1.0,
+          child: Container(
+            height: 24,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Center(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w400,
+                  color: textColor,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class _SummaryRow extends StatelessWidget {
   final String label;
@@ -92,73 +145,6 @@ class _SummaryRow extends StatelessWidget {
   }
 }
 
-class LimitPriceInput extends StatelessWidget {
-  final TextEditingController controller;
-  final ValueChanged<String> onChanged;
-  final TextStyle? style;
-  final bool divisible; // allows 1.23 vs 123
-
-  const LimitPriceInput({
-    super.key,
-    required this.controller,
-    required this.onChanged,
-    this.style,
-    this.divisible = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    final gradient = LinearGradient(
-      begin: Alignment.centerLeft,
-      end: Alignment.centerRight,
-      colors: isDark
-          ? const [goldenGradient1, yellow1, goldenGradient2, goldenGradient3]
-          : const [duskGradient2, duskGradient1],
-      stops: isDark ? const [0.0, .325, .65, 1.0] : const [0.0, 1.0],
-    );
-
-    final baseStyle = TextStyle(
-      fontFamily: 'Lato',
-      fontSize: style?.fontSize ?? 14,
-      fontWeight: style?.fontWeight ?? FontWeight.w400,
-      color: Colors.white, // <- solid colour for masking
-    );
-
-    // TODO: we need this capability in a generic text input that can also take arbitrary styles.
-    // we keep reinventing the wheel
-    final fmt = divisible
-        ? FilteringTextInputFormatter.allow(
-            RegExp(r'^\d*\.?\d{0,8}$'),
-          )
-        : FilteringTextInputFormatter.digitsOnly;
-
-    return ShaderMask(
-      blendMode: BlendMode.srcIn, // keep only the text's alpha
-      shaderCallback: (bounds) => gradient.createShader(bounds),
-      child: TextField(
-        controller: controller,
-        inputFormatters: [fmt],
-        onChanged: onChanged,
-        keyboardType: TextInputType.numberWithOptions(
-          decimal: divisible,
-          signed: false,
-        ),
-        textAlign: TextAlign.left,
-        style: baseStyle,
-        cursorColor: Colors.white,
-        decoration: const InputDecoration(
-          border: InputBorder.none,
-          isCollapsed: true, // shrink to fit the text
-          contentPadding: EdgeInsets.zero,
-        ),
-      ),
-    );
-  }
-}
-
 class _OrderRow extends StatelessWidget {
   final String quantity;
   final String price;
@@ -211,6 +197,7 @@ class SwapOrderFormActions {
   final Function(String value) onPriceChanged;
   final Function(RelativePriceValue value) onRelativePriceButtonClicked;
   final Function(DateTime? date) onExpiryChanged;
+  final VoidCallback onClickMax;
   // final Function(ContinueParams params)? onContinueClicked;
 
   SwapOrderFormActions({
@@ -221,6 +208,7 @@ class SwapOrderFormActions {
     required this.onPriceChanged,
     required this.onRelativePriceButtonClicked,
     required this.onExpiryChanged,
+    required this.onClickMax,
   });
 }
 
@@ -306,6 +294,11 @@ class _SwapOrderFormProviderState extends State<SwapOrderFormProvider> {
                     builder: (context, state) {
                       return widget.child(
                         SwapOrderFormActions(
+                            onClickMax: () {
+                              context
+                                  .read<SwapOrderFormBloc>()
+                                  .add(MaxButtonClicked());
+                            },
                             onExpiryChanged: (value) {
                               context
                                   .read<SwapOrderFormBloc>()
@@ -614,12 +607,14 @@ class _OrderInputs extends State<OrderInputs> {
           }
         },
         builder: (context, state) {
+          bool isDarkMode = true;
           return Column(
             children: [
               HorizonCard(
                 child: Column(
                   children: [
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Padding(
                           padding: const EdgeInsets.fromLTRB(4, 0, 0, 8),
@@ -633,11 +628,15 @@ class _OrderInputs extends State<OrderInputs> {
                                     .mutedDescriptionTextColor,
                               )),
                         ),
+                        AssetPill(
+                            onTap: widget.onClickAmountAsset,
+                            asset: widget.amountAsset,
+                            appIcons: appIcons,
+                            session: session,
+                            theme: theme),
                       ],
                     ),
-                    Text(widget.state.getQuantityInputRational.error
-                            ?.toString() ??
-                        ""),
+                    commonHeightSizedBox,
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -651,12 +650,26 @@ class _OrderInputs extends State<OrderInputs> {
                                 onChanged: (value) {
                                   widget.actions.onAmountChanged(value);
                                 })),
-                        AssetPill(
-                            onTap: widget.onClickAmountAsset,
-                            asset: widget.amountAsset,
-                            appIcons: appIcons,
-                            session: session,
-                            theme: theme),
+                        if (state.amountType == AmountType.give)
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(
+                                  "${widget.state.giveAssetBalance.quantityNormalized}",
+                                  style: theme.textTheme.labelSmall
+                                      ?.copyWith(height: 1.2)),
+                              const SizedBox(
+                                width: 10,
+                              ),
+                              CustomButton(
+                                label: "Max",
+                                onPressed: () {
+                                  widget.actions.onClickMax();
+                                },
+                              ),
+                            ],
+                          )
                       ],
                     ),
                   ],
@@ -673,114 +686,24 @@ class _OrderInputs extends State<OrderInputs> {
                       child: Column(
                         children: [
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              // Padding(
-                              //   padding: const EdgeInsets.fromLTRB(4, 0, 0, 8),
-                              //   child: Text(
-                              //       "At ${_limitPriceController.text} ${widget.priceString}",
-                              //       style: theme.textTheme.titleSmall!.copyWith(
-                              //         color: theme
-                              //             .extension<CustomThemeExtension>()!
-                              //             .mutedDescriptionTextColor,
-                              //       )),
-                              // ),
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(0, 0, 0, 8),
-                                child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      Container(
-                                        height: 28,
-                                        width: 48,
-                                        child: HorizonButton(
-                                          disabled: !widget.state.hasBuyOrders,
-                                          child: TextButtonContent(
-                                              value: 'Floor',
-                                              style: const TextStyle(
-                                                fontSize: 12,
-                                              )),
-                                          height: 28,
-                                          borderRadius: 8,
-                                          variant: ButtonVariant.black,
-                                          onPressed: () {
-                                            widget.actions
-                                                .onRelativePriceButtonClicked(
-                                              RelativePriceValue.floor,
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Container(
-                                        height: 28,
-                                        width: 48,
-                                        child: HorizonButton(
-                                          disabled: !widget.state.hasBuyOrders,
-                                          child: TextButtonContent(
-                                              value: '+5%',
-                                              style: const TextStyle(
-                                                fontSize: 12,
-                                              )),
-                                          height: 28,
-                                          borderRadius: 8,
-                                          variant: ButtonVariant.black,
-                                          onPressed: () {
-                                            widget.actions
-                                                .onRelativePriceButtonClicked(
-                                              RelativePriceValue.plus5,
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Container(
-                                        height: 28,
-                                        width: 48,
-                                        child: HorizonButton(
-                                          disabled: !widget.state.hasBuyOrders,
-                                          child: TextButtonContent(
-                                              value: '+10%',
-                                              style: const TextStyle(
-                                                fontSize: 12,
-                                              )),
-                                          height: 28,
-                                          borderRadius: 8,
-                                          variant: ButtonVariant.black,
-                                          onPressed: () {
-                                            widget.actions
-                                                .onRelativePriceButtonClicked(
-                                              RelativePriceValue.plus10,
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Container(
-                                        height: 28,
-                                        width: 48,
-                                        child: HorizonButton(
-                                          disabled: !widget.state.hasBuyOrders,
-                                          child: TextButtonContent(
-                                              value: '+15%',
-                                              style: const TextStyle(
-                                                fontSize: 12,
-                                              )),
-                                          height: 28,
-                                          borderRadius: 8,
-                                          variant: ButtonVariant.black,
-                                          onPressed: () {
-                                            widget.actions
-                                                .onRelativePriceButtonClicked(
-                                              RelativePriceValue.plus15,
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    ]),
-                              ),
-                            ],
-                          ),
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text("At price",
+                                    style: theme.textTheme.titleSmall!.copyWith(
+                                      color: theme
+                                          .extension<CustomThemeExtension>()!
+                                          .mutedDescriptionTextColor,
+                                    )),
+                                PriceToggle(
+                                    onTap: widget.onClickPriceAsset,
+                                    numerator: widget.state.priceNumeratorAsset,
+                                    denominator:
+                                        widget.state.priceDenominatorAsset,
+                                    appIcons: appIcons,
+                                    session: session,
+                                    theme: theme),
+                              ]),
+                          commonHeightSizedBox,
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -789,18 +712,57 @@ class _OrderInputs extends State<OrderInputs> {
                                   child: QuantityInputV2(
                                       style: const TextStyle(fontSize: 16),
                                       divisible: true,
-				    value: widget.state.priceInput.value,
+                                      value: widget.state.priceInput.value,
                                       onChanged: (value) {
                                         widget.actions.onPriceChanged(value);
                                       })),
-                              PriceToggle(
-                                  onTap: widget.onClickPriceAsset,
-                                  numerator: widget.state.priceNumeratorAsset,
-                                  denominator:
-                                      widget.state.priceDenominatorAsset,
-                                  appIcons: appIcons,
-                                  session: session,
-                                  theme: theme),
+                              Row(
+                                children: [
+                                  CustomButton(
+                                    label: "Floor",
+                                    disabled: !widget.state.hasBuyOrders,
+                                    onPressed: () {
+                                      widget.actions
+                                          .onRelativePriceButtonClicked(
+                                        RelativePriceValue.floor,
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(width: 4),
+                                  CustomButton(
+                                    disabled: !widget.state.hasBuyOrders,
+                                    label: "+5%",
+                                    onPressed: () {
+                                      widget.actions
+                                          .onRelativePriceButtonClicked(
+                                        RelativePriceValue.plus5,
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(width: 4),
+                                  CustomButton(
+                                    disabled: !widget.state.hasBuyOrders,
+                                    label: "+10%",
+                                    onPressed: () {
+                                      widget.actions
+                                          .onRelativePriceButtonClicked(
+                                        RelativePriceValue.plus10,
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(width: 4),
+                                  CustomButton(
+                                    label: "+15%",
+                                    disabled: !widget.state.hasBuyOrders,
+                                    onPressed: () {
+                                      widget.actions
+                                          .onRelativePriceButtonClicked(
+                                        RelativePriceValue.plus15,
+                                      );
+                                    },
+                                  ),
+                                ],
+                              )
                             ],
                           ),
                         ],
@@ -886,7 +848,7 @@ class PriceToggle extends StatelessWidget {
         },
         borderRadius: BorderRadius.circular(24),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
               border: Border.all(color: transparentWhite8, width: 1)),
@@ -901,14 +863,9 @@ class PriceToggle extends StatelessWidget {
               //     width: 24,
               //     height: 24),
               // const SizedBox(width: 8),
-              Text(numerator.displayName.toUpperCase(),
-                  style: theme.textTheme.titleMedium!.copyWith(
-                    fontSize: 12,
-                  )),
-              const SizedBox(width: 2),
-              const Text("/"),
-              const SizedBox(width: 2),
-              Text(denominator.displayName.toUpperCase(),
+
+              Text(
+                  "${truncateAssetName(numerator.displayName.toUpperCase())} / ${truncateAssetName(denominator.displayName.toUpperCase())}",
                   style: theme.textTheme.titleMedium!.copyWith(
                     fontSize: 12,
                   )),
@@ -947,7 +904,7 @@ class AssetPill extends StatelessWidget {
         },
         borderRadius: BorderRadius.circular(24),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
               border: Border.all(color: transparentWhite8, width: 1)),
@@ -966,6 +923,7 @@ class AssetPill extends StatelessWidget {
                   style: theme.textTheme.titleMedium!.copyWith(
                     fontSize: 12,
                   )),
+              const SizedBox(width: 2),
               // const SizedBox(width: 4),
               // AppIcons.caretDownIcon(
               //   context: context,
