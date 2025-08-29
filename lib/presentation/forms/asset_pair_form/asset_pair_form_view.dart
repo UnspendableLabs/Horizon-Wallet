@@ -199,6 +199,14 @@ class _AssetPairFormState extends State<AssetPairForm> {
                   Column(
                     children: [
                       HorizonRedesignDropdown<AssetPairFormOption>(
+                          enableSearch: true,
+                          filterFn: (
+                              {required String query,
+                              required AssetPairFormOption item}) {
+                            return item.name
+                                .toLowerCase()
+                                .contains(query.toLowerCase());
+                          },
                           itemPadding: const EdgeInsets.all(12),
                           items: widget.state.giveAssets
                               .map((item) => DropdownMenuItem(

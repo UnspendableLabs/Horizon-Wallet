@@ -816,13 +816,19 @@ class HorizonRedesignDropdown<T> extends StatefulWidget {
   final TextStyle? buttonTextStyle;
   final EdgeInsetsGeometry? itemPadding;
   final EdgeInsetsGeometry? selectorPadding;
+  final bool enableSearch;
 
+  final bool Function({required String query, required T item})? filterFn;
+
+  static bool _defaultFilterFn<T>({required String query, required T item}) =>
+      true;
   const HorizonRedesignDropdown({
     super.key,
     required this.items,
     required this.onChanged,
     required this.selectedValue,
     required this.hintText,
+    this.filterFn,
     this.selectedItemBuilder,
     this.useModal = true,
     this.gradBorder = true,
@@ -830,9 +836,13 @@ class HorizonRedesignDropdown<T> extends StatefulWidget {
     this.buttonBg,
     this.buttonTextStyle,
     this.itemPadding,
+    this.enableSearch = false,
     this.selectorPadding =
         const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
   });
+
+  bool Function({required String query, required T item})
+      get effectiveFilterFn => filterFn ?? _defaultFilterFn;
 
   @override
   State<HorizonRedesignDropdown<T>> createState() =>
@@ -846,11 +856,22 @@ class _HorizonRedesignDropdownState<T>
   OverlayEntry? _overlayEntry;
   final focusNode = FocusNode();
 
+  late TextEditingController _searchQuery;
+
+  List<DropdownMenuItem<T>> get filteredItems => widget.items.where((item) {
+        if (_searchQuery.value.text.isEmpty) return true;
+        return widget.effectiveFilterFn(
+            query: _searchQuery.value.text, item: item.value!);
+      }).toList();
   @override
   void initState() {
     super.initState();
     focusNode.addListener(() {
       setState(() {});
+    });
+    _searchQuery = TextEditingController();
+    _searchQuery.addListener(() {
+      _overlayEntry?.markNeedsBuild();
     });
   }
 
@@ -858,6 +879,7 @@ class _HorizonRedesignDropdownState<T>
   void dispose() {
     _overlayEntry?.remove();
     focusNode.dispose();
+    _searchQuery.dispose();
     super.dispose();
   }
 
@@ -923,9 +945,20 @@ class _HorizonRedesignDropdownState<T>
                               : transparentBlack8),
                         ),
                         child: SingleChildScrollView(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: widget.items.map((item) {
+                          child:
+                              Column(mainAxisSize: MainAxisSize.min, children: [
+                            if (widget.enableSearch) ...[
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: HorizonTextField(
+                                    hintText: 'Search',
+                                    controller: _searchQuery,
+                                    onChanged: (value) {
+                                      print("value $value");
+                                    }),
+                              ),
+                            ],
+                            ...filteredItems.map((item) {
                               return Material(
                                 color: Colors.transparent,
                                 child: InkWell(
@@ -951,7 +984,7 @@ class _HorizonRedesignDropdownState<T>
                                 ),
                               );
                             }).toList(),
-                          ),
+                          ]),
                         ),
                       ),
                     ),
@@ -990,48 +1023,60 @@ class _HorizonRedesignDropdownState<T>
                 color: isDarkMode ? grey5 : grey1,
               ),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: widget.items.map((item) {
-                  TextStyle textStyle = theme.dropdownMenuTheme.textStyle!;
-                  if (item.child is Text) {
-                    final Text text = item.child as Text;
-                    textStyle = textStyle.copyWith(
-                      color: text.style?.color,
-                      fontSize: text.style?.fontSize,
-                      fontWeight: text.style?.fontWeight,
-                      fontStyle: text.style?.fontStyle,
-                      letterSpacing: text.style?.letterSpacing,
-                      wordSpacing: text.style?.wordSpacing,
-                      height: text.style?.height,
-                      decoration: text.style?.decoration,
-                    );
-                  }
-                  return Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {
-                        widget.onChanged(item.value);
-                        _toggleDropdown();
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 16,
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: DefaultTextStyle(
-                                style: textStyle,
-                                child: item.child,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                children: [
+                  if (widget.enableSearch) ...[
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: HorizonTextField(
+                          controller: _searchQuery,
+                          hintText: 'Search',
+                          onChanged: (value) {
+                            print("onchanged");
+                            print(value);
+                          }),
                     ),
-                  );
-                }).toList(),
+                  ],
+                  ListView(
+                    children: filteredItems.map((item) {
+                      TextStyle textStyle = theme.dropdownMenuTheme.textStyle!;
+                      if (item.child is Text) {
+                        final Text text = item.child as Text;
+                        textStyle = textStyle.copyWith(
+                          color: text.style?.color,
+                          fontSize: text.style?.fontSize,
+                          fontWeight: text.style?.fontWeight,
+                          fontStyle: text.style?.fontStyle,
+                          letterSpacing: text.style?.letterSpacing,
+                          wordSpacing: text.style?.wordSpacing,
+                          height: text.style?.height,
+                          decoration: text.style?.decoration,
+                        );
+                      }
+                      return InkWell(
+                        onTap: () {
+                          widget.onChanged(item.value);
+                          _toggleDropdown();
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 16,
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: DefaultTextStyle(
+                                  style: textStyle,
+                                  child: item.child,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
               ),
             ),
           ),
@@ -1078,7 +1123,7 @@ class _HorizonRedesignDropdownState<T>
                               ? widget.selectedItemBuilder!(
                                   widget.selectedValue as T)
                               : Text(
-                                  (widget.items
+                                  (filteredItems
                                           .firstWhere((item) =>
                                               item.value ==
                                               widget.selectedValue)
@@ -1144,7 +1189,7 @@ class _HorizonRedesignDropdownState<T>
                                 ? widget.selectedItemBuilder!(
                                     widget.selectedValue as T)
                                 : Text(
-                                    (widget.items
+                                    (filteredItems
                                             .firstWhere((item) =>
                                                 item.value ==
                                                 widget.selectedValue)

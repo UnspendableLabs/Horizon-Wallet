@@ -123,6 +123,11 @@ class _SendFormTokenSelectorState extends State<SendFormTokenSelector> {
       child: Column(
         children: [
           HorizonRedesignDropdown<TokenSelectorOption>(
+              enableSearch: true,
+              filterFn: (
+                  {required String query, required TokenSelectorOption item}) {
+                return item.name.toLowerCase().contains(query.toLowerCase());
+              },
               itemPadding: const EdgeInsets.all(12),
               items: widget.state.balances
                   .map((item) => DropdownMenuItem(
