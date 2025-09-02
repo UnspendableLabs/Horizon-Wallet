@@ -8,6 +8,7 @@ import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/repositories/fee_estimates_repository.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:horizon/presentation/common/transactions/transaction_fee_selection.dart';
@@ -196,32 +197,34 @@ class _SendComposeFormState extends State<SendComposeForm> {
             ],
           );
         }),
-        SizedBox(
-          height: 32,
-          child: IntrinsicWidth(
-            child: HorizonButton(
-                variant: ButtonVariant.purple,
-                child: WidgetButtonContent(
-                    value: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      AppIcons.plusIcon(
-                        context: context,
-                        width: 24,
-                        height: 24,
-                      ),
-                      const SizedBox(width: 4),
-                      Text("Add Another Entry",
-                          style: theme.textTheme.titleSmall),
-                    ],
-                  ),
-                )),
-                onPressed: widget.actions.onAddEntry),
+        if (GetIt.I<Config>().mpmaEnabled) ...[
+          SizedBox(
+            height: 32,
+            child: IntrinsicWidth(
+              child: HorizonButton(
+                  variant: ButtonVariant.purple,
+                  child: WidgetButtonContent(
+                      value: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        AppIcons.plusIcon(
+                          context: context,
+                          width: 24,
+                          height: 24,
+                        ),
+                        const SizedBox(width: 4),
+                        Text("Add Another Entry",
+                            style: theme.textTheme.titleSmall),
+                      ],
+                    ),
+                  )),
+                  onPressed: widget.actions.onAddEntry),
+            ),
           ),
-        ),
-        const SizedBox(height: 24),
+          const SizedBox(height: 24),
+        ],
         TransactionFeeSelection(
             feeEstimates: widget.state.feeEstimates,
             selectedFeeOption: widget.state.feeOptionInput.value,

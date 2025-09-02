@@ -63,4 +63,10 @@ class ConfigImpl implements Config {
     const envValue = String.fromEnvironment('HORIZON_DEFAULT_ENVELOPE_SIZE');
     return envValue.isNotEmpty ? int.parse(envValue) : 546;
   }
+
+  @override
+  bool get mpmaEnabled {
+    return const bool.fromEnvironment('HORIZON_MPMA_ENABLED',
+        defaultValue: false);
+  }
 }
