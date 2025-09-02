@@ -107,16 +107,28 @@ class LoginFormBloc extends Bloc<FormEvent, FormState> {
     try {
       final password = state.password.value;
 
+      print("password $password");
+
       final encryptedMnemonic = (await _mnemonicRepository.get()).getOrThrow();
 
+      print("encryptedMnemonic $encryptedMnemonic");
+
       await encryptionService.decrypt(encryptedMnemonic, password);
+
+      print("after decrypt");
 
       String decryptionKey =
           await encryptionService.getDecryptionKey(encryptedMnemonic, password);
 
+      print("decryptionKey $decryptionKey");
+
       await inMemoryKeyRepository.setMnemonicKey(key: decryptionKey);
 
+      print("after setMnemonicKey");
+
       final wallet = await _walletConfigRepository.getCurrent();
+
+      print("wallet $wallet");
 
       // TODO: audit this
       final importedAddresses = await importedAddressRepository.getAll();
@@ -129,6 +141,8 @@ class LoginFormBloc extends Bloc<FormEvent, FormState> {
         // importedAddressMap[importedAddress.address] = decryptionKey;
         importedAddressMap[importedAddress.encryptedWif] = decryptionKey;
       }
+
+      print("importedAddressMap $importedAddressMap");
 
       await inMemoryKeyRepository.setMap(map: importedAddressMap);
 

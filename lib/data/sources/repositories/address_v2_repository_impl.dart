@@ -11,6 +11,10 @@ import "package:horizon/domain/repositories/imported_address_repository.dart";
 import 'package:horizon/domain/services/seed_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 
+bool addressIsSegwit(String address) {
+  return address.startsWith('bc1') || address.startsWith('tb1');
+}
+
 class AddressV2RepositoryImpl implements AddressV2Repository {
   final WalletConfigRepository _walletConfigRepository;
   final AddressService _addressService;
@@ -37,6 +41,8 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
   Future<List<AddressV2>> getByAccount(AccountV2 account) async {
     const numAddresses = 1;
 
+    print("here is the account $account");
+
     TaskEither<String, List<AddressV2>> task = switch (account) {
       Bip32(walletConfigID: var walletConfigID, index: var index) => _walletConfigRepository
           .getByIDT(
@@ -57,7 +63,9 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
       ImportedWIF(address: var address, encryptedWIF: var encryptedWIF) =>
         TaskEither.right([
           AddressV2(
-            type: AddressV2Type.p2wpkh, // TODO: this should not be hard coded
+            type: addressIsSegwit(address)
+                ? AddressV2Type.p2wpkh
+                : AddressV2Type.p2pkh,
             address: address,
             derivation: WIF(value: encryptedWIF),
             publicKey: "", // TODO: need to add public key
@@ -66,7 +74,6 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
     };
 
     final result = await task.run();
-
     return result.fold(
         (err) => throw Exception(
             "$err: Error deriving addresses for account: ${account.name}"),

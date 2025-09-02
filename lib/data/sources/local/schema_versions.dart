@@ -726,12 +726,187 @@ class Shape8 extends i0.VersionedTable {
       columnsByName['encrypted_wif']! as i1.GeneratedColumn<String>;
 }
 
+final class Schema7 extends i0.VersionedSchema {
+  Schema7({required super.database}) : super(version: 7);
+  @override
+  late final List<i1.DatabaseSchemaEntity> entities = [
+    wallets,
+    accounts,
+    addresses,
+    transactions,
+    importedAddresses,
+    walletConfigs,
+  ];
+  late final Shape4 wallets = Shape4(
+      source: i0.VersionedTable(
+        entityName: 'wallets',
+        withoutRowId: false,
+        isStrict: false,
+        tableConstraints: [
+          'PRIMARY KEY(uuid)',
+        ],
+        columns: [
+          _column_0,
+          _column_1,
+          _column_2,
+          _column_22,
+          _column_3,
+          _column_4,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  late final Shape1 accounts = Shape1(
+      source: i0.VersionedTable(
+        entityName: 'accounts',
+        withoutRowId: false,
+        isStrict: false,
+        tableConstraints: [
+          'PRIMARY KEY(uuid)',
+        ],
+        columns: [
+          _column_0,
+          _column_1,
+          _column_5,
+          _column_6,
+          _column_7,
+          _column_8,
+          _column_9,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  late final Shape5 addresses = Shape5(
+      source: i0.VersionedTable(
+        entityName: 'addresses',
+        withoutRowId: false,
+        isStrict: false,
+        tableConstraints: [
+          'PRIMARY KEY(address)',
+        ],
+        columns: [
+          _column_10,
+          _column_11,
+          _column_12,
+          _column_26,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  late final Shape3 transactions = Shape3(
+      source: i0.VersionedTable(
+        entityName: 'transactions',
+        withoutRowId: false,
+        isStrict: false,
+        tableConstraints: [
+          'PRIMARY KEY(hash)',
+        ],
+        columns: [
+          _column_13,
+          _column_14,
+          _column_15,
+          _column_16,
+          _column_23,
+          _column_24,
+          _column_19,
+          _column_25,
+          _column_21,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  late final Shape9 importedAddresses = Shape9(
+      source: i0.VersionedTable(
+        entityName: 'imported_addresses',
+        withoutRowId: false,
+        isStrict: false,
+        tableConstraints: [
+          'PRIMARY KEY(encrypted_wif, network, type)',
+        ],
+        columns: [
+          _column_31,
+          _column_32,
+          _column_33,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  late final Shape10 walletConfigs = Shape10(
+      source: i0.VersionedTable(
+        entityName: 'wallet_configs',
+        withoutRowId: false,
+        isStrict: false,
+        tableConstraints: [
+          'PRIMARY KEY(network, base_path, seed_derivation)',
+        ],
+        columns: [
+          _column_0,
+          _column_32,
+          _column_34,
+          _column_35,
+          _column_36,
+          _column_37,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+}
+
+class Shape9 extends i0.VersionedTable {
+  Shape9({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<String> get encryptedWif =>
+      columnsByName['encrypted_wif']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get network =>
+      columnsByName['network']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get type_ =>
+      columnsByName['type']! as i1.GeneratedColumn<String>;
+}
+
+i1.GeneratedColumn<String> _column_31(String aliasedName) =>
+    i1.GeneratedColumn<String>('encrypted_wif', aliasedName, false,
+        type: i1.DriftSqlType.string, $customConstraints: 'NOT NULL');
+i1.GeneratedColumn<String> _column_32(String aliasedName) =>
+    i1.GeneratedColumn<String>('network', aliasedName, false,
+        type: i1.DriftSqlType.string);
+i1.GeneratedColumn<String> _column_33(String aliasedName) =>
+    i1.GeneratedColumn<String>('type', aliasedName, false,
+        type: i1.DriftSqlType.string);
+
+class Shape10 extends i0.VersionedTable {
+  Shape10({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<String> get uuid =>
+      columnsByName['uuid']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get network =>
+      columnsByName['network']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get basePath =>
+      columnsByName['base_path']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get accountIndexStart =>
+      columnsByName['account_index_start']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get accountIndexEnd =>
+      columnsByName['account_index_end']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get seedDerivation =>
+      columnsByName['seed_derivation']! as i1.GeneratedColumn<String>;
+}
+
+i1.GeneratedColumn<String> _column_34(String aliasedName) =>
+    i1.GeneratedColumn<String>('base_path', aliasedName, false,
+        type: i1.DriftSqlType.string);
+i1.GeneratedColumn<int> _column_35(String aliasedName) =>
+    i1.GeneratedColumn<int>('account_index_start', aliasedName, false,
+        type: i1.DriftSqlType.int);
+i1.GeneratedColumn<int> _column_36(String aliasedName) =>
+    i1.GeneratedColumn<int>('account_index_end', aliasedName, false,
+        type: i1.DriftSqlType.int);
+i1.GeneratedColumn<String> _column_37(String aliasedName) =>
+    i1.GeneratedColumn<String>('seed_derivation', aliasedName, false,
+        type: i1.DriftSqlType.string);
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,
   required Future<void> Function(i1.Migrator m, Schema4 schema) from3To4,
   required Future<void> Function(i1.Migrator m, Schema5 schema) from4To5,
   required Future<void> Function(i1.Migrator m, Schema6 schema) from5To6,
+  required Future<void> Function(i1.Migrator m, Schema7 schema) from6To7,
 }) {
   return (currentVersion, database) async {
     switch (currentVersion) {
@@ -760,6 +935,11 @@ i0.MigrationStepWithVersion migrationSteps({
         final migrator = i1.Migrator(database, schema);
         await from5To6(migrator, schema);
         return 6;
+      case 6:
+        final schema = Schema7(database: database);
+        final migrator = i1.Migrator(database, schema);
+        await from6To7(migrator, schema);
+        return 7;
       default:
         throw ArgumentError.value('Unknown migration from $currentVersion');
     }
@@ -772,6 +952,7 @@ i1.OnUpgrade stepByStep({
   required Future<void> Function(i1.Migrator m, Schema4 schema) from3To4,
   required Future<void> Function(i1.Migrator m, Schema5 schema) from4To5,
   required Future<void> Function(i1.Migrator m, Schema6 schema) from5To6,
+  required Future<void> Function(i1.Migrator m, Schema7 schema) from6To7,
 }) =>
     i0.VersionedSchema.stepByStepHelper(
         step: migrationSteps(
@@ -780,4 +961,5 @@ i1.OnUpgrade stepByStep({
       from3To4: from3To4,
       from4To5: from4To5,
       from5To6: from5To6,
+      from6To7: from6To7,
     ));

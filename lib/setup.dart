@@ -79,6 +79,9 @@ import 'package:horizon/data/sources/repositories/asset_repository_impl.dart';
 import 'package:horizon/domain/repositories/order_repository.dart';
 import 'package:horizon/data/sources/repositories/order_repository_impl.dart';
 
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/data/sources/repositories/wallet_repository_impl.dart';
+
 import 'package:horizon/domain/repositories/transaction_repository.dart';
 import 'package:horizon/data/sources/repositories/transaction_repository_impl.dart';
 import 'package:horizon/data/sources/local/dao/transactions_dao.dart';
@@ -414,6 +417,9 @@ void setup() {
 
   injector.registerSingleton<AccountV2Repository>(
       AccountV2RepositoryImpl(injector.get<DatabaseManager>().database));
+
+  injector.registerSingleton<WalletRepositoryDeprecated>(
+      WalletRepositoryImpl(injector.get<DatabaseManager>().database));
 
   injector.registerSingleton<MnemonicRepository>(
       MnemonicRepositoryImpl(secureKVService: GetIt.I<SecureKVService>()));

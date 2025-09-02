@@ -10,8 +10,9 @@ import 'package:horizon/domain/entities/wallet_config.dart';
 // import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/account_v2_repository.dart';
 import 'package:horizon/domain/repositories/address_v2_repository.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/mnemonic_repository.dart';
-// import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/repositories/wallet_config_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
@@ -68,6 +69,8 @@ class SessionStateCubit extends Cubit<SessionState> {
   final EncryptionService encryptionService;
   final SecureKVService kvService;
   final MnemonicRepository _mnemonicRepository;
+  final AddressRepositoryDeprecated _addressRepositoryDeprecated;
+  final WalletRepositoryDeprecated _walletRepositoryDeprecated;
 
   SessionStateCubit({
     required this.kvService,
@@ -79,12 +82,16 @@ class SessionStateCubit extends Cubit<SessionState> {
     WalletConfigRepository? walletConfigRepository,
     AccountV2Repository? accountV2Repository,
     AddressV2Repository? addressV2Repository,
+    AddressRepositoryDeprecated? addressRepositoryDeprecated,
+    WalletRepositoryDeprecated? walletRepositoryDeprecated,
     required this.analyticsService,
     required this.inMemoryKeyRepository,
     required this.encryptionService,
     mnemonicRepository,
   })  : _settingsRepository =
             settingsRepository ?? GetIt.I<SettingsRepository>(),
+        _walletRepositoryDeprecated =
+            walletRepositoryDeprecated ?? GetIt.I<WalletRepositoryDeprecated>(),
         _accountV2Repository =
             accountV2Repository ?? GetIt.I<AccountV2Repository>(),
         _mnemonicRepository =
@@ -93,12 +100,31 @@ class SessionStateCubit extends Cubit<SessionState> {
             walletConfigRepository ?? GetIt.I<WalletConfigRepository>(),
         _addressV2Repository =
             addressV2Repository ?? GetIt.I<AddressV2Repository>(),
+        _addressRepositoryDeprecated = addressRepositoryDeprecated ??
+            GetIt.I<AddressRepositoryDeprecated>(),
         super(const SessionState.initial());
 
   Future<GetSessionStateResponse> _getSessionState() async {
     final mnemonic = await _mnemonicRepository.get();
 
     if (mnemonic.isNone()) {
+      // if mnemonic is not found, it's possible we've just migrated
+      // from schema 6 to 7.
+      // therefore, we:
+      //    1) query the legacy wallet object,
+      //    2) read the encrypted mnemonic
+      //    3) set it in the new mnemonic repository
+      //    4) log user out so they can reauth.
+
+      final wallet = await _walletRepositoryDeprecated.getCurrentWallet();
+
+      if (wallet != null && wallet.encryptedMnemonic != null) {
+        await _mnemonicRepository.set(
+            encryptedMnemonic: wallet.encryptedMnemonic!);
+
+        return LoggedOut();
+      }
+
       return NoWallet();
     }
 
@@ -145,6 +171,14 @@ class SessionStateCubit extends Cubit<SessionState> {
     try {
       final sessionState = await _getSessionState();
 
+      final sesssinStateStr = switch (sessionState) {
+        NoWallet() => "NoWallet",
+        LoggedOut() => "LoggedOut",
+        LoggedIn(decryptionKey: _) => "LoggedIn",
+      };
+
+      print("session state: $sesssinStateStr");
+
       switch (sessionState) {
         case NoWallet():
           emit(const SessionState.onboarding(Onboarding.initial()));
@@ -155,9 +189,12 @@ class SessionStateCubit extends Cubit<SessionState> {
         case LoggedIn(decryptionKey: var decryptionKey):
           WalletConfig walletConfig =
               await _walletConfigRepository.getCurrent();
+
           // TODO: we may need to handle to restore something here
           // analyticsService.trackAnonymousEvent('wallet_opened',
           //     properties: {'distinct_id': wallet.uuid});
+
+          // okay, we have to do some work to reconcile imported addresses here
 
           List<AccountV2> accounts =
               await _accountV2Repository.getByWalletConfig(
@@ -176,6 +213,8 @@ class SessionStateCubit extends Cubit<SessionState> {
           // TODO: the arg here doesn't matter
           List<AddressV2> addresses =
               await _addressV2Repository.getByAccount(currentAccount);
+
+          print(addresses);
 
           emit(SessionState.success(SessionStateSuccess(
             httpConfig: httpConfigForNetwork(walletConfig.network),

@@ -1,14 +1,21 @@
 import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/domain/repositories/mnemonic_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
 import "package:fpdart/fpdart.dart";
+import "package:get_it/get_it.dart";
 
 class MnemonicRepositoryImpl implements MnemonicRepository {
   // TODO: these keys should be centralized somewhere to ensure uniqueness
   final _key = '__ENCRYPTED_MNEMONIC';
 
   final SecureKVService secureKVService;
+  final WalletRepositoryDeprecated _walletRepository;
 
-  MnemonicRepositoryImpl({required this.secureKVService});
+  MnemonicRepositoryImpl({
+    required this.secureKVService,
+    WalletRepositoryDeprecated? walletRepository,
+  }) : _walletRepository =
+            walletRepository ?? GetIt.I<WalletRepositoryDeprecated>();
 
   @override
   Future<Option<String>> get() async {

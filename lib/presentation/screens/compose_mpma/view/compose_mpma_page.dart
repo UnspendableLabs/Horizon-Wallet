@@ -402,15 +402,15 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
         );
       }),
       const SizedBox(height: 16.0),
-      Center(
-        child: TextButton.icon(
-          onPressed: loading
-              ? null
-              : () => context.read<ComposeMpmaBloc>().add(NewEntryAdded()),
-          icon: const Icon(Icons.add),
-          label: const Text('Add another entry'),
-        ),
-      ),
+      // Center(
+      //   child: TextButton.icon(
+      //     onPressed: loading
+      //         ? null
+      //         : () => context.read<ComposeMpmaBloc>().add(NewEntryAdded()),
+      //     icon: const Icon(Icons.add),
+      //     label: const Text('Add another entry'),
+      //   ),
+      // ),
     ];
   }
 

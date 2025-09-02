@@ -1,8 +1,10 @@
 import 'package:get_it/get_it.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
@@ -88,6 +90,10 @@ class ImportAddressPkBloc
         await $(
           _importedAddressRepository.insertT(
             address: ImportedAddress(
+              type: switch (event.format) {
+                ImportAddressPkFormat.segwit => AddressV2Type.p2wpkh,
+                ImportAddressPkFormat.legacy => AddressV2Type.p2pkh,
+              },
               encryptedWif: encryptedWIF,
               network: httpConfig.network,
             ),
@@ -96,6 +102,10 @@ class ImportAddressPkBloc
         );
 
         return ImportedAddress(
+          type: switch (event.format) {
+            ImportAddressPkFormat.segwit => AddressV2Type.p2wpkh,
+            ImportAddressPkFormat.legacy => AddressV2Type.p2pkh,
+          },
           encryptedWif: encryptedWIF,
           network: httpConfig.network,
         );

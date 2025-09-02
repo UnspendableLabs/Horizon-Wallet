@@ -88,6 +88,7 @@ class AccountV2RepositoryImpl implements AccountV2Repository {
                           "invariant: failed to read in memory key map")
                   .flatMap((map) => TaskEither.fromOption(
                       Option.fromNullable(map[address.encryptedWif]),
+                      // TODO: this should trigger a logout.
                       () => "invariant: key not found"))
                   .flatMap((key) => _encryptionService.decryptWithKeyT(
                       data: address.encryptedWif,
@@ -119,7 +120,10 @@ class AccountV2RepositoryImpl implements AccountV2Repository {
 
     return result.fold(
       (error) => throw Exception(error.toString()),
-      (importedAddresses) => importedAddresses,
+      (importedAddresses) {
+        print("imported addresses: $importedAddresses");
+        return importedAddresses;
+      },
     );
   }
 }

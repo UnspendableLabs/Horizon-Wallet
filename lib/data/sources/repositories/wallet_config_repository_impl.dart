@@ -27,7 +27,14 @@ class WalletConfigRepositoryImpl implements WalletConfigRepository {
   @override
   Future<entity.WalletConfig> getCurrent() async {
     if (_settingsRepository.walletConfigID == null) {
-      throw Exception("WalletConfigID is null");
+      final all = await getAll();
+
+      if (all.isEmpty) {
+        throw Exception("No WalletConfig found");
+      }
+      _settingsRepository.setWalletConfigID(all.first.uuid);
+
+      return all.first;
     }
 
     final walletConfig = await getByID(id: _settingsRepository.walletConfigID!);

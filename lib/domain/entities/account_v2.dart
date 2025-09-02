@@ -46,4 +46,11 @@ class ImportedWIF extends AccountV2 {
     });
     return sha256.convert(utf8.encode(input)).toString();
   }
+
+  @override
+  toString() {
+	return 'ImportedWIF(network: $network, address: $address, encryptedWIF: $encryptedWIF)';
+  }
+
+
 }

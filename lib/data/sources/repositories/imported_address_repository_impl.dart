@@ -3,6 +3,7 @@ import "package:horizon/data/sources/local/dao/imported_addresses_dao.dart";
 import "package:horizon/data/sources/local/db.dart" as local;
 import "package:horizon/domain/entities/imported_address.dart" as entity;
 import "package:horizon/domain/entities/network.dart";
+import "package:horizon/domain/entities/address_v2.dart";
 import "package:horizon/domain/repositories/imported_address_repository.dart";
 import 'package:horizon/extensions.dart';
 
@@ -17,14 +18,24 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
   @override
   Future<void> insert(entity.ImportedAddress address) async {
     await _importedAddressDao.insertImportedAddress(ImportedAddressModel(
-        encryptedWif: address.encryptedWif, network: address.network.name));
+        type_: switch (address.type) {
+          AddressV2Type.p2pkh => "p2pkh",
+          AddressV2Type.p2wpkh => "p2wpkh",
+        },
+        encryptedWif: address.encryptedWif,
+        network: address.network.name));
   }
 
   @override
   Future<void> insertMany(List<entity.ImportedAddress> addresses) async {
     List<ImportedAddressModel> addresses_ = addresses
         .map((a) => ImportedAddressModel(
-            encryptedWif: a.encryptedWif, network: a.network.name))
+            type_: switch (a.type) {
+              AddressV2Type.p2pkh => "p2pkh",
+              AddressV2Type.p2wpkh => "p2wpkh",
+            },
+            encryptedWif: a.encryptedWif,
+            network: a.network.name))
         .toList();
 
     _importedAddressDao.insertMultipleImportedAddresses(addresses_);
@@ -50,6 +61,11 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
         await _importedAddressDao.getAllImportedAddresses();
     return importedAddresses
         .map((a) => entity.ImportedAddress(
+            type: switch (a.type_) {
+              "p2pkh" => AddressV2Type.p2pkh,
+              _  => AddressV2Type.p2wpkh,
+	       
+            },
             encryptedWif: a.encryptedWif,
             network: NetworkX.fromString(a.network).getOrThrow()))
         .toList();
