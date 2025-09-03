@@ -60,7 +60,7 @@ class ImportAddressPkBloc
 
         // this is a good check to make sure that network and
         // wif are compatible
-        await $(_importedAddressService.getAddressFromWIFT(
+        final address = await $(_importedAddressService.getAddressFromWIFT(
             wif: event.wif,
             format: event.format,
             network: httpConfig.network,
@@ -90,6 +90,7 @@ class ImportAddressPkBloc
         await $(
           _importedAddressRepository.insertT(
             address: ImportedAddress(
+              address: address,
               type: switch (event.format) {
                 ImportAddressPkFormat.segwit => AddressV2Type.p2wpkh,
                 ImportAddressPkFormat.legacy => AddressV2Type.p2pkh,
@@ -102,6 +103,7 @@ class ImportAddressPkBloc
         );
 
         return ImportedAddress(
+          address: address,
           type: switch (event.format) {
             ImportAddressPkFormat.segwit => AddressV2Type.p2wpkh,
             ImportAddressPkFormat.legacy => AddressV2Type.p2pkh,

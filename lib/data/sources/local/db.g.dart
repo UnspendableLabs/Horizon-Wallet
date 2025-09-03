@@ -1479,6 +1479,14 @@ class $ImportedAddressesTable extends ImportedAddresses
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $ImportedAddressesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _addressMeta =
+      const VerificationMeta('address');
+  @override
+  late final GeneratedColumn<String> address = GeneratedColumn<String>(
+      'address', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL UNIQUE');
   static const VerificationMeta _encryptedWifMeta =
       const VerificationMeta('encryptedWif');
   @override
@@ -1499,7 +1507,7 @@ class $ImportedAddressesTable extends ImportedAddresses
       'type', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
   @override
-  List<GeneratedColumn> get $columns => [encryptedWif, network, type_];
+  List<GeneratedColumn> get $columns => [address, encryptedWif, network, type_];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1510,6 +1518,12 @@ class $ImportedAddressesTable extends ImportedAddresses
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('address')) {
+      context.handle(_addressMeta,
+          address.isAcceptableOrUnknown(data['address']!, _addressMeta));
+    } else if (isInserting) {
+      context.missing(_addressMeta);
+    }
     if (data.containsKey('encrypted_wif')) {
       context.handle(
           _encryptedWifMeta,
@@ -1534,11 +1548,13 @@ class $ImportedAddressesTable extends ImportedAddresses
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {encryptedWif, network, type_};
+  Set<GeneratedColumn> get $primaryKey => {address};
   @override
   ImportedAddress map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return ImportedAddress(
+      address: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}address'])!,
       encryptedWif: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}encrypted_wif'])!,
       network: attachedDatabase.typeMapping
@@ -1555,14 +1571,19 @@ class $ImportedAddressesTable extends ImportedAddresses
 }
 
 class ImportedAddress extends DataClass implements Insertable<ImportedAddress> {
+  final String address;
   final String encryptedWif;
   final String network;
   final String type_;
   const ImportedAddress(
-      {required this.encryptedWif, required this.network, required this.type_});
+      {required this.address,
+      required this.encryptedWif,
+      required this.network,
+      required this.type_});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    map['address'] = Variable<String>(address);
     map['encrypted_wif'] = Variable<String>(encryptedWif);
     map['network'] = Variable<String>(network);
     map['type'] = Variable<String>(type_);
@@ -1571,6 +1592,7 @@ class ImportedAddress extends DataClass implements Insertable<ImportedAddress> {
 
   ImportedAddressesCompanion toCompanion(bool nullToAbsent) {
     return ImportedAddressesCompanion(
+      address: Value(address),
       encryptedWif: Value(encryptedWif),
       network: Value(network),
       type_: Value(type_),
@@ -1581,6 +1603,7 @@ class ImportedAddress extends DataClass implements Insertable<ImportedAddress> {
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return ImportedAddress(
+      address: serializer.fromJson<String>(json['address']),
       encryptedWif: serializer.fromJson<String>(json['encryptedWif']),
       network: serializer.fromJson<String>(json['network']),
       type_: serializer.fromJson<String>(json['type_']),
@@ -1590,6 +1613,7 @@ class ImportedAddress extends DataClass implements Insertable<ImportedAddress> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'address': serializer.toJson<String>(address),
       'encryptedWif': serializer.toJson<String>(encryptedWif),
       'network': serializer.toJson<String>(network),
       'type_': serializer.toJson<String>(type_),
@@ -1597,8 +1621,12 @@ class ImportedAddress extends DataClass implements Insertable<ImportedAddress> {
   }
 
   ImportedAddress copyWith(
-          {String? encryptedWif, String? network, String? type_}) =>
+          {String? address,
+          String? encryptedWif,
+          String? network,
+          String? type_}) =>
       ImportedAddress(
+        address: address ?? this.address,
         encryptedWif: encryptedWif ?? this.encryptedWif,
         network: network ?? this.network,
         type_: type_ ?? this.type_,
@@ -1606,6 +1634,7 @@ class ImportedAddress extends DataClass implements Insertable<ImportedAddress> {
   @override
   String toString() {
     return (StringBuffer('ImportedAddress(')
+          ..write('address: $address, ')
           ..write('encryptedWif: $encryptedWif, ')
           ..write('network: $network, ')
           ..write('type_: $type_')
@@ -1614,42 +1643,49 @@ class ImportedAddress extends DataClass implements Insertable<ImportedAddress> {
   }
 
   @override
-  int get hashCode => Object.hash(encryptedWif, network, type_);
+  int get hashCode => Object.hash(address, encryptedWif, network, type_);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is ImportedAddress &&
+          other.address == this.address &&
           other.encryptedWif == this.encryptedWif &&
           other.network == this.network &&
           other.type_ == this.type_);
 }
 
 class ImportedAddressesCompanion extends UpdateCompanion<ImportedAddress> {
+  final Value<String> address;
   final Value<String> encryptedWif;
   final Value<String> network;
   final Value<String> type_;
   final Value<int> rowid;
   const ImportedAddressesCompanion({
+    this.address = const Value.absent(),
     this.encryptedWif = const Value.absent(),
     this.network = const Value.absent(),
     this.type_ = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ImportedAddressesCompanion.insert({
+    required String address,
     required String encryptedWif,
     required String network,
     required String type_,
     this.rowid = const Value.absent(),
-  })  : encryptedWif = Value(encryptedWif),
+  })  : address = Value(address),
+        encryptedWif = Value(encryptedWif),
         network = Value(network),
         type_ = Value(type_);
   static Insertable<ImportedAddress> custom({
+    Expression<String>? address,
     Expression<String>? encryptedWif,
     Expression<String>? network,
     Expression<String>? type_,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
+      if (address != null) 'address': address,
       if (encryptedWif != null) 'encrypted_wif': encryptedWif,
       if (network != null) 'network': network,
       if (type_ != null) 'type': type_,
@@ -1658,11 +1694,13 @@ class ImportedAddressesCompanion extends UpdateCompanion<ImportedAddress> {
   }
 
   ImportedAddressesCompanion copyWith(
-      {Value<String>? encryptedWif,
+      {Value<String>? address,
+      Value<String>? encryptedWif,
       Value<String>? network,
       Value<String>? type_,
       Value<int>? rowid}) {
     return ImportedAddressesCompanion(
+      address: address ?? this.address,
       encryptedWif: encryptedWif ?? this.encryptedWif,
       network: network ?? this.network,
       type_: type_ ?? this.type_,
@@ -1673,6 +1711,9 @@ class ImportedAddressesCompanion extends UpdateCompanion<ImportedAddress> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (address.present) {
+      map['address'] = Variable<String>(address.value);
+    }
     if (encryptedWif.present) {
       map['encrypted_wif'] = Variable<String>(encryptedWif.value);
     }
@@ -1691,6 +1732,7 @@ class ImportedAddressesCompanion extends UpdateCompanion<ImportedAddress> {
   @override
   String toString() {
     return (StringBuffer('ImportedAddressesCompanion(')
+          ..write('address: $address, ')
           ..write('encryptedWif: $encryptedWif, ')
           ..write('network: $network, ')
           ..write('type_: $type_, ')

@@ -18,6 +18,7 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
   @override
   Future<void> insert(entity.ImportedAddress address) async {
     await _importedAddressDao.insertImportedAddress(ImportedAddressModel(
+        address: address.address,
         type_: switch (address.type) {
           AddressV2Type.p2pkh => "p2pkh",
           AddressV2Type.p2wpkh => "p2wpkh",
@@ -30,6 +31,7 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
   Future<void> insertMany(List<entity.ImportedAddress> addresses) async {
     List<ImportedAddressModel> addresses_ = addresses
         .map((a) => ImportedAddressModel(
+            address: a.address,
             type_: switch (a.type) {
               AddressV2Type.p2pkh => "p2pkh",
               AddressV2Type.p2wpkh => "p2wpkh",
@@ -61,10 +63,10 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
         await _importedAddressDao.getAllImportedAddresses();
     return importedAddresses
         .map((a) => entity.ImportedAddress(
+            address: a.address,
             type: switch (a.type_) {
               "p2pkh" => AddressV2Type.p2pkh,
-              _  => AddressV2Type.p2wpkh,
-	       
+              _ => AddressV2Type.p2wpkh,
             },
             encryptedWif: a.encryptedWif,
             network: NetworkX.fromString(a.network).getOrThrow()))

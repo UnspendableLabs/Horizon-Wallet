@@ -213,6 +213,11 @@ class ImportedAddresses extends Table with TableInfo {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   ImportedAddresses(this.attachedDatabase, [this._alias]);
+  late final GeneratedColumn<String> address = GeneratedColumn<String>(
+      'address', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL UNIQUE');
   late final GeneratedColumn<String> encryptedWif = GeneratedColumn<String>(
       'encrypted_wif', aliasedName, false,
       type: DriftSqlType.string,
@@ -225,14 +230,14 @@ class ImportedAddresses extends Table with TableInfo {
       'type', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
   @override
-  List<GeneratedColumn> get $columns => [encryptedWif, network, type_];
+  List<GeneratedColumn> get $columns => [address, encryptedWif, network, type_];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
   static const String $name = 'imported_addresses';
   @override
-  Set<GeneratedColumn> get $primaryKey => {encryptedWif, network, type_};
+  Set<GeneratedColumn> get $primaryKey => {address};
   @override
   Never map(Map<String, dynamic> data, {String? tablePrefix}) {
     throw UnsupportedError('TableInfo.map in schema verification code');

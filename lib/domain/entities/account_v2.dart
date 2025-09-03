@@ -23,6 +23,11 @@ class Bip32 extends AccountV2 {
     });
     return sha256.convert(utf8.encode(input)).toString();
   }
+
+  @override
+  String toString() {
+    return 'Bip32(walletConfigID: $walletConfigID, index: $index)';
+  }
 }
 
 class ImportedWIF extends AccountV2 {
@@ -49,8 +54,6 @@ class ImportedWIF extends AccountV2 {
 
   @override
   toString() {
-	return 'ImportedWIF(network: $network, address: $address, encryptedWIF: $encryptedWIF)';
+    return 'ImportedWIF(network: $network, address: $address, encryptedWIF: $encryptedWIF)';
   }
-
-
 }

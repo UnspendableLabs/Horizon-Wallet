@@ -5,6 +5,7 @@ import 'package:horizon/common/constants.dart';
 // import "package:horizon/data/sources/local/dao/accounts_v2_dao.dart";
 import "package:horizon/data/sources/local/db.dart" as local;
 import "package:horizon/domain/entities/account_v2.dart";
+import "package:horizon/domain/entities/address_v2.dart";
 import "package:horizon/domain/repositories/account_v2_repository.dart";
 import "package:horizon/domain/repositories/wallet_config_repository.dart";
 import "package:horizon/domain/repositories/imported_address_repository.dart";
@@ -101,7 +102,10 @@ class AccountV2RepositoryImpl implements AccountV2Repository {
                 return _importedAddressService.getAddressFromWIFT<String>(
                     wif: wif,
                     // TODO: obviously format needs to be dynamic
-                    format: ImportAddressPkFormat.segwit,
+                    format: switch (address.type) {
+                      AddressV2Type.p2pkh => ImportAddressPkFormat.legacy,
+                      _ => ImportAddressPkFormat.segwit,
+                    },
                     network: network,
                     onError: (err, __) =>
                         "error deriving imported address: $err");

@@ -201,6 +201,8 @@ class SessionStateCubit extends Cubit<SessionState> {
             walletConfigID: walletConfig.uuid,
           );
 
+          print(accounts);
+
           String? currentAccountHash =
               cacheProvider.getString("current-account-hash");
 

@@ -821,9 +821,10 @@ final class Schema7 extends i0.VersionedSchema {
         withoutRowId: false,
         isStrict: false,
         tableConstraints: [
-          'PRIMARY KEY(encrypted_wif, network, type)',
+          'PRIMARY KEY(address)',
         ],
         columns: [
+          _column_28,
           _column_31,
           _column_32,
           _column_33,
@@ -854,6 +855,8 @@ final class Schema7 extends i0.VersionedSchema {
 
 class Shape9 extends i0.VersionedTable {
   Shape9({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<String> get address =>
+      columnsByName['address']! as i1.GeneratedColumn<String>;
   i1.GeneratedColumn<String> get encryptedWif =>
       columnsByName['encrypted_wif']! as i1.GeneratedColumn<String>;
   i1.GeneratedColumn<String> get network =>

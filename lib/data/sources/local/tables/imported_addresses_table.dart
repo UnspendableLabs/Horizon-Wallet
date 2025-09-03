@@ -2,6 +2,8 @@ import 'package:drift/drift.dart';
 
 @DataClassName("ImportedAddress")
 class ImportedAddresses extends Table {
+  @JsonKey('address')
+  TextColumn get address => text().customConstraint('NOT NULL UNIQUE')();
   @JsonKey('encryptedWif')
   TextColumn get encryptedWif => text().customConstraint('NOT NULL')();
 
@@ -14,5 +16,5 @@ class ImportedAddresses extends Table {
   // .withDefault(const Constant('p2wpkh'))();
 
   @override
-  Set<Column> get primaryKey => {encryptedWif, network, type_};
+  Set<Column> get primaryKey => {address};
 }

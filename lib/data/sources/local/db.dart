@@ -155,16 +155,18 @@ class DB extends _$DB {
 
               await customStatement('''
     CREATE TABLE imported_addresses (
+      address TEXT NOT NULL UNIQUE,
       encrypted_wif TEXT NOT NULL,
       network       TEXT NOT NULL,
       type         TEXT NOT NULL,
-      PRIMARY KEY (encrypted_wif, network, type)
+      PRIMARY KEY (address)
     )
   ''');
 
               await customStatement('''
-    INSERT INTO imported_addresses (encrypted_wif, network, type)
+    INSERT INTO imported_addresses (address, encrypted_wif, network, type)
     SELECT
+      ia_old.address,
       ia_old.encrypted_wif,
       CASE
         WHEN ia_old.address GLOB 'bc1*' OR ia_old.address GLOB '1*'            THEN 'mainnet'
