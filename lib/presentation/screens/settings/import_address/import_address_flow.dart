@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
@@ -9,6 +10,7 @@ import 'package:horizon/presentation/screens/settings/import_address/bloc/import
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
+import "package:horizon/domain/entities/account_v2.dart";
 
 class ImportAddressFlow extends StatelessWidget {
   final VoidCallback onNavigateBack;
@@ -143,7 +145,13 @@ class _ImportAddressFormState extends State<_ImportAddressForm> {
             ),
           );
 
-          widget.onNavigateBack();
+          context.read<SessionStateCubit>().onAccountChanged(
+              ImportedWIF(
+                encryptedWIF: state.address.encryptedWif,
+                address: state.address.address,
+                network: state.address.network,
+              ),
+              () => context.go("/"));
         } else if (state is ImportAddressPkInitial) {
           setState(() {
             _isSubmitting = false;

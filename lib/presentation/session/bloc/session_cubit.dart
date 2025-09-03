@@ -308,7 +308,15 @@ class SessionStateCubit extends Cubit<SessionState> {
 
     final current = state.successOrThrow();
 
+    WalletConfig walletConfig = await _walletConfigRepository.getCurrent();
+
+    // we might have to update accounts if new one was imported
+    List<AccountV2> accounts = await _accountV2Repository.getByWalletConfig(
+      walletConfigID: walletConfig.uuid,
+    );
+
     final next = current.copyWith(
+      accounts: accounts,
       addresses: addresses,
       currentAccount: account,
     );
