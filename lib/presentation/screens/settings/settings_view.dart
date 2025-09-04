@@ -21,6 +21,7 @@ enum SettingsPage {
   security,
   seedPhrase,
   importAddress,
+  addresses,
   advanced,
   resetWallet,
 }
@@ -345,7 +346,6 @@ class _SettingsViewState extends State<SettingsView> {
         //     },
         //   ),
         // ),
-        const SizedBox(height: 10),
         SettingsItem(
           title: 'Network',
           // icon: AppIcons.walletIcon(context: context),
@@ -401,6 +401,12 @@ class _SettingsViewState extends State<SettingsView> {
                   );
                 }),
           ),
+        ),
+        SettingsItem(
+          title: 'Addresses',
+          onTap: () {
+            context.push("/settings/addresses");
+          },
         ),
         SettingsItem(
           title: 'Advanced',

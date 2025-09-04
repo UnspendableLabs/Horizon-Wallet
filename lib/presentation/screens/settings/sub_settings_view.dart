@@ -9,6 +9,8 @@ import 'package:horizon/presentation/screens/settings/seed_phrase/seed_phrase_fl
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/presentation/screens/settings/advanced/settings_advanced.dart';
 
+import 'package:horizon/presentation/screens/settings/addresses/settings_addresses_view.dart';
+
 class SubSettingsView extends StatefulWidget {
   final String category;
   const SubSettingsView({super.key, required this.category});
@@ -29,6 +31,8 @@ class _SubSettingsViewState extends State<SubSettingsView> {
         return "Reset Wallet";
       case "advanced":
         return "Advanced";
+      case "addresses":
+        return "Addresses";
       default:
         return "Security";
     }
@@ -68,6 +72,8 @@ class _SubSettingsViewState extends State<SubSettingsView> {
         });
       case "resetWallet":
         return const ResetWalletFlow();
+      case "addresses":
+        return const SettingsAddressesView(); // TODO: implement AddressesView
       default:
         return const SecurityView();
     }

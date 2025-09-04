@@ -108,13 +108,16 @@ class SessionStateCubit extends Cubit<SessionState> {
     final mnemonic = await _mnemonicRepository.get();
 
     if (mnemonic.isNone()) {
+      // TODO: consider moving this into setup.dart
       // if mnemonic is not found, it's possible we've just migrated
       // from schema 6 to 7.
       // therefore, we:
       //    1) query the legacy wallet object,
       //    2) read the encrypted mnemonic
       //    3) set it in the new mnemonic repository
-      //    4) log user out so they can reauth.
+      //    4) log user out so they can reauth. ( which
+      //       in turn will make sure in memory decryption
+      //       keys are set correctly
 
       final wallet = await _walletRepositoryDeprecated.getCurrentWallet();
 
