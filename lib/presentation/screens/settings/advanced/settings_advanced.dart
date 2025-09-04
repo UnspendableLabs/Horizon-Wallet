@@ -50,6 +50,17 @@ class SettingsAdvancedProvider extends StatelessWidget {
   }
 }
 
+class LegacyAddressTypeSettings extends StatelessWidget {
+  const LegacyAddressTypeSettings({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Text("Legacy Address Type Settings"),
+    );
+  }
+}
+
 class SettingsAdvanced extends StatelessWidget {
   const SettingsAdvanced({super.key});
   @override
@@ -107,6 +118,24 @@ class SettingsAdvanced extends StatelessWidget {
                       () => Text(state.initialWalletConfig.seedDerivation.name),
                       (configChange) =>
                           Text(configChange.seedDerivation.name))),
+              state.importFormatChange.fold(
+                  // if there is no change, we render settings based on inferred
+                  () => state.inferredImportFormat.fold(
+                      () => const SizedBox.shrink(),
+                      (inferredImportFormat) => switch (inferredImportFormat) {
+                            ImportFormat.counterwallet =>
+                              const LegacyAddressTypeSettings(),
+                            ImportFormat.freewallet =>
+                              const LegacyAddressTypeSettings(),
+                            _ => const SizedBox.shrink(),
+                          }),
+                  (change) => switch (change) {
+                        ImportFormat.counterwallet =>
+                          const LegacyAddressTypeSettings(),
+                        ImportFormat.freewallet =>
+                          const LegacyAddressTypeSettings(),
+                        _ => const SizedBox.shrink(),
+                      }),
               const SizedBox(height: 40),
               state.walletConfigChange.fold(
                   () => const SizedBox.shrink(),
