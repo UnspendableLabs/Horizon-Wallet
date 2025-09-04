@@ -1,6 +1,7 @@
 import 'package:horizon/domain/entities/seed_derivation.dart';
 import 'package:horizon/domain/entities/base_path.dart';
 import 'package:horizon/domain/entities/network.dart';
+import "package:equatable/equatable.dart";
 
 enum AddressKind {
   p2pkh,
@@ -17,13 +18,14 @@ extension BasePathX on BasePath {
   /// - horizon: {p2wpkh}
   /// Plus sensible heuristics for other paths (84' => p2wpkh, 86' => p2tr).
   Set<AddressKind> defaultKinds() {
+    print("islegacy: $isLegacy, isHorizon: $isHorizon");
     if (isLegacy) return {AddressKind.p2pkh, AddressKind.p2wpkh};
     if (isHorizon) return {AddressKind.p2wpkh};
     return {};
   }
 }
 
-class WalletConfig {
+class WalletConfig extends Equatable {
   String uuid;
   Network network;
   BasePath basePath;
@@ -61,6 +63,17 @@ class WalletConfig {
       supportedKinds: supportedKinds ?? this.supportedKinds,
     );
   }
+
+  @override
+  List<Object?> get props => [
+        uuid,
+        network, // assuming Network has value equality
+        basePath.serialize(), // compare BasePath by canonical form
+        accountIndexStart,
+        accountIndexEnd,
+        seedDerivation, // assuming value equality
+        supportedKinds // compare Set by contents
+      ];
 
   @override
   String toString() {

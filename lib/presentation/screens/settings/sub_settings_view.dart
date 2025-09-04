@@ -31,8 +31,6 @@ class _SubSettingsViewState extends State<SubSettingsView> {
         return "Reset Wallet";
       case "advanced":
         return "Advanced";
-      case "addresses":
-        return "Addresses";
       default:
         return "Security";
     }
@@ -72,8 +70,6 @@ class _SubSettingsViewState extends State<SubSettingsView> {
         });
       case "resetWallet":
         return const ResetWalletFlow();
-      case "addresses":
-        return const SettingsAddressesView(); // TODO: implement AddressesView
       default:
         return const SecurityView();
     }

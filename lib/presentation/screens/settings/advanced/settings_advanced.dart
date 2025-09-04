@@ -51,15 +51,25 @@ class SettingsAdvancedProvider extends StatelessWidget {
 }
 
 class LegacyAddressTypeSettings extends StatelessWidget {
-  const LegacyAddressTypeSettings({super.key});
+  final SettingsAdvancedState state;
+  const LegacyAddressTypeSettings({super.key, required this.state});
 
   @override
   Widget build(BuildContext context) {
-    return const Column(children: [
+    return Column(children: [
       SettingsItem(
-        title: "P2PKH",
-        trailing: Switch(value: true, onChanged: print),
-      ),
+          title: "P2PKH",
+          trailing: Switch(
+              value: state.walletConfigChange.fold(
+                  () => state.initialWalletConfig.supportedKinds
+                      .contains(AddressKind.p2pkh),
+                  (change) =>
+                      change.supportedKinds.contains(AddressKind.p2pkh)),
+              onChanged: (value) {
+                context
+                    .read<SettingsAdvancedBloc>()
+                    .add(EnableP2PKHChanged(value));
+              }))
     ]);
   }
 }
@@ -126,16 +136,16 @@ class SettingsAdvanced extends StatelessWidget {
                       () => const SizedBox.shrink(),
                       (inferredImportFormat) => switch (inferredImportFormat) {
                             ImportFormat.counterwallet =>
-                              const LegacyAddressTypeSettings(),
+                              LegacyAddressTypeSettings(state: state),
                             ImportFormat.freewallet =>
-                              const LegacyAddressTypeSettings(),
+                              LegacyAddressTypeSettings(state: state),
                             _ => const SizedBox.shrink(),
                           }),
                   (change) => switch (change) {
                         ImportFormat.counterwallet =>
-                          const LegacyAddressTypeSettings(),
+                          LegacyAddressTypeSettings(state: state),
                         ImportFormat.freewallet =>
-                          const LegacyAddressTypeSettings(),
+                          LegacyAddressTypeSettings(state: state),
                         _ => const SizedBox.shrink(),
                       }),
               const SizedBox(height: 40),

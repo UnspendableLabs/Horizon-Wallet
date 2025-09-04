@@ -29,6 +29,11 @@ class SaveChangesClicked extends SettingsAdvancedEvent {
   SaveChangesClicked({this.onSuccess});
 }
 
+class EnableP2PKHChanged extends SettingsAdvancedEvent {
+  final bool value;
+  EnableP2PKHChanged(this.value);
+}
+
 class SettingsAdvancedState extends Equatable {
   final WalletConfig initialWalletConfig;
   final Option<ImportFormat> importFormatChange;
@@ -110,13 +115,43 @@ class SettingsAdvancedBloc
         super(SettingsAdvancedState(initialWalletConfig: walletConfig)) {
     on<ImportFormatChanged>(_handleImportFormatChanged);
     on<SaveChangesClicked>(_handleSaveChangesClicked);
+    on<EnableP2PKHChanged>(_handleEnableP2PKHChanged);
+  }
+
+  _handleEnableP2PKHChanged(EnableP2PKHChanged event, emit) {
+    final base =
+        state.walletConfigChange.getOrElse(() => state.initialWalletConfig);
+
+    final walletSupportsP2PKH = base.supportedKinds.contains(AddressKind.p2pkh);
+
+    Option<bool> enableP2PKHChange = walletSupportsP2PKH == event.value
+        ? const Option.none()
+        : Option.of(event.value);
+
+    Option<WalletConfig> walletConfigChange =
+        enableP2PKHChange.fold(() => const Option.none(), (enableP2PKHChange) {
+      final supportedKindsChange = Set<AddressKind>.from(base.supportedKinds);
+
+      if (enableP2PKHChange) {
+        supportedKindsChange.add(AddressKind.p2pkh);
+      } else {
+        supportedKindsChange.remove(AddressKind.p2pkh);
+      }
+
+      final change = base.copyWith(supportedKinds: supportedKindsChange);
+
+      return change == state.initialWalletConfig
+          ? const Option.none()
+          : Option.of(change);
+    });
+
+    emit(state.copyWith(
+      enableP2PKHChange: enableP2PKHChange,
+      walletConfigChange: walletConfigChange,
+    ));
   }
 
   _handleImportFormatChanged(ImportFormatChanged event, emit) async {
-    print(state.initialWalletConfig);
-    print("inferred");
-    print(state.inferredImportFormat);
-
     Option<ImportFormat> importFormatChange = state.inferredImportFormat
         .flatMap((inferredImportFormat) =>
             inferredImportFormat == event.importFormat
@@ -176,14 +211,11 @@ class SettingsAdvancedBloc
             (_, __) => "Error updating wallet config"))
         .match(
       (error) {
-        print("error $error");
-
         emit(state.copyWith(
           status: FormzSubmissionStatus.failure,
         ));
       },
       (WalletConfig newWallet) {
-        print("success???");
         emit(state.copyWith(
           status: FormzSubmissionStatus.success,
           // walletConfigChange:

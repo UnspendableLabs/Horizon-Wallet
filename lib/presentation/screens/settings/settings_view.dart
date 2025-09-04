@@ -403,12 +403,6 @@ class _SettingsViewState extends State<SettingsView> {
           ),
         ),
         SettingsItem(
-          title: 'Addresses',
-          onTap: () {
-            context.push("/settings/addresses");
-          },
-        ),
-        SettingsItem(
           title: 'Advanced',
           onTap: () {
             context.push("/settings/advanced");

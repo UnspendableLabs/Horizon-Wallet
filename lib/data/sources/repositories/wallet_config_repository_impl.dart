@@ -68,6 +68,7 @@ class WalletConfigRepositoryImpl implements WalletConfigRepository {
 
     return Option.fromNullable(config).map(
       (config) => entity.WalletConfig(
+        supportedKinds: kindsForFlags(config.addrKindsMask),
         seedDerivation: SeedDerivation.values
             .firstWhere((e) => e.name == config.seedDerivation),
         uuid: config.uuid,
