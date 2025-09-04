@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/domain/entities/wallet_config.dart';
 import 'package:horizon/domain/entities/base_path.dart';
@@ -122,7 +123,8 @@ class SettingsAdvancedBloc
     final base =
         state.walletConfigChange.getOrElse(() => state.initialWalletConfig);
 
-    final walletSupportsP2PKH = base.supportedKinds.contains(AddressKind.p2pkh);
+    final walletSupportsP2PKH =
+        base.supportedKinds.contains(AddressV2Type.p2pkh);
 
     Option<bool> enableP2PKHChange = walletSupportsP2PKH == event.value
         ? const Option.none()
@@ -130,12 +132,12 @@ class SettingsAdvancedBloc
 
     Option<WalletConfig> walletConfigChange =
         enableP2PKHChange.fold(() => const Option.none(), (enableP2PKHChange) {
-      final supportedKindsChange = Set<AddressKind>.from(base.supportedKinds);
+      final supportedKindsChange = Set<AddressV2Type>.from(base.supportedKinds);
 
       if (enableP2PKHChange) {
-        supportedKindsChange.add(AddressKind.p2pkh);
+        supportedKindsChange.add(AddressV2Type.p2pkh);
       } else {
-        supportedKindsChange.remove(AddressKind.p2pkh);
+        supportedKindsChange.remove(AddressV2Type.p2pkh);
       }
 
       final change = base.copyWith(supportedKinds: supportedKindsChange);

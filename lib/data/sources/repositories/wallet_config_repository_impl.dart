@@ -10,23 +10,24 @@ import 'package:get_it/get_it.dart';
 
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/extensions.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
 
 const int _p2pkhFlag = 1 << 0; // 1
 const int _p2wpkhFlag = 1 << 1; // 2
 // const int _p2trFlag = 1 << 2; // 4
 
-int flagsForKinds(Set<entity.AddressKind> kinds) {
+int flagsForKinds(Set<AddressV2Type> kinds) {
   var m = 0;
-  if (kinds.contains(entity.AddressKind.p2pkh)) m |= _p2pkhFlag;
-  if (kinds.contains(entity.AddressKind.p2wpkh)) m |= _p2wpkhFlag;
+  if (kinds.contains(AddressV2Type.p2pkh)) m |= _p2pkhFlag;
+  if (kinds.contains(AddressV2Type.p2wpkh)) m |= _p2wpkhFlag;
   // if (kinds.contains(entity.AddressKind.p2tr)) m |= _p2trFlag;
   return m;
 }
 
-Set<entity.AddressKind> kindsForFlags(int mask) {
-  final s = <entity.AddressKind>{};
-  if ((mask & _p2pkhFlag) != 0) s.add(entity.AddressKind.p2pkh);
-  if ((mask & _p2wpkhFlag) != 0) s.add(entity.AddressKind.p2wpkh);
+Set<AddressV2Type> kindsForFlags(int mask) {
+  final s = <AddressV2Type>{};
+  if ((mask & _p2pkhFlag) != 0) s.add(AddressV2Type.p2pkh);
+  if ((mask & _p2wpkhFlag) != 0) s.add(AddressV2Type.p2wpkh);
   // if ((mask & _p2trFlag) != 0) s.add(entity.AddressKind.p2tr);
   return s;
 }

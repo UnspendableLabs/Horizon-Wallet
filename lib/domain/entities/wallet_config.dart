@@ -1,13 +1,8 @@
 import 'package:horizon/domain/entities/seed_derivation.dart';
 import 'package:horizon/domain/entities/base_path.dart';
 import 'package:horizon/domain/entities/network.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
 import "package:equatable/equatable.dart";
-
-enum AddressKind {
-  p2pkh,
-  p2wpkh,
-// p2tr
-}
 
 extension BasePathX on BasePath {
   bool get isHorizon => serialize() == BasePath.horizonSerialized;
@@ -17,10 +12,10 @@ extension BasePathX on BasePath {
   /// - legacy: {p2pkh, p2wpkh}
   /// - horizon: {p2wpkh}
   /// Plus sensible heuristics for other paths (84' => p2wpkh, 86' => p2tr).
-  Set<AddressKind> defaultKinds() {
+  Set<AddressV2Type> defaultKinds() {
     print("islegacy: $isLegacy, isHorizon: $isHorizon");
-    if (isLegacy) return {AddressKind.p2pkh, AddressKind.p2wpkh};
-    if (isHorizon) return {AddressKind.p2wpkh};
+    if (isLegacy) return {AddressV2Type.p2pkh, AddressV2Type.p2wpkh};
+    if (isHorizon) return {AddressV2Type.p2wpkh};
     return {};
   }
 }
@@ -33,7 +28,7 @@ class WalletConfig extends Equatable {
   int accountIndexEnd;
   SeedDerivation seedDerivation;
 
-  final Set<AddressKind> supportedKinds;
+  final Set<AddressV2Type> supportedKinds;
 
   WalletConfig({
     required this.uuid,
@@ -42,7 +37,7 @@ class WalletConfig extends Equatable {
     this.accountIndexStart = 0,
     required this.accountIndexEnd,
     required this.seedDerivation,
-    Set<AddressKind>? supportedKinds,
+    Set<AddressV2Type>? supportedKinds,
   }) : supportedKinds = supportedKinds ?? basePath.defaultKinds();
 
   WalletConfig copyWith({
@@ -51,7 +46,7 @@ class WalletConfig extends Equatable {
     int? accountIndexStart,
     int? accountIndexEnd,
     SeedDerivation? seedDerivation,
-    Set<AddressKind>? supportedKinds,
+    Set<AddressV2Type>? supportedKinds,
   }) {
     return WalletConfig(
       uuid: uuid,

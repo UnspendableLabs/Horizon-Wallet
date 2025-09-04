@@ -5,8 +5,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/wallet_config_repository.dart';
 import 'package:horizon/domain/entities/wallet_config.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
 import "./bloc/settings_advanced_bloc.dart";
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
 
 import 'package:fpdart/fpdart.dart';
 import 'package:horizon/common/constants.dart';
@@ -56,15 +58,17 @@ class LegacyAddressTypeSettings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final session = context.read<SessionStateCubit>().state.successOrThrow();
+
     return Column(children: [
       SettingsItem(
           title: "P2PKH",
           trailing: Switch(
               value: state.walletConfigChange.fold(
                   () => state.initialWalletConfig.supportedKinds
-                      .contains(AddressKind.p2pkh),
+                      .contains(AddressV2Type.p2pkh),
                   (change) =>
-                      change.supportedKinds.contains(AddressKind.p2pkh)),
+                      change.supportedKinds.contains(AddressV2Type.p2pkh)),
               onChanged: (value) {
                 context
                     .read<SettingsAdvancedBloc>()

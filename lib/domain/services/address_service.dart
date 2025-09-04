@@ -4,15 +4,17 @@ import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/seed.dart';
 import 'package:horizon/domain/entities/network.dart';
+import 'package:horizon/domain/entities/wallet_config.dart';
 
 enum AddressType { bech32, legacy }
 
 abstract class AddressService {
   // TODO: this should return address V2
-  Future<AddressV2> deriveAddressWIP({
+  Future<Map<AddressV2Type, AddressV2>> deriveAddressWIP({
     required String path,
     required Seed seed,
     required Network network,
+    required Set<AddressV2Type> addressKinds,
   });
 
   Future<String> deriveAddressPrivateKeyWIP({
@@ -79,13 +81,15 @@ abstract class AddressService {
 }
 
 extension AddressServiceX on AddressService {
-  TaskEither<String, AddressV2> deriveAddressWIPT({
+  TaskEither<String, Map<AddressV2Type, AddressV2>> deriveAddressWIPT({
     required String path,
     required Seed seed,
     required Network network,
+    required Set<AddressV2Type> addressKinds,
   }) {
     return TaskEither.tryCatch(
-      () => deriveAddressWIP(path: path, seed: seed, network: network),
+      () => deriveAddressWIP(
+          addressKinds: addressKinds, path: path, seed: seed, network: network),
       (e_, _) => "error deriving address",
     );
   }

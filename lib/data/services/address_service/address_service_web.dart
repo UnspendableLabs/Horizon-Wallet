@@ -4,11 +4,13 @@ import 'dart:typed_data';
 import 'package:convert/convert.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/wallet_config.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/seed.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/js/bech32.dart' as bech32;
+import 'package:horizon/js/bitcoin.dart' as bitcoin;
 import 'package:horizon/js/bip32.dart' as bip32;
 import 'package:horizon/js/buffer.dart';
 import 'package:horizon/js/ecpair.dart' as ecpair;
@@ -20,10 +22,12 @@ class AddressServiceWeb implements AddressService {
   AddressServiceWeb();
 
   @override
-  Future<AddressV2> deriveAddressWIP({
+  Future<Map<AddressV2Type, AddressV2>> deriveAddressWIP({
+    // TODO: pass bip 32 path in here instead of str
     required String path,
     required Seed seed,
     required Network network,
+    required Set<AddressV2Type> addressKinds,
   }) async {
     bip32.BIP32Interface root =
         _bip32.fromSeed(Buffer.from(seed.bytes.toJS), network.toJS);
@@ -35,14 +39,33 @@ class AddressServiceWeb implements AddressService {
       network: network,
     );
 
-    String address = _bech32FromBip32(child, network.toBech32Prefix);
+    final Map<AddressV2Type, AddressV2> result = {};
+    for (final kind in addressKinds) {
+      final address = switch (kind) {
+        AddressV2Type.p2wpkh => _bech32FromBip32(child, network.toBech32Prefix),
+        AddressV2Type.p2pkh => _legacyFromBip32(child, network),
+      };
 
-    return AddressV2(
-      type: AddressV2Type.p2wpkh,
-      address: address,
-      derivation: Bip32Path(value: path),
-      publicKey: hex.encode(child.publicKey.toDart),
-    );
+      result[kind] = AddressV2(
+        type: kind,
+        address: address,
+        derivation: Bip32Path(value: path),
+        publicKey: hex.encode(child.publicKey.toDart),
+      );
+    }
+
+    return result;
+
+    //
+    //
+    // String address = _bech32FromBip32(child, network.toBech32Prefix);
+    //
+    // return AddressV2(
+    //   type: AddressV2Type.p2wpkh,
+    //   address: address,
+    //   derivation: Bip32Path(value: path),
+    //   publicKey: hex.encode(child.publicKey.toDart),
+    // );
   }
 
   @override
@@ -241,17 +264,14 @@ class AddressServiceWeb implements AddressService {
     // return child.toWIF();
   }
 
-  // String _legacyFromBip32(bip32.BIP32Interface child) {
-  //
-  //   final network = _getNetwork();
-  //
-  //   final paymentOpts = bitcoin.PaymentOptions(
-  //       pubkey: Buffer.from(child.publicKey), network: network);
-  //
-  //   final payment = bitcoin.p2pkh(paymentOpts);
-  //
-  //   return payment.address;
-  // }
+  String _legacyFromBip32(bip32.BIP32Interface child, Network network) {
+    final paymentOpts = bitcoin.PaymentOptions(
+        pubkey: Buffer.from(child.publicKey), network: network.toJS);
+
+    final payment = bitcoin.p2pkh(paymentOpts);
+
+    return payment.address;
+  }
 
   String _bech32FromBip32(bip32.BIP32Interface child, String bech32_) {
     List<int> identifier = child.identifier.toDart;
