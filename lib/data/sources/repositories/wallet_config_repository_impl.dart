@@ -11,6 +11,26 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/extensions.dart';
 
+const int _p2pkhFlag = 1 << 0; // 1
+const int _p2wpkhFlag = 1 << 1; // 2
+// const int _p2trFlag = 1 << 2; // 4
+
+int flagsForKinds(Set<entity.AddressKind> kinds) {
+  var m = 0;
+  if (kinds.contains(entity.AddressKind.p2pkh)) m |= _p2pkhFlag;
+  if (kinds.contains(entity.AddressKind.p2wpkh)) m |= _p2wpkhFlag;
+  // if (kinds.contains(entity.AddressKind.p2tr)) m |= _p2trFlag;
+  return m;
+}
+
+Set<entity.AddressKind> kindsForFlags(int mask) {
+  final s = <entity.AddressKind>{};
+  if ((mask & _p2pkhFlag) != 0) s.add(entity.AddressKind.p2pkh);
+  if ((mask & _p2wpkhFlag) != 0) s.add(entity.AddressKind.p2wpkh);
+  // if ((mask & _p2trFlag) != 0) s.add(entity.AddressKind.p2tr);
+  return s;
+}
+
 class WalletConfigRepositoryImpl implements WalletConfigRepository {
   // ignore: unused_field
   final local.DB _db;
@@ -80,6 +100,7 @@ class WalletConfigRepositoryImpl implements WalletConfigRepository {
   @override
   Future<bool> update(entity.WalletConfig config) async {
     return await _walletConfigsDao.update_(local.WalletConfig(
+        addrKindsMask: flagsForKinds(config.supportedKinds),
         seedDerivation: config.seedDerivation.name,
         uuid: config.uuid,
         network: config.network.name,
@@ -91,6 +112,7 @@ class WalletConfigRepositoryImpl implements WalletConfigRepository {
   @override
   Future<int> create(entity.WalletConfig config) async {
     return await _walletConfigsDao.create(local.WalletConfig(
+        addrKindsMask: flagsForKinds(config.supportedKinds),
         seedDerivation: config.seedDerivation.name,
         uuid: config.uuid,
         network: config.network.name,
@@ -115,6 +137,8 @@ class WalletConfigRepositoryImpl implements WalletConfigRepository {
     }
 
     await _walletConfigsDao.create(local.WalletConfig(
+        addrKindsMask: flagsForKinds(
+            basePath.defaultKinds()), // we just fallback to defaults specifi
         seedDerivation: seedDerivation != null
             ? seedDerivation.name
             : SeedDerivation.bip39MnemonicToSeed.name,
@@ -142,6 +166,7 @@ class WalletConfigRepositoryImpl implements WalletConfigRepository {
     );
 
     final localConfig = local.WalletConfig(
+      addrKindsMask: flagsForKinds(config.supportedKinds),
       uuid: existing?.uuid ?? uuid.v4(),
       seedDerivation: config.seedDerivation.name,
       network: config.network.name,

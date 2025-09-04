@@ -34,6 +34,7 @@ class SettingsAdvancedState extends Equatable {
   final Option<ImportFormat> importFormatChange;
   final Option<WalletConfig> walletConfigChange;
   final Option<String> walletConfigError;
+  final Option<bool> enableP2PKHChange;
 
   final FormzSubmissionStatus status;
 
@@ -42,6 +43,7 @@ class SettingsAdvancedState extends Equatable {
       this.status = FormzSubmissionStatus.initial,
       this.importFormatChange = const Option.none(),
       this.walletConfigChange = const Option.none(),
+      this.enableP2PKHChange = const Option.none(),
       this.walletConfigError = const Option.none()});
 
   SettingsAdvancedState copyWith({
@@ -50,6 +52,7 @@ class SettingsAdvancedState extends Equatable {
     Option<ImportFormat>? importFormatChange,
     Option<WalletConfig>? walletConfigChange,
     Option<String>? walletConfigError,
+    Option<bool>? enableP2PKHChange,
   }) {
     return SettingsAdvancedState(
       initialWalletConfig: initialWalletConfig ?? this.initialWalletConfig,
@@ -57,12 +60,18 @@ class SettingsAdvancedState extends Equatable {
       importFormatChange: importFormatChange ?? this.importFormatChange,
       walletConfigChange: walletConfigChange ?? this.walletConfigChange,
       walletConfigError: walletConfigError ?? this.walletConfigError,
+      enableP2PKHChange: enableP2PKHChange ?? this.enableP2PKHChange,
     );
   }
 
   @override
-  List<Object?> get props =>
-      [status, importFormatChange, walletConfigChange, walletConfigError];
+  List<Object?> get props => [
+        status,
+        importFormatChange,
+        walletConfigChange,
+        enableP2PKHChange,
+        walletConfigError
+      ];
 
   Option<ImportFormat> get inferredImportFormat {
     return switch ((
@@ -104,6 +113,7 @@ class SettingsAdvancedBloc
   }
 
   _handleImportFormatChanged(ImportFormatChanged event, emit) async {
+    print(state.initialWalletConfig);
     print("inferred");
     print(state.inferredImportFormat);
 
@@ -129,9 +139,12 @@ class SettingsAdvancedBloc
         ImportFormat.freewallet => SeedDerivation.bip39MnemonicToEntropy,
       };
 
+      final supportedKindsChange = basePathChange.defaultKinds();
+
       final change = current.copyWith(
         basePath: basePathChange,
         seedDerivation: seedDerivationChange,
+        supportedKinds: supportedKindsChange,
       );
 
       return change;

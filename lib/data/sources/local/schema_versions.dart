@@ -847,6 +847,7 @@ final class Schema7 extends i0.VersionedSchema {
           _column_35,
           _column_36,
           _column_37,
+          _column_38,
         ],
         attachedDatabase: database,
       ),
@@ -889,6 +890,8 @@ class Shape10 extends i0.VersionedTable {
       columnsByName['account_index_end']! as i1.GeneratedColumn<int>;
   i1.GeneratedColumn<String> get seedDerivation =>
       columnsByName['seed_derivation']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get addrKindsMask =>
+      columnsByName['addr_kinds_mask']! as i1.GeneratedColumn<int>;
 }
 
 i1.GeneratedColumn<String> _column_34(String aliasedName) =>
@@ -903,6 +906,9 @@ i1.GeneratedColumn<int> _column_36(String aliasedName) =>
 i1.GeneratedColumn<String> _column_37(String aliasedName) =>
     i1.GeneratedColumn<String>('seed_derivation', aliasedName, false,
         type: i1.DriftSqlType.string);
+i1.GeneratedColumn<int> _column_38(String aliasedName) =>
+    i1.GeneratedColumn<int>('addr_kinds_mask', aliasedName, false,
+        type: i1.DriftSqlType.int, defaultValue: const Constant(0));
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,

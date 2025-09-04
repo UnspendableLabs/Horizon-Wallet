@@ -274,6 +274,11 @@ class WalletConfigs extends Table with TableInfo {
   late final GeneratedColumn<String> seedDerivation = GeneratedColumn<String>(
       'seed_derivation', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  late final GeneratedColumn<int> addrKindsMask = GeneratedColumn<int>(
+      'addr_kinds_mask', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
   @override
   List<GeneratedColumn> get $columns => [
         uuid,
@@ -281,7 +286,8 @@ class WalletConfigs extends Table with TableInfo {
         basePath,
         accountIndexStart,
         accountIndexEnd,
-        seedDerivation
+        seedDerivation,
+        addrKindsMask
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;

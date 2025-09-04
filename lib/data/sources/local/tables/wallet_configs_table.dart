@@ -21,6 +21,9 @@ class WalletConfigs extends Table {
   @JsonKey('seedDerivation')
   TextColumn get seedDerivation => text()();
 
+  @JsonKey('addrKindsMask')
+  IntColumn get addrKindsMask => integer().withDefault(const Constant(0))();
+
   @override
   Set<Column> get primaryKey => {network, basePath, seedDerivation};
 }

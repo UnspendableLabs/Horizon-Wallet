@@ -55,9 +55,12 @@ class LegacyAddressTypeSettings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text("Legacy Address Type Settings"),
-    );
+    return const Column(children: [
+      SettingsItem(
+        title: "P2PKH",
+        trailing: Switch(value: true, onChanged: print),
+      ),
+    ]);
   }
 }
 
@@ -79,7 +82,6 @@ class SettingsAdvanced extends StatelessWidget {
                     hintText: 'Select wallet type',
                     useModal: true,
                     onChanged: (value) {
-                      print("value $value");
                       context.read<SettingsAdvancedBloc>().add(
                             ImportFormatChanged(
                               ImportFormat.values
