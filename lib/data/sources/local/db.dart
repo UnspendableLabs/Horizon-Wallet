@@ -7,6 +7,7 @@ import 'package:horizon/data/sources/local/tables/imported_addresses_table.dart'
 import "package:horizon/data/sources/local/tables/wallets_table.dart";
 import "package:horizon/data/sources/local/tables/wallet_configs_table.dart";
 import "package:horizon/data/sources/local/tables/transactions_table.dart";
+import "package:horizon/data/sources/local/tables/account_configurations_table.dart";
 import 'schema_versions.dart';
 
 part "db.g.dart";
@@ -21,7 +22,8 @@ part "db.g.dart";
   Addresses,
   Transactions,
   ImportedAddresses,
-  WalletConfigs
+  WalletConfigs,
+  AccountConfigurations
 ])
 class DB extends _$DB {
   DB(super.e);
@@ -223,6 +225,8 @@ class DB extends _$DB {
     FROM per_wallet pw
     LIMIT 1;
   ''');
+
+              m.createTable(schema.accountConfigurations);
             }));
 
         // if (ENV == "dev") {

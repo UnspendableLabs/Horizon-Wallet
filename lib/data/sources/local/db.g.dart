@@ -2131,6 +2131,238 @@ class WalletConfigsCompanion extends UpdateCompanion<WalletConfig> {
   }
 }
 
+class $AccountConfigurationsTable extends AccountConfigurations
+    with TableInfo<$AccountConfigurationsTable, AccountConfiguration> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AccountConfigurationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _walletUUIDMeta =
+      const VerificationMeta('walletUUID');
+  @override
+  late final GeneratedColumn<String> walletUUID = GeneratedColumn<String>(
+      'wallet_u_u_i_d', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _indexMeta = const VerificationMeta('index');
+  @override
+  late final GeneratedColumn<int> index = GeneratedColumn<int>(
+      'index', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _addressIndexMeta =
+      const VerificationMeta('addressIndex');
+  @override
+  late final GeneratedColumn<int> addressIndex = GeneratedColumn<int>(
+      'address_index', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [walletUUID, index, addressIndex];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'account_configurations';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<AccountConfiguration> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('wallet_u_u_i_d')) {
+      context.handle(
+          _walletUUIDMeta,
+          walletUUID.isAcceptableOrUnknown(
+              data['wallet_u_u_i_d']!, _walletUUIDMeta));
+    } else if (isInserting) {
+      context.missing(_walletUUIDMeta);
+    }
+    if (data.containsKey('index')) {
+      context.handle(
+          _indexMeta, index.isAcceptableOrUnknown(data['index']!, _indexMeta));
+    } else if (isInserting) {
+      context.missing(_indexMeta);
+    }
+    if (data.containsKey('address_index')) {
+      context.handle(
+          _addressIndexMeta,
+          addressIndex.isAcceptableOrUnknown(
+              data['address_index']!, _addressIndexMeta));
+    } else if (isInserting) {
+      context.missing(_addressIndexMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {walletUUID, index};
+  @override
+  AccountConfiguration map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AccountConfiguration(
+      walletUUID: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}wallet_u_u_i_d'])!,
+      index: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}index'])!,
+      addressIndex: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}address_index'])!,
+    );
+  }
+
+  @override
+  $AccountConfigurationsTable createAlias(String alias) {
+    return $AccountConfigurationsTable(attachedDatabase, alias);
+  }
+}
+
+class AccountConfiguration extends DataClass
+    implements Insertable<AccountConfiguration> {
+  final String walletUUID;
+  final int index;
+  final int addressIndex;
+  const AccountConfiguration(
+      {required this.walletUUID,
+      required this.index,
+      required this.addressIndex});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['wallet_u_u_i_d'] = Variable<String>(walletUUID);
+    map['index'] = Variable<int>(index);
+    map['address_index'] = Variable<int>(addressIndex);
+    return map;
+  }
+
+  AccountConfigurationsCompanion toCompanion(bool nullToAbsent) {
+    return AccountConfigurationsCompanion(
+      walletUUID: Value(walletUUID),
+      index: Value(index),
+      addressIndex: Value(addressIndex),
+    );
+  }
+
+  factory AccountConfiguration.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AccountConfiguration(
+      walletUUID: serializer.fromJson<String>(json['walletUUID']),
+      index: serializer.fromJson<int>(json['index']),
+      addressIndex: serializer.fromJson<int>(json['addressIndex']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'walletUUID': serializer.toJson<String>(walletUUID),
+      'index': serializer.toJson<int>(index),
+      'addressIndex': serializer.toJson<int>(addressIndex),
+    };
+  }
+
+  AccountConfiguration copyWith(
+          {String? walletUUID, int? index, int? addressIndex}) =>
+      AccountConfiguration(
+        walletUUID: walletUUID ?? this.walletUUID,
+        index: index ?? this.index,
+        addressIndex: addressIndex ?? this.addressIndex,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('AccountConfiguration(')
+          ..write('walletUUID: $walletUUID, ')
+          ..write('index: $index, ')
+          ..write('addressIndex: $addressIndex')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(walletUUID, index, addressIndex);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AccountConfiguration &&
+          other.walletUUID == this.walletUUID &&
+          other.index == this.index &&
+          other.addressIndex == this.addressIndex);
+}
+
+class AccountConfigurationsCompanion
+    extends UpdateCompanion<AccountConfiguration> {
+  final Value<String> walletUUID;
+  final Value<int> index;
+  final Value<int> addressIndex;
+  final Value<int> rowid;
+  const AccountConfigurationsCompanion({
+    this.walletUUID = const Value.absent(),
+    this.index = const Value.absent(),
+    this.addressIndex = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AccountConfigurationsCompanion.insert({
+    required String walletUUID,
+    required int index,
+    required int addressIndex,
+    this.rowid = const Value.absent(),
+  })  : walletUUID = Value(walletUUID),
+        index = Value(index),
+        addressIndex = Value(addressIndex);
+  static Insertable<AccountConfiguration> custom({
+    Expression<String>? walletUUID,
+    Expression<int>? index,
+    Expression<int>? addressIndex,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (walletUUID != null) 'wallet_u_u_i_d': walletUUID,
+      if (index != null) 'index': index,
+      if (addressIndex != null) 'address_index': addressIndex,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AccountConfigurationsCompanion copyWith(
+      {Value<String>? walletUUID,
+      Value<int>? index,
+      Value<int>? addressIndex,
+      Value<int>? rowid}) {
+    return AccountConfigurationsCompanion(
+      walletUUID: walletUUID ?? this.walletUUID,
+      index: index ?? this.index,
+      addressIndex: addressIndex ?? this.addressIndex,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (walletUUID.present) {
+      map['wallet_u_u_i_d'] = Variable<String>(walletUUID.value);
+    }
+    if (index.present) {
+      map['index'] = Variable<int>(index.value);
+    }
+    if (addressIndex.present) {
+      map['address_index'] = Variable<int>(addressIndex.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AccountConfigurationsCompanion(')
+          ..write('walletUUID: $walletUUID, ')
+          ..write('index: $index, ')
+          ..write('addressIndex: $addressIndex, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$DB extends GeneratedDatabase {
   _$DB(QueryExecutor e) : super(e);
   late final $WalletsTable wallets = $WalletsTable(this);
@@ -2140,6 +2372,8 @@ abstract class _$DB extends GeneratedDatabase {
   late final $ImportedAddressesTable importedAddresses =
       $ImportedAddressesTable(this);
   late final $WalletConfigsTable walletConfigs = $WalletConfigsTable(this);
+  late final $AccountConfigurationsTable accountConfigurations =
+      $AccountConfigurationsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2150,6 +2384,7 @@ abstract class _$DB extends GeneratedDatabase {
         addresses,
         transactions,
         importedAddresses,
-        walletConfigs
+        walletConfigs,
+        accountConfigurations
       ];
 }

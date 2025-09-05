@@ -736,6 +736,7 @@ final class Schema7 extends i0.VersionedSchema {
     transactions,
     importedAddresses,
     walletConfigs,
+    accountConfigurations,
   ];
   late final Shape4 wallets = Shape4(
       source: i0.VersionedTable(
@@ -852,6 +853,22 @@ final class Schema7 extends i0.VersionedSchema {
         attachedDatabase: database,
       ),
       alias: null);
+  late final Shape11 accountConfigurations = Shape11(
+      source: i0.VersionedTable(
+        entityName: 'account_configurations',
+        withoutRowId: false,
+        isStrict: false,
+        tableConstraints: [
+          'PRIMARY KEY(wallet_u_u_i_d, "index")',
+        ],
+        columns: [
+          _column_39,
+          _column_12,
+          _column_40,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
 }
 
 class Shape9 extends i0.VersionedTable {
@@ -909,6 +926,23 @@ i1.GeneratedColumn<String> _column_37(String aliasedName) =>
 i1.GeneratedColumn<int> _column_38(String aliasedName) =>
     i1.GeneratedColumn<int>('addr_kinds_mask', aliasedName, false,
         type: i1.DriftSqlType.int, defaultValue: const Constant(0));
+
+class Shape11 extends i0.VersionedTable {
+  Shape11({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<String> get walletUUID =>
+      columnsByName['wallet_u_u_i_d']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get index =>
+      columnsByName['index']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get addressIndex =>
+      columnsByName['address_index']! as i1.GeneratedColumn<int>;
+}
+
+i1.GeneratedColumn<String> _column_39(String aliasedName) =>
+    i1.GeneratedColumn<String>('wallet_u_u_i_d', aliasedName, false,
+        type: i1.DriftSqlType.string);
+i1.GeneratedColumn<int> _column_40(String aliasedName) =>
+    i1.GeneratedColumn<int>('address_index', aliasedName, false,
+        type: i1.DriftSqlType.int);
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,

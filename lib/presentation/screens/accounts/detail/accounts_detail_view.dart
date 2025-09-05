@@ -28,6 +28,36 @@ import 'package:formz/formz.dart';
 
 import 'package:flutter/material.dart';
 
+class HoverTile extends StatelessWidget {
+  final bool selected;
+  final VoidCallback? onTap;
+  final Widget child;
+
+  const HoverTile({
+    super.key,
+    required this.child,
+    this.onTap,
+    this.selected = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Material(
+      color: selected ? cs.primary.withOpacity(0.08) : Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        // full-row hover highlight (no splash/highlight flashes)
+        hoverColor: cs.primary.withOpacity(0.06),
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        child: child,
+      ),
+    );
+  }
+}
+
 class AccountAddressesTile extends StatelessWidget {
   final BitcoinRepository _bitcoinRepository;
 
@@ -71,7 +101,7 @@ class AccountAddressesTile extends StatelessWidget {
         value: addressPath,
         valueStyle:
             const TextStyle(fontFeatures: [FontFeature.tabularFigures()]),
-        tooltip: addressPath,
+        // tooltip: addressPath,
       ),
       if (walletConfig.supportedKinds.contains(AddressV2Type.p2pkh))
         _InfoRow(
@@ -94,7 +124,8 @@ class AccountAddressesTile extends StatelessWidget {
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
     return SizedBox(
       height: _height,
-      child: InkWell(
+      child: HoverTile(
+        selected: addressPath.endsWith("0"),
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -282,8 +313,6 @@ class Bip32AccountDetailView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
-
-    print("\n\n\n\n\n\n\n $account \n\n\n\n\n\n\n");
 
     return ListView.builder(
       // TODO: should we enforce item count?

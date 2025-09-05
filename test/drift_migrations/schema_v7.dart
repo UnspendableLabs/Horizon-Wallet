@@ -307,6 +307,40 @@ class WalletConfigs extends Table with TableInfo {
   }
 }
 
+class AccountConfigurations extends Table with TableInfo {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  AccountConfigurations(this.attachedDatabase, [this._alias]);
+  late final GeneratedColumn<String> walletUUID = GeneratedColumn<String>(
+      'wallet_u_u_i_d', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  late final GeneratedColumn<int> index = GeneratedColumn<int>(
+      'index', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  late final GeneratedColumn<int> addressIndex = GeneratedColumn<int>(
+      'address_index', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [walletUUID, index, addressIndex];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'account_configurations';
+  @override
+  Set<GeneratedColumn> get $primaryKey => {walletUUID, index};
+  @override
+  Never map(Map<String, dynamic> data, {String? tablePrefix}) {
+    throw UnsupportedError('TableInfo.map in schema verification code');
+  }
+
+  @override
+  AccountConfigurations createAlias(String alias) {
+    return AccountConfigurations(attachedDatabase, alias);
+  }
+}
+
 class DatabaseAtV7 extends GeneratedDatabase {
   DatabaseAtV7(QueryExecutor e) : super(e);
   late final Wallets wallets = Wallets(this);
@@ -315,6 +349,8 @@ class DatabaseAtV7 extends GeneratedDatabase {
   late final Transactions transactions = Transactions(this);
   late final ImportedAddresses importedAddresses = ImportedAddresses(this);
   late final WalletConfigs walletConfigs = WalletConfigs(this);
+  late final AccountConfigurations accountConfigurations =
+      AccountConfigurations(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -325,7 +361,8 @@ class DatabaseAtV7 extends GeneratedDatabase {
         addresses,
         transactions,
         importedAddresses,
-        walletConfigs
+        walletConfigs,
+        accountConfigurations
       ];
   @override
   int get schemaVersion => 7;

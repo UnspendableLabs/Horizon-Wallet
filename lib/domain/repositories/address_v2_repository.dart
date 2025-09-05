@@ -11,6 +11,7 @@ abstract class AddressV2Repository {
 extension AddressV2RepositoryX on AddressV2Repository {
   TaskEither<String, List<AddressV2>> getByAccountT({
     required AccountV2 account,
+    int index = 0,
     required String Function(Object error, StackTrace stack) onError,
   }) {
     return TaskEither.tryCatch(
