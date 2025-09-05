@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:horizon/domain/entities/account_v2.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:horizon/domain/entities/action.dart' as URLAction;
 import 'package:horizon/domain/entities/failure.dart';
@@ -44,6 +45,7 @@ import 'package:horizon/presentation/screens/dashboard/view/portfolio_view.dart'
 import 'package:horizon/presentation/screens/demo_route.dart';
 import 'package:horizon/presentation/screens/login/login_view.dart';
 import 'package:horizon/presentation/screens/accounts/accounts_screen.dart';
+import 'package:horizon/presentation/screens/accounts/detail/accounts_detail_view.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dart';
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
@@ -584,6 +586,50 @@ class AppRouter {
                       ),
                     ),
                     body: AccountsScreen());
+              },
+            ),
+            GoRoute(
+              path: '/accounts/detail',
+              builder: (context, state) {
+                final account = state.extra as AccountV2; // <-- retrieve it
+                print("this is the paraset account in rounter $account");
+                return Scaffold(
+                    appBar: AppBar(
+                      backgroundColor:
+                          Theme.of(context).scaffoldBackgroundColor,
+                      elevation: 0,
+                      centerTitle: false,
+                      leadingWidth: 40,
+                      toolbarHeight: 74,
+                      title: Padding(
+                        padding: const EdgeInsets.only(top: 18.0),
+                        child: Text(
+                          account.name,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color:
+                                Theme.of(context).textTheme.bodyMedium?.color,
+                          ),
+                        ),
+                      ),
+                      leading: Padding(
+                        padding: const EdgeInsets.only(left: 9.0, top: 18.0),
+                        child: AppIcons.iconButton(
+                            context: context,
+                            width: 32,
+                            height: 32,
+                            icon: AppIcons.backArrowIcon(
+                                context: context,
+                                width: 24,
+                                height: 24,
+                                fit: BoxFit.fitHeight),
+                            onPressed: () {
+                              context.go("/accounts");
+                            }),
+                      ),
+                    ),
+                    body: AccountDetailView(account: account));
               },
             ),
             GoRoute(

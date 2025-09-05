@@ -37,6 +37,41 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
         _importedAddressService =
             importedAddressService ?? GetIt.I<ImportedAddressService>();
 
+
+  Future<List<AddressV2>> getByAccountAtIndex(Bip32 account, int index) async {
+
+    TaskEither<String, List<AddressV2>> task =  _walletConfigRepository
+          .getByIDT(
+              id: account.walletConfigID,
+              onError: (_) => "invariant: could not read wallet config")
+          .flatMap((walletConfig) => TaskEither.fromOption(
+              walletConfig, () => "invariant: wallet config is null"))
+          .flatMap((walletConfig) => _seedService
+              .getForWalletConfigT(
+                  walletConfig: walletConfig,
+                  decryptionStrategy: InMemoryKey(),
+                  onError: (_) => "invariant: could not read seed")
+              .flatMap((seed) =>  _addressService.deriveAddressWIPT(
+		    addressKinds: walletConfig.supportedKinds,
+		      path:
+
+                      "${walletConfig.basePath.get(walletConfig.network)}${account.index}'/0/$index"
+		      , seed: seed, network: walletConfig.network)
+		      ).map((map) => map.values.toList())
+                      );
+
+    final result = await task.run();
+    return result.fold(
+        (err) => throw Exception(
+            "$err: Error deriving addresses for account: ${account.name}"),
+        (addresses) {
+
+
+
+      return addresses;
+    });
+  }
+
   @override
   Future<List<AddressV2>> getByAccount(AccountV2 account) async {
     const numIndices = 1;
@@ -82,7 +117,6 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
         (addresses) {
 
 
-	print("Derived addresses: $addresses");
       return addresses.expand((x) => x).toList();
     });
   }

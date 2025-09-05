@@ -5,6 +5,7 @@ import "package:horizon/domain/entities/account_v2.dart";
 abstract class AddressV2Repository {
   Future<List<AddressV2>> getByAccount(AccountV2 account);
   Future<List<AddressV2>> getAllImported();
+  Future<List<AddressV2>> getByAccountAtIndex(Bip32 account, int index);
 }
 
 extension AddressV2RepositoryX on AddressV2Repository {
@@ -23,6 +24,17 @@ extension AddressV2RepositoryX on AddressV2Repository {
   }) {
     return TaskEither.tryCatch(
       () => getAllImported(),
+      onError,
+    );
+  }
+
+  TaskEither<String, List<AddressV2>> getByAccountAtIndexT({
+    required Bip32 account,
+    required int index,
+    required String Function(Object error, StackTrace stack) onError,
+  }) {
+    return TaskEither.tryCatch(
+      () => getByAccountAtIndex(account, index),
       onError,
     );
   }

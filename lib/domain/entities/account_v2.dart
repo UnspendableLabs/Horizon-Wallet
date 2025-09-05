@@ -28,6 +28,16 @@ class Bip32 extends AccountV2 {
   String toString() {
     return 'Bip32(walletConfigID: $walletConfigID, index: $index)';
   }
+
+  Bip32 copyWith({
+    String? walletConfigID,
+    int? index,
+  }) {
+    return Bip32(
+      walletConfigID: walletConfigID ?? this.walletConfigID,
+      index: index ?? this.index,
+    );
+  }
 }
 
 class ImportedWIF extends AccountV2 {
