@@ -322,13 +322,13 @@ Future<AssetPairFormOption?> showReceiveAssetModal({
               onTap: () => Navigator.of(dialogContext).pop(),
               child: BlocConsumer<AssetPairFormBloc, AssetPairFormModel>(
                   listener: (context, state) {
-            // no-op for now
-          }, builder: (context, state) {
-            return AssetSearchDialog(
-              // onAssetSelected: onReceiveAssetSelected,
-              onQueryChanged: onQueryChanged,
-            );
-          })));
+                // no-op for now
+              }, builder: (context, state) {
+                return AssetSearchDialog(
+                  // onAssetSelected: onReceiveAssetSelected,
+                  onQueryChanged: onQueryChanged,
+                );
+              })));
     },
   );
 

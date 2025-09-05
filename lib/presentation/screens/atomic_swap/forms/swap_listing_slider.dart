@@ -8,10 +8,7 @@ import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
-import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
-import 'package:horizon/presentation/forms/swap_slider_form/swap_slider_form_view.dart';
-
 
 class SwapListingSlider_ extends StatefulWidget {
   final Function() onNextStep;
@@ -250,14 +247,14 @@ class _SwapListingSlider_State extends State<SwapListingSlider_> {
                   backgroundColor: Colors.transparent,
                   child: Column(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
+                      const Padding(
+                        padding: EdgeInsets.symmetric(
                             horizontal: 20, vertical: 12),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Row(
-                              children: const [
+                              children: [
                                 Text("You Pay", style: TextStyle(fontSize: 14)),
                                 SizedBox(width: 12),
                                 QuantityText(
@@ -265,7 +262,7 @@ class _SwapListingSlider_State extends State<SwapListingSlider_> {
                                     style: TextStyle(fontSize: 12)),
                               ],
                             ),
-                            const Text("\$0.00", textAlign: TextAlign.end),
+                            Text("\$0.00", textAlign: TextAlign.end),
                           ],
                         ),
                       ),

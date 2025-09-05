@@ -1,8 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:horizon/data/sources/local/db.dart';
 import 'package:horizon/data/sources/local/tables/account_configurations_table.dart';
-import "package:horizon/domain/entities/network.dart";
-import 'package:horizon/domain/entities/seed_derivation.dart';
 
 part 'account_configurations_dao.g.dart';
 

@@ -1,5 +1,4 @@
 import 'package:horizon/domain/entities/atomic_swap/on_chain_payment.dart';
-import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap_buy.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap_create.dart';

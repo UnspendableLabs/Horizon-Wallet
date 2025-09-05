@@ -15,7 +15,6 @@ class ComposeCancelParams extends ComposeParams {
 }
 
 class ComposeCancelResponse implements ComposeResponse {
-
   @override
   final String psbt;
 

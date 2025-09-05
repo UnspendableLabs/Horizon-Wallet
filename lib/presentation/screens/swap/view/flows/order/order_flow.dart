@@ -22,14 +22,10 @@ import 'package:flow_builder/flow_builder.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import "package:fpdart/fpdart.dart" hide State;
 import 'package:horizon/presentation/forms/asset_balance_form/asset_balance_form_view.dart';
-import 'package:horizon/presentation/forms/asset_balance_form/bloc/asset_balance_form_bloc.dart';
 import 'package:horizon/extensions.dart';
 
 import 'package:horizon/presentation/forms/swap_order_form/swap_order_form_view.dart';
 import "package:horizon/presentation/forms/asset_pair_form/bloc/form/asset_pair_form_bloc.dart";
-import 'package:horizon/presentation/forms/create_psbt_form/create_psbt_form_view.dart';
-import 'package:horizon/presentation/forms/swap_create_listing_confirmation_form/swap_create_listing_confirmation_form_view.dart';
-import 'package:horizon/presentation/forms/asset_balance_form/asset_balance_form_view.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 
@@ -38,7 +34,6 @@ import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import "./order_flow_sign_view.dart";
-import "./order_flow_sign_bloc.dart";
 
 class OrderModel extends Equatable {
   Option<MultiAddressBalanceEntry> giveBalance;
@@ -145,9 +140,9 @@ class _OrderFlowViewState extends State<OrderFlowView> {
                             state: state,
                             actions: actions,
                             balanceIsUTXOError: (utxoId) => Column(children: [
-                              Text("Cannot compose order with UTXO-bound asset",
+                              const Text("Cannot compose order with UTXO-bound asset",
                                   style: TextStyle(color: red1)),
-                              SizedBox(height: 8),
+                              const SizedBox(height: 8),
                               GradientLinkButton(
                                   href:
                                       "${session.httpConfig.horizonMarket}/tools/detach?utxo=$utxoId",
@@ -194,7 +189,7 @@ class _OrderFlowViewState extends State<OrderFlowView> {
                     leading: IconButton(
                       onPressed: () {
                         _controller.update((model) =>
-                            model.copyWith(orderParams: Option.none()));
+                            model.copyWith(orderParams: const Option.none()));
                       },
                       icon: AppIcons.backArrowIcon(
                         context: context,
@@ -250,7 +245,7 @@ class _OrderFlowViewState extends State<OrderFlowView> {
                         signedHex: finalizedTx,
                         httpConfig: session.httpConfig,
                         onError: (e, _) => e.toString())
-                    .minimumDuration(Duration(seconds: 2)));
+                    .minimumDuration(const Duration(seconds: 2)));
 
                 return hash;
               }), builder: (context, state, retry) {
@@ -322,7 +317,7 @@ class _OrderFlowViewState extends State<OrderFlowView> {
                                 key: const ValueKey('lottie'),
                               )),
                               onReplete: (_) =>
-                                  Center(child: TxnSuccessAnimation()),
+                                  const Center(child: TxnSuccessAnimation()),
                               onFailure: (err) => TransactionError(
                                 errorMessage: err.toString(),
                                 onErrorButtonAction: retry,
@@ -335,7 +330,7 @@ class _OrderFlowViewState extends State<OrderFlowView> {
                             "Broadcasting...",
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
-                          onFailure: (_) => SizedBox.shrink(),
+                          onFailure: (_) => const SizedBox.shrink(),
                           onReplete: (hash) => Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [

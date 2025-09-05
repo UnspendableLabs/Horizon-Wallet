@@ -1,4 +1,3 @@
-import "package:flutter/cupertino.dart";
 import "package:horizon/domain/entities/utxo.dart";
 import "package:horizon/domain/entities/http_config.dart";
 import "package:horizon/domain/entities/bitcoin_tx.dart";
@@ -37,6 +36,7 @@ class MakeBuyPsbtReturn {
     required this.inputsToSign,
   });
 
+  @override
   String toString() {
     return 'MakeBuyPsbtReturn(psbtHex: $psbtHex, inputsToSign: $inputsToSign)';
   }

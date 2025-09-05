@@ -175,18 +175,17 @@ class SendComposeFormBloc
   final HttpConfig httpConfig;
   final TransactionService _transactionService;
 
-  SendComposeFormBloc(
-      {required List<SendEntryFormModel> initialEntries,
-      required List<MultiAddressBalance> initialBalances,
-      required FeeEstimates feeEstimates,
-      required String sourceAddress,
-      required this.httpConfig, 
-      TransactionService? transactionService,
-      })
-      : composeTransactionUseCase = GetIt.I<ComposeTransactionUseCase>(),
+  SendComposeFormBloc({
+    required List<SendEntryFormModel> initialEntries,
+    required List<MultiAddressBalance> initialBalances,
+    required FeeEstimates feeEstimates,
+    required String sourceAddress,
+    required this.httpConfig,
+    TransactionService? transactionService,
+  })  : composeTransactionUseCase = GetIt.I<ComposeTransactionUseCase>(),
         composeRepository = GetIt.I<ComposeRepository>(),
-        _transactionService = transactionService ??
-            GetIt.I<TransactionService>(),
+        _transactionService =
+            transactionService ?? GetIt.I<TransactionService>(),
         super(SendComposeFormModel(
           sendEntries: initialEntries,
           balances: initialBalances,
@@ -263,10 +262,7 @@ class SendComposeFormBloc
         _ => throw Exception("invariant"),
       };
 
-
-      final composeResponse =  await $(composeT);
-
-
+      final composeResponse = await $(composeT);
 
       return composeResponse;
     });

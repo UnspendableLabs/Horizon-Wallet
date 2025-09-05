@@ -1,6 +1,5 @@
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:pub_semver/pub_semver.dart';
-import 'package:fpdart/fpdart.dart';
 
 class ConfigImpl implements Config {
   @override

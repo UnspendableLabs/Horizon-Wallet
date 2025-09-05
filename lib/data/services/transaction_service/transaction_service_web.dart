@@ -22,7 +22,6 @@ import 'package:horizon/js/bitcoinjs_message.dart' as bitcoinMessage;
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'dart:math';
 
-import 'dart:js_interop';
 
 int calculateTxBytesFeeWithRate(
   int vinsLength,
@@ -460,7 +459,7 @@ class TransactionServiceWeb implements TransactionService {
       index: 0,
       witnessUtxo: bitcoinjs.WitnessUTXO(
         script: Buffer.from(Uint8List.fromList(
-                HEX.decode('0014' + List.filled(20, '00').join()))
+                HEX.decode('0014${List.filled(20, '00').join()}'))
             .toJS),
         value: 546, // Dummy value
       ),

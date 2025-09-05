@@ -169,7 +169,7 @@ class AssetBalanceFormModel with FormzMixin {
         multiAddressBalance: multiAddressBalance ?? this.multiAddressBalance,
         submissionStatus: submissionStatus ?? this.submissionStatus,
         balanceInput: balanceInput ?? this.balanceInput,
-        swapExistsInput: utxoSwapInput ?? this.swapExistsInput);
+        swapExistsInput: utxoSwapInput ?? swapExistsInput);
   }
 }
 

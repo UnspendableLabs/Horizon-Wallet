@@ -20,10 +20,9 @@ class ComposeAttachUtxoParams extends ComposeParams {
 }
 
 class ComposeAttachUtxoResponse implements ComposeResponse {
-
   @override
   final String rawtransaction;
-  
+
   @override
   final String psbt;
 

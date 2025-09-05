@@ -5,11 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
-import 'package:horizon/presentation/session/bloc/session_cubit.dart';
-import 'package:horizon/presentation/shell/app_shell.dart';
 import 'package:horizon/utils/app_icons.dart';
-import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
-import 'package:fpdart/fpdart.dart' show Option;
 import 'package:horizon/presentation/common/link.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 

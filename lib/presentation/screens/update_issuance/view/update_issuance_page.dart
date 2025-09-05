@@ -334,7 +334,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
           _buildQuantityField(formKey, originalAsset, 'Reset Quantity'),
           const SizedBox(height: 16),
           IssuanceCheckboxes(
-            isDivisible: isDivisible ?? originalAsset.divisible!,
+            isDivisible: isDivisible ?? originalAsset.divisible,
             onDivisibleChanged: (bool? value) {
               setState(() {
                 isDivisible = value ?? false;
@@ -442,7 +442,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
           ),
           const SizedBox(height: 16.0),
           IssuanceCheckboxes(
-            isDivisible: isDivisible ?? originalAsset.divisible!,
+            isDivisible: isDivisible ?? originalAsset.divisible,
             isLocked: isLocked ?? originalAsset.locked!,
             onDivisibleChanged: (bool? value) {
               setState(() {
@@ -484,7 +484,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
       keyboardType:
           const TextInputType.numberWithOptions(decimal: true, signed: false),
       inputFormatters: [
-        isDivisible ?? originalAsset.divisible!
+        isDivisible ?? originalAsset.divisible
             ? DecimalTextInputFormatter(decimalRange: 8)
             : FilteringTextInputFormatter.digitsOnly,
       ],
@@ -519,7 +519,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
         case IssuanceActionType.reset:
           isReset = true;
           quantity = _updateQuantity(
-              isDivisible ?? originalAsset.divisible!, _quantityController);
+              isDivisible ?? originalAsset.divisible, _quantityController);
           break;
         case IssuanceActionType.lockDescription:
           description = 'lock_description';
@@ -532,12 +532,12 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
           break;
         case IssuanceActionType.issueMore:
           quantity = _updateQuantity(
-              isDivisible ?? originalAsset.divisible!, _quantityController);
+              isDivisible ?? originalAsset.divisible, _quantityController);
           break;
         case IssuanceActionType.issueSubasset:
           name = _subassetController.text;
           quantity = _updateQuantity(
-              isDivisible ?? originalAsset.divisible!, _quantityController);
+              isDivisible ?? originalAsset.divisible, _quantityController);
           description = _newDescriptionController.text;
           break;
         case IssuanceActionType.transferOwnership:
@@ -553,7 +553,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
               name: name,
               quantity: quantity,
               description: description ?? '',
-              divisible: isDivisible ?? originalAsset.divisible!,
+              divisible: isDivisible ?? originalAsset.divisible,
               lock: isLocked ?? originalAsset.locked!,
               reset: isReset ?? false,
               issuanceActionType: widget.actionType,

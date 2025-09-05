@@ -19,7 +19,6 @@ class ComposeDestroyParams extends ComposeParams {
 }
 
 class ComposeDestroyResponse implements ComposeResponse {
-
   @override
   final String psbt;
 

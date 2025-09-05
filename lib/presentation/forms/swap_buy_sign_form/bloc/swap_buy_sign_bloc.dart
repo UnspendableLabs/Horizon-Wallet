@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
 import 'package:equatable/equatable.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:horizon/extensions.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/atomic_swap_repository.dart';
@@ -306,8 +305,8 @@ class SwapBuySignFormBloc
       updateSwapAtIndex(
           state.swapIndex,
           (swap) => swap.copyWith(
-                showSignPsbtModal: Option.of(false),
-                psbtWithArgs: Option.none(),
+                showSignPsbtModal: const Option.of(false),
+                psbtWithArgs: const Option.none(),
                 signatureStatus: FormzSubmissionStatus.initial,
               )),
     );
@@ -437,7 +436,7 @@ class SwapBuySignFormBloc
             id: state.current.atomicSwap.id,
             psbtHex: event.signedPsbtHex,
             buyerAddress: state.current.address.address)
-        .minimumDuration(Duration(seconds: 1, milliseconds: 500));
+        .minimumDuration(const Duration(seconds: 1, milliseconds: 500));
 
     final result = await task.run();
 

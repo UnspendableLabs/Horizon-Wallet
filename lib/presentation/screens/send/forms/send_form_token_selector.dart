@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 import 'package:fpdart/fpdart.dart' show TaskEither;
 import 'package:get_it/get_it.dart';
-import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';

@@ -23,8 +23,6 @@ import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/extensions.dart';
-import 'package:horizon/data/sources/network/api/v2_api.dart';
-import 'package:dio/dio.dart';
 
 import './session_state.dart';
 

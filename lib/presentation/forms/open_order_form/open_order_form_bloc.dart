@@ -571,7 +571,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       nextGiveQuantity = GiveQuantityInput.dirty(
         nextGiveQuantityNormalized,
         balance: initialGiveBalance?.quantity ?? 0,
-        isDivisible: initialGiveAsset.divisible!,
+        isDivisible: initialGiveAsset.divisible,
       );
     } catch (e) {
       // if we can't find a give asset, just treat input as divisible
@@ -593,7 +593,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
               : params.initialGetQuantity)
           .toString();
       nextGetQuantity = GetQuantityInput.dirty(nextGetQuantityNormalized,
-          isDivisible: initialGetAsset.divisible!);
+          isDivisible: initialGetAsset.divisible);
     } catch (e) {
       nextGetAsset =
           GetAssetInput.dirty(params.initialGetAsset); // Keep the input

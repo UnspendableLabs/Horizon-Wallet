@@ -13,7 +13,6 @@ import 'package:lottie/lottie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fpdart/fpdart.dart' hide State;
-import 'package:fpdart/fpdart.dart' show Option;
 import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
@@ -21,7 +20,6 @@ import 'package:horizon/domain/entities/compose_mpma_send.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/extensions.dart';
-import 'package:horizon/presentation/common/transactions/transaction_successful.dart';
 import 'package:horizon/presentation/forms/asset_balance_form/bloc/asset_balance_form_bloc.dart';
 import 'package:horizon/presentation/common/transactions/transaction_error.dart';
 import 'package:horizon/presentation/common/remote_data_builder.dart';
@@ -167,7 +165,7 @@ class _SendViewState extends State<SendView> {
                     return IconButton(
                         onPressed: () {
                           context.flow<SendFlowModel>().update((model) =>
-                              model.copyWith(balance: Option.none()));
+                              model.copyWith(balance: const Option.none()));
                         },
                         icon: AppIcons.backArrowIcon(
                           context: context,
@@ -209,9 +207,9 @@ class _SendViewState extends State<SendView> {
                           state: state,
                           actions: actions,
                           balanceIsUTXOError: (utxoId) => Column(children: [
-                            Text("Cannot send UTXO-bound asset",
+                            const Text("Cannot send UTXO-bound asset",
                                 style: TextStyle(color: red1)),
-                            SizedBox(height: 8),
+                            const SizedBox(height: 8),
                             GradientLinkButton(
                                 href:
                                     "${session.httpConfig.horizonMarket}/tools/detach?utxo=$utxoId",
@@ -231,7 +229,7 @@ class _SendViewState extends State<SendView> {
                     return IconButton(
                         onPressed: () {
                           context.flow<SendFlowModel>().update((model) =>
-                              model.copyWith(address: Option.none()));
+                              model.copyWith(address: const Option.none()));
                         },
                         icon: AppIcons.backArrowIcon(
                           context: context,
@@ -408,7 +406,7 @@ class _SendViewState extends State<SendView> {
                                 signedHex: finalizedTx,
                                 httpConfig: session.httpConfig,
                                 onError: (e, _) => e.toString())
-                            .minimumDuration(Duration(seconds: 2)));
+                            .minimumDuration(const Duration(seconds: 2)));
 
                         return hash;
                       }), builder: (context, state, retry) {
@@ -425,7 +423,7 @@ class _SendViewState extends State<SendView> {
                                     key: const ValueKey('lottie'),
                                   )),
                                   onReplete: (_) =>
-                                      Center(child: TxnSuccessAnimation()),
+                                      const Center(child: TxnSuccessAnimation()),
                                   onFailure: (err) => TransactionError(
                                     errorMessage: err.toString(),
                                     onErrorButtonAction: retry,
@@ -438,7 +436,7 @@ class _SendViewState extends State<SendView> {
                                 "Broadcasting...",
                                 style: Theme.of(context).textTheme.titleMedium,
                               ),
-                              onFailure: (_) => SizedBox.shrink(),
+                              onFailure: (_) => const SizedBox.shrink(),
                               onReplete: (hash) => Column(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [

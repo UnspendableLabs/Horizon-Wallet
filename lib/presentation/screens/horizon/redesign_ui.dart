@@ -866,7 +866,7 @@ class _HorizonRedesignDropdownState<T>
   List<DropdownMenuItem<T>> get filteredItems => widget.items.where((item) {
         if (_searchQuery.value.text.isEmpty) return true;
         return widget.effectiveFilterFn(
-            query: _searchQuery.value.text, item: item.value!);
+            query: _searchQuery.value.text, item: item.value as T);
       }).toList();
   @override
   void initState() {
@@ -988,7 +988,7 @@ class _HorizonRedesignDropdownState<T>
                                   ),
                                 ),
                               );
-                            }).toList(),
+                            }),
                           ]),
                         ),
                       ),

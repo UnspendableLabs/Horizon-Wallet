@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/presentation/common/filter_bar.dart';

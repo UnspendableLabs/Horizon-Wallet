@@ -371,7 +371,7 @@ class _PortfolioViewState extends State<PortfolioView>
                                                     style: Theme.of(context)
                                                         .textTheme
                                                         .labelMedium),
-                                                trailing: Text("tk balance"));
+                                                trailing: const Text("tk balance"));
                                           },
                                         ))
                                   ]);

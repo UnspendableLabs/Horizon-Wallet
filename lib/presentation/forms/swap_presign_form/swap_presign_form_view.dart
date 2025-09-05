@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:horizon/presentation/common/collapsable_view.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/domain/entities/http_config.dart';

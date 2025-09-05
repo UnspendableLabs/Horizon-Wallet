@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:horizon/common/constants.dart';
-import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/address_info.dart';
 import 'package:get_it/get_it.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
-import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
@@ -82,7 +79,7 @@ class AccountsScreen extends StatelessWidget {
                         }
                       },
                       itemBuilder: (context) => [
-                        PopupMenuItem(
+                        const PopupMenuItem(
                           value: 'manage_addresses',
                           child: Text('Manage Addresses'),
                         ),
@@ -117,8 +114,8 @@ class AccountsScreen extends StatelessWidget {
                               "failed to fetch BTC balance"));
                     }), builder: (context, state, refresh) {
                       return state.fold3(
-                          onNone: () => SizedBox.shrink(),
-                          onFailure: (_) => SizedBox.shrink(),
+                          onNone: () => const SizedBox.shrink(),
+                          onFailure: (_) => const SizedBox.shrink(),
                           onReplete: (addressInfoList) {
                             final total = addressInfoList.fold(0, (sum, info) {
                               final funded = info.chainStats.fundedTxoSum;

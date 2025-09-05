@@ -226,12 +226,12 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
               parent: parent,
               asset: subAsset ?? asset!.asset,
               maxMintPerTx: getQuantityForDivisibility(
-                  divisible: asset!.divisible!,
+                  divisible: asset!.divisible,
                   inputQuantity: maxMintPerTxController.text),
               hardCap: getQuantityForDivisibility(
-                  divisible: asset!.divisible!,
+                  divisible: asset!.divisible,
                   inputQuantity: hardcapController.text),
-              divisible: asset!.divisible!,
+              divisible: asset!.divisible,
               startBlock: startBlockController.text.isEmpty
                   ? null
                   : int.parse(startBlockController.text),

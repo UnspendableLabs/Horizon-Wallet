@@ -79,7 +79,7 @@ class ActionHandlerApp extends StatelessWidget {
                   // TODO: Add other action handlers here
                   default:
                     return ActionHandlerShell(
-                        child: Center(child: Text("Unsupported action type")));
+                        child: const Center(child: Text("Unsupported action type")));
                 }
               },
             );

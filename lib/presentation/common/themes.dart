@@ -324,7 +324,7 @@ ThemeData buildDarkTheme() {
         fontFamily: 'Montserrat',
       ),
     ),
-    extensions: [
+    extensions: const [
       CustomThemeExtension.dark,
       WoltModalSheetThemeData(
         backgroundColor: grey5,

@@ -180,7 +180,7 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
           label: 'Target Asset Total Supply (not including issuer\'s balance)',
           enabled: false,
           controller: TextEditingController(
-              text: asset.divisible!
+              text: asset.divisible
                   ? (Decimal.parse(asset.supplyNormalized!) -
                           Decimal.parse(balances
                               .firstWhere((balance) =>

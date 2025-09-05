@@ -26,7 +26,7 @@ class FlowStep extends StatelessWidget {
           elevation: 0,
           leading: leading,
           automaticallyImplyLeading: leading != null,
- actions: trailing != null ? [trailing!] : null, 
+          actions: trailing != null ? [trailing!] : null,
         ),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: Center(

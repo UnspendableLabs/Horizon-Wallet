@@ -310,7 +310,7 @@ class _SwapBuySignFormState extends State<SwapBuySignForm> {
                                 width: 12,
                                 height: 12),
                             const SizedBox(width: 4),
-                            Text("BTC"),
+                            const Text("BTC"),
                           ],
                         )),
                     _renderProperty("And when", "Transaction is confirmed"),

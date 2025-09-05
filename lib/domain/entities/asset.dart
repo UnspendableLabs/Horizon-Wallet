@@ -22,7 +22,5 @@ class Asset {
 
   String get displayName => assetLongname ?? asset;
 
-
   bool get divisible => divisible_ ?? false;
-
 }

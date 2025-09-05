@@ -12,7 +12,6 @@ import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/send/bloc/send_compose_form_bloc.dart';
 import 'package:horizon/presentation/screens/send/bloc/send_entry_form_bloc.dart';
 import 'package:horizon/presentation/screens/send/bloc/send_review_form_bloc.dart';
-import 'package:horizon/presentation/screens/send/view/send_view.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';

@@ -7,7 +7,6 @@ import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/presentation/forms/asset_balance_form/bloc/asset_balance_form_bloc.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/utxo.dart';
-import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/repositories/atomic_swap_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
@@ -23,7 +22,6 @@ import 'package:flow_builder/flow_builder.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import "package:fpdart/fpdart.dart" hide State;
 import 'package:horizon/presentation/forms/asset_balance_form/asset_balance_form_view.dart';
-import 'package:horizon/presentation/forms/asset_balance_form/bloc/asset_balance_form_bloc.dart';
 import 'package:horizon/extensions.dart';
 
 import 'package:horizon/presentation/forms/asset_attach_form/asset_attach_form_view.dart';
@@ -567,7 +565,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                               key: const ValueKey('lottie'),
                             )),
                             onReplete: (_) =>
-                                Center(child: TxnSuccessAnimation()),
+                                const Center(child: TxnSuccessAnimation()),
                             onFailure: (err) => TransactionError(
                               errorMessage: err.toString(),
                               onErrorButtonAction: retry,
@@ -580,7 +578,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                           "Creating swap...",
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
-                        onFailure: (_) => SizedBox.shrink(),
+                        onFailure: (_) => const SizedBox.shrink(),
                         onReplete: (hash) => Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [

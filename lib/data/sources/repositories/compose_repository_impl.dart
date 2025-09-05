@@ -125,7 +125,6 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
         final txVerbose = response.result!;
         return compose_send.ComposeSendResponse(
-
             params: compose_send.ComposeSendResponseParams(
               source: txVerbose.params.source,
               destination: txVerbose.params.destination,

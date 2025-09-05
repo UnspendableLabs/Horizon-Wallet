@@ -1,9 +1,7 @@
 import 'dart:async';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:horizon/domain/entities/account_v2.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:horizon/domain/entities/action.dart' as URLAction;
-import 'package:horizon/domain/entities/failure.dart';
 import 'package:horizon/domain/entities/extension_rpc.dart';
 import 'package:horizon/extensions.dart';
 import 'package:horizon/domain/entities/action.dart';
@@ -19,9 +17,7 @@ import 'package:go_router/go_router.dart';
 import 'package:horizon/common/fn.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/repositories/action_repository.dart';
-import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
-import 'package:horizon/domain/repositories/fairminter_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/repositories/version_repository.dart';
@@ -36,8 +32,6 @@ import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_bloc.dart';
 import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_view.dart';
-import 'package:horizon/presentation/screens/asset/asset_view.dart';
-import 'package:horizon/presentation/screens/asset/bloc/asset_view_bloc.dart';
 import 'package:horizon/presentation/screens/send/view/send_view.dart';
 
 import 'package:horizon/presentation/screens/swap/view/swap_view.dart';
@@ -1310,7 +1304,7 @@ class MyApp extends StatelessWidget {
           fontFamily: 'Montserrat',
         ),
       ),
-      extensions: [
+      extensions: const [
         CustomThemeExtension.dark,
         WoltModalSheetThemeData(
           backgroundColor: offBlack,

@@ -28,7 +28,6 @@ import 'package:horizon/presentation/forms/swap_presign_form/swap_presign_form_v
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
-import 'package:horizon/presentation/forms/swap_multi_buy_sign_form/bloc/swap_multi_buy_sign_bloc.dart';
 import 'package:horizon/presentation/forms/swap_multi_buy_sign_form/swap_multi_buy_sign_form_view.dart';
 import 'package:horizon/domain/repositories/atomic_swap_repository.dart';
 // CHAT this compnent is oveflowing.
@@ -268,7 +267,7 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
                   leading: IconButton(
                     onPressed: () {
                       _controller.update((model) =>
-                          model.copyWith(atomicSwaps: Option.none()));
+                          model.copyWith(atomicSwaps: const Option.none()));
                     },
                     icon: AppIcons.backArrowIcon(
                       context: context,
@@ -435,7 +434,7 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
                                     key: const ValueKey('lottie'),
                                   )),
                                   onReplete: (_) =>
-                                      Center(child: TxnSuccessAnimation()),
+                                      const Center(child: TxnSuccessAnimation()),
                                   onFailure: (err) => TransactionError(
                                     errorMessage: err.toString(),
                                     onErrorButtonAction: retry,
@@ -448,7 +447,7 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
                                 "Creating swap...",
                                 style: Theme.of(context).textTheme.titleMedium,
                               ),
-                              onFailure: (_) => SizedBox.shrink(),
+                              onFailure: (_) => const SizedBox.shrink(),
                               onReplete: (hash) => Column(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [

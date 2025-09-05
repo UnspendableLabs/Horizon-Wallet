@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:formz/formz.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';

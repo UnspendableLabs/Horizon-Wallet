@@ -9,7 +9,6 @@ import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/compose_attach_utxo.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/atomic_swap/on_chain_payment.dart';
-import 'package:horizon/domain/entities/atomic_swap/atomic_swap_create.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/atomic_swap_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';

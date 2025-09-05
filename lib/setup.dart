@@ -140,8 +140,6 @@ import 'package:logger/logger.dart' as logger;
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/data/logging/logger_impl.dart';
 import 'package:horizon/domain/entities/extension_rpc.dart';
-import 'package:horizon/domain/entities/network.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:chrome_extension/chrome.dart';
 import 'dart:html' as html;
 

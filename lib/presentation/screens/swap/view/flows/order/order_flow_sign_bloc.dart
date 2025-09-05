@@ -1,12 +1,9 @@
-import 'package:decimal/decimal.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/asset_quantity.dart';
-import 'package:horizon/domain/entities/compose_fn.dart';
-import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/domain/entities/compose_order.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
@@ -16,8 +13,6 @@ import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/send/bloc/send_entry_form_bloc.dart';
-import 'package:horizon/presentation/forms/base/transaction_form_model_base.dart';
-import 'package:rxdart/rxdart.dart';
 
 enum FeeOptionError { invalid }
 

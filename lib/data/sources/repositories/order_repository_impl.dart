@@ -1,4 +1,3 @@
-import "package:fpdart/fpdart.dart" hide Order;
 import 'package:get_it/get_it.dart';
 import "package:horizon/domain/entities/order.dart";
 import 'package:horizon/core/logging/logger.dart';

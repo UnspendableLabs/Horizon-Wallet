@@ -18,7 +18,6 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/repositories/fee_estimates_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/common/format.dart';
 import "./order_flow_sign_bloc.dart";
 import 'package:horizon/presentation/common/remote_data_builder.dart';
@@ -182,7 +181,7 @@ class _OrderFlowSignViewState extends State<OrderFlowSignView> {
                 const SizedBox(width: 4),
                 Text(truncateAssetName(widget.state.giveAsset)),
                 const SizedBox(width: 4),
-                Text("/"),
+                const Text("/"),
                 const SizedBox(width: 4),
                 Text(truncateAssetName(widget.state.getAsset)),
               ],
@@ -212,7 +211,7 @@ class _OrderFlowSignViewState extends State<OrderFlowSignView> {
             child: TextButtonContent(value: "Sign and Submit")),
         commonHeightSizedBox,
         widget.state.error.fold(
-            () => SizedBox.shrink(),
+            () => const SizedBox.shrink(),
             (error) => Text(
                   error,
                   style: theme.textTheme.bodyMedium?.copyWith(color: red1),

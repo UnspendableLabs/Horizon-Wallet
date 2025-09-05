@@ -9,7 +9,6 @@ import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/common/constants.dart';
 
 import 'package:horizon/domain/entities/http_config.dart';
-import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 
 import 'package:horizon/domain/repositories/wallet_config_repository.dart';

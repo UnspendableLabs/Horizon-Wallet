@@ -308,7 +308,7 @@ class _SwapMultiBuySignFormState extends State<SwapMultiBuySignForm> {
                                               key: Key(
                                                   "swap-link-${current.id}"),
                                               display: Text(
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     color: moderateBlue,
                                                   ),
                                                   "${current.id.split("-").first} TK: polish link"))
@@ -338,7 +338,7 @@ class _SwapMultiBuySignFormState extends State<SwapMultiBuySignForm> {
                                               width: 12,
                                               height: 12),
                                           const SizedBox(width: 4),
-                                          Text("BTC"),
+                                          const Text("BTC"),
                                         ],
                                       )),
                                   _renderPropertyWidget(
@@ -369,7 +369,7 @@ class _SwapMultiBuySignFormState extends State<SwapMultiBuySignForm> {
                                 ]),
                               ),
                             ))
-                        .toList(),
+                        ,
                     const SizedBox(
                       height: 14,
                     ),

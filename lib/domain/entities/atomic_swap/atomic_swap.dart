@@ -22,7 +22,7 @@ class AtomicSwap {
       required this.price,
       required this.pricePerUnit,
       required this.assetUtxoValue,
-      required this.assetUtxoId, 
+      required this.assetUtxoId,
       required this.pendingSales});
 
   @override

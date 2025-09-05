@@ -1,11 +1,9 @@
-import 'dart:math' hide log;
 import 'package:get_it/get_it.dart';
 import 'package:fpdart/fpdart.dart' hide Order;
 import 'package:formz/formz.dart';
 import 'package:decimal/decimal.dart';
 import 'package:rational/rational.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
-import 'package:horizon/presentation/screens/swap/view/swap_view.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/order.dart';
@@ -93,7 +91,7 @@ class SimulatedOrderCreate extends SimulatedOrder {
 enum AmountInputError { required }
 
 class AmountInput extends FormzInput<String, AmountInputError> {
-  AmountInput.pure() : super.pure("");
+  const AmountInput.pure() : super.pure("");
   const AmountInput.dirty({
     required String value,
   }) : super.dirty(value);
@@ -106,7 +104,7 @@ class AmountInput extends FormzInput<String, AmountInputError> {
 enum PriceInputError { required }
 
 class PriceInput extends FormzInput<String, PriceInputError> {
-  PriceInput.pure() : super.pure("");
+  const PriceInput.pure() : super.pure("");
   const PriceInput.dirty({
     required String value,
   }) : super.dirty(value);
@@ -869,7 +867,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
             expiry: none(),
             giveAssetBalance: giveAssetBalance,
             amountInput: const AmountInput.dirty(value: "0"),
-            priceInput: PriceInput.pure(),
+            priceInput: const PriceInput.pure(),
             amountType: AmountType.get,
             priceType: PriceType.give,
             giveAsset: giveAsset,
@@ -1039,7 +1037,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     emit(
       state.copyWith(
         simulatedOrders: const Initial(),
-        priceInput: PriceInput.pure(),
+        priceInput: const PriceInput.pure(),
         priceType:
             state.priceType == PriceType.give ? PriceType.get : PriceType.give,
       ),
@@ -1157,7 +1155,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
 
           final backwardQuantity = forwardQuantity * tx0Price;
           print("Backwardquantity = forwardQuantity * tx0Price");
-          print("                   ${forwardQuantity} * ${tx0Price}");
+          print("                   $forwardQuantity * $tx0Price");
 
           print(
               "🔄 forwardQuantity=$forwardQuantity, backwardQuantity=$backwardQuantity");

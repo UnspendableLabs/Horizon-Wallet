@@ -87,7 +87,7 @@ class _SwapSliderFormProviderState extends State<SwapSliderFormProvider> {
                     .read<SwapSliderFormBloc>()
                     .add(SliderDragged(value: value)),
                 onSubmitClicked: () =>
-                    context.read<SwapSliderFormBloc>().add(SubmitClicked())),
+                    context.read<SwapSliderFormBloc>().add(const SubmitClicked())),
             state);
       }),
     );
@@ -176,7 +176,7 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
     final isInsufficientBalance = widget.state.totalCostInput.error ==
         TotalCostValidationError.insufficientBalance;
 
-    final cardHeight = 366.0;
+    const cardHeight = 366.0;
 
     return widget.state.atomicSwapListModel.fold3(
         onNone: () => Center(
@@ -241,7 +241,7 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
                           ),
                           const SizedBox(height: 20),
                           Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 20),
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
                             child: Center(
                               child: Opacity(
                                 opacity:
@@ -300,7 +300,7 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
                                 Expanded(
                                   child: Padding(
                                     padding:
-                                        EdgeInsets.symmetric(horizontal: 10),
+                                        const EdgeInsets.symmetric(horizontal: 10),
                                     child: ListView.builder(
                                       controller: _scrollController,
                                       itemCount: model.items.length,
@@ -345,7 +345,7 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
                             QuantityText(
                                 quantity:
                                     "${widget.state.totalCostInput.value.normalized(precision: 8)} BTC",
-                                style: TextStyle(fontSize: 12)),
+                                style: const TextStyle(fontSize: 12)),
                           ],
                         ),
                         SatsToUsdDisplay(

@@ -18,22 +18,15 @@ import 'package:horizon/domain/entities/order.dart';
 import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/asset.dart';
-import 'package:horizon/extensions.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:meilisearch/meilisearch.dart';
 import './bloc/swap_order_form_bloc.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
-import 'package:group_button/group_button.dart';
 
-import 'package:horizon/presentation/common/colors.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
-import 'package:auto_size_text/auto_size_text.dart';
-import 'package:flutter/material.dart';
 
-import 'package:flutter/services.dart';
 
 class CustomButton extends StatelessWidget {
   final String label;
@@ -653,7 +646,7 @@ class _OrderInputs extends State<OrderInputs> {
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               Text(
-                                  "${widget.state.giveAssetBalance.quantityNormalized}",
+                                  widget.state.giveAssetBalance.quantityNormalized,
                                   style: theme.textTheme.labelSmall
                                       ?.copyWith(height: 1.2)),
                               const SizedBox(

@@ -77,7 +77,7 @@ class ComposeDispenserResponseVerbose implements ComposeResponse {
   final String rawtransaction;
 
   @override
-  final String psbt; 
+  final String psbt;
   final ComposeDispenserResponseVerboseParams params;
   final String name;
   final int btcIn;

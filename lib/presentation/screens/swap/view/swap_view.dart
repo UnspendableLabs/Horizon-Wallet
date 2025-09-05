@@ -37,7 +37,7 @@ class SwapFlowController extends FlowController<SwapFlowModel> {
 }
 
 class SwapFlowView extends StatefulWidget {
-  Config _config;
+  final Config _config;
 
   SwapFlowView({
     super.key,

@@ -86,24 +86,24 @@ class MultiAddressBalanceDropdown extends StatelessWidget {
                                 .copyWith(fontWeight: FontWeight.normal)),
                         Row(children: [
                           addressEntry.utxo != null
-                              ? Chip(
+                              ? const Chip(
                                   label: Text("utxo"),
-                                  labelStyle: const TextStyle(fontSize: 8),
+                                  labelStyle: TextStyle(fontSize: 8),
                                   padding: EdgeInsets.zero,
                                   backgroundColor: black,
                                 )
-                              : SizedBox.shrink(),
+                              : const SizedBox.shrink(),
                           utxoSwapMap != null &&
                                   addressEntry.utxo != null &&
                                   utxoSwapMap!
                                       .containsKey(addressEntry.utxo!) &&
                                   utxoSwapMap![addressEntry.utxo!] == true
-                              ? Padding(
+                              ? const Padding(
                                   padding:
-                                      const EdgeInsets.fromLTRB(4, 0, 0, 0),
+                                      EdgeInsets.fromLTRB(4, 0, 0, 0),
                                   child: Chip(
                                     label: Text("listed"),
-                                    labelStyle: const TextStyle(fontSize: 8),
+                                    labelStyle: TextStyle(fontSize: 8),
                                     padding: EdgeInsets.zero,
                                     backgroundColor: black,
                                   ),

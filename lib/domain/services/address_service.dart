@@ -4,7 +4,6 @@ import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/seed.dart';
 import 'package:horizon/domain/entities/network.dart';
-import 'package:horizon/domain/entities/wallet_config.dart';
 
 enum AddressType { bech32, legacy }
 

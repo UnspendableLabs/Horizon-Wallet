@@ -1,5 +1,4 @@
 import 'package:horizon/domain/entities/base_path.dart';
-import 'package:decimal/decimal.dart';
 
 import 'package:rational/rational.dart';
 

@@ -15,7 +15,7 @@ class ComposeDividendResponseModel {
   final int btcChange;
   final int btcFee;
   final String rawtransaction;
-  final String psbt; 
+  final String psbt;
   final ComposeDividendParamsModel params;
   final SignedTxEstimatedSizeModel signedTxEstimatedSize;
   ComposeDividendResponseModel({

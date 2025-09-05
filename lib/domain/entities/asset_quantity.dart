@@ -19,7 +19,7 @@ class AssetQuantity extends Equatable {
     final parsed = double.parse(input);
 
     if (!parsed.isFinite || parsed.isNaN) {
-      throw FormatException("non-finite input");
+      throw const FormatException("non-finite input");
     }
 
     if (divisible) {

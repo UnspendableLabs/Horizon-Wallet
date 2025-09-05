@@ -6,7 +6,8 @@ import 'package:horizon/domain/entities/address_rpc.dart';
 import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_bloc.dart';
 import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_event.dart';
 import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_state.dart';
-import 'package:horizon/presentation/screens/horizon/redesign_ui.dart' as HorizonUI;
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart'
+    as HorizonUI;
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 
@@ -190,8 +191,9 @@ class GetAddressesForm extends StatelessWidget {
                   HorizonUI.HorizonTextField(
                     controller:
                         TextEditingController(text: state.password.value),
-                    onChanged: (password) =>
-                        context.read<GetAddressesBloc>().add(PasswordChanged(password)),
+                    onChanged: (password) => context
+                        .read<GetAddressesBloc>()
+                        .add(PasswordChanged(password)),
                     hintText: 'Password',
                     obscureText: true,
                     errorText: state.password.displayError != null
@@ -224,7 +226,9 @@ class GetAddressesForm extends StatelessWidget {
                                         AddressSelectionMode
                                             .importedAddresses &&
                                     state.importedAddress.value.isEmpty),
-                        onPressed: () => context.read<GetAddressesBloc>().add(GetAddressesSubmitted()),
+                        onPressed: () => context
+                            .read<GetAddressesBloc>()
+                            .add(GetAddressesSubmitted()),
                         variant: HorizonUI.ButtonVariant.green,
                         child: HorizonUI.TextButtonContent(value: 'Confirm'),
                         isLoading: state.submissionStatus.isInProgress,
@@ -247,4 +251,4 @@ class GetAddressesForm extends StatelessWidget {
       ),
     );
   }
-} 
+}

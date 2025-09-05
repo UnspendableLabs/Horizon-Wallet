@@ -15,7 +15,6 @@ class ComposeBurnParams extends ComposeParams {
 }
 
 class ComposeBurnResponse implements ComposeResponse {
-
   @override
   final String psbt;
 

@@ -225,7 +225,7 @@ class _AssetAttachFormState extends State<AssetAttachForm> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Text("${widget.state.assetBalanceNormalized}",
+                      Text(widget.state.assetBalanceNormalized,
                           style: theme.textTheme.labelSmall
                               ?.copyWith(height: 1.2)),
                       const SizedBox(

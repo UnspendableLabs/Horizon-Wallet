@@ -1,7 +1,5 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:horizon/common/constants.dart';
-import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/address_info.dart';
 import 'package:horizon/domain/entities/account_v2.dart';
@@ -9,8 +7,6 @@ import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/wallet_config.dart';
 import 'package:get_it/get_it.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
-import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
@@ -20,13 +16,6 @@ import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/address_v2_repository.dart';
 import 'package:horizon/domain/repositories/account_v2_repository.dart';
 import 'package:horizon/domain/repositories/wallet_config_repository.dart';
-
-import 'package:horizon/presentation/common/gradient_avatar.dart';
-import 'package:go_router/go_router.dart';
-
-import 'package:formz/formz.dart';
-
-import 'package:flutter/material.dart';
 
 class HoverTile extends StatelessWidget {
   final bool selected;
@@ -163,8 +152,8 @@ class AccountAddressesTile extends StatelessWidget {
                         "failed to fetch BTC balance"));
               }), builder: (context, state, refresh) {
                 return state.fold3(
-                    onNone: () => SizedBox.shrink(),
-                    onFailure: (_) => SizedBox.shrink(),
+                    onNone: () => const SizedBox.shrink(),
+                    onFailure: (_) => const SizedBox.shrink(),
                     onReplete: (addressInfoList) {
                       final total = addressInfoList.fold(0, (sum, info) {
                         final funded = info.chainStats.fundedTxoSum;
@@ -201,15 +190,14 @@ class _InfoRow extends StatelessWidget {
   final bool ellipsizeMiddle;
   final String? tooltip;
 
-  const _InfoRow({
-    required this.label,
-    required this.value,
-    this.valueStyle,
-    this.monospace = false,
-    this.copyable = false,
-    this.ellipsizeMiddle = false,
-    this.tooltip,
-  });
+  const _InfoRow(
+      {required this.label,
+      required this.value,
+      this.valueStyle,
+      this.monospace = false,
+      this.copyable = false,
+      this.ellipsizeMiddle = false,
+      this.tooltip});
 
   @override
   Widget build(BuildContext context) {
@@ -375,7 +363,7 @@ class Bip32AccountDetailView extends StatelessWidget {
 class ImportedWIFAccountDetailView extends StatelessWidget {
   final ImportedWIF account;
 
-  ImportedWIFAccountDetailView({required this.account, super.key});
+  const ImportedWIFAccountDetailView({required this.account, super.key});
 
   @override
   Widget build(BuildContext context) {
