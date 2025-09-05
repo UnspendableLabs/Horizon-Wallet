@@ -144,4 +144,17 @@ extension BitcoinRepositoryX on BitcoinRepository {
         () => getAddressInfo(address: address, httpConfig: httpConfig),
         (e, _) => onError(e),
       );
+
+  TaskEither<String, List<AddressInfo>> getAddressInfoMultiT({
+    required List<String> addresses,
+    required HttpConfig httpConfig,
+    required String Function(Object error) onError,
+  }) =>
+      TaskEither.sequenceList(addresses
+          .map((address) => getAddressInfoT(
+                address: address,
+                httpConfig: httpConfig,
+                onError: onError,
+              ))
+          .toList());
 }

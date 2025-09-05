@@ -1,17 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:horizon/common/constants.dart';
+import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/domain/entities/remote_data.dart';
+import 'package:horizon/domain/entities/address_info.dart';
+import 'package:get_it/get_it.dart';
+import 'package:fpdart/fpdart.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/common/sats_to_usd_display.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/domain/repositories/address_v2_repository.dart';
 
 import 'package:horizon/presentation/common/gradient_avatar.dart';
-import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:formz/formz.dart';
 import "./bloc/generate_account_bloc.dart";
 
 class AccountsScreen extends StatelessWidget {
-  const AccountsScreen({super.key});
+  final BitcoinRepository _bitcoinRepository;
+  final AddressV2Repository _addressV2Repository;
+
+  AccountsScreen(
+      {BitcoinRepository? bitcoinRepository,
+      AddressV2Repository? addressV2Repository,
+      super.key})
+      : _addressV2Repository =
+            addressV2Repository ?? GetIt.I<AddressV2Repository>(),
+        _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>();
 
   @override
   Widget build(BuildContext context) {
@@ -27,6 +47,9 @@ class AccountsScreen extends StatelessWidget {
           context.read<SessionStateCubit>().refresh();
         }
       }, builder: (context, state) {
+        final session =
+            context.watch<SessionStateCubit>().state.successOrThrow();
+
         return Scaffold(
           body: Column(
             children: [
@@ -45,6 +68,7 @@ class AccountsScreen extends StatelessWidget {
                         input: account.hash,
                         radius: 18,
                       ),
+                      trailing: Text("Manage addresses"),
                       title: Text(
                         account.name,
                         style: const TextStyle(
@@ -52,10 +76,39 @@ class AccountsScreen extends StatelessWidget {
                           fontSize: 14,
                         ),
                       ),
-                      subtitle: Text("computed btc balance $isSelected",
-                          style: const TextStyle(
-                            fontSize: 10,
-                          )),
+                      subtitle: RemoteDataTaskEitherBuilder(task:
+                          TaskEither<String, List<AddressInfo>>.Do(($) async {
+                        final addresses = await $(
+                            _addressV2Repository.getByAccountT(
+                                account: account,
+                                onError: (e, _) =>
+                                    "failed to generate account addresses"));
+
+                        return await $(_bitcoinRepository.getAddressInfoMultiT(
+                            httpConfig: session.httpConfig,
+                            addresses: addresses.map((a) => a.address).toList(),
+                            onError: (
+                              e,
+                            ) =>
+                                "failed to fetch BTC balance"));
+                      }), builder: (context, state, refresh) {
+                        return state.fold3(
+                            onNone: () => SizedBox.shrink(),
+                            onFailure: (_) => SizedBox.shrink(),
+                            onReplete: (addressInfoList) {
+                              final total =
+                                  addressInfoList.fold(0, (sum, info) {
+                                final funded = info.chainStats.fundedTxoSum;
+                                final spent = info.chainStats.spentTxoSum;
+                                final quantity = funded - spent;
+                                return sum + quantity;
+                              });
+
+                              return SatsToUsdDisplay(
+                                sats: BigInt.from(total),
+                              );
+                            });
+                      }),
                       onTap: () {
                         context
                             .read<SessionStateCubit>()

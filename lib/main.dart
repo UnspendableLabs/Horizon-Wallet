@@ -583,7 +583,7 @@ class AppRouter {
                             }),
                       ),
                     ),
-                    body: const AccountsScreen());
+                    body: AccountsScreen());
               },
             ),
             GoRoute(
@@ -857,6 +857,7 @@ void main() {
     }, (versionInfo) {
       if (version < versionInfo.min) {
         runApp(MaterialApp(
+          debugShowCheckedModeBanner: false,
           home: Scaffold(
             body: Center(
                 child: Column(
@@ -1324,6 +1325,7 @@ class MyApp extends StatelessWidget {
             }
 
             final app = MaterialApp.router(
+              debugShowCheckedModeBanner: false,
               theme: buildLightTheme(),
               darkTheme: buildDarkTheme(),
               themeMode: themeMode,
