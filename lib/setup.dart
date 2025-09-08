@@ -101,6 +101,9 @@ import 'package:horizon/data/sources/repositories/asset_search_repository_impl.d
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/data/sources/repositories/config_repository_impl.dart';
 
+import 'package:horizon/domain/repositories/account_configurations_repository.dart';
+import 'package:horizon/data/sources/repositories/account_configurations_repository_impl.dart';
+
 import 'package:horizon/domain/repositories/action_repository.dart';
 import 'package:horizon/data/sources/repositories/action_repository_impl.dart';
 
@@ -656,6 +659,10 @@ void setup() {
   injector.registerSingleton<AddressV2Repository>(AddressV2RepositoryImpl());
 
   injector.registerSingleton<AtomicSwapRepository>(AtomicSwapRepositoryImpl());
+
+  injector.registerSingleton<AccountConfigurationsRepository>(
+      AccountConfigurationsRepositoryImpl(
+          injector.get<DatabaseManager>().database));
 
   injector.registerSingleton<SessionStateCubit>(SessionStateCubit(
       kvService: GetIt.I<SecureKVService>(),

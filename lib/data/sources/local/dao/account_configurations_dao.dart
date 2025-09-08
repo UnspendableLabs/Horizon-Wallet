@@ -9,7 +9,7 @@ class AccountConfigurationsDao extends DatabaseAccessor<DB>
     with _$AccountConfigurationsDaoMixin {
   AccountConfigurationsDao(super.db);
 
-  Future<AccountConfiguration?> getByWalletConfigAndAccountIndex(
+  Future<AccountConfiguration?> getByPrimaryKey(
       {required String walletUUID, required int index}) async {
     return (select(accountConfigurations)
           ..where((tbl) =>

@@ -5,6 +5,7 @@ import 'package:horizon/domain/entities/address_info.dart';
 import 'package:horizon/domain/entities/account_v2.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/wallet_config.dart';
+import 'package:horizon/domain/entities/account_configuration.dart';
 import 'package:get_it/get_it.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:horizon/presentation/common/remote_data_builder.dart';
@@ -16,6 +17,7 @@ import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/address_v2_repository.dart';
 import 'package:horizon/domain/repositories/account_v2_repository.dart';
 import 'package:horizon/domain/repositories/wallet_config_repository.dart';
+import 'package:horizon/domain/repositories/account_configurations_repository.dart';
 
 class HoverTile extends StatelessWidget {
   final bool selected;
@@ -287,16 +289,20 @@ class Bip32AccountDetailView extends StatelessWidget {
   final AddressV2Repository _addressV2Repository;
 
   final WalletConfigRepository _walletConfigRepository;
+  final AccountConfigurationsRepository _accountConfigurationsRepository;
 
   Bip32AccountDetailView({
     required this.account,
     AddressV2Repository? addressV2Repository,
     WalletConfigRepository? walletConfigRepository,
+    AccountConfigurationsRepository? accountConfigurationsRepository,
     super.key,
   })  : _walletConfigRepository =
             walletConfigRepository ?? GetIt.I<WalletConfigRepository>(),
         _addressV2Repository =
-            addressV2Repository ?? GetIt.I<AddressV2Repository>();
+            addressV2Repository ?? GetIt.I<AddressV2Repository>(),
+        _accountConfigurationsRepository = accountConfigurationsRepository ??
+            GetIt.I<AccountConfigurationsRepository>();
 
   @override
   Widget build(BuildContext context) {
@@ -349,6 +355,19 @@ class Bip32AccountDetailView extends StatelessWidget {
 
                     return AccountAddressesTile(
                         // key: ValueKey("replete:$addressPath"),
+                        onTap: () async {
+                          final task = TaskEither<Never, void>.Do(($) async {
+                            await $(_accountConfigurationsRepository
+                                .createOrUpdateT(
+                                    config: AccountConfiguration(
+                                        walletUUID: session.walletConfig.uuid,
+                                        accountIndex: account.index,
+                                        addressIndex: index),
+                                    onError: (_, __) => throw ("invariant")));
+                          });
+
+                          await task.run();
+                        },
                         p2pkhAddress: p2pkh,
                         p2wpkhAddress: p2wpkh,
                         addressPath: addressPath,
