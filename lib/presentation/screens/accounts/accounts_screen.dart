@@ -98,8 +98,7 @@ class AccountsScreen extends StatelessWidget {
                     ),
                     subtitle: RemoteDataTaskEitherBuilder(task:
                         TaskEither<String, List<AddressInfo>>.Do(($) async {
-                      print("\n\n\n $account ");
-                      final addresses = await $(
+                      final addressSet = await $(
                           _addressV2Repository.getByAccountT(
                               account: account,
                               onError: (e, _) =>
@@ -107,7 +106,8 @@ class AccountsScreen extends StatelessWidget {
 
                       return await $(_bitcoinRepository.getAddressInfoMultiT(
                           httpConfig: session.httpConfig,
-                          addresses: addresses.map((a) => a.address).toList(),
+                          addresses:
+                              addressSet.list.map((a) => a.address).toList(),
                           onError: (
                             e,
                           ) =>

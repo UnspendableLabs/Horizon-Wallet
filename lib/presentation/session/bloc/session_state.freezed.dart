@@ -1013,7 +1013,7 @@ mixin _$SessionStateSuccess {
       throw _privateConstructorUsedError; // required Wallet wallet,
   String get decryptionKey => throw _privateConstructorUsedError;
   List<AccountV2> get accounts => throw _privateConstructorUsedError;
-  List<AddressV2> get addresses => throw _privateConstructorUsedError;
+  AddressIndexSet get addressIndexSet => throw _privateConstructorUsedError;
   WalletConfig get walletConfig => throw _privateConstructorUsedError;
 
   /// Create a copy of SessionStateSuccess
@@ -1034,7 +1034,7 @@ abstract class $SessionStateSuccessCopyWith<$Res> {
       AccountV2? currentAccount,
       String decryptionKey,
       List<AccountV2> accounts,
-      List<AddressV2> addresses,
+      AddressIndexSet addressIndexSet,
       WalletConfig walletConfig});
 }
 
@@ -1057,7 +1057,7 @@ class _$SessionStateSuccessCopyWithImpl<$Res, $Val extends SessionStateSuccess>
     Object? currentAccount = freezed,
     Object? decryptionKey = null,
     Object? accounts = null,
-    Object? addresses = null,
+    Object? addressIndexSet = null,
     Object? walletConfig = null,
   }) {
     return _then(_value.copyWith(
@@ -1077,10 +1077,10 @@ class _$SessionStateSuccessCopyWithImpl<$Res, $Val extends SessionStateSuccess>
           ? _value.accounts
           : accounts // ignore: cast_nullable_to_non_nullable
               as List<AccountV2>,
-      addresses: null == addresses
-          ? _value.addresses
-          : addresses // ignore: cast_nullable_to_non_nullable
-              as List<AddressV2>,
+      addressIndexSet: null == addressIndexSet
+          ? _value.addressIndexSet
+          : addressIndexSet // ignore: cast_nullable_to_non_nullable
+              as AddressIndexSet,
       walletConfig: null == walletConfig
           ? _value.walletConfig
           : walletConfig // ignore: cast_nullable_to_non_nullable
@@ -1102,7 +1102,7 @@ abstract class _$$SessionStateSuccessImplCopyWith<$Res>
       AccountV2? currentAccount,
       String decryptionKey,
       List<AccountV2> accounts,
-      List<AddressV2> addresses,
+      AddressIndexSet addressIndexSet,
       WalletConfig walletConfig});
 }
 
@@ -1123,7 +1123,7 @@ class __$$SessionStateSuccessImplCopyWithImpl<$Res>
     Object? currentAccount = freezed,
     Object? decryptionKey = null,
     Object? accounts = null,
-    Object? addresses = null,
+    Object? addressIndexSet = null,
     Object? walletConfig = null,
   }) {
     return _then(_$SessionStateSuccessImpl(
@@ -1143,10 +1143,10 @@ class __$$SessionStateSuccessImplCopyWithImpl<$Res>
           ? _value._accounts
           : accounts // ignore: cast_nullable_to_non_nullable
               as List<AccountV2>,
-      addresses: null == addresses
-          ? _value._addresses
-          : addresses // ignore: cast_nullable_to_non_nullable
-              as List<AddressV2>,
+      addressIndexSet: null == addressIndexSet
+          ? _value.addressIndexSet
+          : addressIndexSet // ignore: cast_nullable_to_non_nullable
+              as AddressIndexSet,
       walletConfig: null == walletConfig
           ? _value.walletConfig
           : walletConfig // ignore: cast_nullable_to_non_nullable
@@ -1163,10 +1163,9 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
       required this.currentAccount,
       required this.decryptionKey,
       required final List<AccountV2> accounts,
-      required final List<AddressV2> addresses,
+      required this.addressIndexSet,
       required this.walletConfig})
-      : _accounts = accounts,
-        _addresses = addresses;
+      : _accounts = accounts;
 
   @override
   final HttpConfig httpConfig;
@@ -1183,14 +1182,8 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
     return EqualUnmodifiableListView(_accounts);
   }
 
-  final List<AddressV2> _addresses;
   @override
-  List<AddressV2> get addresses {
-    if (_addresses is EqualUnmodifiableListView) return _addresses;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_addresses);
-  }
-
+  final AddressIndexSet addressIndexSet;
   @override
   final WalletConfig walletConfig;
 
@@ -1206,8 +1199,8 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
             (identical(other.decryptionKey, decryptionKey) ||
                 other.decryptionKey == decryptionKey) &&
             const DeepCollectionEquality().equals(other._accounts, _accounts) &&
-            const DeepCollectionEquality()
-                .equals(other._addresses, _addresses) &&
+            (identical(other.addressIndexSet, addressIndexSet) ||
+                other.addressIndexSet == addressIndexSet) &&
             (identical(other.walletConfig, walletConfig) ||
                 other.walletConfig == walletConfig));
   }
@@ -1219,7 +1212,7 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
       currentAccount,
       decryptionKey,
       const DeepCollectionEquality().hash(_accounts),
-      const DeepCollectionEquality().hash(_addresses),
+      addressIndexSet,
       walletConfig);
 
   /// Create a copy of SessionStateSuccess
@@ -1238,7 +1231,7 @@ abstract class _SessionStateSuccess implements SessionStateSuccess {
       required final AccountV2? currentAccount,
       required final String decryptionKey,
       required final List<AccountV2> accounts,
-      required final List<AddressV2> addresses,
+      required final AddressIndexSet addressIndexSet,
       required final WalletConfig walletConfig}) = _$SessionStateSuccessImpl;
 
   @override
@@ -1250,7 +1243,7 @@ abstract class _SessionStateSuccess implements SessionStateSuccess {
   @override
   List<AccountV2> get accounts;
   @override
-  List<AddressV2> get addresses;
+  AddressIndexSet get addressIndexSet;
   @override
   WalletConfig get walletConfig;
 

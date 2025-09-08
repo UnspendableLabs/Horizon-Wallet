@@ -31,12 +31,18 @@ class AddressServiceWeb implements AddressService {
     bip32.BIP32Interface root =
         _bip32.fromSeed(Buffer.from(seed.bytes.toJS), network.toJS);
 
+    print("after root");
+
+    print("path: $path");
+
     bip32.BIP32Interface child = _deriveChildKey(
       path: path,
       privKey: hex.encode(root.privateKey!.toDart),
       chainCodeHex: hex.encode(root.chainCode.toDart),
       network: network,
     );
+
+    print("after child");
 
     final Map<AddressV2Type, AddressV2> result = {};
     for (final kind in addressKinds) {
@@ -52,6 +58,8 @@ class AddressServiceWeb implements AddressService {
         publicKey: hex.encode(child.publicKey.toDart),
       );
     }
+
+    print("result $result");
 
     return result;
 

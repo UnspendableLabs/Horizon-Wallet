@@ -155,7 +155,7 @@ class CreateMultiBuyPsbtSignHandler extends StatelessWidget {
                             (psbtWithArgs) => BlocProvider(
                                 create: (context) => SignPsbtBloc(
                                       httpConfig: session.httpConfig,
-                                      addresses: session.addresses,
+                                      addresses: session.addressIndexSet.list,
                                       passwordRequired: settings
                                           .requirePasswordForCryptoOperations,
                                       unsignedPsbt: psbtWithArgs.psbtHex,
@@ -198,7 +198,7 @@ class CreateMultiBuyPsbtSignHandler extends StatelessWidget {
                             (psbtWithArgs) => BlocProvider(
                                 create: (context) => SignPsbtBloc(
                                       httpConfig: session.httpConfig,
-                                      addresses: session.addresses,
+                                      addresses: session.addressIndexSet.list,
                                       passwordRequired: settings
                                           .requirePasswordForCryptoOperations,
                                       unsignedPsbt: psbtWithArgs.psbtHex,
@@ -293,83 +293,77 @@ class _SwapMultiBuySignFormState extends State<SwapMultiBuySignForm> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    ...widget.state.atomicSwaps
-                        .mapIndexed((idx, current) => Padding(
-                              padding: EdgeInsets.only(top: idx == 0 ? 0 : 14),
-                              child: HorizonCard(
-                                child: Column(children: [
-                                  _renderPropertyWidget(
-                                      "Swap #${idx + 1}",
-                                      Row(
-                                        children: [
-                                          Link(
-                                              href:
-                                                  "${session.httpConfig.horizonMarket}/atomic-swaps/${current.id}",
-                                              key: Key(
-                                                  "swap-link-${current.id}"),
-                                              display: Text(
-                                                  style: const TextStyle(
-                                                    color: moderateBlue,
-                                                  ),
-                                                  "${current.id.split("-").first} TK: polish link"))
-                                        ],
-                                      )),
-                                  _renderPropertyWidget(
-                                      "Rate",
-                                      Row(children: [
-                                        Text(current.pricePerUnit
-                                            .normalizedPretty(precision: 8))
-                                      ])),
-                                  _renderPropertyWidget(
-                                      "You'll send",
-                                      Row(
-                                        children: [
-                                          QuantityText(
-                                              quantity: current.price
-                                                  .normalizedPretty(
-                                                      precision: 8),
+                    ...widget.state.atomicSwaps.mapIndexed((idx, current) =>
+                        Padding(
+                          padding: EdgeInsets.only(top: idx == 0 ? 0 : 14),
+                          child: HorizonCard(
+                            child: Column(children: [
+                              _renderPropertyWidget(
+                                  "Swap #${idx + 1}",
+                                  Row(
+                                    children: [
+                                      Link(
+                                          href:
+                                              "${session.httpConfig.horizonMarket}/atomic-swaps/${current.id}",
+                                          key: Key("swap-link-${current.id}"),
+                                          display: Text(
                                               style: const TextStyle(
-                                                  fontSize: 16)),
-                                          const SizedBox(width: 8),
-                                          appIcons.assetIcon(
-                                              httpConfig: session.httpConfig,
-                                              context: context,
-                                              assetName: "BTC",
-                                              width: 12,
-                                              height: 12),
-                                          const SizedBox(width: 4),
-                                          const Text("BTC"),
-                                        ],
-                                      )),
-                                  _renderPropertyWidget(
-                                      "You'll receive",
-                                      Row(
-                                        children: [
-                                          QuantityText(
-                                              quantity: current.assetQuantity
-                                                  .normalizedPretty(
-                                                      precision: 8),
-                                              style: const TextStyle(
-                                                  fontSize: 16)),
-                                          const SizedBox(width: 8),
-                                          appIcons.assetIcon(
-                                              httpConfig: session.httpConfig,
-                                              context: context,
-                                              assetName: current.assetName,
-                                              width: 12,
-                                              height: 12),
-                                          const SizedBox(width: 4),
-                                          Text(current.assetName,
-                                              style: theme.textTheme.titleMedium
-                                                  ?.copyWith(
-                                                fontSize: 16,
-                                              )),
-                                        ],
-                                      ))
-                                ]),
-                              ),
-                            ))
-                        ,
+                                                color: moderateBlue,
+                                              ),
+                                              "${current.id.split("-").first} TK: polish link"))
+                                    ],
+                                  )),
+                              _renderPropertyWidget(
+                                  "Rate",
+                                  Row(children: [
+                                    Text(current.pricePerUnit
+                                        .normalizedPretty(precision: 8))
+                                  ])),
+                              _renderPropertyWidget(
+                                  "You'll send",
+                                  Row(
+                                    children: [
+                                      QuantityText(
+                                          quantity: current.price
+                                              .normalizedPretty(precision: 8),
+                                          style: const TextStyle(fontSize: 16)),
+                                      const SizedBox(width: 8),
+                                      appIcons.assetIcon(
+                                          httpConfig: session.httpConfig,
+                                          context: context,
+                                          assetName: "BTC",
+                                          width: 12,
+                                          height: 12),
+                                      const SizedBox(width: 4),
+                                      const Text("BTC"),
+                                    ],
+                                  )),
+                              _renderPropertyWidget(
+                                  "You'll receive",
+                                  Row(
+                                    children: [
+                                      QuantityText(
+                                          quantity: current.assetQuantity
+                                              .normalizedPretty(precision: 8),
+                                          style: const TextStyle(fontSize: 16)),
+                                      const SizedBox(width: 8),
+                                      appIcons.assetIcon(
+                                          httpConfig: session.httpConfig,
+                                          context: context,
+                                          assetName: current.assetName,
+                                          width: 12,
+                                          height: 12),
+                                      const SizedBox(width: 4),
+                                      Text(current.assetName,
+                                          style: theme.textTheme.titleMedium
+                                              ?.copyWith(
+                                            fontSize: 16,
+                                          )),
+                                    ],
+                                  ))
+                            ]),
+                          ),
+                        )),
                     const SizedBox(
                       height: 14,
                     ),

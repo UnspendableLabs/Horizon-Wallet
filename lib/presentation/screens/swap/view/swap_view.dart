@@ -74,7 +74,7 @@ class _SwapFlowViewState extends State<SwapFlowView> {
               widthFactor: .2,
               // TODO: rename to AssetPairForm
               body: AssetPairLoader(
-                  addresses: session.addresses,
+                  addresses: session.addressIndexSet.list,
                   httpConfig: session.httpConfig,
                   child: (state) {
                     return switch (state) {
@@ -114,7 +114,7 @@ class _SwapFlowViewState extends State<SwapFlowView> {
                 AtomicSwapSell(giveBalance: var balance) => MaterialPage(
                     child: AtomicSwapSellFlowView(
                       httpConfig: session.httpConfig,
-                      addresses: session.addresses,
+                      addresses: session.addressIndexSet.list,
                       balances: balance,
                     ),
                   ),
@@ -125,7 +125,7 @@ class _SwapFlowViewState extends State<SwapFlowView> {
                   MaterialPage(
                     child: AtomicSwapBuyFlowView(
                         // TODO: this is a little messy, for sure
-                        addresses: session.addresses,
+                        addresses: session.addressIndexSet.list,
                         receiveAsset: receiveAsset,
                         balances: btcBalance,
                         onExitFlow: () {
@@ -138,7 +138,7 @@ class _SwapFlowViewState extends State<SwapFlowView> {
                 ) =>
                   MaterialPage(
                       child: OrderFlowView(
-                    addresses: session.addresses,
+                    addresses: session.addressIndexSet.list,
                     receiveAsset: receiveAsset,
                     giveBalance: giveBalance,
                   )),

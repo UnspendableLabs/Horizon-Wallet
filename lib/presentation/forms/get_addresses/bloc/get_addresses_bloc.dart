@@ -95,6 +95,7 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
               account: account,
               onError: (_, __) =>
                   "Failed to find addresses for account ${account.name}")
+          .map((addressIndexSet) => addressIndexSet.list)
           .mapLeft((msg) => GetAddressesException(msg)));
 
       return addresses.map((a) => a.toRpc()).toList();

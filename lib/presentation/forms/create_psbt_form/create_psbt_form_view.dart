@@ -164,7 +164,7 @@ class CreatePsbtSignHandler extends StatelessWidget {
                             (unsignedPsbtHex) => BlocProvider(
                                 create: (context) => SignPsbtBloc(
                                         httpConfig: session.httpConfig,
-                                        addresses: session.addresses,
+                                        addresses: session.addressIndexSet.list,
                                         passwordRequired: settings
                                             .requirePasswordForCryptoOperations,
                                         unsignedPsbt: unsignedPsbtHex,

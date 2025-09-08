@@ -438,7 +438,8 @@ class AppRouter {
 
                   return BlocProvider(
                       create: (_) => SignPsbtBloc(
-                            addresses: session.addresses,
+                            // TODO: audit this
+                            addresses: session.addressIndexSet.list,
                             httpConfig: session.httpConfig,
                             passwordRequired: GetIt.I<SettingsRepository>()
                                 .requirePasswordForCryptoOperations,
@@ -479,7 +480,12 @@ class AppRouter {
 
                   return BlocProvider(
                       create: (_) => SignMessageBloc(
-                            address: session.addresses.first,
+                            // TODO: it should be safe to access this value with bang
+                            // but we may as well render a specific error
+                            // page if the client is requesting sig for address
+                            // not in the current account
+                            address: session.addressIndexSet
+                                .getByAddress(action.address)!,
                             message: action.message,
                             httpConfig: session.httpConfig,
                             passwordRequired: GetIt.I<SettingsRepository>()
@@ -495,7 +501,9 @@ class AppRouter {
                               GetIt.I<RPCSignMessageSuccessCallback>();
 
                           callback(RPCSignMessageSuccessCallbackArgs(
-                            address: session.addresses.first.address,
+                            address: session.addressIndexSet
+                                .getByAddress(action.address)!
+                                .address,
                             tabId: action.tabId,
                             requestId: action.requestId,
                             signature: signature,
@@ -695,7 +703,7 @@ class AppRouter {
                 child: SwapFlowView(),
                 transitionDuration: const Duration(milliseconds: 300),
                 transitionsBuilder:
-                    (context, animation, secondaryAnimation, child) {
+                    (coext, animation, secondaryAnimation, child) {
                   return FadeTransition(
                     opacity: animation,
                     child: child,

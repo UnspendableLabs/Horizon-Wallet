@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:horizon/domain/entities/address_index_set.dart';
 
 import 'package:horizon/domain/entities/wallet_config.dart';
 import 'package:horizon/domain/entities/account_v2.dart';
@@ -25,13 +26,13 @@ extension SessionStateX on SessionState {
           throw Exception("SessionState.successOrThrow: expected success"));
 }
 
-extension SessionStateAddressesX on SessionState {
-  List<AddressV2> get addresses => successOrThrow().addresses;
-  // TODO: remove this.
-  List<String> get allAddresses => [
-        ...addresses.map((e) => e.address),
-      ];
-}
+// extension SessionStateAddressesX on SessionState {
+//   List<AddressV2> get addresses => successOrThrow().addresses;
+//   // TODO: remove this.
+//   List<String> get allAddresses => [
+//         ...addresses.map((e) => e.address),
+//       ];
+// }
 
 @freezed
 class SessionStateSuccess with _$SessionStateSuccess {
@@ -39,7 +40,7 @@ class SessionStateSuccess with _$SessionStateSuccess {
 
   @override
   String toString() {
-    return 'SessionStateSuccess(decryptionKey: <REDACTED>, accounts: $accounts, addresses: $addresses)';
+    return 'SessionStateSuccess(decryptionKey: <REDACTED>, accounts: $accounts, addressIndexSet: $addressIndexSet)';
   }
 
   const factory SessionStateSuccess({
@@ -48,7 +49,7 @@ class SessionStateSuccess with _$SessionStateSuccess {
     // required Wallet wallet,
     required String decryptionKey,
     required List<AccountV2> accounts,
-    required List<AddressV2> addresses,
+    required AddressIndexSet addressIndexSet,
     required WalletConfig walletConfig,
   }) = _SessionStateSuccess;
 }

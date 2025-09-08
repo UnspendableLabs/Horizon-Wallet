@@ -1,17 +1,23 @@
 import 'package:fpdart/fpdart.dart';
 import "package:horizon/domain/entities/address_v2.dart";
 import "package:horizon/domain/entities/account_v2.dart";
+import "package:horizon/domain/entities/address_index_set.dart";
+
+class Bip32AddressIndex {
+  final int value;
+  const Bip32AddressIndex(this.value);
+}
 
 abstract class AddressV2Repository {
-  Future<List<AddressV2>> getByAccount(AccountV2 account);
+  Future<AddressIndexSet> getByAccount(AccountV2 account);
   Future<List<AddressV2>> getAllImported();
-  Future<List<AddressV2>> getByAccountAtIndex(Bip32 account, int index);
+  Future<AddressIndexSet> getByAccountAtIndex(
+      Bip32 account, Bip32AddressIndex index);
 }
 
 extension AddressV2RepositoryX on AddressV2Repository {
-  TaskEither<String, List<AddressV2>> getByAccountT({
+  TaskEither<String, AddressIndexSet> getByAccountT({
     required AccountV2 account,
-    int index = 0,
     required String Function(Object error, StackTrace stack) onError,
   }) {
     return TaskEither.tryCatch(
@@ -29,9 +35,9 @@ extension AddressV2RepositoryX on AddressV2Repository {
     );
   }
 
-  TaskEither<String, List<AddressV2>> getByAccountAtIndexT({
+  TaskEither<String, AddressIndexSet> getByAccountAtIndexT({
     required Bip32 account,
-    required int index,
+    required Bip32AddressIndex index,
     required String Function(Object error, StackTrace stack) onError,
   }) {
     return TaskEither.tryCatch(

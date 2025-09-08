@@ -104,7 +104,7 @@ class SendReviewSignHandler extends StatelessWidget {
                             create: (context) => SignPsbtBloc(
                                   embeddedWitnessData: true,
                                   httpConfig: session.httpConfig,
-                                  addresses: session.addresses,
+                                  addresses: session.addressIndexSet.list,
                                   passwordRequired: settings
                                       .requirePasswordForCryptoOperations,
                                   unsignedPsbt: switch (state.composeResponse) {

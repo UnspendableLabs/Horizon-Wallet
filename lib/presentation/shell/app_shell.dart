@@ -59,7 +59,7 @@ class SignPsbtModal extends StatelessWidget {
     );
     return BlocProvider(
       create: (_) => SignPsbtBloc(
-        addresses: session.addresses,
+        addresses: session.addressIndexSet.list,
         httpConfig: session.httpConfig,
         passwordRequired:
             GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,

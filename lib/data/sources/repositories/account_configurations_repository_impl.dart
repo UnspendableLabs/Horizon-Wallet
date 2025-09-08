@@ -42,6 +42,8 @@ class AccountConfigurationsRepositoryImpl
     );
 
     if (config == null) {
+      // the default is just index 0
+
       return null;
     }
 

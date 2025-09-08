@@ -656,13 +656,12 @@ void setup() {
       inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
       mnemonicRepository: GetIt.I<MnemonicRepository>()));
 
-  injector.registerSingleton<AddressV2Repository>(AddressV2RepositoryImpl());
-
-  injector.registerSingleton<AtomicSwapRepository>(AtomicSwapRepositoryImpl());
-
   injector.registerSingleton<AccountConfigurationsRepository>(
       AccountConfigurationsRepositoryImpl(
           injector.get<DatabaseManager>().database));
+  injector.registerSingleton<AddressV2Repository>(AddressV2RepositoryImpl());
+
+  injector.registerSingleton<AtomicSwapRepository>(AtomicSwapRepositoryImpl());
 
   injector.registerSingleton<SessionStateCubit>(SessionStateCubit(
       kvService: GetIt.I<SecureKVService>(),

@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/address_info.dart';
@@ -113,6 +114,7 @@ class AccountAddressesTile extends StatelessWidget {
     ];
 
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
+
     return SizedBox(
       height: _height,
       child: HoverTile(
@@ -318,11 +320,12 @@ class Bip32AccountDetailView extends StatelessWidget {
         final addressPath =
             "${session.walletConfig.basePath.get(session.walletConfig.network)}${account.index}'/0/$index";
 
+        print("adderss path in view $addressPath");
         return RemoteDataTaskEitherBuilder(
             task: _addressV2Repository.getByAccountAtIndexT(
-                index: index,
+                index: Bip32AddressIndex(index),
                 account: item,
-                onError: (_, __) => "Could not load addresses"),
+                onError: (e, __) => e.toString()),
             builder: (context, state, refresh) {
               return state.fold3(
                   onNone: () => AccountAddressesTile(
@@ -340,18 +343,21 @@ class Bip32AccountDetailView extends StatelessWidget {
                   // should never hit failure case
                   onFailure: (error) => AccountAddressesTile(
                       // key: ValueKey("failure:$addressPath"),
+                      p2wpkhAddress: error.toString(),
                       addressPath: addressPath,
                       walletConfig: session.walletConfig),
-                  onReplete: (addresses) {
-                    final p2pkh = addresses
-                        .firstWhereOrNull(
-                            (address) => address.type == AddressV2Type.p2pkh)
-                        ?.address;
+                  onReplete: (addressIndexSet) {
+                    final p2pkh =
+                        addressIndexSet.getByType(AddressV2Type.p2pkh);
 
-                    final p2wpkh = addresses
-                        .firstWhereOrNull(
-                            (address) => address.type == AddressV2Type.p2wpkh)
-                        ?.address;
+                    final p2wpkh =
+                        addressIndexSet.getByType(AddressV2Type.p2wpkh);
+
+                    onSuccess() {
+                      context.read<SessionStateCubit>().refresh();
+
+                      context.go("/accounts");
+                    }
 
                     return AccountAddressesTile(
                         // key: ValueKey("replete:$addressPath"),
@@ -367,9 +373,11 @@ class Bip32AccountDetailView extends StatelessWidget {
                           });
 
                           await task.run();
+
+                          onSuccess();
                         },
-                        p2pkhAddress: p2pkh,
-                        p2wpkhAddress: p2wpkh,
+                        p2pkhAddress: p2pkh?.address,
+                        p2wpkhAddress: p2wpkh?.address,
                         addressPath: addressPath,
                         walletConfig: session.walletConfig);
                   });

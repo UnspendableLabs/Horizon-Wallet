@@ -82,11 +82,15 @@ class _PortfolioViewState extends State<PortfolioView>
   @override
   Widget build(BuildContext context) {
     final isSmallScreen = MediaQuery.of(context).size.width < 500;
-    final session = context.select<SessionStateCubit, SessionStateSuccess>(
-      (cubit) => cubit.state.successOrThrow(),
-    );
+
+    final session = context.watch<SessionStateCubit>().state.successOrThrow();
+    // final session = context.select<SessionStateCubit, SessionStateSuccess>(
+    //   (cubit) => cubit.state.successOrThrow(),
+    // );
+
     final List<String> addresses =
-        context.watch<SessionStateCubit>().state.allAddresses;
+        session.addressIndexSet.list.map((a) => a.address).toList();
+
     final addressesKey = addresses.join(",");
 
     return MultiBlocProvider(
@@ -216,10 +220,11 @@ class _PortfolioViewState extends State<PortfolioView>
                                         ),
                                         child: ListView.builder(
                                           shrinkWrap: true,
-                                          itemCount: session.addresses.length,
+                                          itemCount: session
+                                              .addressIndexSet.list.length,
                                           itemBuilder: (context, index) {
-                                            final addy =
-                                                session.addresses[index];
+                                            final addy = session
+                                                .addressIndexSet.list[index];
 
                                             return ListTile(
                                                 onTap: () {
@@ -371,7 +376,8 @@ class _PortfolioViewState extends State<PortfolioView>
                                                     style: Theme.of(context)
                                                         .textTheme
                                                         .labelMedium),
-                                                trailing: const Text("tk balance"));
+                                                trailing:
+                                                    const Text("tk balance"));
                                           },
                                         ))
                                   ]);

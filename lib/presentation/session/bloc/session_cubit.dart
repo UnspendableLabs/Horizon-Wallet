@@ -5,6 +5,7 @@ import 'package:horizon/domain/entities/http_config.dart';
 // import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/account_v2.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
+import 'package:horizon/domain/entities/address_index_set.dart';
 import 'package:horizon/domain/entities/wallet_config.dart';
 // import 'package:horizon/domain/entities/wallet.dart';
 // import 'package:horizon/domain/repositories/account_repository.dart';
@@ -214,17 +215,15 @@ class SessionStateCubit extends Cubit<SessionState> {
               accounts.first;
 
           // TODO: the arg here doesn't matter
-          List<AddressV2> addresses =
+          AddressIndexSet addressIndexSet =
               await _addressV2Repository.getByAccount(currentAccount);
-
-          print(addresses);
 
           emit(SessionState.success(SessionStateSuccess(
             httpConfig: httpConfigForNetwork(walletConfig.network),
             walletConfig: walletConfig,
             decryptionKey: decryptionKey,
             accounts: accounts,
-            addresses: addresses,
+            addressIndexSet: addressIndexSet,
             currentAccount: currentAccount,
           )));
           return;
@@ -273,7 +272,7 @@ class SessionStateCubit extends Cubit<SessionState> {
         ) ??
         accounts.first;
 
-    List<AddressV2> addresses =
+    AddressIndexSet addressIndexSet =
         await _addressV2Repository.getByAccount(currentAccount);
 
     // TODO: need to think through imported addresses
@@ -284,7 +283,7 @@ class SessionStateCubit extends Cubit<SessionState> {
       httpConfig: httpConfigForNetwork(walletConfig.network),
       // wallet: wallet,
       accounts: accounts,
-      addresses: addresses,
+      addressIndexSet: addressIndexSet,
       currentAccount: currentAccount,
     )));
 
@@ -304,7 +303,7 @@ class SessionStateCubit extends Cubit<SessionState> {
   }
 
   void onAccountChanged(AccountV2 account, [VoidCallback? cb]) async {
-    List<AddressV2> addresses =
+    AddressIndexSet addressIndexSet =
         await _addressV2Repository.getByAccount(account);
 
     final current = state.successOrThrow();
@@ -318,7 +317,7 @@ class SessionStateCubit extends Cubit<SessionState> {
 
     final next = current.copyWith(
       accounts: accounts,
-      addresses: addresses,
+      addressIndexSet: addressIndexSet,
       currentAccount: account,
     );
 
@@ -389,7 +388,7 @@ class SessionStateCubit extends Cubit<SessionState> {
       //   throw Exception("invariant: no accounts for this wallet");
       // }
 
-      List<AddressV2> addresses =
+      AddressIndexSet addressIndexSet =
           await _addressV2Repository.getByAccount(currentAccount);
 
       // if (addresses.isEmpty) {
@@ -401,7 +400,7 @@ class SessionStateCubit extends Cubit<SessionState> {
       emit(SessionState.success(success.copyWith(
         // wallet: wallet,
         accounts: accounts,
-        addresses: addresses,
+        addressIndexSet: addressIndexSet,
         walletConfig: walletConfig,
       )));
 

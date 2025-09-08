@@ -90,7 +90,7 @@ class SwapOnChainFeeSignHandler extends StatelessWidget {
                             onSuccess: (onChainPayment) => BlocProvider(
                                 create: (context) => SignPsbtBloc(
                                       httpConfig: session.httpConfig,
-                                      addresses: session.addresses,
+                                      addresses: session.addressIndexSet.list,
                                       passwordRequired: settings
                                           .requirePasswordForCryptoOperations,
                                       unsignedPsbt: onChainPayment.psbt,

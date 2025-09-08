@@ -133,7 +133,7 @@ class _SendViewState extends State<SendView> {
                   )),
               body: SendFormLoader(
                   httpConfig: session.httpConfig,
-                  addresses: session.addresses,
+                  addresses: session.addressIndexSet.list,
                   child: (balances) {
                     return Builder(builder: (context) {
                       return TokenSelectorFormProvider(
@@ -189,7 +189,9 @@ class _SendViewState extends State<SendView> {
                       DisallowSelection.balanceIsUtxo,
                       DisallowSelection.listingExists
                     ],
-                    addresses: session.addresses.map((a) => a.address).toList(),
+                    addresses: session.addressIndexSet.list
+                        .map((a) => a.address)
+                        .toList(),
                     httpConfig: session.httpConfig,
                     multiAddressBalance: balance,
                     child: (actions, state) => Column(
@@ -422,8 +424,8 @@ class _SendViewState extends State<SendView> {
                                     width: 127,
                                     key: const ValueKey('lottie'),
                                   )),
-                                  onReplete: (_) =>
-                                      const Center(child: TxnSuccessAnimation()),
+                                  onReplete: (_) => const Center(
+                                      child: TxnSuccessAnimation()),
                                   onFailure: (err) => TransactionError(
                                     errorMessage: err.toString(),
                                     onErrorButtonAction: retry,

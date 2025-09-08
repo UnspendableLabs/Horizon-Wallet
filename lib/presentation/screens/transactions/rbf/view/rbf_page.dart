@@ -81,7 +81,8 @@ class _RBFPageState extends State<RBFPage> {
 
     return BlocProvider(
       create: (context) => RBFBloc(
-        address: session.addresses.first, // TODO: slight smell
+        // TODO: handle unsafe access
+        address: session.addressIndexSet.getByAddress(widget.address)!,
         httpConfig: session.httpConfig,
         getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
         bitcoinRepository: GetIt.I<BitcoinRepository>(),

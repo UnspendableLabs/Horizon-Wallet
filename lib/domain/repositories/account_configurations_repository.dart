@@ -34,7 +34,7 @@ extension AccountConfigurationsRepositoryX on AccountConfigurationsRepository {
     );
   }
 
-  TaskEither<E, AccountConfiguration?> getByPrimaryKeyT<E>({
+  TaskEither<E, Option<AccountConfiguration>> getByPrimaryKeyT<E>({
     required String walletId,
     required int accountIndex,
     required E Function(Object error, StackTrace stack) onError,
@@ -45,6 +45,6 @@ extension AccountConfigurationsRepositoryX on AccountConfigurationsRepository {
         accountIndex: accountIndex,
       ),
       onError,
-    );
+    ).map(Option.fromNullable);
   }
 }
