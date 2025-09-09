@@ -11,6 +11,10 @@ class WalletConfigsDao extends DatabaseAccessor<DB>
     with _$WalletConfigsDaoMixin {
   WalletConfigsDao(super.db);
 
+  Future<void> deleteAll() async {
+    await delete(walletConfigs).go();
+  }
+
   Future<WalletConfig?> getByID(String uuid) async {
     return (select(walletConfigs)..where((tbl) => tbl.uuid.equals(uuid)))
         .getSingleOrNull();

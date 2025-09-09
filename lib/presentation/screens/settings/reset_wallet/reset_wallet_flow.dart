@@ -15,6 +15,7 @@ import 'package:horizon/presentation/screens/settings/reset_wallet/bloc/reset_ev
 import 'package:horizon/presentation/screens/settings/reset_wallet/bloc/reset_state.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/utils/app_icons.dart';
+import 'package:horizon/domain/usecases/reset_wallet.dart';
 
 class ResetWalletFlow extends StatefulWidget {
   const ResetWalletFlow({super.key});
@@ -183,13 +184,7 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
   Widget _buildFinalStep() {
     return BlocProvider(
       create: (context) => ResetBloc(
-        addressRepository: GetIt.I.get<AddressRepositoryDeprecated>(),
-        importedAddressRepository: GetIt.I.get<ImportedAddressRepository>(),
-        transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),
-        analyticsService: GetIt.I.get<AnalyticsService>(),
-        cacheProvider: GetIt.I.get<CacheProvider>(),
-        inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
-        kvService: GetIt.I.get<SecureKVService>(),
+        resetWalletUseCase: ResetWalletUseCase(),
       ),
       child: BlocConsumer<ResetBloc, ResetState>(
         listener: (context, state) {

@@ -161,6 +161,9 @@ import 'package:horizon/data/sources/repositories/mnemonic_repository_impl.dart'
 import 'package:horizon/domain/repositories/account_v2_repository.dart';
 import 'package:horizon/data/sources/repositories/account_repository_v2_impl.dart';
 
+import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/data/sources/repositories/account_repository_impl.dart';
+
 import 'package:horizon/domain/repositories/wallet_config_repository.dart';
 import 'package:horizon/data/sources/repositories/wallet_config_repository_impl.dart';
 
@@ -415,6 +418,9 @@ void setup() {
   injector.registerSingleton<InMemoryKeyRepository>(InMemoryKeyRepositoryImpl(
     secureKVService: GetIt.I.get<SecureKVService>(),
   ));
+
+  injector.registerSingleton<AccountRepositoryDeprecated>(
+      AccountRepositoryImpl(injector.get<DatabaseManager>().database));
 
   injector.registerSingleton<AccountV2Repository>(
       AccountV2RepositoryImpl(injector.get<DatabaseManager>().database));

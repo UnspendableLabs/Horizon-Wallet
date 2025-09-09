@@ -14,6 +14,11 @@ class AccountConfigurationsRepositoryImpl
       : _accountConfigurationsDao = AccountConfigurationsDao(_db);
 
   @override
+  Future<void> deleteAll() async {
+    return await _accountConfigurationsDao.deleteAll();
+  }
+
+  @override
   Future<bool> update(entity.AccountConfiguration config) async {
     return await _accountConfigurationsDao.update_(local.AccountConfiguration(
       walletUUID: config.walletUUID,

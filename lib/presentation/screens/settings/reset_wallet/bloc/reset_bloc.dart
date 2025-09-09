@@ -1,34 +1,16 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_settings_screens/flutter_settings_screens.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
-import 'package:horizon/domain/repositories/imported_address_repository.dart';
-import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
-import 'package:horizon/domain/repositories/transaction_local_repository.dart';
-import 'package:horizon/domain/services/analytics_service.dart';
-import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/presentation/screens/settings/reset_wallet/bloc/reset_event.dart';
 import 'package:horizon/presentation/screens/settings/reset_wallet/bloc/reset_state.dart';
 import 'package:logger/logger.dart';
+import 'package:horizon/domain/usecases/reset_wallet.dart';
 
 class ResetBloc extends Bloc<ResetEvent, ResetState> {
   final logger = Logger();
 
-  final AddressRepositoryDeprecated addressRepository;
-  final ImportedAddressRepository importedAddressRepository;
-  final CacheProvider cacheProvider;
-  final TransactionLocalRepository transactionLocalRepository;
-  final AnalyticsService analyticsService;
-  final InMemoryKeyRepository inMemoryKeyRepository;
-  final SecureKVService kvService;
+  final ResetWalletUseCase resetWalletUseCase;
 
   ResetBloc({
-    required this.inMemoryKeyRepository,
-    required this.addressRepository,
-    required this.importedAddressRepository,
-    required this.transactionLocalRepository,
-    required this.analyticsService,
-    required this.cacheProvider,
-    required this.kvService,
+    required this.resetWalletUseCase,
   }) : super(const ResetState()) {
     on<ResetEvent>(_onReset);
   }
@@ -36,25 +18,8 @@ class ResetBloc extends Bloc<ResetEvent, ResetState> {
   void _onReset(ResetEvent event, Emitter emit) async {
     logger.d('Reset event received');
 
-    throw UnimplementedError("Reset event handling not implemented");
+    await resetWalletUseCase.call(const NoParams());
 
-    // await walletRepository.deleteAllWallets();
-    // await addressRepository.deleteAllAddresses();
-    // await importedAddressRepository.deleteAllImportedAddresses();
-    // await transactionLocalRepository.deleteAllTransactions();
-    // // logout effects
-    // await inMemoryKeyRepository.delete();
-    // await kvService.delete(key: kInactivityDeadlineKey);
-    //
-    // final isDarkMode = cacheProvider.getBool("isDarkMode");
-    //
-    // await cacheProvider.removeAll();
-    //
-    // analyticsService.reset();
-    //
-    // await cacheProvider.setBool("isDarkMode", isDarkMode ?? true);
-    //
-    // logger.d('emit reset state');
-    // emit(const ResetState(status: ResetStatus.completed));
+    emit(const ResetState(status: ResetStatus.completed));
   }
 }

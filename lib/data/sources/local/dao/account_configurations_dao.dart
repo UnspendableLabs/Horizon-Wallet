@@ -9,6 +9,10 @@ class AccountConfigurationsDao extends DatabaseAccessor<DB>
     with _$AccountConfigurationsDaoMixin {
   AccountConfigurationsDao(super.db);
 
+  Future<void> deleteAll() async {
+    await delete(accountConfigurations).go();
+  }
+
   Future<AccountConfiguration?> getByPrimaryKey(
       {required String walletUUID, required int index}) async {
     return (select(accountConfigurations)

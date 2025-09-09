@@ -15,6 +15,7 @@ abstract class WalletConfigRepository {
       {required BasePath basePath,
       required Network network,
       required SeedDerivation seedDerivation});
+  Future<void> deleteAll();
 }
 
 extension WalletConfigRepositoryX on WalletConfigRepository {
@@ -80,6 +81,16 @@ extension WalletConfigRepositoryX on WalletConfigRepository {
         network: network,
         seedDerivation: seedDerivation,
       ),
+      (e, _) => onError(e),
+    );
+  }
+
+  TaskEither<String, Unit> deleteAllT(String Function(Object error) onError) {
+    return TaskEither.tryCatch(
+      () async {
+        await deleteAll();
+        return unit;
+      },
       (e, _) => onError(e),
     );
   }

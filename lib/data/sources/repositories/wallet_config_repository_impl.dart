@@ -46,6 +46,11 @@ class WalletConfigRepositoryImpl implements WalletConfigRepository {
             settingsRepository ?? GetIt.I<SettingsRepository>();
 
   @override
+  Future<void> deleteAll() async {
+    return await _walletConfigsDao.deleteAll();
+  }
+
+  @override
   Future<entity.WalletConfig> getCurrent() async {
     if (_settingsRepository.walletConfigID == null) {
       final all = await getAll();

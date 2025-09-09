@@ -6,6 +6,7 @@ abstract class AccountConfigurationsRepository {
 
   Future<int> create(AccountConfiguration account);
   Future<AccountConfiguration> createOrUpdate(AccountConfiguration account);
+  Future<void> deleteAll();
 
   Future<AccountConfiguration?> getByPrimaryKey({
     required String walletId,
@@ -46,5 +47,17 @@ extension AccountConfigurationsRepositoryX on AccountConfigurationsRepository {
       ),
       onError,
     ).map(Option.fromNullable);
+  }
+
+  TaskEither<E, Unit> deleteAllT<E>({
+    required E Function(Object error, StackTrace stack) onError,
+  }) {
+    return TaskEither.tryCatch(
+      () async {
+        await deleteAll();
+        return unit;
+      },
+      onError,
+    );
   }
 }
