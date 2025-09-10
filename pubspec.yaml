@@ -30,25 +30,25 @@ environment:
 dependencies:
   bip39: ^1.0.6
   http: ^1.2.1
-  flutter_dotenv: ^5.1.0
+  flutter_dotenv: ^6.0.0
   convert: ^3.1.1
   bech32: ^0.2.2
   pointycastle: ^3.7.4
 
-  floor: ^1.4.2
-  flutter_bloc: ^8.1.5
+  # floor: ^1.4.2
+  flutter_bloc: ^9.1.1
   shared_preferences: ^2.2.3
-  get_it: ^7.6.9
+  get_it: ^8.2.0
   flutter_secure_storage: ^9.2.4
   logger: ^2.2.0
   dartsv: ^2.0.2
-  bitcoin_base: 6.0.0
+  bitcoin_base: ^6.9.0
   retrofit: ">=4.0.0 <5.0.0"
   dio: ^5.4.3+1
   uuid: ^4.4.0
-  go_router: ^14.1.2
+  go_router: ^16.2.1
   equatable: ^2.0.5
-  freezed_annotation: ^2.4.1
+  freezed_annotation: ^3.1.0
   drift: ^2.16.0
   sqlite3_flutter_libs: ^0.5.21
   path_provider: ^2.1.3
@@ -59,24 +59,23 @@ dependencies:
   flutter_settings_screens: ^0.3.4
   hive: ^2.2.3
   hive_flutter: ^1.1.0
-  bloc_concurrency: ^0.2.5
+  bloc_concurrency: ^0.3.0
   rxdart: ^0.28.0
   crypto: ^3.0.3
   qr_flutter: ^4.1.0
   decimal: ^2.3.3
   collection: ^1.18.0
-  flutter_svg: ^1.0.0
+  flutter_svg: ^2.2.1
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.2
   mocktail: ^1.0.4
   fpdart: ^1.1.0
-  intl: ^0.19.0
   url_launcher: ^6.3.0
   sliver_tools: ^0.2.12
   json_annotation: ^4.9.0
   hex: ^0.2.0
-  dio_smart_retry: ^6.0.0
+  dio_smart_retry: ^7.0.1
   simple_rc4: ^0.3.0
   formz: ^0.8.0
   chrome_extension: ^0.4.0
@@ -86,7 +85,7 @@ dependencies:
   flutter_native_splash: ^2.4.3
   sentry_flutter: ^8.11.0
   lottie: ^3.3.1
-  flutter_form_builder: ^9.5.0
+  flutter_form_builder: ^10.1.0
   password_strength_checker: ^1.2.4
   cached_network_image: ^3.4.0
   flow_builder: ^0.1.0
@@ -95,10 +94,10 @@ dependencies:
   group_button: ^5.3.4
   lucide_icons: ^0.257.0
   auto_size_text: ^3.0.0
+  intl: ^0.20.2
 
 dev_dependencies:
-  floor_generator: ^1.4.2
-  retrofit_generator: ^8.1.0
+  retrofit_generator: ^9.3.0
   build_runner: ^2.4.9
   integration_test:
     sdk: flutter
@@ -110,12 +109,13 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^4.0.0
+  flutter_lints: ^6.0.0
   test: ^1.25.2
   json_serializable: ^6.8.0
-  freezed: ^2.5.2
+  freezed: ^3.0.0-0.0.dev
   drift_dev: ^2.16.0
-  bloc_test: ^9.1.7
+  bloc_test: ^10.0.0
+  dead_code_analyzer: ^1.1.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
