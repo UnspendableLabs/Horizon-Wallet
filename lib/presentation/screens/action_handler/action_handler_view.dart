@@ -139,6 +139,7 @@ class GetAddressesPage extends StatelessWidget {
                   encryptionService: GetIt.I<EncryptionService>(),
                   importedAddressService: GetIt.I<ImportedAddressService>(),
                   addressService: GetIt.I<AddressService>(),
+                  settingsRepository: GetIt.I<SettingsRepository>(),
                   accounts: session.accounts,
                 ),
                 child: GetAddressesForm(

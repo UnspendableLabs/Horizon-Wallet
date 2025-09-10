@@ -14,4 +14,5 @@ abstract class SettingsRepository {
 
   String? get walletConfigID;
   Future<void> setWalletConfigID(String value);
+  Future<String> getStableID();
 }

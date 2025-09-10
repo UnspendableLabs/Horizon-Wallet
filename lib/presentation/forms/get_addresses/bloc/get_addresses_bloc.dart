@@ -13,6 +13,7 @@ import 'package:horizon/domain/entities/address_rpc.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/address_v2_repository.dart';
 import 'package:horizon/domain/entities/http_config.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 
 class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
   final bool passwordRequired;
@@ -24,6 +25,7 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
   final InMemoryKeyRepository inMemoryKeyRepository;
   final HttpConfig httpConfig;
   final AddressV2Repository _addressV2Repository;
+  final SettingsRepository settingsRepository;
 
   GetAddressesBloc({
     required this.httpConfig,
@@ -33,7 +35,7 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
     required this.importedAddressService,
     required this.accounts,
     required this.encryptionService,
-
+    required this.settingsRepository,
     // required this.accountRepository,
     AddressV2Repository? addressV2Repository,
   })  : _addressV2Repository =
@@ -90,6 +92,7 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
 
     final task =
         TaskEither<GetAddressesException, List<AddressRpc>>.Do(($) async {
+      final uuid = await settingsRepository.getStableID();
       List<AddressV2> addresses = await $(_addressV2Repository
           .getByAccountT(
               account: account,
@@ -98,7 +101,7 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
           .map((addressIndexSet) => addressIndexSet.list)
           .mapLeft((msg) => GetAddressesException(msg)));
 
-      return addresses.map((a) => a.toRpc()).toList();
+      return addresses.map((a) => a.toRpc(uuid)).toList();
     });
 
     final result = await task.run();

@@ -45,7 +45,7 @@ class AddressV2 {
 }
 
 extension AddressV2X on AddressV2 {
-  AddressRpc toRpc() {
+  AddressRpc toRpc(String uuid) {
     return AddressRpc(
       address: address,
       publicKey: publicKey,
@@ -53,6 +53,7 @@ extension AddressV2X on AddressV2 {
         AddressV2Type.p2pkh => AddressRpcType.p2pkh,
         AddressV2Type.p2wpkh => AddressRpcType.p2wpkh,
       },
+      uuid: uuid,
     );
   }
 
