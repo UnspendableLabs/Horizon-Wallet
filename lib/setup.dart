@@ -121,22 +121,12 @@ import 'package:horizon/data/sources/network/mempool_space_client_factory.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/usecase/set_mnemonic_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_chained_transaction_usecase.dart';
-import 'package:horizon/presentation/screens/close_dispenser/usecase/fetch_form_data.dart';
 
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/get_virtual_size_usecase.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
-import 'package:horizon/presentation/screens/compose_attach_utxo/usecase/fetch_form_data.dart';
-import 'package:horizon/presentation/screens/compose_dispenser/usecase/fetch_form_data.dart';
-import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form_data.dart';
-import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_open_dispensers_on_address.dart';
-import 'package:horizon/presentation/screens/compose_dispense/usecase/estimate_dispenses.dart';
-import 'package:horizon/presentation/screens/compose_dividend/usecase/fetch_form_data.dart';
-import 'package:horizon/presentation/screens/compose_fairmint/usecase/fetch_form_data.dart';
-import 'package:horizon/presentation/screens/compose_fairminter/usecase/fetch_form_data.dart';
-import 'package:horizon/presentation/screens/compose_issuance/usecase/fetch_form_data.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:logger/logger.dart' as logger;
@@ -479,34 +469,6 @@ void setup() {
       bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
       cacheProvider: GetIt.I.get<CacheProvider>()));
 
-  injector.registerSingleton<FetchDispenserFormDataUseCase>(
-      FetchDispenserFormDataUseCase(
-          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
-          balanceRepository: injector.get<BalanceRepository>(),
-          dispenserRepository: injector.get<DispenserRepository>()));
-
-  injector.registerSingleton<FetchDispenseFormDataUseCase>(
-      FetchDispenseFormDataUseCase(
-          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>()));
-
-  injector.registerSingleton(FetchCloseDispenserFormDataUseCase(
-      getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
-      dispenserRepository: injector.get<DispenserRepository>()));
-  injector.registerSingleton<FetchOpenDispensersOnAddressUseCase>(
-      FetchOpenDispensersOnAddressUseCase(
-          dispenserRepository: GetIt.I.get<DispenserRepository>()));
-  injector.registerSingleton<FetchComposeFairmintFormDataUseCase>(
-      FetchComposeFairmintFormDataUseCase(
-          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
-          fairminterRepository: injector.get<FairminterRepository>()));
-
-  injector.registerSingleton<FetchDividendFormDataUseCase>(
-      FetchDividendFormDataUseCase(
-          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
-          balanceRepository: injector.get<BalanceRepository>(),
-          assetRepository: injector.get<AssetRepository>(),
-          estimateXcpFeeRepository: GetIt.I.get<EstimateXcpFeeRepository>()));
-
   injector.registerSingleton<SeedService>(SeedServiceImpl());
 
   injector
@@ -515,22 +477,6 @@ void setup() {
     balanceRepository: injector.get<BalanceRepository>(),
     errorService: injector.get<ErrorService>(),
   ));
-
-  injector.registerSingleton<FetchFairminterFormDataUseCase>(
-      FetchFairminterFormDataUseCase(
-          assetRepository: injector.get<AssetRepository>(),
-          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
-          fairminterRepository: injector.get<FairminterRepository>()));
-
-  injector.registerSingleton<FetchIssuanceFormDataUseCase>(
-      FetchIssuanceFormDataUseCase(
-          balanceRepository: injector.get<BalanceRepository>(),
-          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>()));
-  injector.registerSingleton<FetchComposeAttachUtxoFormDataUseCase>(
-      FetchComposeAttachUtxoFormDataUseCase(
-          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
-          estimateXcpFeeRepository: GetIt.I.get<EstimateXcpFeeRepository>(),
-          balanceRepository: injector.get<BalanceRepository>()));
 
   injector.registerSingleton<SignAndBroadcastTransactionUseCase>(
       SignAndBroadcastTransactionUseCase());
@@ -547,9 +493,6 @@ void setup() {
   ));
 
   injector.registerSingleton<ActionRepository>(ActionRepositoryImpl());
-
-  injector
-      .registerSingleton<EstimateDispensesUseCase>(EstimateDispensesUseCase());
 
   injector.registerLazySingleton<RPCGetAddressesSuccessCallback>(
       // () => (args) => GetIt.I<Logger>().debug("""

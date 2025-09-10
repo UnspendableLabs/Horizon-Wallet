@@ -36,7 +36,6 @@ import 'package:horizon/presentation/screens/send/view/send_view.dart';
 
 import 'package:horizon/presentation/screens/swap/view/swap_view.dart';
 import 'package:horizon/presentation/screens/dashboard/view/portfolio_view.dart';
-import 'package:horizon/presentation/screens/demo_route.dart';
 import 'package:horizon/presentation/screens/login/login_view.dart';
 import 'package:horizon/presentation/screens/accounts/accounts_screen.dart';
 import 'package:horizon/presentation/screens/accounts/detail/accounts_detail_view.dart';
@@ -68,60 +67,21 @@ import 'package:horizon/presentation/forms/sign_message/view/sign_message_form.d
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
-// Future<void> setupRegtestWallet() async {
-//   // read env for regtest private key
-//   const regtestPrivateKey = String.fromEnvironment('REG_TEST_PK');
-//   const regtestPassword = String.fromEnvironment('REG_TEST_PASSWORD');
-//   const network = String.fromEnvironment('NETWORK');
-//
-//   if (regtestPrivateKey != "" &&
-//       regtestPassword != "" &&
-//       network == "regtest") {
-//     RegTestUtils regTestUtils = RegTestUtils();
-//     EncryptionService encryptionService = GetIt.I<EncryptionService>();
-//     AddressService addressService = GetIt.I<AddressService>();
-//     final accountRepository = GetIt.I<AccountRepository>();
-//     final addressRepository = GetIt.I<AddressRepository>();
-//     final walletRepository = GetIt.I<WalletRepository>();
-//
-//     final maybeCurrentWallet = await walletRepository.getCurrentWallet();
-//     if (maybeCurrentWallet != null) {
-//       return;
-//     }
-//
-//     Wallet wallet =
-//         await regTestUtils.fromBase58(regtestPrivateKey, regtestPassword);
-//
-//     String decryptedPrivKey = await encryptionService.decrypt(
-//         wallet.encryptedPrivKey, regtestPassword);
-//
-//     //m/84'/1'/0'/0
-//     Account account = Account(
-//       name: 'Regtest #0',
-//       walletUuid: wallet.uuid,
-//       purpose: '84\'',
-//       coinType: '1\'',
-//       accountIndex: '0\'',
-//       uuid: uuid.v4(),
-//       importFormat: ImportFormat.horizon,
-//     );
-//
-//     List<Address> addresses = await addressService.deriveAddressSegwitRange(
-//         privKey: decryptedPrivKey,
-//         chainCodeHex: wallet.chainCodeHex,
-//         accountUuid: account.uuid,
-//         purpose: account.purpose,
-//         coin: account.coinType,
-//         account: account.accountIndex,
-//         change: '0',
-//         start: 0,
-//         end: 9);
-//
-//     await walletRepository.insert(wallet);
-//     await accountRepository.insert(account);
-//     await addressRepository.insertMany(addresses);
-//   }
-// }
+class _NoAnimationPageTransitionsBuilder extends PageTransitionsBuilder {
+  const _NoAnimationPageTransitionsBuilder();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    // Always return the child directly, skipping any animation
+    return child;
+  }
+}
 
 class LoadingScreen extends StatelessWidget {
   const LoadingScreen({this.from, super.key});
@@ -138,11 +98,25 @@ class BottomTabNavigation extends StatelessWidget {
 
   const BottomTabNavigation({super.key, required this.currentIndex});
 
-  static const tabRoutes = ['/#', '/settings', "/tools"];
+  static const tabRoutes = [
+    '/#',
+    '/#manage',
+    "/#tools",
+    '/#settings',
+  ];
 
   @override
   Widget build(BuildContext context) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
+    final theme = Theme.of(context);
+    final onSurface = theme.colorScheme.onSurface;
+    final muted = theme.textButtonTheme.style?.foregroundColor?.resolve({}) ??
+        Colors.grey;
+
+    Color iconColor(selected) => selected ? (onSurface) : (muted);
+
+    print("currentIndex: $currentIndex");
 
     return Container(
       width: double.infinity,
@@ -166,24 +140,36 @@ class BottomTabNavigation extends StatelessWidget {
             context,
             index: 0,
             selected: currentIndex == 0,
-            icon: AppIcons.pieChartIcon(context: context),
+            icon: AppIcons.pieChartIcon(
+                context: context, color: iconColor(currentIndex == 0)),
             label: 'Portfolio',
             isDarkTheme: isDarkTheme,
           ),
           _buildTab(
             context,
             index: 1,
-            selected: false,
-            icon: AppIcons.settingsIcon(context: context, color: Colors.grey),
-            label: 'Settings',
+            selected: currentIndex == 1,
+            icon: AppIcons.swapIcon(
+                context: context, color: iconColor(currentIndex == 1)),
+            label: 'Manage',
             isDarkTheme: isDarkTheme,
           ),
           _buildTab(
             context,
             index: 2,
-            selected: false,
-            icon: AppIcons.wrenchIcon(context: context, color: Colors.grey),
+            selected: currentIndex == 2,
+            icon: AppIcons.wrenchIcon(
+                context: context, color: iconColor(currentIndex == 2)),
             label: 'Tools',
+            isDarkTheme: isDarkTheme,
+          ),
+          _buildTab(
+            context,
+            index: 3,
+            selected: currentIndex == 3,
+            icon: AppIcons.settingsIcon(
+                context: context, color: iconColor(currentIndex == 3)),
+            label: 'Settings',
             isDarkTheme: isDarkTheme,
           ),
         ],
@@ -200,7 +186,11 @@ class BottomTabNavigation extends StatelessWidget {
     required bool isDarkTheme,
   }) {
     return GestureDetector(
-      onTap: () => context.go(tabRoutes[index]),
+      onTap: () {
+        print("calling context.go with ${tabRoutes[index]}");
+
+        context.go(tabRoutes[index]);
+      },
       child: BottomNavItem(
         selected: selected,
         icon: icon,
@@ -529,22 +519,32 @@ class AppRouter {
                 );
               },
             ),
+
+            GoRoute(
+              path: "/manage",
+              builder: (context, state) => const Scaffold(
+                body: Text("manage"),
+                bottomNavigationBar: BottomTabNavigation(
+                  currentIndex: 1,
+                ),
+              ),
+            ),
             GoRoute(
               path: "/tools",
               builder: (context, state) => const Scaffold(
                 body: ToolsView(),
-                // bottomNavigationBar: BottomTabNavigation(
-                //   currentIndex: 2,
-                // ),
+                bottomNavigationBar: BottomTabNavigation(
+                  currentIndex: 2,
+                ),
               ),
             ),
             GoRoute(
               path: "/settings",
               builder: (context, state) => Scaffold(
-                body: SettingsView(),
-                // bottomNavigationBar: const BottomTabNavigation(
-                //   currentIndex: 1,
-                // ),
+                body: Text("settings"),
+                bottomNavigationBar: const BottomTabNavigation(
+                  currentIndex: 3,
+                ),
               ),
             ),
             GoRoute(
@@ -717,16 +717,6 @@ class AppRouter {
             ),
           ],
         ),
-
-        // TODO: remove later
-        GoRoute(
-            path: "/demo/:component",
-            builder: (context, state) {
-              final component = state.pathParameters['component'] ?? 'showList';
-              return WidgetsDemoPage(
-                  component: DemoComponent.values
-                      .firstWhere((e) => e.name == component));
-            })
       ],
       errorBuilder: (context, state) => ErrorScreen(
             error: state.error,
@@ -1374,8 +1364,32 @@ class MyApp extends StatelessWidget {
 
             final app = MaterialApp.router(
               debugShowCheckedModeBanner: false,
-              theme: buildLightTheme(),
-              darkTheme: buildDarkTheme(),
+              theme: buildLightTheme().copyWith(
+                pageTransitionsTheme: const PageTransitionsTheme(
+                  builders: {
+                    TargetPlatform.android:
+                        _NoAnimationPageTransitionsBuilder(),
+                    TargetPlatform.iOS: _NoAnimationPageTransitionsBuilder(),
+                    TargetPlatform.macOS: _NoAnimationPageTransitionsBuilder(),
+                    TargetPlatform.windows:
+                        _NoAnimationPageTransitionsBuilder(),
+                    TargetPlatform.linux: _NoAnimationPageTransitionsBuilder(),
+                  },
+                ),
+              ),
+              darkTheme: buildDarkTheme().copyWith(
+                pageTransitionsTheme: const PageTransitionsTheme(
+                  builders: {
+                    TargetPlatform.android:
+                        _NoAnimationPageTransitionsBuilder(),
+                    TargetPlatform.iOS: _NoAnimationPageTransitionsBuilder(),
+                    TargetPlatform.macOS: _NoAnimationPageTransitionsBuilder(),
+                    TargetPlatform.windows:
+                        _NoAnimationPageTransitionsBuilder(),
+                    TargetPlatform.linux: _NoAnimationPageTransitionsBuilder(),
+                  },
+                ),
+              ),
               themeMode: themeMode,
               routeInformationParser: AppRouter.router.routeInformationParser,
               routerDelegate: AppRouter.router.routerDelegate,

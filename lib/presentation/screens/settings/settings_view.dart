@@ -467,28 +467,6 @@ class _SettingsViewState extends State<SettingsView> {
   Widget _buildAppBar() {
     return Column(
       children: [
-        Container(
-          height: 46,
-          width: double.infinity,
-          padding:
-              const EdgeInsets.only(left: 12, top: 0, bottom: 0, right: 12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              IconButton(
-                onPressed: () {
-                  AppShell.navigateToTab(context, 0);
-                },
-                icon: AppIcons.backArrowIcon(
-                  context: context,
-                  width: 24,
-                  height: 24,
-                  fit: BoxFit.fitHeight,
-                ),
-              ),
-            ],
-          ),
-        ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
