@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 import './get_addresses_event.dart';
 import './get_addresses_state.dart';
 import 'package:horizon/domain/entities/account.dart';
@@ -26,6 +27,7 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
   final WalletRepository walletRepository;
   final EncryptionService encryptionService;
   final AccountRepository accountRepository;
+  final SettingsRepository settingsRepository;
   final AddressService addressService;
   final ImportedAddressService importedAddressService;
   final PublicKeyService publicKeyService;
@@ -43,6 +45,7 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
     required this.encryptionService,
     required this.accountRepository,
     required this.publicKeyService,
+    required this.settingsRepository,
   }) : super(GetAddressesState()) {
     on<AccountChanged>(_handleAccountChanged);
     on<GetAddressesSubmitted>(_handleGetAddressesSubmitted);
@@ -93,6 +96,7 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
       final selectedAccountUuid = state.account.value;
 
       List<AddressRpc> addresses = [];
+      final uuid = await settingsRepository.getStableID();
 
       if (state.addressSelectionMode == AddressSelectionMode.byAccount) {
         List<Address> addresses_ =
@@ -109,6 +113,7 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
           addresses.add(AddressRpc(
               address: address.address,
               type: _getAddressRpcType(address.address),
+              uuid: uuid,
               publicKey: publicKey));
         }
       } else {
@@ -131,6 +136,7 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
         addresses.add(AddressRpc(
             address: importedAddress.address,
             type: _getAddressRpcType(importedAddress.address),
+            uuid: uuid,
             publicKey: publicKey));
       }
 

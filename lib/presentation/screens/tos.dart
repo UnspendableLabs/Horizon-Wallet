@@ -108,8 +108,20 @@ class TermsOfService extends StatelessWidget {
                     fontColor,
                   ),
                   _buildSection(
-                    'Age Restriction',
-                    'Horizon Wallet is intended for users who are at least 18 years old (or the age of majority in your jurisdiction). By using the service, you represent and warrant that you meet this age requirement and have the legal capacity to enter into this agreement.',
+                    'Eligibility',
+                    """
+By accessing or using Horizon Wallet, you represent and warrant that:
+
+1. Age and Capacity. You are at least eighteen (18) years old (or the age of majority in your jurisdiction) and have the legal capacity to enter into binding agreements.
+
+2. Sanctions Compliance. You are not a resident, national, located in, or ordinarily resident of any country or region subject to comprehensive U.S. sanctions administered by the U.S. Department of the Treasury’s Office of Foreign Assets Control (“Restricted Jurisdictions”). Restricted Jurisdictions currently include Cuba, Iran, North Korea, Syria, Russia, Belarus, and the Ukrainian regions of Crimea, Donetsk, Luhansk, Zaporizhzhia, and Kherson.
+
+3. No Dealings with Blocked Persons. You are not identified on, and will not use Horizon Wallet for the benefit of, any person or entity identified on the U.S. Treasury Department’s Specially Designated Nationals and Blocked Persons List or any other applicable sanctions list.
+
+4. No Circumvention. You will not use any technology, including VPNs or similar methods, to attempt to access Horizon Wallet from a Restricted Jurisdiction or otherwise circumvent these restrictions.
+
+5. Updates to Restrictions. Unspendable Labs may update the list of Restricted Jurisdictions at any time to comply with changes in applicable law. Your continued access or use of Horizon Wallet after such updates constitutes your acceptance of the updated restrictions.
+""",
                     fontColor,
                   ),
                   _buildSection(
@@ -162,7 +174,7 @@ class TermsOfService extends StatelessWidget {
     );
   }
 
-  Widget _buildSection(String title, String content, Color fontColor,
+  Widget _buildSection(String title, content, Color fontColor,
       {Widget? trailingWidget}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
