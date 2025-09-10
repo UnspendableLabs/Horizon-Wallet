@@ -556,6 +556,7 @@ void setup() {
                         AddressRpcType.p2pkh => "p2pkh"
                       },
                       "publicKey": address.publicKey,
+                      "uuid": address.uuid,
                     };
                   }).toList(),
                 },

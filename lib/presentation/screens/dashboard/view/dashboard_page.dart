@@ -266,6 +266,7 @@ class GetAddressesModal extends StatelessWidget {
         accounts: accounts,
         addressRepository: addressRepository,
         importedAddressRepository: importedAddressRepository,
+        settingsRepository: GetIt.I<SettingsRepository>(),
       ),
       child: GetAddressesForm(
         passwordRequired:

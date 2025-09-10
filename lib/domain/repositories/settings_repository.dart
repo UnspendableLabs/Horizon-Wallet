@@ -8,4 +8,5 @@ abstract class SettingsRepository {
   bool get requirePasswordForCryptoOperations;
   int get inactivityTimeout;
   int get lostFocusTimeout;
+  Future<String> getStableID();
 }
