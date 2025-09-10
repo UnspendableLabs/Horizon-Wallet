@@ -94,29 +94,39 @@ class LoadingScreen extends StatelessWidget {
 }
 
 class BottomTabNavigation extends StatelessWidget {
-  final int currentIndex;
+  final StatefulNavigationShell nav;
 
-  const BottomTabNavigation({super.key, required this.currentIndex});
-
-  static const tabRoutes = [
-    '/#',
-    '/#manage',
-    "/#tools",
-    '/#settings',
-  ];
+  const BottomTabNavigation({super.key, required this.nav});
 
   @override
   Widget build(BuildContext context) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-
     final theme = Theme.of(context);
     final onSurface = theme.colorScheme.onSurface;
     final muted = theme.textButtonTheme.style?.foregroundColor?.resolve({}) ??
         Colors.grey;
 
-    Color iconColor(selected) => selected ? (onSurface) : (muted);
+    Color iconColor(bool selected) => selected ? onSurface : muted;
+    final currentIndex = nav.currentIndex;
 
-    print("currentIndex: $currentIndex");
+    Widget tab({
+      required int index,
+      required Widget icon,
+      required String label,
+    }) {
+      return GestureDetector(
+        onTap: () {
+          // Re-tap current tab -> pop that branch to its initial location
+          nav.goBranch(index, initialLocation: index == nav.currentIndex);
+        },
+        child: BottomNavItem(
+          selected: currentIndex == index,
+          icon: icon,
+          label: label,
+          isDarkTheme: isDarkTheme,
+        ),
+      );
+    }
 
     return Container(
       width: double.infinity,
@@ -136,66 +146,39 @@ class BottomTabNavigation extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildTab(
-            context,
+          tab(
             index: 0,
-            selected: currentIndex == 0,
             icon: AppIcons.pieChartIcon(
-                context: context, color: iconColor(currentIndex == 0)),
+              context: context,
+              color: iconColor(currentIndex == 0),
+            ),
             label: 'Portfolio',
-            isDarkTheme: isDarkTheme,
           ),
-          _buildTab(
-            context,
+          tab(
             index: 1,
-            selected: currentIndex == 1,
             icon: AppIcons.swapIcon(
-                context: context, color: iconColor(currentIndex == 1)),
+              context: context,
+              color: iconColor(currentIndex == 1),
+            ),
             label: 'Manage',
-            isDarkTheme: isDarkTheme,
           ),
-          _buildTab(
-            context,
+          tab(
             index: 2,
-            selected: currentIndex == 2,
             icon: AppIcons.wrenchIcon(
-                context: context, color: iconColor(currentIndex == 2)),
+              context: context,
+              color: iconColor(currentIndex == 2),
+            ),
             label: 'Tools',
-            isDarkTheme: isDarkTheme,
           ),
-          _buildTab(
-            context,
+          tab(
             index: 3,
-            selected: currentIndex == 3,
             icon: AppIcons.settingsIcon(
-                context: context, color: iconColor(currentIndex == 3)),
+              context: context,
+              color: iconColor(currentIndex == 3),
+            ),
             label: 'Settings',
-            isDarkTheme: isDarkTheme,
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildTab(
-    BuildContext context, {
-    required int index,
-    required bool selected,
-    required Widget icon,
-    required String label,
-    required bool isDarkTheme,
-  }) {
-    return GestureDetector(
-      onTap: () {
-        print("calling context.go with ${tabRoutes[index]}");
-
-        context.go(tabRoutes[index]);
-      },
-      child: BottomNavItem(
-        selected: selected,
-        icon: icon,
-        label: label,
-        isDarkTheme: isDarkTheme,
       ),
     );
   }
@@ -506,47 +489,94 @@ class AppRouter {
                         },
                       )));
                 }),
-            GoRoute(
-              path: "/",
-              builder: (context, state) {
-                return const Scaffold(
-                  body: PortfolioView(),
-                  bottomNavigationBar: BottomTabNavigation(
-                    currentIndex: 0,
-                  ),
+            StatefulShellRoute.indexedStack(
+                builder: (BuildContext context, GoRouterState state,
+                    StatefulNavigationShell nav) {
+                  // Session gating for the tabbed area (like your original shell guarded it)
+                  return context.watch<SessionStateCubit>().state.maybeWhen(
+                        success: (sessionState) {
+                          return AppShell(
+                            currentRoute: state.matchedLocation,
+                            actionRepository: GetIt.I<ActionRepository>(),
+                            child: Scaffold(
+                              body: nav, // <- active branch/content
+                              bottomNavigationBar:
+                                  BottomTabNavigation(nav: nav),
+                            ),
+                          );
+                        },
+                        orElse: () => const LoadingScreen(),
+                      );
+                },
+                branches: [
+                  StatefulShellBranch(routes: [
+                    GoRoute(
+                      path: "/",
+                      builder: (context, state) {
+                        final sessionState = context
+                            .watch<SessionStateCubit>()
+                            .state
+                            .successOrThrow();
+                        return Scaffold(
+                          key: Key(
+                              "portfolio:${sessionState.walletConfig.uuid}"),
+                          body: PortfolioView(),
+                          // bottomNavigationBar: BottomTabNavigation(
+                          //   key: Key("dashboard"),
+                          //   currentIndex: 0,
+                          // ),
 
-                  // CHAT GPT I NEED HELP WITH A SANE WAY / FLEXIBLE WAY OF ADDING BOTTOM TABS
-                );
-              },
-            ),
+                          // CHAT GPT I NEED HELP WITH A SANE WAY / FLEXIBLE WAY OF ADDING BOTTOM TABS
+                        );
+                      },
+                    )
+                  ]),
+                  StatefulShellBranch(routes: [
+                    GoRoute(
+                      path: "/manage",
+                      builder: (context, state) => const Scaffold(
+                        body: Text("manage"),
+                        // bottomNavigationBar: BottomTabNavigation(
+                        //   key: Key("manage"),
+                        //   currentIndex: 1,
+                        // ),
+                      ),
+                    )
+                  ]),
+                  StatefulShellBranch(routes: [
+                    GoRoute(
+                      path: "/tools",
+                      builder: (context, state) {
+                        final sessionState = context
+                            .watch<SessionStateCubit>()
+                            .state
+                            .successOrThrow();
 
-            GoRoute(
-              path: "/manage",
-              builder: (context, state) => const Scaffold(
-                body: Text("manage"),
-                bottomNavigationBar: BottomTabNavigation(
-                  currentIndex: 1,
-                ),
-              ),
-            ),
-            GoRoute(
-              path: "/tools",
-              builder: (context, state) => const Scaffold(
-                body: ToolsView(),
-                bottomNavigationBar: BottomTabNavigation(
-                  currentIndex: 2,
-                ),
-              ),
-            ),
-            GoRoute(
-              path: "/settings",
-              builder: (context, state) => Scaffold(
-                body: Text("settings"),
-                bottomNavigationBar: const BottomTabNavigation(
-                  currentIndex: 3,
-                ),
-              ),
-            ),
+                        return Scaffold(
+                          body: ToolsView(
+                            key: Key("tools:${sessionState.walletConfig.uuid}"),
+                          ),
+                          // bottomNavigationBar: BottomTabNavigation(
+                          //   key: Key("tools"),
+                          //   currentIndex: 2,
+                          // ),
+                        );
+                      },
+                    )
+                  ]),
+                  StatefulShellBranch(routes: [
+                    GoRoute(
+                      path: "/settings",
+                      builder: (context, state) => Scaffold(
+                        body: SettingsView(),
+                        // bottomNavigationBar: const BottomTabNavigation(
+                        //   key: Key("settings"),
+                        //   currentIndex: 3,
+                        // ),
+                      ),
+                    ),
+                  ])
+                ]),
             GoRoute(
               path: "/accounts",
               name: "accounts",
@@ -659,43 +689,6 @@ class AppRouter {
                 );
               },
             ),
-            // GoRoute(
-            //   path: "/asset/:assetName",
-            //   pageBuilder: (context, state) {
-            //     final assetName = state.pathParameters['assetName'] ?? '';
-            //     final session = context.watch<SessionStateCubit>().state;
-            //
-            //     return CustomTransitionPage<void>(
-            //       key: state.pageKey,
-            //       child: BlocProvider(
-            //         create: (context) => AssetViewBloc(
-            //           httpConfig: session.successOrThrow().httpConfig,
-            //           balanceRepository: GetIt.I<BalanceRepository>(),
-            //           fairminterRepository: GetIt.I<FairminterRepository>(),
-            //           addresses: session.allAddresses,
-            //           asset: assetName,
-            //         ),
-            //         child: AssetView(
-            //           assetName: assetName,
-            //         ),
-            //       ),
-            //       transitionDuration: const Duration(milliseconds: 250),
-            //       transitionsBuilder:
-            //           (context, animation, secondaryAnimation, child) {
-            //         return SlideTransition(
-            //           position: Tween<Offset>(
-            //             begin: const Offset(0, 0.03),
-            //             end: Offset.zero,
-            //           ).animate(animation),
-            //           child: FadeTransition(
-            //             opacity: animation,
-            //             child: child,
-            //           ),
-            //         );
-            //       },
-            //     );
-            //   },
-            // ),
             GoRoute(
               path: "/atomic-swap",
               pageBuilder: (context, state) => CustomTransitionPage<void>(
@@ -720,9 +713,10 @@ class AppRouter {
       ],
       errorBuilder: (context, state) => ErrorScreen(
             error: state.error,
-            onGoHome: () => context.go('/'),
+            onGoHome: () => context.go('/tools'),
           ),
-      redirect: (context, state) async {
+      redirect: (context, state) {
+        print("state.matchedLocation: ${state.matchedLocation}");
         if (state.matchedLocation == "/db") {
           return "/db";
         }
@@ -796,7 +790,7 @@ class AppRouter {
                 return actionPath;
               }
 
-              return "/#";
+              return null;
             },
             success: (data) {
               final action = actionRepository.peek();
@@ -829,8 +823,7 @@ class AppRouter {
             // if the session state is not yet loaded, show a loading screen
             orElse: () => null);
 
-        print("path: $path");
-
+        print("pasfdath iireasdfct: $path");
         return path;
       });
 }
@@ -1343,6 +1336,7 @@ class MyApp extends StatelessWidget {
       ],
       child: BlocListener<SessionStateCubit, SessionState>(
         listener: (context, state) {
+          print("calling router refresh");
           AppRouter.router.refresh();
         },
         child: BlocBuilder<ThemeBloc, ThemeMode>(
