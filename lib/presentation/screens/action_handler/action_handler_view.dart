@@ -25,8 +25,8 @@ import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_bloc.dart';
 
 class ActionHandlerShell extends StatelessWidget {
-  Widget child;
-  ActionHandlerShell({super.key, required this.child});
+  final Widget child;
+  const ActionHandlerShell({super.key, required this.child});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,7 +79,8 @@ class ActionHandlerApp extends StatelessWidget {
                   // TODO: Add other action handlers here
                   default:
                     return ActionHandlerShell(
-                        child: const Center(child: Text("Unsupported action type")));
+                        child: const Center(
+                            child: Text("Unsupported action type")));
                 }
               },
             );
