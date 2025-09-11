@@ -34,7 +34,7 @@ class PortfolioView extends StatefulWidget {
 
 class _PortfolioViewState extends State<PortfolioView>
     with TickerProviderStateMixin {
-  late TabController _tabController;
+  // late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   bool _isSearching = false;
   String _searchQuery = '';
@@ -42,23 +42,23 @@ class _PortfolioViewState extends State<PortfolioView>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    // _tabController = TabController(length: 2, vsync: this);
 
-    _tabController.addListener(() {
-      setState(() {
-        // If switching to Activity tab, close search
-        if (_tabController.index == 1 && _isSearching) {
-          _isSearching = false;
-          _searchController.clear();
-          _searchQuery = '';
-        }
-      });
-    });
+    // _tabController.addListener(() {
+    //   setState(() {
+    //     // If switching to Activity tab, close search
+    //     if (_tabController.index == 1 && _isSearching) {
+    //       _isSearching = false;
+    //       _searchController.clear();
+    //       _searchQuery = '';
+    //     }
+    //   });
+    // });
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
+    // _tabController.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -427,49 +427,7 @@ class _PortfolioViewState extends State<PortfolioView>
             ),
             child: Row(
               children: [
-                Expanded(
-                  flex: 3,
-                  child: TabBar(
-                    controller: _tabController,
-                    indicatorWeight: 2,
-                    dividerHeight: 0,
-                    indicatorColor: transparentPurple33,
-                    labelColor: Theme.of(context).textTheme.bodyMedium?.color,
-                    unselectedLabelColor: Theme.of(context)
-                            .textButtonTheme
-                            .style
-                            ?.foregroundColor
-                            ?.resolve({}) ??
-                        Colors.grey,
-                    isScrollable: true,
-                    padding: EdgeInsets.zero,
-                    indicatorSize: TabBarIndicatorSize.label,
-                    tabAlignment: TabAlignment.start,
-                    tabs: const [
-                      Tab(
-                        height: 62,
-                        child: Text(
-                          'Assets',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      Tab(
-                        height: 62,
-                        child: Text(
-                          'Activity',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (_isSearching && _tabController.index == 0)
+                if (_isSearching)
                   Expanded(
                     flex: 2,
                     child: Container(
@@ -512,7 +470,7 @@ class _PortfolioViewState extends State<PortfolioView>
                 Material(
                   color: Colors.transparent,
                   child: InkWell(
-                    onTap: _tabController.index == 0 ? _toggleSearch : null,
+                    onTap: _toggleSearch,
                     borderRadius: BorderRadius.circular(8),
                     child: Container(
                       key: const Key('search_button'),
@@ -526,32 +484,16 @@ class _PortfolioViewState extends State<PortfolioView>
                         child: _isSearching
                             ? AppIcons.closeIcon(
                                 context: context,
-                                color: _tabController.index == 0
-                                    ? (Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.color)
-                                    : (Theme.of(context)
-                                            .textButtonTheme
-                                            .style
-                                            ?.foregroundColor
-                                            ?.resolve({}) ??
-                                        Colors.grey),
-                              )
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.color)
                             : AppIcons.searchIcon(
                                 context: context,
-                                color: _tabController.index == 0
-                                    ? (Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.color)
-                                    : (Theme.of(context)
-                                            .textButtonTheme
-                                            .style
-                                            ?.foregroundColor
-                                            ?.resolve({}) ??
-                                        Colors.grey),
-                              ),
+                                color: (Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.color)),
                       ),
                     ),
                   ),
@@ -563,29 +505,12 @@ class _PortfolioViewState extends State<PortfolioView>
 
           // Tab content (Balances/Activity)
           Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              physics: const NeverScrollableScrollPhysics(),
-              children: [
-                // Balances tab
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: BalancesDisplay(
-                    key: const Key('balances_view'),
-                    searchQuery: _searchQuery,
-                  ),
-                ),
-
-                // Activity tab
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: DashboardActivityFeedScreen(
-                    key: const Key('activity_feed_view'),
-                    addresses: addresses,
-                    initialItemCount: 20,
-                  ),
-                ),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: BalancesDisplay(
+                key: const Key('balances_view'),
+                searchQuery: _searchQuery,
+              ),
             ),
           ),
         ],

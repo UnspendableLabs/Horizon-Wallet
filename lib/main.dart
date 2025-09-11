@@ -47,6 +47,7 @@ import 'package:horizon/presentation/screens/settings/settings_view.dart';
 import 'package:horizon/presentation/screens/tools/tools_view.dart';
 import 'package:horizon/presentation/screens/settings/sub_settings_view.dart';
 import 'package:horizon/presentation/screens/tos.dart';
+import 'package:horizon/presentation/screens/activity/activity_view.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
@@ -156,11 +157,16 @@ class BottomTabNavigation extends StatelessWidget {
           ),
           tab(
             index: 1,
-            icon: AppIcons.swapIcon(
-              context: context,
+            icon: Icon(
+              Icons.reorder,
               color: iconColor(currentIndex == 1),
+              size: 24,
             ),
-            label: 'Manage',
+            // AppIcons.swapIcon(
+            //          context: context,
+            //          color: iconColor(currentIndex == 1),
+            //        ),
+            label: 'Activity',
           ),
           tab(
             index: 2,
@@ -533,9 +539,9 @@ class AppRouter {
                   ]),
                   StatefulShellBranch(routes: [
                     GoRoute(
-                      path: "/manage",
+                      path: "/activity",
                       builder: (context, state) => const Scaffold(
-                        body: Text("manage"),
+                        body: ActivityView(),
                         // bottomNavigationBar: BottomTabNavigation(
                         //   key: Key("manage"),
                         //   currentIndex: 1,

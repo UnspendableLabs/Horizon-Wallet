@@ -8,6 +8,211 @@ import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
+import 'package:flutter/material.dart';
+import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
+
+class HorizonDrawerSelect<T> extends StatelessWidget {
+  const HorizonDrawerSelect({
+    super.key,
+    required this.options,
+    required this.onChanged,
+    required this.labelFor,
+    this.value,
+    this.hintText = 'Select…',
+    this.enableSearch = false,
+    this.filterFn,
+    this.buttonBg,
+    this.cornerRadius = const BorderRadius.all(Radius.circular(18)),
+    this.selectorPadding =
+        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+    this.selectedBuilder,
+    this.itemPadding = const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+    this.buttonTextStyle,
+  });
+
+  /// Raw values to pick from.
+  final List<T> options;
+
+  /// Current selected value (nullable).
+  final T? value;
+
+  /// Called when a value is chosen.
+  final ValueChanged<T> onChanged;
+
+  /// Turns a value into a display label.
+  final String Function(T) labelFor;
+
+  /// Optional custom selected renderer.
+  final Widget Function(T value)? selectedBuilder;
+
+  /// Hint when no value is selected.
+  final String hintText;
+
+  /// Basic styling knobs (kept minimal).
+  final Color? buttonBg;
+  final BorderRadius cornerRadius;
+  final EdgeInsetsGeometry selectorPadding;
+  final EdgeInsetsGeometry itemPadding;
+  final TextStyle? buttonTextStyle;
+
+  /// Search config.
+  final bool enableSearch;
+  final bool Function(String query, T item)? filterFn;
+
+  bool _defaultFilter(String q, T item) {
+    final lbl = labelFor(item).toLowerCase();
+    return lbl.contains(q.toLowerCase().trim());
+  }
+
+  Future<void> _open(BuildContext context) async {
+    final theme = Theme.of(context);
+    final controller = TextEditingController();
+
+    await WoltModalSheet.show<void>(
+      context: context,
+      modalTypeBuilder: (_) => WoltModalType.bottomSheet(),
+      pageListBuilder: (modalContext) {
+        // Use StatefulBuilder to keep search text local to this page
+        return [
+          WoltModalSheetPage(
+            topBarTitle: Text(hintText, style: theme.textTheme.titleMedium),
+            trailingNavBarWidget: IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => Navigator.of(modalContext).pop(),
+            ),
+            child: StatefulBuilder(
+              builder: (_, setState) {
+                final query = controller.text;
+                final test = filterFn ?? _defaultFilter;
+                final filtered = enableSearch && query.isNotEmpty
+                    ? options.where((o) => test(query, o)).toList()
+                    : options;
+
+                return SafeArea(
+                  top: false,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (enableSearch)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                          child: TextField(
+                            controller: controller,
+                            onChanged: (_) => setState(() {}),
+                            decoration: const InputDecoration(
+                              hintText: 'Search',
+                              prefixIcon: Icon(Icons.search),
+                              isDense: true,
+                            ),
+                          ),
+                        ),
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                          // sensible modal max height
+                          maxHeight:
+                              MediaQuery.of(modalContext).size.height * 0.6,
+                        ),
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: filtered.length,
+                          itemBuilder: (_, i) {
+                            final item = filtered[i];
+                            final selected = value != null && item == value;
+                            return Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  Navigator.of(modalContext).pop();
+                                  onChanged(item);
+                                },
+                                child: Padding(
+                                  padding: itemPadding,
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          labelFor(item),
+                                          style: theme.textTheme.bodyMedium,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      if (selected) const Icon(Icons.check),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ];
+      },
+    );
+
+    controller.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final hasValue = value != null;
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () => _open(context),
+        child: Container(
+          height: 56,
+          padding: selectorPadding,
+          decoration: BoxDecoration(
+            borderRadius: cornerRadius,
+            border: Border.all(
+              color: theme.inputDecorationTheme.outlineBorder?.color ??
+                  (isDark ? Colors.white12 : Colors.black12),
+              width: 1,
+            ),
+            color: buttonBg ??
+                (hasValue
+                    ? (isDark
+                        ? const Color(0xFF1E1E1E)
+                        : const Color(0xFFF5F5F5))
+                    : (isDark ? const Color(0xFF0F0F10) : Colors.white)),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: hasValue
+                    ? (selectedBuilder != null
+                        ? selectedBuilder!(value as T)
+                        : Text(
+                            labelFor(value as T),
+                            style: buttonTextStyle ?? theme.textTheme.bodySmall,
+                            overflow: TextOverflow.ellipsis,
+                          ))
+                    : Text(
+                        hintText,
+                        style: buttonTextStyle ?? theme.textTheme.bodySmall,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(Icons.keyboard_arrow_down),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class QuantityInputV2 extends StatefulWidget {
   /// Controlled value from parent (single source of truth)
   final String value;

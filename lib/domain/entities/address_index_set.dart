@@ -29,3 +29,27 @@ class AddressIndexSet {
     return _map[type];
   }
 }
+
+sealed class AddressIndexSetViewModel {}
+
+class AddressIndexSetSingle implements AddressIndexSetViewModel {
+  final AddressV2 address;
+
+  AddressIndexSetSingle(this.address);
+}
+
+class AddressIndexSetMultiple implements AddressIndexSetViewModel {
+  final List<AddressV2> addresses;
+
+  AddressIndexSetMultiple(this.addresses);
+}
+
+extension AddressIndexSetExtension on AddressIndexSet {
+  AddressIndexSetViewModel toViewModel() {
+    if (_map.length == 1) {
+      return AddressIndexSetSingle(_map.values.first);
+    } else {
+      return AddressIndexSetMultiple(list);
+    }
+  }
+}
