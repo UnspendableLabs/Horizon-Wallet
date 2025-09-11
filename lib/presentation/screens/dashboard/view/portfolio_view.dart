@@ -24,6 +24,7 @@ import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/presentation/common/gradient_avatar.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:horizon/domain/entities/activity_feed_item.dart';
 
 class PortfolioView extends StatefulWidget {
   const PortfolioView({super.key});
