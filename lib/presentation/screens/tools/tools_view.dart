@@ -15,6 +15,7 @@ class Tool extends StatelessWidget {
   final Widget? trailing;
   final String name;
   final String description;
+  final String? _href;
 
   const Tool({
     super.key,
@@ -23,7 +24,8 @@ class Tool extends StatelessWidget {
     required this.description,
     this.icon,
     this.trailing,
-  });
+    String? href,
+  }) : _href = href;
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -31,7 +33,7 @@ class Tool extends StatelessWidget {
 
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
 
-    final href = "${session.httpConfig.horizonMarket}/tools/$name";
+    final href = _href ?? "${session.httpConfig.horizonMarket}/tools/$name";
 
     return Link(
       href: href,
@@ -108,8 +110,32 @@ class ToolsView extends StatefulWidget {
 
 class _ToolsViewState extends State<ToolsView> {
   Widget _buildTools() {
+    final session = context.watch<SessionStateCubit>().state.successOrThrow();
     return ListView(
       children: [
+        Tool(
+          name: "manage swaps",
+          title: 'Atomic Swaps',
+          href: "${session.httpConfig.horizonMarket}/listings",
+          description: "Manage your atomic swap listings",
+          icon: AppIcons.swapIcon(context: context, width: 24, height: 24),
+        ),
+        Tool(
+          name: "orders",
+          title: "DEX Orders",
+          href:
+              "${session.httpConfig.horizonMarket}/listings?order_type=counterparty",
+          description: "Manage your Counterparty DEX orders",
+          icon: AppIcons.orderIcon(context: context, width: 24, height: 24),
+        ),
+        Tool(
+          name: "Dispensers",
+          title: "Dispensers",
+          href:
+              "${session.httpConfig.horizonMarket}/listings?order_type=dispensers",
+          description: "Manage your Counterparty Dispensers",
+          icon: AppIcons.dispenserIcon(context: context, width: 24, height: 24),
+        ),
         const Tool(
             name: "mpma",
             title: 'Multiple Send',
@@ -194,45 +220,22 @@ class _ToolsViewState extends State<ToolsView> {
   }
 
   Widget _buildAppBar() {
-    return Column(
-      children: [
-        Container(
-          height: 46,
-          width: double.infinity,
-          padding:
-              const EdgeInsets.only(left: 12, top: 0, bottom: 0, right: 12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              IconButton(
-                onPressed: () {
-                  context.go("/");
-                },
-                icon: AppIcons.backArrowIcon(
-                  context: context,
-                  width: 24,
-                  height: 24,
-                  fit: BoxFit.fitHeight,
-                ),
-              ),
-            ],
-          ),
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              "Tools",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Theme.of(context).textTheme.bodyMedium?.color,
-              ),
+    return SizedBox(
+      height: 46,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            "Tools",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
-          ],
-        )
-      ],
+          ),
+        ],
+      ),
     );
   }
 

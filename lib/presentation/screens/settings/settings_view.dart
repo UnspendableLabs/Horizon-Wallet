@@ -465,23 +465,22 @@ class _SettingsViewState extends State<SettingsView> {
   }
 
   Widget _buildAppBar() {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              "Settings",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Theme.of(context).textTheme.bodyMedium?.color,
-              ),
+    return SizedBox(
+      height: 46,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            "Settings",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
-          ],
-        )
-      ],
+          ),
+        ],
+      ),
     );
   }
 

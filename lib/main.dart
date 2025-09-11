@@ -713,7 +713,7 @@ class AppRouter {
       ],
       errorBuilder: (context, state) => ErrorScreen(
             error: state.error,
-            onGoHome: () => context.go('/tools'),
+            onGoHome: () => context.go('/'),
           ),
       redirect: (context, state) {
         print("state.matchedLocation: ${state.matchedLocation}");
