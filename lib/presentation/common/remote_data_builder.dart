@@ -151,6 +151,8 @@ class _RemoteDataPagedTaskEitherBuilderState<E extends Object, T, K>
           }
         }
         setState(() {
+          print("page in setd state: ${page.nextKey}");
+
           _nextKey = page.nextKey;
           _fetchingNext = false;
         });
