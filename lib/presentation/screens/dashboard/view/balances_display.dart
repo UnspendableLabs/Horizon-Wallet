@@ -11,12 +11,26 @@ import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 
+enum BalanceFilter { all, named, numeric, subassets, issuance }
+
+extension BalanceFilterLabel on BalanceFilter {
+  String get label => switch (this) {
+        BalanceFilter.all => 'All',
+        BalanceFilter.named => 'Named',
+        BalanceFilter.numeric => 'Numeric',
+        BalanceFilter.subassets => 'Subassets',
+        BalanceFilter.issuance => 'Issuances',
+      };
+}
+
 class BalancesDisplay extends StatefulWidget {
   final String searchQuery;
+  final BalanceFilter currentFilter;
 
   const BalancesDisplay({
     super.key,
     this.searchQuery = '',
+    required this.currentFilter,
   });
 
   @override
@@ -40,6 +54,7 @@ class BalancesDisplayState extends State<BalancesDisplay> {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: BalancesSliver(
+          currentFilter: widget.currentFilter,
           searchQuery: widget.searchQuery,
         ),
       ),
@@ -47,14 +62,14 @@ class BalancesDisplayState extends State<BalancesDisplay> {
   }
 }
 
-enum BalanceFilter { none, named, numeric, subassets, issuances }
-
 class BalancesSliver extends StatefulWidget {
   final String searchQuery;
+  final BalanceFilter currentFilter;
 
   const BalancesSliver({
     super.key,
     this.searchQuery = '',
+    required this.currentFilter,
   });
 
   @override
@@ -62,19 +77,24 @@ class BalancesSliver extends StatefulWidget {
 }
 
 class BalancesSliverState extends State<BalancesSliver> {
-  BalanceFilter _currentFilter = BalanceFilter.none;
+  // TxFilter _currentFilter = TxFilter.all;
 
-  void _setFilter(Object filter) {
-    setState(() {
-      _currentFilter = filter as BalanceFilter;
-    });
-  }
+  //  void initState() {
+  // super.initState();
+  // _currentFilter = widget.currentFilter;
+  //  }
+  //
+  //  void _setFilter(Object filter) {
+  //    setState(() {
+  //      _currentFilter = filter as BalanceFilter;
+  //    });
+  //  }
 
-  void _clearFilter() {
-    setState(() {
-      _currentFilter = BalanceFilter.none;
-    });
-  }
+  // void _clearFilter() {
+  //   setState(() {
+  //     _currentFilter = BalanceFilter.none;
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -83,21 +103,6 @@ class BalancesSliverState extends State<BalancesSliver> {
         final isMobile = MediaQuery.of(context).size.width < 500;
         return Column(
           children: [
-            FilterBar(
-              currentFilter: _currentFilter,
-              onFilterSelected: _setFilter,
-              onClearFilter: _clearFilter,
-              paddingHorizontal: 4,
-              allowDeselect: true,
-              filterOptions: const [
-                FilterOption(label: 'Named', value: BalanceFilter.named),
-                FilterOption(label: 'Numeric', value: BalanceFilter.numeric),
-                FilterOption(
-                    label: 'Subassets', value: BalanceFilter.subassets),
-                FilterOption(
-                    label: 'Issuances', value: BalanceFilter.issuances),
-              ],
-            ),
             const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -135,7 +140,7 @@ class BalancesSliverState extends State<BalancesSliver> {
     }
 
     // Then check if it matches the selected filter
-    switch (_currentFilter) {
+    switch (widget.currentFilter) {
       case BalanceFilter.named:
         if (balance.assetLongname != null &&
             balance.assetLongname!.isNotEmpty) {
@@ -154,7 +159,7 @@ class BalancesSliverState extends State<BalancesSliver> {
           return balance.assetLongname!.contains('.');
         }
         return balance.asset.contains('.');
-      case BalanceFilter.issuances:
+      case BalanceFilter.issuance:
         return balance.entries.any((entry) {
           return (entry.address != null &&
                   balance.assetInfo.owner != null &&
@@ -163,7 +168,7 @@ class BalancesSliverState extends State<BalancesSliver> {
                   balance.assetInfo.owner != null &&
                   entry.utxoAddress == balance.assetInfo.owner);
         });
-      case BalanceFilter.none:
+      case BalanceFilter.all:
         return true;
     }
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -39,6 +40,7 @@ class _PortfolioViewState extends State<PortfolioView>
   final TextEditingController _searchController = TextEditingController();
   bool _isSearching = false;
   String _searchQuery = '';
+  BalanceFilter _currentFilter = BalanceFilter.all;
 
   @override
   void initState() {
@@ -62,16 +64,6 @@ class _PortfolioViewState extends State<PortfolioView>
     // _tabController.dispose();
     _searchController.dispose();
     super.dispose();
-  }
-
-  void _toggleSearch() {
-    setState(() {
-      _isSearching = !_isSearching;
-      if (!_isSearching) {
-        _searchController.clear();
-        _searchQuery = '';
-      }
-    });
   }
 
   void _onSearchChanged(String value) {
@@ -416,7 +408,7 @@ class _PortfolioViewState extends State<PortfolioView>
           Container(
             decoration: BoxDecoration(
               border: Border(
-                bottom: BorderSide(
+                top: BorderSide(
                   color: Theme.of(context)
                           .inputDecorationTheme
                           .outlineBorder
@@ -426,81 +418,34 @@ class _PortfolioViewState extends State<PortfolioView>
                 ),
               ),
             ),
-            child: Row(
-              children: [
-                if (_isSearching)
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(10, 12, 12, 8),
+              child: Row(
+                children: [
                   Expanded(
                     flex: 2,
-                    child: Container(
-                      height: 32,
-                      margin: const EdgeInsets.only(right: 8),
-                      decoration: BoxDecoration(
-                        color: transparentPurple8,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Center(
-                        child: TextField(
-                          controller: _searchController,
-                          onChanged: _onSearchChanged,
-                          style: TextStyle(
-                            color:
-                                Theme.of(context).textTheme.bodyMedium?.color,
-                            fontSize: 14,
-                          ),
-                          textAlignVertical: TextAlignVertical.center,
-                          decoration: InputDecoration(
-                            isCollapsed: true,
-                            hintText: 'Search assets...',
-                            hintStyle: TextStyle(
-                              color: Theme.of(context)
-                                      .textButtonTheme
-                                      .style
-                                      ?.foregroundColor
-                                      ?.resolve({}) ??
-                                  Colors.grey,
-                              fontSize: 14,
-                            ),
-                            border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
-                          ),
-                        ),
-                      ),
+                    child: HorizonTextField(
+                      hintText: "Search assets",
+                      height: 44,
+                      borderRadius: 18,
+                      controller: _searchController,
+                      onChanged: _onSearchChanged,
                     ),
                   ),
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: _toggleSearch,
-                    borderRadius: BorderRadius.circular(8),
-                    child: Container(
-                      key: const Key('search_button'),
-                      width: 44,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: transparentPurple8,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Center(
-                        child: _isSearching
-                            ? AppIcons.closeIcon(
-                                context: context,
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.color)
-                            : AppIcons.searchIcon(
-                                context: context,
-                                color: (Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.color)),
-                      ),
-                    ),
+                  const SizedBox(width: 8),
+                  HorizonIconSelect<BalanceFilter>(
+                    options: BalanceFilter.values,
+                    value: _currentFilter,
+                    labelFor: (f) => f.label,
+                    onChanged: (f) => setState(() {
+                      _currentFilter = f;
+                    }),
+                    tooltip: 'Filter transactions',
+                    icon: Icons.filter_list,
+                    modalTitle: 'Filter by type',
                   ),
-                ),
-                const SizedBox(width: 16),
-              ],
+                ],
+              ),
             ),
           ),
 
@@ -509,6 +454,7 @@ class _PortfolioViewState extends State<PortfolioView>
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10),
               child: BalancesDisplay(
+                currentFilter: _currentFilter,
                 key: const Key('balances_view'),
                 searchQuery: _searchQuery,
               ),

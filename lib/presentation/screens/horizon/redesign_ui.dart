@@ -11,6 +11,120 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
+import 'package:flutter/material.dart';
+import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
+
+/// -----------------------------
+/// Generic icon-triggered selector
+/// -----------------------------
+
+/// --------------------------------------
+/// Example: filter button for your options
+/// --------------------------------------
+import 'package:flutter/material.dart';
+import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
+
+/// Simple icon-triggered selector (no search).
+class HorizonIconSelect<T> extends StatelessWidget {
+  const HorizonIconSelect({
+    super.key,
+    required this.options,
+    required this.onChanged,
+    required this.labelFor,
+    this.value,
+    this.icon = Icons.filter_list,
+    this.tooltip = 'Select…',
+    this.modalTitle,
+    this.itemPadding = const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+  });
+
+  final List<T> options;
+  final T? value;
+  final ValueChanged<T> onChanged;
+  final String Function(T) labelFor;
+
+  /// Trigger look
+  final IconData icon;
+  final String tooltip;
+
+  /// Modal look
+  final String? modalTitle;
+  final EdgeInsetsGeometry itemPadding;
+
+  Future<void> _open(BuildContext context) async {
+    final theme = Theme.of(context);
+
+    await WoltModalSheet.show<void>(
+      context: context,
+      modalTypeBuilder: (_) => WoltModalType.bottomSheet(),
+      pageListBuilder: (modalContext) {
+        return [
+          WoltModalSheetPage(
+            topBarTitle: Text(
+              modalTitle ?? tooltip,
+              style: theme.textTheme.titleMedium,
+            ),
+            trailingNavBarWidget: IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => Navigator.of(modalContext).pop(),
+            ),
+            child: SafeArea(
+              top: false,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(modalContext).size.height * 0.3,
+                ),
+                child: ListView.builder(
+                  itemCount: options.length,
+                  itemBuilder: (_, i) {
+                    final item = options[i];
+                    final selected = value != null && item == value;
+                    return Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.of(modalContext).pop();
+                          onChanged(item);
+                        },
+                        child: Padding(
+                          padding: itemPadding,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  labelFor(item),
+                                  style: theme.textTheme.bodyMedium,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (selected) const Icon(Icons.check),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ];
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: IconButton(
+        icon: Icon(icon),
+        onPressed: () => _open(context),
+      ),
+    );
+  }
+}
+
 class HorizonDrawerSelect<T> extends StatelessWidget {
   const HorizonDrawerSelect({
     super.key,
@@ -1740,9 +1854,11 @@ class HorizonTextField extends StatefulWidget {
   final Widget? suffixIcon;
   final String? Function(String?)? validator;
   final dynamic Function(dynamic)? onSubmitted;
-  final dynamic Function(dynamic)? onChanged;
+  final void Function(String)? onChanged;
   final bool enabled;
   final List<TextInputFormatter>? inputFormatters;
+  final double height;
+  final double borderRadius;
 
   const HorizonTextField({
     super.key,
@@ -1758,6 +1874,8 @@ class HorizonTextField extends StatefulWidget {
     this.onChanged,
     this.enabled = true,
     this.inputFormatters,
+    this.height = 56,
+    this.borderRadius = 18,
   });
 
   @override
@@ -1826,16 +1944,16 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
             MouseRegion(
               cursor: SystemMouseCursors.text,
               child: Container(
-                height: 56,
+                height: widget.height,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(widget.borderRadius),
                   color: _hasText
                       ? customTheme.inputBackground
                       : customTheme.inputBackgroundEmpty,
                 ),
                 child: Container(
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(widget.borderRadius),
                     border: hasError
                         ? Border.all(color: customTheme.errorColor, width: 1)
                         : _focusNode.hasFocus
