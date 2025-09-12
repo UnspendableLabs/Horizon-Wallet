@@ -539,15 +539,24 @@ class AppRouter {
                   ]),
                   StatefulShellBranch(routes: [
                     GoRoute(
-                      path: "/activity",
-                      builder: (context, state) => const Scaffold(
-                        body: ActivityView(),
-                        // bottomNavigationBar: BottomTabNavigation(
-                        //   key: Key("manage"),
-                        //   currentIndex: 1,
-                        // ),
-                      ),
-                    )
+                        path: "/activity",
+                        builder: (context, state) {
+                          final sessionState = context
+                              .watch<SessionStateCubit>()
+                              .state
+                              .successOrThrow();
+
+                          return Scaffold(
+                            body: ActivityView(
+                                key: Key(sessionState.walletConfig.uuid),
+                                initialAddress:
+                                    sessionState.addressIndexSet.list.first),
+                            // bottomNavigationBar: BottomTabNavigation(
+                            //   key: Key("manage"),
+                            //   currentIndex: 1,
+                            // ),
+                          );
+                        })
                   ]),
                   StatefulShellBranch(routes: [
                     GoRoute(

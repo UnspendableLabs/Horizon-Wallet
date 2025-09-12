@@ -12,30 +12,30 @@ import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 
-abstract class BTCFeedEvent extends Equatable {
-  const BTCFeedEvent();
+abstract class BTCActivityEvent extends Equatable {
+  const BTCActivityEvent();
   @override
   List<Object> get props => [];
 }
 
-class StartPolling extends BTCFeedEvent {
+class StartPolling extends BTCActivityEvent {
   final Duration interval;
   const StartPolling({required this.interval});
 }
 
-class StopPolling extends BTCFeedEvent {
+class StopPolling extends BTCActivityEvent {
   const StopPolling();
 }
 
-class Load extends BTCFeedEvent {
+class Load extends BTCActivityEvent {
   const Load();
 }
 
-class LoadMore extends BTCFeedEvent {
+class LoadMore extends BTCActivityEvent {
   const LoadMore();
 }
 
-class LoadQuiet extends BTCFeedEvent {
+class LoadQuiet extends BTCActivityEvent {
   const LoadQuiet();
 }
 
@@ -44,12 +44,14 @@ class BtcFeedStateReplete extends Equatable {
   final List<BitcoinTx> transactions;
   final int blockHeight;
   final int newTransactionCount;
+  final bool endReached;
 
   const BtcFeedStateReplete({
     required this.lastHash,
     required this.transactions,
     required this.blockHeight,
     this.newTransactionCount = 0,
+    this.endReached = false,
   });
 
   @override
@@ -68,12 +70,14 @@ class BtcFeedStateReplete extends Equatable {
 
   BtcFeedStateReplete copyWith({
     final int? newTransactionCount,
+    final bool? endReached,
   }) =>
       BtcFeedStateReplete(
         lastHash: lastHash,
         transactions: transactions,
         blockHeight: blockHeight,
         newTransactionCount: newTransactionCount ?? this.newTransactionCount,
+        endReached: endReached ?? this.endReached,
       );
 }
 
@@ -91,46 +95,95 @@ extension BtcFeedStateRepleteX on BtcFeedStateReplete {
   }
 }
 
-class BtcFeedState extends Equatable {
+class BtcActivityState extends Equatable {
   final RemoteData<BtcFeedStateReplete> remoteState;
 
-  const BtcFeedState({required this.remoteState});
+  const BtcActivityState({required this.remoteState});
 
   @override
-  List<Object> get props => [];
+  List<Object> get props => [
+        remoteState,
+      ];
 
-  BtcFeedState copyWith({
+  BtcActivityState copyWith({
     RemoteData<BtcFeedStateReplete>? remoteState,
-    bool? isCancelled,
   }) {
-    return BtcFeedState(
+    return BtcActivityState(
       remoteState: remoteState ?? this.remoteState,
     );
   }
 }
 
-class BtcActivityBloc extends Bloc<BTCFeedEvent, BtcFeedState> {
+class BtcActivityBloc extends Bloc<BTCActivityEvent, BtcActivityState> {
   final HttpConfig httpConfig;
-  Logger logger;
+  Logger? logger;
   Timer? timer;
   String address;
   BitcoinRepository _bitcoinRepository;
 
   BtcActivityBloc({
     required this.httpConfig,
-    required this.logger,
+    this.logger,
     required this.address,
     BitcoinRepository? bitcoinRepository,
   })  : _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>(),
-        super(const BtcFeedState(remoteState: Initial())) {
+        super(const BtcActivityState(remoteState: Initial())) {
     on<StartPolling>(_onStartPolling);
     on<StopPolling>(_onStopPolling);
     on<Load>(_onLoad);
-    // on<LoadMore>(_onLoadMore);
+    on<LoadMore>(_onLoadMore);
     on<LoadQuiet>(_onLoadQuiet);
   }
 
-  void _onStartPolling(StartPolling event, Emitter<BtcFeedState> emit) {
+  void _onLoadMore(LoadMore event, Emitter<BtcActivityState> emit) async {
+    // if state isn't success do nothing
+
+    if (!state.remoteState.isSuccess) return;
+    final replete = state.remoteState.getOrNull()!;
+    if (replete.lastHash == null) return;
+    emit(state.copyWith(remoteState: Refreshing(replete)));
+
+    final lastHash = replete.lastHash!;
+    final task = TaskEither<String, BtcFeedStateReplete>.Do(($) async {
+      final confirmedTask =
+          _bitcoinRepository.getConfirmedTransactionsPaginatedT(
+              address: address,
+              lastSeenTxid: lastHash,
+              httpConfig: httpConfig,
+              onError: (_) => "error fetching confirmed tx");
+
+      final blockHeightTask = _bitcoinRepository.getBlockHeightT(
+          httpConfig: httpConfig,
+          onError: (_) => "error fetching block height");
+
+      final [confirmedTxs as List<BitcoinTx>, blockHeight as int] =
+          await $(TaskEither.sequenceList([confirmedTask, blockHeightTask]));
+
+      return BtcFeedStateReplete(
+        lastHash: confirmedTxs.isNotEmpty ? confirmedTxs.last.txid : null,
+        blockHeight: blockHeight,
+        transactions: [
+          ...replete.transactions,
+          ...confirmedTxs
+        ], // append new txs to existing ones
+        endReached: confirmedTxs.isEmpty || confirmedTxs.last.txid == lastHash,
+      );
+    });
+
+    final result = await task.run();
+
+    final nextState = result.fold((error) {
+      return state.copyWith(
+        remoteState: Failure(error),
+      );
+    }, (replete) {
+      return state.copyWith(remoteState: Success(replete));
+    });
+
+    emit(nextState);
+  }
+
+  void _onStartPolling(StartPolling event, Emitter<BtcActivityState> emit) {
     timer?.cancel();
     timer = Timer.periodic(event.interval, (_) {
       add(const LoadQuiet());
@@ -138,12 +191,12 @@ class BtcActivityBloc extends Bloc<BTCFeedEvent, BtcFeedState> {
     add(const Load());
   }
 
-  void _onStopPolling(StopPolling event, Emitter<BtcFeedState> emit) {
+  void _onStopPolling(StopPolling event, Emitter<BtcActivityState> emit) {
     timer?.cancel();
     timer = null;
   }
 
-  void _onLoad(Load event, Emitter<BtcFeedState> emit) async {
+  void _onLoad(Load event, Emitter<BtcActivityState> emit) async {
     if (state.remoteState.isLoading) return;
 
     RemoteData<BtcFeedStateReplete> nextState = state.remoteState.fold3(
@@ -185,22 +238,24 @@ class BtcActivityBloc extends Bloc<BTCFeedEvent, BtcFeedState> {
 
     final result = await task.run();
 
-    BtcFeedState nextState_ = result.fold(
+    BtcActivityState nextState_ = result.fold(
       (error) {
-        logger.error("Error loading BTC feed: $error");
         return state.copyWith(
           remoteState: Failure(error),
         );
       },
-      (replete) => state.copyWith(
-        remoteState: Success(replete),
-      ),
+      (replete) {
+        print("replete ${replete.transactions.length}");
+        return state.copyWith(remoteState: Success(replete));
+      },
     );
 
+    print("emitting next state ${nextState_.remoteState.isSuccess}");
+    // CHAT somehow this state is not being emitted
     emit(nextState_);
   }
 
-  void _onLoadQuiet(LoadQuiet event, Emitter<BtcFeedState> emit) async {
+  void _onLoadQuiet(LoadQuiet event, Emitter<BtcActivityState> emit) async {
     if (state.remoteState.isLoading) return;
     if (state.remoteState.isRefreshing) return;
     if (!state.remoteState.isSuccess) {
@@ -242,7 +297,6 @@ class BtcActivityBloc extends Bloc<BTCFeedEvent, BtcFeedState> {
     String? lastHash = state.remoteState.getOrNull()?.lastHash;
 
     final nextState = firstPageResult.fold((error) {
-      logger.error("Error loading BTC feed: $error");
       return state.copyWith(
         remoteState: Failure(error),
       );
