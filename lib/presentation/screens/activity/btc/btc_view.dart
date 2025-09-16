@@ -24,7 +24,8 @@ class BtcActivityActions {
 class BTCActivityProvider extends StatelessWidget {
   final HttpConfig httpConfig;
   final AddressV2 address;
-  final Widget Function(BtcActivityActions actions) builder;
+  final Widget Function(BtcActivityActions actions, BtcActivityState state)
+      builder;
 
   const BTCActivityProvider(
       {super.key,
@@ -40,17 +41,20 @@ class BTCActivityProvider extends StatelessWidget {
             ..add(const Load()),
       child: BlocBuilder<BtcActivityBloc, BtcActivityState>(
           builder: (context, state) {
-        return builder(BtcActivityActions(
-          startPolling: () => context
-              .read<BtcActivityBloc>()
-              .add(const StartPolling(interval: Duration(seconds: 30))),
-          stopPolling: () =>
-              context.read<BtcActivityBloc>().add(const StopPolling()),
-          load: () => context.read<BtcActivityBloc>().add(const Load()),
-          loadQuiet: () =>
-              context.read<BtcActivityBloc>().add(const LoadQuiet()),
-          loadMore: () => context.read<BtcActivityBloc>().add(const LoadMore()),
-        ));
+        return builder(
+            BtcActivityActions(
+              startPolling: () => context
+                  .read<BtcActivityBloc>()
+                  .add(const StartPolling(interval: Duration(seconds: 60))),
+              stopPolling: () =>
+                  context.read<BtcActivityBloc>().add(const StopPolling()),
+              load: () => context.read<BtcActivityBloc>().add(const Load()),
+              loadQuiet: () =>
+                  context.read<BtcActivityBloc>().add(const LoadQuiet()),
+              loadMore: () =>
+                  context.read<BtcActivityBloc>().add(const LoadMore()),
+            ),
+            state);
       }),
     );
   }
@@ -58,11 +62,18 @@ class BTCActivityProvider extends StatelessWidget {
 
 class BTCActivityView extends StatelessWidget {
   final AddressV2 address;
+  final BtcActivityActions actions;
+  final BtcActivityState state;
 
-  const BTCActivityView({super.key, required this.address});
+  const BTCActivityView(
+      {super.key,
+      required this.address,
+      required this.actions,
+      required this.state});
 
   @override
   Widget build(BuildContext context) {
-    return BTCActivityViewInternal(addresses: [address.address]);
+    return BTCActivityViewInternal(
+        actions: actions, state: state, addresses: [address.address]);
   }
 }

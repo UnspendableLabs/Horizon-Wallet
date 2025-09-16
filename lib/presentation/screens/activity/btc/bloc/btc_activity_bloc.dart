@@ -11,6 +11,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/js/bip39.dart';
 
 abstract class BTCActivityEvent extends Equatable {
   const BTCActivityEvent();
@@ -41,6 +42,7 @@ class LoadQuiet extends BTCActivityEvent {
 
 class BtcFeedStateReplete extends Equatable {
   final String? lastHash;
+  final String? newestSeenHash;
   final List<BitcoinTx> transactions;
   final int blockHeight;
   final int newTransactionCount;
@@ -48,6 +50,7 @@ class BtcFeedStateReplete extends Equatable {
 
   const BtcFeedStateReplete({
     required this.lastHash,
+    required this.newestSeenHash,
     required this.transactions,
     required this.blockHeight,
     this.newTransactionCount = 0,
@@ -55,7 +58,14 @@ class BtcFeedStateReplete extends Equatable {
   });
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [
+        lastHash,
+        newestSeenHash,
+        transactions,
+        blockHeight,
+        newTransactionCount,
+        endReached,
+      ];
 
   List<ActivityFeedItem> get items => transactions
       .map((tx) => ActivityFeedItem(
@@ -71,28 +81,18 @@ class BtcFeedStateReplete extends Equatable {
   BtcFeedStateReplete copyWith({
     final int? newTransactionCount,
     final bool? endReached,
+    final String? newestSeenHash,
+    final List<BitcoinTx>? transactions,
+    final int? blockHeight,
   }) =>
       BtcFeedStateReplete(
         lastHash: lastHash,
-        transactions: transactions,
-        blockHeight: blockHeight,
+        transactions: transactions ?? this.transactions,
+        blockHeight: blockHeight ?? this.blockHeight,
         newTransactionCount: newTransactionCount ?? this.newTransactionCount,
         endReached: endReached ?? this.endReached,
+        newestSeenHash: newestSeenHash ?? this.newestSeenHash,
       );
-}
-
-extension BtcFeedStateRepleteX on BtcFeedStateReplete {
-  BtcFeedStateReplete copyWith({
-    String? lastHash,
-    List<BitcoinTx>? transactions,
-    int? blockHeight,
-  }) {
-    return BtcFeedStateReplete(
-      lastHash: lastHash ?? this.lastHash,
-      transactions: transactions ?? this.transactions,
-      blockHeight: blockHeight ?? this.blockHeight,
-    );
-  }
 }
 
 class BtcActivityState extends Equatable {
@@ -131,41 +131,48 @@ class BtcActivityBloc extends Bloc<BTCActivityEvent, BtcActivityState> {
     on<StartPolling>(_onStartPolling);
     on<StopPolling>(_onStopPolling);
     on<Load>(_onLoad);
-    on<LoadMore>(_onLoadMore);
     on<LoadQuiet>(_onLoadQuiet);
+    on<LoadMore>(_onLoadMore);
   }
 
   void _onLoadMore(LoadMore event, Emitter<BtcActivityState> emit) async {
-    // if state isn't success do nothing
+    if (!state.remoteState.isSuccess) {
+      return;
+    }
 
-    if (!state.remoteState.isSuccess) return;
     final replete = state.remoteState.getOrNull()!;
-    if (replete.lastHash == null) return;
+    if (replete.lastHash == null) {
+      return;
+    }
+
     emit(state.copyWith(remoteState: Refreshing(replete)));
 
     final lastHash = replete.lastHash!;
+
     final task = TaskEither<String, BtcFeedStateReplete>.Do(($) async {
       final confirmedTask =
           _bitcoinRepository.getConfirmedTransactionsPaginatedT(
               address: address,
               lastSeenTxid: lastHash,
               httpConfig: httpConfig,
-              onError: (_) => "error fetching confirmed tx");
+              onError: (e) {
+                return "error fetching confirmed tx";
+              });
 
       final blockHeightTask = _bitcoinRepository.getBlockHeightT(
           httpConfig: httpConfig,
-          onError: (_) => "error fetching block height");
+          onError: (e) {
+            return "error fetching block height";
+          });
 
       final [confirmedTxs as List<BitcoinTx>, blockHeight as int] =
           await $(TaskEither.sequenceList([confirmedTask, blockHeightTask]));
 
       return BtcFeedStateReplete(
+        newestSeenHash: replete.newestSeenHash,
         lastHash: confirmedTxs.isNotEmpty ? confirmedTxs.last.txid : null,
         blockHeight: blockHeight,
-        transactions: [
-          ...replete.transactions,
-          ...confirmedTxs
-        ], // append new txs to existing ones
+        transactions: [...replete.transactions, ...confirmedTxs],
         endReached: confirmedTxs.isEmpty || confirmedTxs.last.txid == lastHash,
       );
     });
@@ -184,7 +191,7 @@ class BtcActivityBloc extends Bloc<BTCActivityEvent, BtcActivityState> {
   }
 
   void _onStartPolling(StartPolling event, Emitter<BtcActivityState> emit) {
-    timer?.cancel();
+    // timer?.cancel();
     timer = Timer.periodic(event.interval, (_) {
       add(const LoadQuiet());
     });
@@ -231,6 +238,9 @@ class BtcActivityBloc extends Bloc<BTCActivityEvent, BtcActivityState> {
           [mempoolTask, confirmedTask, blockHeightTask]));
 
       return BtcFeedStateReplete(
+          newestSeenHash: [...mempoolTxs, ...confirmedTxs].isNotEmpty
+              ? [...mempoolTxs, ...confirmedTxs].first.txid
+              : null,
           lastHash: confirmedTxs.isNotEmpty ? confirmedTxs.last.txid : null,
           blockHeight: blockHeight,
           transactions: [...mempoolTxs, ...confirmedTxs]);
@@ -245,79 +255,105 @@ class BtcActivityBloc extends Bloc<BTCActivityEvent, BtcActivityState> {
         );
       },
       (replete) {
-        print("replete ${replete.transactions.length}");
         return state.copyWith(remoteState: Success(replete));
       },
     );
 
-    print("emitting next state ${nextState_.remoteState.isSuccess}");
     // CHAT somehow this state is not being emitted
     emit(nextState_);
   }
 
   void _onLoadQuiet(LoadQuiet event, Emitter<BtcActivityState> emit) async {
-    if (state.remoteState.isLoading) return;
-    if (state.remoteState.isRefreshing) return;
+    if (state.remoteState.isLoading) {
+      return;
+    }
+    if (state.remoteState.isRefreshing) {
+      return;
+    }
     if (!state.remoteState.isSuccess) {
       add(const Load());
       return;
     }
 
+    final replete = state.remoteState.getOrNull()!;
+
     TaskEither<String, BtcFeedStateReplete> firstPage =
         TaskEither<String, BtcFeedStateReplete>.Do(($) async {
       final mempoolTask = _bitcoinRepository.getMempoolTransactionsT(
-          addresses: [address],
-          httpConfig: httpConfig,
-          onError: (_) => "error fetching mempol tx");
+        addresses: [address],
+        httpConfig: httpConfig,
+        onError: (_) => "error fetching mempool tx",
+      );
 
       final confirmedTask =
           _bitcoinRepository.getConfirmedTransactionsPaginatedT(
-              address: address,
-              httpConfig: httpConfig,
-              onError: (_) => "error fetching confirmed tx");
+        address: address,
+        httpConfig: httpConfig,
+        onError: (_) => "error fetching confirmed tx",
+      );
 
       final blockHeightTask = _bitcoinRepository.getBlockHeightT(
-          httpConfig: httpConfig,
-          onError: (_) => "error fetching block height");
+        httpConfig: httpConfig,
+        onError: (_) => "error fetching block height",
+      );
 
       final [
         mempoolTxs as List<BitcoinTx>,
         confirmedTxs as List<BitcoinTx>,
-        blockHeight as int
+        blockHeight as int,
       ] = await $(TaskEither.sequenceList(
           [mempoolTask, confirmedTask, blockHeightTask]));
 
       return BtcFeedStateReplete(
-          lastHash: confirmedTxs.isNotEmpty ? confirmedTxs.last.txid : null,
-          blockHeight: blockHeight,
-          transactions: [...mempoolTxs, ...confirmedTxs]);
+        newestSeenHash: replete.newestSeenHash,
+        lastHash: confirmedTxs.isNotEmpty ? confirmedTxs.last.txid : null,
+        blockHeight: blockHeight,
+        transactions: [...mempoolTxs, ...confirmedTxs],
+      );
     });
 
     final firstPageResult = await firstPage.run();
-    String? lastHash = state.remoteState.getOrNull()?.lastHash;
+    String? lastHash = state.remoteState.getOrNull()?.newestSeenHash;
 
     final nextState = firstPageResult.fold((error) {
-      return state.copyWith(
-        remoteState: Failure(error),
-      );
-    }, (replete) {
-      // new transaction count are all those up until lastd hash
+      return state.copyWith(remoteState: Failure(error));
+    }, (newReplete) {
+      // new transaction count are all those up until last hash
+
       List<BitcoinTx> newTxs = [];
-      for (final tx in replete.transactions) {
+      for (final tx in newReplete.transactions) {
         if (tx.txid == lastHash) {
           break;
         }
         newTxs.add(tx);
       }
 
+      // reconcile mempooltxs
+
+      final newMempoolTxs = newReplete.transactions
+          .where((tx) => !tx.status.confirmed)
+          .toList(growable: false);
+
+      final oldMempoolTxs = replete.transactions
+          .where((tx) => !tx.status.confirmed)
+          .toList(growable: false);
+
+      // add new mempool txs that aren't already in old mempool txs
+      for (var tx in newMempoolTxs) {
+        if (!oldMempoolTxs.any((oldTx) => oldTx.txid == tx.txid)) {
+          newTxs.add(tx);
+        }
+      }
+
       return state.copyWith(
-          remoteState: Success(state.remoteState
+        remoteState: Success(
+          state.remoteState
               .getOrNull()!
-              .copyWith(newTransactionCount: newTxs.length)));
+              .copyWith(newTransactionCount: newTxs.length),
+        ),
+      );
     });
 
     emit(nextState);
-
-    // new transactions are all those to last hash
   }
 }

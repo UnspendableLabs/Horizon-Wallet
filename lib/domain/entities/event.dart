@@ -44,6 +44,10 @@ class Event extends Equatable {
         state, eventIndex, event, txHash, blockIndex,
         // confirmed
       ];
+
+  bool get isConfirmed {
+    return state is EventStateConfirmed;
+  }
 }
 
 class VerboseEvent extends Event {

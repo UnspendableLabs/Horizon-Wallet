@@ -15,6 +15,7 @@ import 'package:horizon/presentation/screens/transactions/rbf/view/rbf_page.dart
 import 'package:horizon/utils/app_icons.dart';
 
 import "./bloc/btc_activity_bloc.dart";
+import "./btc_view.dart" show BtcActivityActions;
 
 class SendTitle extends StatelessWidget {
   final String quantityNormalized;
@@ -111,7 +112,6 @@ class RBF extends StatelessWidget {
 }
 
 enum TransactionStatus {
-  local,
   mempool,
   confirmed,
 }
@@ -148,7 +148,6 @@ class TransactionStatusPill extends StatelessWidget {
   String _getText() {
     return text ??
         switch (status) {
-          TransactionStatus.local => 'Broadcasted',
           TransactionStatus.mempool => 'Mempool',
           TransactionStatus.confirmed => 'Confirmed',
         };
@@ -156,7 +155,6 @@ class TransactionStatusPill extends StatelessWidget {
 
   Color _getBackgroundColor() {
     return switch (status) {
-      TransactionStatus.local => Colors.blue[500]!.withOpacity(0.1),
       TransactionStatus.mempool => Colors.orange[500]!.withOpacity(0.1),
       TransactionStatus.confirmed => Colors.green[500]!.withOpacity(0.1)
     };
@@ -164,7 +162,6 @@ class TransactionStatusPill extends StatelessWidget {
 
   Color _getTextColor() {
     return switch (status) {
-      TransactionStatus.local => Colors.blue[400]!,
       TransactionStatus.mempool => Colors.orange[400]!,
       TransactionStatus.confirmed => Colors.green[400]!,
     };
@@ -184,7 +181,7 @@ class NewTransactionsBanner extends StatelessWidget {
         color: Colors.blue,
         padding: const EdgeInsets.all(8.0),
         child: Center(
-          child: SelectableText(
+          child: Text(
             '$count new transaction${count > 1 ? 's' : ''}',
             style: const TextStyle(color: Colors.white),
           ),
@@ -306,10 +303,16 @@ class ActivityFeedListItem extends StatelessWidget {
 }
 
 class BTCActivityViewInternal extends StatefulWidget {
+  final BtcActivityActions actions;
+  final BtcActivityState state;
+
   final List<String> addresses; // this is always = [sourceAddress]
+
   const BTCActivityViewInternal({
     super.key,
     required this.addresses,
+    required this.actions,
+    required this.state,
   });
 
   @override
@@ -322,97 +325,202 @@ class BTCActivityViewInternalState extends State<BTCActivityViewInternal> {
   @override
   void initState() {
     super.initState();
-    // Start polling after the first frame
-    _bloc = context.read<BtcActivityBloc>();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _bloc?.add(const StartPolling(interval: Duration(seconds: 30)));
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   widget.actions.startPolling();
+    // });
   }
 
   @override
   void dispose() {
-    _bloc?.add(const StopPolling());
+    // widget.actions.stopPolling();
     super.dispose();
   }
 
-  // Widget _buildNewTransactionsBanner(BTCActivityFeed  state) {
-  //
-  //   final newTransactionCount = (state as dynamic).newTransactionCount as int;
-  //   if (newTransactionCount > 0) {
-  //     return NewTransactionsBanner(count: newTransactionCount);
-  //   }
-  //   return const SizedBox.shrink();
-  // }
+  Widget _buildNewTransactionsBanner(BtcFeedStateReplete state) {
+    final newTransactionCount = state.newTransactionCount;
+    if (newTransactionCount > 0) {
+      return NewTransactionsBanner(count: newTransactionCount);
+    }
+    return const SizedBox.shrink();
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<BtcActivityBloc, BtcActivityState>(
       listener: (context, state) {},
       builder: (context, state) {
-        final widgets = state.remoteState.fold(
-          onInitial: () => [
-            const SizedBox(
+        return state.remoteState.fold(
+          onInitial: () => const Center(
+            child: SizedBox(
               height: 200,
               child: Center(child: CircularProgressIndicator()),
-            )
-          ],
-          onLoading: () => [
-            const SizedBox(
+            ),
+          ),
+          onLoading: () => const Center(
+            child: SizedBox(
               height: 200,
               child: Center(child: CircularProgressIndicator()),
-            )
-          ],
-          onFailure: (error) => [
-            SizedBox(
+            ),
+          ),
+          onFailure: (error) => Center(
+            child: SizedBox(
               height: 200,
               child: Center(child: SelectableText('Error: $error')),
-            )
-          ],
-          onSuccess: (replete) => [
-            ...replete.items.map((item) => ActivityFeedListItem(
-                  key: Key(item.hash!),
-                  item: item,
-                  addresses: widget.addresses,
-                  isMobile: MediaQuery.of(context).size.width < 600,
-                )),
-            if (!replete.endReached)
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: SizedBox(
-                  height: 48,
-                  child: HorizonOutlinedButton(
-                      buttonText: 'Load More',
-                      onPressed: () {
-                        _bloc?.add(const LoadMore());
-                      }),
-                ),
-              )
-          ],
-          onRefreshing: (replete) => [
-            ...replete.items.map((item) => ActivityFeedListItem(
-                  key: Key(item.hash!),
-                  item: item,
-                  addresses: widget.addresses,
-                  isMobile: MediaQuery.of(context).size.width < 600,
-                )),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: SizedBox(
-                height: 48,
-                child: HorizonOutlinedButton(
-                    buttonText: 'Loading...', onPressed: () {}),
-              ),
-            )
-          ],
-        );
-
-        return SingleChildScrollView(
-          child: Column(
-            children: widgets,
+            ),
           ),
+          onSuccess: (replete) {
+            final items = replete.items;
+            final hasFooter = !replete.endReached;
+            final hasBanner = replete.newTransactionCount > 0;
+
+            // total rows: banner? + items + footer?
+            final itemCount =
+                items.length + (hasFooter ? 1 : 0) + (hasBanner ? 1 : 0);
+
+            return ListView.builder(
+              shrinkWrap: true,
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: itemCount,
+              itemBuilder: (context, index) {
+                // 0) Optional banner
+                if (hasBanner && index == 0) {
+                  return _buildNewTransactionsBanner(replete);
+                }
+
+                // Shift index if banner is present
+                final baseIndex = hasBanner ? index - 1 : index;
+
+                // 1) Feed items
+                if (baseIndex < items.length) {
+                  final item = items[baseIndex];
+                  return ActivityFeedListItem(
+                    key: Key(item.id),
+                    item: item,
+                    addresses: widget.addresses,
+                    isMobile: MediaQuery.of(context).size.width < 600,
+                  );
+                }
+
+                // 2) Footer (“Load more”)
+                return Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: SizedBox(
+                    height: 48,
+                    child: HorizonOutlinedButton(
+                        buttonText: 'Load More',
+                        onPressed: () => widget.actions.loadMore()),
+                  ),
+                );
+              },
+            );
+          },
+          onRefreshing: (replete) {
+            final items = replete.items;
+
+            return ListView.builder(
+              shrinkWrap: true,
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: items.length + 1, // always show footer when refreshing
+              itemBuilder: (context, index) {
+                if (index < items.length) {
+                  final item = items[index];
+                  return ActivityFeedListItem(
+                    key: Key(item.hash!),
+                    item: item,
+                    addresses: widget.addresses,
+                    isMobile: MediaQuery.of(context).size.width < 600,
+                  );
+                } else {
+                  return Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: SizedBox(
+                      height: 48,
+                      child: HorizonOutlinedButton(
+                        buttonText: 'Loading...',
+                        onPressed: () {},
+                      ),
+                    ),
+                  );
+                }
+              },
+            );
+          },
         );
       },
     );
   }
+
+  // @override
+  // Widget build(BuildContext context) {
+  //   return BlocConsumer<BtcActivityBloc, BtcActivityState>(
+  //     listener: (context, state) {},
+  //     builder: (context, state) {
+  //       final widgets = state.remoteState.fold(
+  //         onInitial: () => [
+  //           const SizedBox(
+  //             height: 200,
+  //             child: Center(child: CircularProgressIndicator()),
+  //           )
+  //         ],
+  //         onLoading: () => [
+  //           const SizedBox(
+  //             height: 200,
+  //             child: Center(child: CircularProgressIndicator()),
+  //           )
+  //         ],
+  //         onFailure: (error) => [
+  //           SizedBox(
+  //             height: 200,
+  //             child: Center(child: SelectableText('Error: $error')),
+  //           )
+  //         ],
+  //         onSuccess: (replete) => [
+  //           ...replete.items.map((item) => ActivityFeedListItem(
+  //                 key: Key(item.hash!),
+  //                 item: item,
+  //                 addresses: widget.addresses,
+  //                 isMobile: MediaQuery.of(context).size.width < 600,
+  //               )),
+  //           if (!replete.endReached)
+  //             Padding(
+  //               padding: const EdgeInsets.all(16),
+  //               child: SizedBox(
+  //                 height: 48,
+  //                 child: HorizonOutlinedButton(
+  //                     buttonText: 'Load More',
+  //                     onPressed: () {
+  //                       _bloc?.add(const LoadMore());
+  //                     }),
+  //               ),
+  //             )
+  //         ],
+  //         onRefreshing: (replete) => [
+  //           ...replete.items.map((item) => ActivityFeedListItem(
+  //                 key: Key(item.hash!),
+  //                 item: item,
+  //                 addresses: widget.addresses,
+  //                 isMobile: MediaQuery.of(context).size.width < 600,
+  //               )),
+  //           Padding(
+  //             padding: const EdgeInsets.all(16),
+  //             child: SizedBox(
+  //               height: 48,
+  //               child: HorizonOutlinedButton(
+  //                   buttonText: 'Loading...', onPressed: () {}),
+  //             ),
+  //           )
+  //         ],
+  //       );
+  //
+  //
+  //
+  //       return SingleChildScrollView(
+  //         child: Column(
+  //           children: widgets,
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
 }

@@ -20,6 +20,7 @@ import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 
 import './btc/btc_view.dart';
+import './xcp/xcp_view.dart';
 
 /// -----------------------------
 /// TX TYPE FILTER (FilterBar skin)
@@ -150,17 +151,18 @@ class _ActivityViewState extends State<ActivityView> {
           SliverToBoxAdapter(
             child: BTCActivityProvider(
               httpConfig: session.httpConfig,
-              address: _selectedAddress!,
-              builder: (actions) => BTCActivityView(address: _selectedAddress!),
+              address: _selectedAddress,
+              builder: (actions, state) => BTCActivityView(
+                  actions: actions, state: state, address: _selectedAddress),
             ),
           )
         else
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                'XCP activity for ${_selectedAddress!.address}',
-              ),
+            child: XCPActivityProvider(
+              httpConfig: session.httpConfig,
+              address: _selectedAddress,
+              builder: (actions, state) => XCPActivityView(
+                  state: state, actions: actions, address: _selectedAddress),
             ),
           ),
 
