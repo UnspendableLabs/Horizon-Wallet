@@ -18,6 +18,101 @@ import 'package:horizon/utils/app_icons.dart';
 import "./bloc/xcp_activity_bloc.dart";
 import "./xcp_view.dart" show XcpActivityActions;
 
+class PullToRevealRefreshList extends StatelessWidget {
+  const PullToRevealRefreshList({
+    super.key,
+    required this.items,
+    required this.itemBuilder,
+    required this.onRefresh,
+    this.hasBanner = false,
+    this.bannerBuilder,
+  });
+
+  final List<dynamic> items;
+  final IndexedWidgetBuilder itemBuilder;
+  final Future<void> Function() onRefresh;
+
+  final bool hasBanner;
+  final Widget Function()? bannerBuilder;
+
+  static const double _headerHeight = 72; // how tall the reveal area gets
+  static const double _triggerOffset =
+      64; // how far to pull before auto-refresh
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomScrollView(
+      physics:
+          const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+      slivers: [
+        // Hidden at rest; shows only while pulling down.
+        SliverAppBar(
+          automaticallyImplyLeading: false,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          toolbarHeight: 0, // no visible app bar chrome
+          collapsedHeight: 0, // keep it fully hidden when not stretched
+          expandedHeight: _headerHeight,
+          stretch: true,
+          stretchTriggerOffset: _triggerOffset,
+          onStretchTrigger: () async {
+            // Auto-trigger refresh when the pull exceeds _triggerOffset.
+            await onRefresh();
+          },
+          flexibleSpace: LayoutBuilder(
+            builder: (context, constraints) {
+              // Animate the button’s visibility as the header stretches
+              final t = (constraints.maxHeight / _headerHeight).clamp(0.0, 1.0);
+              return Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Opacity(
+                    opacity: Curves.easeOut.transform(t),
+                    child: SizedBox(
+                      height: 44,
+                      child: ElevatedButton.icon(
+                        onPressed: onRefresh, // manual tap to refresh
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Refresh'),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+
+        if (hasBanner && bannerBuilder != null)
+          SliverToBoxAdapter(child: bannerBuilder!()),
+
+        SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              if (index < items.length) {
+                return itemBuilder(context, index);
+              }
+              // Footer (“Load more”)
+              return Padding(
+                padding: const EdgeInsets.all(16),
+                child: SizedBox(
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    child: const Text('Load More'),
+                  ),
+                ),
+              );
+            },
+            childCount: items.length + 1,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class SendTitle extends StatelessWidget {
   final String quantityNormalized;
   final String asset;
@@ -850,28 +945,14 @@ class XCPActivityViewInternal extends StatefulWidget {
 }
 
 class XCPActivityViewInternalState extends State<XCPActivityViewInternal> {
-  XcpActivityBloc? _bloc;
-
   @override
   void initState() {
     super.initState();
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   widget.actions.startPolling();
-    // });
   }
 
   @override
   void dispose() {
-    // widget.actions.stopPolling();
     super.dispose();
-  }
-
-  Widget _buildNewTransactionsBanner(XcpFeedStateReplete state) {
-    final newTransactionCount = state.newEventCount;
-    if (newTransactionCount > 0) {
-      return NewTransactionsBanner(count: newTransactionCount);
-    }
-    return const SizedBox.shrink();
   }
 
   @override
@@ -901,87 +982,22 @@ class XCPActivityViewInternalState extends State<XCPActivityViewInternal> {
           onSuccess: (replete) {
             final items = replete.items;
             final hasFooter = replete.cursor != null; // more to load?
-            final hasBanner = replete.newEventCount > 0;
 
             // total rows: banner? + items + footer?
-            final itemCount =
-                items.length + (hasFooter ? 1 : 0) + (hasBanner ? 1 : 0);
-
-            return RefreshIndicator(
-              displacement: 120,
-              triggerMode: RefreshIndicatorTriggerMode.anywhere,
-              onRefresh: () async {
-                print("calling load");
-                // Best: have load() return a Future you can await.
-                // await widget.actions.load();
-                // If it’s sync, at least yield to the loop:
-                await Future.microtask(() => widget.actions.load());
-              },
-              notificationPredicate: (notification) {
-                print("notificatdion predicate");
-                print("notification dpeth == ${notification.depth}");
-                print(DateTime.now());
-                // Let inner lists also trigger refresh; tweak depth if needed.
-                return notification.depth == 0; // or simply: true
-              },
-              child: ListView.builder(
-                primary: true,
-                shrinkWrap: true,
-                itemCount: itemCount,
-                physics: const AlwaysScrollableScrollPhysics(),
-                itemBuilder: (context, index) {
-                  // 0) Optional banner
-                  if (hasBanner && index == 0) {
-                    return _buildNewTransactionsBanner(replete);
-                  }
-
-                  // Shift index if banner is present
-                  final baseIndex = hasBanner ? index - 1 : index;
-
-                  // 1) Feed items
-                  if (baseIndex < items.length) {
-                    final item = items[baseIndex];
-                    return ActivityFeedListItem(
-                      key: Key(item.id),
-                      item: item,
-                      addresses: widget.addresses,
-                      isMobile: MediaQuery.of(context).size.width < 600,
-                    );
-                  }
-
-                  // 2) Footer (“Load more”)
-                  return Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: SizedBox(
-                      height: 48,
-                      child: HorizonOutlinedButton(
-                        buttonText: 'Load More',
-                        onPressed: () => _bloc?.add(const LoadMore()),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            );
-          },
-          onRefreshing: (replete) {
-            final items = replete.items;
-            final hasBanner = replete.newEventCount > 0;
-
-            // while refreshing, always show a footer row that says “Loading…”
-            final itemCount = items.length + 1 + (hasBanner ? 1 : 0);
+            final itemCount = items.length + (hasFooter ? 1 : 0);
 
             return ListView.builder(
-              itemCount: itemCount,
+              primary: true,
               shrinkWrap: true,
+              itemCount: itemCount,
               physics: const AlwaysScrollableScrollPhysics(),
               itemBuilder: (context, index) {
-                if (hasBanner && index == 0) {
-                  return _buildNewTransactionsBanner(replete);
-                }
+                // 0) Optional banner
 
-                final baseIndex = hasBanner ? index - 1 : index;
+                // Shift index if banner is present
+                final baseIndex = index;
 
+                // 1) Feed items
                 if (baseIndex < items.length) {
                   final item = items[baseIndex];
                   return ActivityFeedListItem(
@@ -992,18 +1008,58 @@ class XCPActivityViewInternalState extends State<XCPActivityViewInternal> {
                   );
                 }
 
-                // Loading footer
+                // 2) Footer (“Load more”)
                 return Padding(
                   padding: const EdgeInsets.all(16),
                   child: SizedBox(
                     height: 48,
                     child: HorizonOutlinedButton(
-                      buttonText: 'Loading...',
-                      onPressed: () {},
-                    ),
+                        buttonText: 'Load More',
+                        onPressed: () => widget.actions.loadMore()),
                   ),
                 );
               },
+            );
+          },
+          onRefreshing: (replete) {
+            final items = replete.items;
+
+            // while refreshing, always show a footer row that says “Loading…”
+            final itemCount = items.length + 1;
+
+            return Stack(
+              children: [
+                ListView.builder(
+                  itemCount: itemCount,
+                  shrinkWrap: true,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    final baseIndex = index;
+
+                    if (baseIndex < items.length) {
+                      final item = items[baseIndex];
+                      return ActivityFeedListItem(
+                        key: Key(item.id),
+                        item: item,
+                        addresses: widget.addresses,
+                        isMobile: MediaQuery.of(context).size.width < 600,
+                      );
+                    }
+
+                    // Loading footer
+                    return Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: SizedBox(
+                        height: 48,
+                        child: HorizonOutlinedButton(
+                          buttonText: 'Loading...',
+                          onPressed: () {},
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
             );
           },
         );
@@ -1011,101 +1067,3 @@ class XCPActivityViewInternalState extends State<XCPActivityViewInternal> {
     );
   }
 }
-
-// class XCPActivityViewInternalState extends State<XCPActivityViewInternal> {
-//   XcpActivityBloc? _bloc;
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//
-//     WidgetsBinding.instance.addPostFrameCallback((_) {
-//       widget.actions.startPolling();
-//     });
-//   }
-//
-//   @override
-//   void dispose() {
-//     widget.actions.stopPolling();
-//     super.dispose();
-//   }
-//
-//   Widget _buildNewTransactionsBanner(XCPFeedStateReplete state) {
-//     final newTransactionCount = state.newTransactionCount;
-//     if (newTransactionCount > 0) {
-//       return NewTransactionsBanner(count: newTransactionCount);
-//     }
-//     return const SizedBox.shrink();
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return BlocConsumer<XcpActivityBloc, XcpActivityState>(
-//       listener: (context, state) {},
-//       builder: (context, state) {
-//         final widgets = state.remoteState.fold(
-//           onInitial: () => [
-//             const SizedBox(
-//               height: 200,
-//               child: Center(child: CircularProgressIndicator()),
-//             )
-//           ],
-//           onLoading: () => [
-//             const SizedBox(
-//               height: 200,
-//               child: Center(child: CircularProgressIndicator()),
-//             )
-//           ],
-//           onFailure: (error) => [
-//             SizedBox(
-//               height: 200,
-//               child: Center(child: SelectableText('Error: $error')),
-//             )
-//           ],
-//           onSuccess: (replete) => [
-//             ...replete.items.map((item) => ActivityFeedListItem(
-//                   key: Key(item.id),
-//                   item: item,
-//                   addresses: widget.addresses,
-//                   isMobile: MediaQuery.of(context).size.width < 600,
-//                 )),
-//             if (replete.cursor != null)
-//               Padding(
-//                 padding: const EdgeInsets.all(16),
-//                 child: SizedBox(
-//                   height: 48,
-//                   child: HorizonOutlinedButton(
-//                       buttonText: 'Load More',
-//                       onPressed: () {
-//                         _bloc?.add(const LoadMore());
-//                       }),
-//                 ),
-//               )
-//           ],
-//           onRefreshing: (replete) => [
-//             ...replete.items.map((item) => ActivityFeedListItem(
-//                   key: Key(item.id),
-//                   item: item,
-//                   addresses: widget.addresses,
-//                   isMobile: MediaQuery.of(context).size.width < 600,
-//                 )),
-//             Padding(
-//               padding: const EdgeInsets.all(16),
-//               child: SizedBox(
-//                 height: 48,
-//                 child: HorizonOutlinedButton(
-//                     buttonText: 'Loading...', onPressed: () {}),
-//               ),
-//             )
-//           ],
-//         );
-//
-//         return SingleChildScrollView(
-//           child: Column(
-//             children: widgets,
-//           ),
-//         );
-//       },
-//     );
-//   }
-// }

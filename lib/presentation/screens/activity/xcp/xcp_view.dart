@@ -4,19 +4,14 @@ import 'package:horizon/domain/entities/http_config.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import "./bloc/xcp_activity_bloc.dart";
 import "./_xcp_view.dart";
+import 'package:horizon/domain/entities/remote_data.dart';
 
 class XcpActivityActions {
-  final void Function() startPolling;
-  final void Function() stopPolling;
   final void Function() load;
-  final void Function() loadQuiet;
   final void Function() loadMore;
 
   const XcpActivityActions({
-    required this.startPolling,
-    required this.stopPolling,
     required this.load,
-    required this.loadQuiet,
     required this.loadMore,
   });
 }
@@ -24,6 +19,7 @@ class XcpActivityActions {
 class XCPActivityProvider extends StatelessWidget {
   final HttpConfig httpConfig;
   final AddressV2 address;
+  final void Function(DateTime newDateTime) onLastUpdatedAtChange;
   final Widget Function(XcpActivityActions actions, XcpActivityState state)
       builder;
 
@@ -31,7 +27,8 @@ class XCPActivityProvider extends StatelessWidget {
       {super.key,
       required this.httpConfig,
       required this.address,
-      required this.builder});
+      required this.builder,
+      required this.onLastUpdatedAtChange});
 
   @override
   Widget build(BuildContext context) {
@@ -39,18 +36,23 @@ class XCPActivityProvider extends StatelessWidget {
       create: (context) =>
           XcpActivityBloc(httpConfig: httpConfig, address: address.address)
             ..add(const Load()),
-      child: BlocBuilder<XcpActivityBloc, XcpActivityState>(
-          builder: (context, state) {
+      child: BlocConsumer<XcpActivityBloc, XcpActivityState>(
+          listenWhen: (previous, current) {
+        final prevousReplete = previous.remoteState.getOrNull();
+        final currentReplete = current.remoteState.getOrNull();
+
+        return prevousReplete?.lastUpdatedAt != currentReplete?.lastUpdatedAt;
+      }, listener: (context, state) {
+        // if _lastdUpdatedAt is differnet
+        final newDateTime = state.remoteState.getOrNull()?.lastUpdatedAt;
+
+        if (newDateTime != null) {
+          onLastUpdatedAtChange(newDateTime);
+        }
+      }, builder: (context, state) {
         return builder(
             XcpActivityActions(
-              startPolling: () => context
-                  .read<XcpActivityBloc>()
-                  .add(const StartPolling(interval: Duration(seconds: 15))),
-              stopPolling: () =>
-                  context.read<XcpActivityBloc>().add(const StopPolling()),
               load: () => context.read<XcpActivityBloc>().add(const Load()),
-              loadQuiet: () =>
-                  context.read<XcpActivityBloc>().add(const LoadQuiet()),
               loadMore: () =>
                   context.read<XcpActivityBloc>().add(const LoadMore()),
             ),

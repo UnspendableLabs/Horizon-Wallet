@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons/lucide_icons.dart';
+import 'package:timeago_flutter/timeago_flutter.dart';
+import 'package:horizon/utils/app_icons.dart';
+import 'package:go_router/go_router.dart';
 import 'package:horizon/presentation/screens/dashboard/view/activity_feed.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 
@@ -77,6 +81,136 @@ class TransactionTypeFilter extends StatelessWidget {
 /// -----------------------------
 /// ACTIVITY VIEW (single scroll view)
 /// -----------------------------
+// class ActivityView extends StatefulWidget {
+//   final AddressV2 initialAddress;
+//
+//   const ActivityView({super.key, required this.initialAddress});
+//
+//   @override
+//   State<ActivityView> createState() => _ActivityViewState();
+// }
+//
+// class _ActivityViewState extends State<ActivityView> {
+//   late AddressV2 _selectedAddress;
+//   TransactionType _txFilter = TransactionType.btc;
+//
+//   @override
+//   void initState() {
+//     _selectedAddress = widget.initialAddress;
+//     super.initState();
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     final session = context.watch<SessionStateCubit>().state.successOrThrow();
+//     final vm = session.addressIndexSet.toViewModel();
+//     return Scaffold(
+//       appBar: AppBar(
+//         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+//         elevation: 0,
+//         centerTitle: false,
+//         leadingWidth: 40,
+//         toolbarHeight: 48,
+//         title: Padding(
+//           padding: const EdgeInsets.fromLTRB(6, 12, 0, 0),
+//           child: Text(
+//             "Activity",
+//             style: TextStyle(
+//               fontSize: 18,
+//               fontWeight: FontWeight.w700,
+//               color: Theme.of(context).textTheme.bodyMedium?.color,
+//             ),
+//           ),
+//         ),
+//         actions: [
+//           Padding(
+//             padding: const EdgeInsets.only(
+//               top: 12,
+//               right: 18,
+//             ),
+//             child: AppIcons.iconButton(
+//                 context: context,
+//                 width: 32,
+//                 height: 32,
+//                 icon: Icon(LucideIcons.rotateCw, size: 24),
+//                 onPressed: () {
+//                   //  chat: i need tdo be able to call provider actions here
+//                 }),
+//           )
+//         ],
+//       ),
+//       body: CustomScrollView(
+//         slivers: [
+//           // Address picker
+//           // Tx type filter
+//           SliverToBoxAdapter(
+//             child: Padding(
+//               padding: const EdgeInsets.only(top: 8.0),
+//               child: TransactionTypeFilter(
+//                 itemGap: 18,
+//                 current: _txFilter,
+//                 onChanged: (t) {
+//                   if (t != null) setState(() => _txFilter = t);
+//                 },
+//               ),
+//             ),
+//           ),
+//           const SliverToBoxAdapter(child: SizedBox(height: 12)),
+//           switch (vm) {
+//             AddressIndexSetSingle() =>
+//               const SliverToBoxAdapter(child: SizedBox.shrink()),
+//             AddressIndexSetMultiple(addresses: final addresses) =>
+//               SliverToBoxAdapter(
+//                 child: Padding(
+//                   padding:
+//                       const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+//                   child: SizedBox(
+//                     height: 42,
+//                     child: HorizonDrawerSelect<AddressV2>(
+//                       options: addresses,
+//                       value: _selectedAddress,
+//                       labelFor: (addr) => addr.address,
+//                       onChanged: (addr) =>
+//                           setState(() => _selectedAddress = addr),
+//                     ),
+//                   ),
+//                 ),
+//               ),
+//           },
+//
+//           if (_selectedAddress == null)
+//             const SliverToBoxAdapter(
+//               child: Padding(
+//                 padding: EdgeInsets.all(16.0),
+//                 child: Text('No address available.'),
+//               ),
+//             )
+//           else if (_txFilter == TransactionType.btc)
+//             SliverToBoxAdapter(
+//               child: BTCActivityProvider(
+//                 httpConfig: session.httpConfig,
+//                 address: _selectedAddress,
+//                 builder: (actions, state) => BTCActivityView(
+//                     actions: actions, state: state, address: _selectedAddress),
+//               ),
+//             )
+//           else
+//             SliverToBoxAdapter(
+//               child: XCPActivityProvider(
+//                 httpConfig: session.httpConfig,
+//                 address: _selectedAddress,
+//                 builder: (actions, state) => XCPActivityView(
+//                     state: state, actions: actions, address: _selectedAddress),
+//               ),
+//             ),
+//
+//           const SliverToBoxAdapter(child: SizedBox(height: 24)),
+//         ],
+//       ),
+//     );
+//   }
+// }
+
 class ActivityView extends StatefulWidget {
   final AddressV2 initialAddress;
 
@@ -89,6 +223,11 @@ class ActivityView extends StatefulWidget {
 class _ActivityViewState extends State<ActivityView> {
   late AddressV2 _selectedAddress;
   TransactionType _txFilter = TransactionType.btc;
+  DateTime? _lastdUpdatedAt;
+
+  // ⬇️ Hold onto the actions so AppBar can trigger them
+  BtcActivityActions? _btcActions;
+  XcpActivityActions? _xcpActions;
 
   @override
   void initState() {
@@ -96,37 +235,72 @@ class _ActivityViewState extends State<ActivityView> {
     super.initState();
   }
 
+  void _triggerRefresh() {
+    switch (_txFilter) {
+      case TransactionType.btc:
+        // Prefer a lightweight refresh if you have it; fall back to load()
+        _btcActions?.load();
+        break;
+      case TransactionType.xcp:
+        _xcpActions?.load();
+        break;
+    }
+  }
+
+  void _handleLastUpdatedAtChange(DateTime newTime) {
+    setState(() {
+      _lastdUpdatedAt = newTime;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
     final vm = session.addressIndexSet.toViewModel();
-    return CustomScrollView(
-      slivers: [
-        // Address picker
-        switch (vm) {
-          AddressIndexSetSingle() =>
-            const SliverToBoxAdapter(child: SizedBox.shrink()),
-          AddressIndexSetMultiple(addresses: final addresses) =>
-            SliverToBoxAdapter(
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: HorizonDrawerSelect<AddressV2>(
-                  options: addresses,
-                  value: _selectedAddress!,
-                  labelFor: (addr) => addr.address,
-                  onChanged: (addr) => setState(() => _selectedAddress = addr),
+
+    return Scaffold(
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            elevation: 0,
+            centerTitle: false,
+            leadingWidth: 40,
+            toolbarHeight: 48,
+            title: Padding(
+              padding: const EdgeInsets.fromLTRB(6, 12, 0, 0),
+              child: Text(
+                "Activity",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
                 ),
               ),
             ),
-        },
-
-        // Tx type filter
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: SizedBox(
-              width: 180,
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(top: 12, right: 18),
+                child: Row(
+                  children: [
+                    AppIcons.iconButton(
+                      context: context,
+                      width: 32,
+                      height: 32,
+                      icon: Icon(LucideIcons.rotateCw, size: 24),
+                      onPressed:
+                          _triggerRefresh, // ⬅️ calls captured provider actions
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          // Tx type filter
+          const SliverToBoxAdapter(child: SizedBox(height: 8)),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8.0),
               child: TransactionTypeFilter(
                 itemGap: 18,
                 current: _txFilter,
@@ -136,38 +310,92 @@ class _ActivityViewState extends State<ActivityView> {
               ),
             ),
           ),
-        ),
+          const SliverToBoxAdapter(child: SizedBox(height: 12)),
 
-        const SliverToBoxAdapter(child: SizedBox(height: 12)),
+          // Address picker (when multiple)
+          switch (vm) {
+            AddressIndexSetSingle() =>
+              const SliverToBoxAdapter(child: SizedBox.shrink()),
+            AddressIndexSetMultiple(addresses: final addresses) =>
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: SizedBox(
+                    height: 42,
+                    child: HorizonDrawerSelect<AddressV2>(
+                      options: addresses,
+                      value: _selectedAddress,
+                      labelFor: (addr) => addr.address,
+                      onChanged: (addr) =>
+                          setState(() => _selectedAddress = addr),
+                    ),
+                  ),
+                ),
+              ),
+          },
 
-        if (_selectedAddress == null)
-          const SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Text('No address available.'),
+          if (_lastdUpdatedAt != null)
+            SliverToBoxAdapter(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(left: 12),
+                    child: Timeago(
+                        date: _lastdUpdatedAt!,
+                        builder: (_, value) => Text("Last updated $value",
+                            style: TextStyle(
+                              fontSize: 10, // smaller
+                              fontStyle: FontStyle.italic, // italicized
+                              color: Colors.grey, // de-emphasized
+                            )),
+                        refreshRate: const Duration(minutes: 1)),
+                  ),
+                ],
+              ),
             ),
-          )
-        else if (_txFilter == TransactionType.btc)
-          SliverToBoxAdapter(
-            child: BTCActivityProvider(
-              httpConfig: session.httpConfig,
-              address: _selectedAddress,
-              builder: (actions, state) => BTCActivityView(
-                  actions: actions, state: state, address: _selectedAddress),
+          if (_txFilter == TransactionType.btc)
+            // ---- BTC ----
+            SliverToBoxAdapter(
+              child: BTCActivityProvider(
+                onLastUpdatedAtChange: _handleLastUpdatedAtChange,
+                httpConfig: session.httpConfig,
+                address: _selectedAddress,
+                builder: (actions, state) {
+                  // capture actions for AppBar button
+                  _btcActions = actions;
+                  return BTCActivityView(
+                    actions: actions,
+                    state: state,
+                    address: _selectedAddress,
+                  );
+                },
+              ),
+            )
+          else
+            // ---- XCP ----
+            SliverToBoxAdapter(
+              child: XCPActivityProvider(
+                onLastUpdatedAtChange: _handleLastUpdatedAtChange,
+                httpConfig: session.httpConfig,
+                address: _selectedAddress,
+                builder: (actions, state) {
+                  // capture actions for AppBar button
+                  _xcpActions = actions;
+                  return XCPActivityView(
+                    actions: actions,
+                    state: state,
+                    address: _selectedAddress,
+                  );
+                },
+              ),
             ),
-          )
-        else
-          SliverToBoxAdapter(
-            child: XCPActivityProvider(
-              httpConfig: session.httpConfig,
-              address: _selectedAddress,
-              builder: (actions, state) => XCPActivityView(
-                  state: state, actions: actions, address: _selectedAddress),
-            ),
-          ),
 
-        const SliverToBoxAdapter(child: SizedBox(height: 24)),
-      ],
+          const SliverToBoxAdapter(child: SizedBox(height: 24)),
+        ],
+      ),
     );
   }
 }

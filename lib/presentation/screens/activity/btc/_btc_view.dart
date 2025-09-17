@@ -320,29 +320,14 @@ class BTCActivityViewInternal extends StatefulWidget {
 }
 
 class BTCActivityViewInternalState extends State<BTCActivityViewInternal> {
-  BtcActivityBloc? _bloc;
-
   @override
   void initState() {
     super.initState();
-
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   widget.actions.startPolling();
-    // });
   }
 
   @override
   void dispose() {
-    // widget.actions.stopPolling();
     super.dispose();
-  }
-
-  Widget _buildNewTransactionsBanner(BtcFeedStateReplete state) {
-    final newTransactionCount = state.newTransactionCount;
-    if (newTransactionCount > 0) {
-      return NewTransactionsBanner(count: newTransactionCount);
-    }
-    return const SizedBox.shrink();
   }
 
   @override
@@ -372,26 +357,17 @@ class BTCActivityViewInternalState extends State<BTCActivityViewInternal> {
           onSuccess: (replete) {
             final items = replete.items;
             final hasFooter = !replete.endReached;
-            final hasBanner = replete.newTransactionCount > 0;
 
             // total rows: banner? + items + footer?
-            final itemCount =
-                items.length + (hasFooter ? 1 : 0) + (hasBanner ? 1 : 0);
+            final itemCount = items.length + (hasFooter ? 1 : 0);
 
             return ListView.builder(
               shrinkWrap: true,
               physics: const AlwaysScrollableScrollPhysics(),
               itemCount: itemCount,
               itemBuilder: (context, index) {
-                // 0) Optional banner
-                if (hasBanner && index == 0) {
-                  return _buildNewTransactionsBanner(replete);
-                }
+                final baseIndex = index;
 
-                // Shift index if banner is present
-                final baseIndex = hasBanner ? index - 1 : index;
-
-                // 1) Feed items
                 if (baseIndex < items.length) {
                   final item = items[baseIndex];
                   return ActivityFeedListItem(
@@ -450,77 +426,4 @@ class BTCActivityViewInternalState extends State<BTCActivityViewInternal> {
       },
     );
   }
-
-  // @override
-  // Widget build(BuildContext context) {
-  //   return BlocConsumer<BtcActivityBloc, BtcActivityState>(
-  //     listener: (context, state) {},
-  //     builder: (context, state) {
-  //       final widgets = state.remoteState.fold(
-  //         onInitial: () => [
-  //           const SizedBox(
-  //             height: 200,
-  //             child: Center(child: CircularProgressIndicator()),
-  //           )
-  //         ],
-  //         onLoading: () => [
-  //           const SizedBox(
-  //             height: 200,
-  //             child: Center(child: CircularProgressIndicator()),
-  //           )
-  //         ],
-  //         onFailure: (error) => [
-  //           SizedBox(
-  //             height: 200,
-  //             child: Center(child: SelectableText('Error: $error')),
-  //           )
-  //         ],
-  //         onSuccess: (replete) => [
-  //           ...replete.items.map((item) => ActivityFeedListItem(
-  //                 key: Key(item.hash!),
-  //                 item: item,
-  //                 addresses: widget.addresses,
-  //                 isMobile: MediaQuery.of(context).size.width < 600,
-  //               )),
-  //           if (!replete.endReached)
-  //             Padding(
-  //               padding: const EdgeInsets.all(16),
-  //               child: SizedBox(
-  //                 height: 48,
-  //                 child: HorizonOutlinedButton(
-  //                     buttonText: 'Load More',
-  //                     onPressed: () {
-  //                       _bloc?.add(const LoadMore());
-  //                     }),
-  //               ),
-  //             )
-  //         ],
-  //         onRefreshing: (replete) => [
-  //           ...replete.items.map((item) => ActivityFeedListItem(
-  //                 key: Key(item.hash!),
-  //                 item: item,
-  //                 addresses: widget.addresses,
-  //                 isMobile: MediaQuery.of(context).size.width < 600,
-  //               )),
-  //           Padding(
-  //             padding: const EdgeInsets.all(16),
-  //             child: SizedBox(
-  //               height: 48,
-  //               child: HorizonOutlinedButton(
-  //                   buttonText: 'Loading...', onPressed: () {}),
-  //             ),
-  //           )
-  //         ],
-  //       );
-  //
-  //
-  //
-  //       return SingleChildScrollView(
-  //         child: Column(
-  //           children: widgets,
-  //         ),
-  //       );
-  //     },
-  //   );
-  // }
 }

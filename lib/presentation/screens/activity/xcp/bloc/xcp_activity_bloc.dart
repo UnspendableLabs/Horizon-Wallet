@@ -47,15 +47,6 @@ abstract class XCPActivityEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class StartPolling extends XCPActivityEvent {
-  final Duration interval;
-  const StartPolling({required this.interval});
-}
-
-class StopPolling extends XCPActivityEvent {
-  const StopPolling();
-}
-
 class Load extends XCPActivityEvent {
   const Load();
 }
@@ -64,30 +55,24 @@ class LoadMore extends XCPActivityEvent {
   const LoadMore();
 }
 
-class LoadQuiet extends XCPActivityEvent {
-  const LoadQuiet();
-}
-
 class XcpFeedStateReplete extends Equatable {
   final Cursor? cursor;
-  final String? newestSeenHash;
   final List<Event> events;
   final int blockHeight;
-  final int newEventCount;
   final bool endReached;
+  final DateTime lastUpdatedAt;
 
   const XcpFeedStateReplete({
     required this.cursor,
     required this.events,
     required this.blockHeight,
-    this.newestSeenHash,
-    this.newEventCount = 0,
     this.endReached = false,
+    required this.lastUpdatedAt,
   });
 
   @override
   List<Object?> get props =>
-      [cursor, newestSeenHash, events, blockHeight, newEventCount, endReached];
+      [cursor, events, blockHeight, endReached, lastUpdatedAt];
 
   List<ActivityFeedItem> get items => events
       .map((event) => ActivityFeedItem(
@@ -101,30 +86,19 @@ class XcpFeedStateReplete extends Equatable {
       .toList();
 
   XcpFeedStateReplete copyWith({
-    final int? newTransactionCount,
-    final bool? endReached,
-  }) =>
-      XcpFeedStateReplete(
-        cursor: cursor,
-        events: events,
-        blockHeight: blockHeight,
-        newEventCount: newTransactionCount ?? this.newEventCount,
-        endReached: endReached ?? this.endReached,
-      );
-}
-
-extension XcpFeedStateRepleteX on XcpFeedStateReplete {
-  XcpFeedStateReplete copyWith({
     Cursor? cursor,
     List<Event>? events,
+    bool? endReached,
     int? blockHeight,
-  }) {
-    return XcpFeedStateReplete(
-      cursor: cursor ?? this.cursor,
-      events: events ?? this.events,
-      blockHeight: blockHeight ?? this.blockHeight,
-    );
-  }
+    DateTime? lastUpdatedAt,
+  }) =>
+      XcpFeedStateReplete(
+        cursor: cursor ?? this.cursor,
+        events: events ?? this.events,
+        blockHeight: blockHeight ?? this.blockHeight,
+        endReached: endReached ?? this.endReached,
+        lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
+      );
 }
 
 class XcpActivityState extends Equatable {
@@ -163,11 +137,8 @@ class XcpActivityBloc extends Bloc<XCPActivityEvent, XcpActivityState> {
   })  : _eventsRepository = eventsRepository ?? GetIt.I<EventsRepository>(),
         _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>(),
         super(const XcpActivityState(remoteState: Initial())) {
-    on<StartPolling>(_onStartPolling);
-    on<StopPolling>(_onStopPolling);
     on<Load>(_onLoad);
     on<LoadMore>(_onLoadMore);
-    on<LoadQuiet>(_onLoadQuiet);
   }
 
   void _onLoadMore(LoadMore event, Emitter<XcpActivityState> emit) async {
@@ -182,6 +153,7 @@ class XcpActivityBloc extends Bloc<XCPActivityEvent, XcpActivityState> {
       final confirmedTask = _eventsRepository.getByAddressesVerboseT(
           httpConfig: httpConfig,
           cursor: replete.cursor,
+          limit: 40,
           addresses: [address],
           whitelist: DEFAULT_WHITELIST,
           onError: (e, s) => "Error fetching XCP events at $address");
@@ -196,6 +168,7 @@ class XcpActivityBloc extends Bloc<XCPActivityEvent, XcpActivityState> {
       return XcpFeedStateReplete(
           cursor: confirmedTxs.$2,
           blockHeight: blockHeight,
+          lastUpdatedAt: replete.lastUpdatedAt,
           events: [
             ...replete.events,
             ...confirmedTxs.$1
@@ -214,19 +187,6 @@ class XcpActivityBloc extends Bloc<XCPActivityEvent, XcpActivityState> {
     });
 
     emit(nextState);
-  }
-
-  void _onStartPolling(StartPolling event, Emitter<XcpActivityState> emit) {
-    timer?.cancel();
-    timer = Timer.periodic(event.interval, (_) {
-      add(const LoadQuiet());
-    });
-    add(const Load());
-  }
-
-  void _onStopPolling(StopPolling event, Emitter<XcpActivityState> emit) {
-    timer?.cancel();
-    timer = null;
   }
 
   void _onLoad(Load event, Emitter<XcpActivityState> emit) async {
@@ -252,6 +212,7 @@ class XcpActivityBloc extends Bloc<XCPActivityEvent, XcpActivityState> {
           httpConfig: httpConfig,
           addresses: [address],
           whitelist: DEFAULT_WHITELIST,
+          limit: 40,
           onError: (e, s) => "Error fetching XCP events at $address");
 
       final blockHeightTask = _bitcoinRepository.getBlockHeightT(
@@ -266,9 +227,8 @@ class XcpActivityBloc extends Bloc<XCPActivityEvent, XcpActivityState> {
           [mempoolTask, confirmedTask, blockHeightTask]));
 
       return XcpFeedStateReplete(
-          newestSeenHash:
-              confirmedTxs.$1.isNotEmpty ? confirmedTxs.$1.first.txHash : null,
           cursor: confirmedTxs.$2,
+          lastUpdatedAt: DateTime.now(),
           blockHeight: blockHeight,
           events: [...mempoolTxs, ...confirmedTxs.$1]);
     });
@@ -287,88 +247,5 @@ class XcpActivityBloc extends Bloc<XCPActivityEvent, XcpActivityState> {
     );
 
     emit(nextState_);
-  }
-
-  void _onLoadQuiet(LoadQuiet event, Emitter<XcpActivityState> emit) async {
-    if (state.remoteState.isLoading) return;
-    if (state.remoteState.isRefreshing) return;
-    if (!state.remoteState.isSuccess) {
-      add(const Load());
-      return;
-    }
-
-    final replete = state.remoteState.getOrNull()!;
-
-    late TaskEither<String, int> newEventCountTask;
-
-    if (replete.newestSeenHash == null) {
-      newEventCountTask = _eventsRepository
-          .getByAddressesVerboseT(
-              httpConfig: httpConfig,
-              addresses: [address],
-              whitelist: DEFAULT_WHITELIST,
-              onError: (e, s) => "Error fetching XCP events at $address")
-          .map((result) => result.$3 ?? 0);
-    } else {
-      // don't bother to page through confirmed here
-      newEventCountTask = TaskEither.sequenceList([
-        _eventsRepository.getAllMempoolVerboseEventsForAddressesT(
-            httpConfig,
-            [address],
-            DEFAULT_WHITELIST,
-            (_, __) => "error fetching mempool events for $address"),
-        _eventsRepository.getByAddressesVerboseT(
-            httpConfig: httpConfig,
-            addresses: [address],
-            whitelist: DEFAULT_WHITELIST,
-            onError: (e, s) => "Error fetching XCP events at $address")
-      ]).map((results) {
-        //
-        final newMempoolTxs = results[0] as List<Event>;
-        final confirmedTxs = results[1] as (List<Event>, Cursor?, int);
-
-        final newEvents = [];
-
-        for (var tx in [...newMempoolTxs, ...confirmedTxs.$1]) {
-          if (tx.txHash == replete.newestSeenHash) {
-            break;
-          }
-          newEvents.add(tx);
-        }
-
-        print("original count ${newEvents.length}");
-
-        final oldMempoolTxs = replete.events
-            .where((tx) => !tx.isConfirmed)
-            .toList(growable: false);
-
-        // reconcile mempooltxs
-
-        for (var tx in newMempoolTxs) {
-          if (!oldMempoolTxs.any((oldTx) => oldTx.txHash == tx.txHash)) {
-            newEvents.add(tx);
-          }
-        }
-
-        return newEvents.length;
-      });
-    }
-
-    Either<String, int> newCounterpartyEventCount =
-        await newEventCountTask.run();
-
-    final nextState = newCounterpartyEventCount.fold((error) {
-      return state.copyWith(
-        remoteState: Failure(error),
-      );
-    }, (count) {
-      return state.copyWith(
-          remoteState: Success(state.remoteState
-              .getOrNull()!
-              .copyWith(newTransactionCount: count)));
-    });
-    emit(nextState);
-
-    // new transactions are all those to last hash
   }
 }

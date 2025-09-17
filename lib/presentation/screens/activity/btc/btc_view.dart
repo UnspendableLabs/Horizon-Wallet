@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,17 +7,11 @@ import "./bloc/btc_activity_bloc.dart";
 import "./_btc_view.dart";
 
 class BtcActivityActions {
-  final void Function() startPolling;
-  final void Function() stopPolling;
   final void Function() load;
-  final void Function() loadQuiet;
   final void Function() loadMore;
 
   const BtcActivityActions({
-    required this.startPolling,
-    required this.stopPolling,
     required this.load,
-    required this.loadQuiet,
     required this.loadMore,
   });
 }
@@ -24,6 +19,7 @@ class BtcActivityActions {
 class BTCActivityProvider extends StatelessWidget {
   final HttpConfig httpConfig;
   final AddressV2 address;
+  final void Function(DateTime newDateTime) onLastUpdatedAtChange;
   final Widget Function(BtcActivityActions actions, BtcActivityState state)
       builder;
 
@@ -31,7 +27,8 @@ class BTCActivityProvider extends StatelessWidget {
       {super.key,
       required this.httpConfig,
       required this.address,
-      required this.builder});
+      required this.builder,
+      required this.onLastUpdatedAtChange});
 
   @override
   Widget build(BuildContext context) {
@@ -39,18 +36,23 @@ class BTCActivityProvider extends StatelessWidget {
       create: (context) =>
           BtcActivityBloc(httpConfig: httpConfig, address: address.address)
             ..add(const Load()),
-      child: BlocBuilder<BtcActivityBloc, BtcActivityState>(
-          builder: (context, state) {
+      child: BlocConsumer<BtcActivityBloc, BtcActivityState>(
+          listenWhen: (previous, current) {
+        final prevousReplete = previous.remoteState.getOrNull();
+        final currentReplete = current.remoteState.getOrNull();
+
+        return prevousReplete?.lastUpdatedAt != currentReplete?.lastUpdatedAt;
+      }, listener: (context, state) {
+        // if _lastdUpdatedAt is differnet
+        final newDateTime = state.remoteState.getOrNull()?.lastUpdatedAt;
+
+        if (newDateTime != null) {
+          onLastUpdatedAtChange(newDateTime);
+        }
+      }, builder: (context, state) {
         return builder(
             BtcActivityActions(
-              startPolling: () => context
-                  .read<BtcActivityBloc>()
-                  .add(const StartPolling(interval: Duration(seconds: 60))),
-              stopPolling: () =>
-                  context.read<BtcActivityBloc>().add(const StopPolling()),
               load: () => context.read<BtcActivityBloc>().add(const Load()),
-              loadQuiet: () =>
-                  context.read<BtcActivityBloc>().add(const LoadQuiet()),
               loadMore: () =>
                   context.read<BtcActivityBloc>().add(const LoadMore()),
             ),
