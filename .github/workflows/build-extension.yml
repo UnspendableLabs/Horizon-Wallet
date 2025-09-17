@@ -3,7 +3,7 @@ name: Build Extension
 on:
   push:
     branches:
-      - '*'
+      - "*"
 
 jobs:
   build-mainnet:
@@ -20,9 +20,9 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 3.32.8
+          flutter-version: 3.35.4
       - run: flutter pub get
-      
+
       - name: Build Extension
         run: |
           dart tool/build_extension.dart
@@ -41,13 +41,13 @@ jobs:
       HORIZON_IS_EXTENSION: true
       HORIZON_ANALYTICS_ENABLED: false
       HORIZON_SENTRY_ENABLED: false
-      
+
     steps:
       - uses: actions/checkout@v4
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 3.32.8
+          flutter-version: 3.35.4
       - run: flutter pub get
 
       - name: Build Extension
