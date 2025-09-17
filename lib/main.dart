@@ -541,7 +541,7 @@ class MyApp extends StatelessWidget {
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       backgroundColor: noBackgroundColor,
     ),
-    bottomAppBarTheme: const BottomAppBarTheme(
+    bottomAppBarTheme: const BottomAppBarThemeData(
       color: noBackgroundColor,
     ),
     primaryColor: const Color.fromRGBO(68, 69, 99, 1),
@@ -659,7 +659,7 @@ class MyApp extends StatelessWidget {
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       backgroundColor: noBackgroundColor,
     ),
-    bottomAppBarTheme: const BottomAppBarTheme(
+    bottomAppBarTheme: const BottomAppBarThemeData(
       color: noBackgroundColor,
     ),
     primaryColor: Colors.white,
