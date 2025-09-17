@@ -137,6 +137,7 @@ class TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
                         errorText = null;
                       });
                       try {
+                        // TODO: validatePassword should be abstracted into usecase
                         final TaskEither<String, Unit> validatePassword =
                             switch (widget.address.derivation) {
                           Bip32Path() => widget._walletConfigRepository

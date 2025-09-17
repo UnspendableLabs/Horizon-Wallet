@@ -29,7 +29,7 @@ class TransactionSuccessful extends StatelessWidget {
   Future<void> _launchExplorer(HttpConfig httpConfig) async {
     if (loading || txHash == null) return;
 
-    final uri = Uri.parse("${httpConfig.btcExplorer}/tx/$txHash");
+    final uri = Uri.parse("${httpConfig.btcExplorer}/tx/$txHex");
     if (!await launchUrl(uri)) {
       throw Exception('Could not launch $uri');
     }

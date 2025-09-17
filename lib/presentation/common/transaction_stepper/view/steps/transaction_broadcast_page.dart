@@ -22,8 +22,9 @@ class TransactionBroadcastPage extends StatelessWidget {
         loading: true,
       ),
       success: (data) => TransactionSuccessful(
-        txHex: data.txHex,
-        txHash: data.txHash,
+        // TODO: txHash and txHex are reversed
+        txHex: data.txHash,
+        txHash: data.txHex,
         loading: false,
       ),
       error: (error) => TransactionError(

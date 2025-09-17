@@ -178,7 +178,6 @@ class RBFBloc
                     adjustedSize: deps.adjustedVirtualSize))))));
   }
 
-  // TODO: clean this up
   void _onTransactionComposed(
     RBFTransactionComposed event,
     Emitter<TransactionState<RBFData, RBFComposeData>> emit,
@@ -283,24 +282,26 @@ class RBFBloc
 
     final result = await task.run();
 
-    result.fold(
-        (msg) => emit(state.copyWith(
+    TransactionState<RBFData, RBFComposeData> nextState = result.fold(
+        (msg) => state.copyWith(
               broadcastState: BroadcastState.error(msg),
-            )), (success) async {
+            ), (success) {
       final txHex = success.$1;
       final txHash = success.$2;
 
-      await writelocalTransactionUseCase.call(
-          hex: txHex, hash: txHash, httpConfig: httpConfig);
-      transactionLocalRepository.delete(composeData.txid);
+      // await writelocalTransactionUseCase.call(
+      //     hex: txHex, hash: txHash, httpConfig: httpConfig);
+      // transactionLocalRepository.delete(composeData.txid);
 
       analyticsService.trackAnonymousEvent('broadcast_rbf',
           properties: {'distinct_id': uuid.v4()});
 
-      emit(state.copyWith(
+      return state.copyWith(
           broadcastState: BroadcastState.success(
-              BroadcastStateSuccess(txHex: txHex, txHash: txHash))));
+              BroadcastStateSuccess(txHex: txHex, txHash: txHash)));
     });
+
+    emit(nextState);
   }
 
   void _onFeeOptionSelected(
