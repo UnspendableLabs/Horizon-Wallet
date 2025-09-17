@@ -33,7 +33,7 @@ class TermsOfService extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Effective Date: September 24, 2024',
+                  'Effective Date: September 17, 2025',
                   style: TextStyle(
                       color: isDarkTheme ? Colors.grey : Colors.grey[600]),
                 ),
