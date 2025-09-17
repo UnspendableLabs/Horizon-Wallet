@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:fpdart/fpdart.dart' hide State;
+import 'package:horizon/domain/entities/address_v2.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:horizon/domain/repositories/wallet_config_repository.dart';
+import 'package:horizon/domain/services/seed_service.dart';
+import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_broadcast_page.dart';
@@ -10,6 +18,7 @@ import 'package:horizon/presentation/common/transaction_stepper/view/steps/trans
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_form_page.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/utils/app_icons.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
 
 class FormStepContent<T> {
   final String title;
@@ -48,18 +57,29 @@ class TransactionStepper<T, R> extends StatefulWidget {
   final FormStepContent<T> formStepContent;
   final ConfirmationStepContent<R> confirmationStepContent;
   final TransactionState<T, R> state;
+  final AddressV2 address;
+  final WalletConfigRepository _walletConfigRepository;
+  final SeedService _seedService;
+  final EncryptionService _encryptionService;
 
   static const List<String> defaultButtonTexts = [
     'Review Transaction',
     'Sign and Submit',
   ];
 
-  const TransactionStepper({
+  TransactionStepper({
     super.key,
     required this.formStepContent,
     required this.confirmationStepContent,
+    required this.address,
     required this.state,
-  });
+    WalletConfigRepository? walletConfigRepository,
+    SeedService? seedService,
+    EncryptionService? encryptionService,
+  })  : _seedService = seedService ?? GetIt.I<SeedService>(),
+        _walletConfigRepository =
+            walletConfigRepository ?? GetIt.I<WalletConfigRepository>(),
+        _encryptionService = encryptionService ?? GetIt.I<EncryptionService>();
 
   @override
   State<TransactionStepper<T, R>> createState() =>
@@ -95,6 +115,7 @@ class TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
         break;
       case 1:
         // case 1: confirmation step to submission step
+
         final requirePassword =
             GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations;
 
@@ -111,32 +132,50 @@ class TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
                 builder: (context, setState) {
                   return HorizonPasswordPrompt(
                     onPasswordSubmitted: (password) async {
-                      throw UnimplementedError(
-                          'Password decryption not implemented');
-                      // setState(() {
-                      //   isLoading = true;
-                      //   errorText = null;
-                      // });
-                      // try {
-                      //   // final wallet = await GetIt.I<WalletRepository>()
-                      //   //     .getCurrentWallet();
-                      //   // await GetIt.I<EncryptionService>()
-                      //   //     .decrypt(wallet!.encryptedPrivKey, password);
-                      // } catch (e) {
-                      //   if (dialogContext.mounted) {
-                      //     setState(() {
-                      //       errorText = 'Invalid Password';
-                      //       isLoading = false;
-                      //     });
-                      //   }
-                      //   return;
-                      // }
-                      //
-                      // widget.confirmationStepContent
-                      //     .onNext(decryptionStrategy: Password(password));
-                      // if (dialogContext.mounted) {
-                      //   Navigator.of(dialogContext).pop(true);
-                      // }
+                      setState(() {
+                        isLoading = true;
+                        errorText = null;
+                      });
+                      try {
+                        final TaskEither<String, Unit> validatePassword =
+                            switch (widget.address.derivation) {
+                          Bip32Path() => widget._walletConfigRepository
+                              .getCurrentT((_) =>
+                                  "invariant: could not read wallet config")
+                              .flatMap((walletConfig) => widget._seedService
+                                  .getForWalletConfigT(
+                                      walletConfig: walletConfig,
+                                      decryptionStrategy: Password(password),
+                                      onError: (_) => "invalid password")
+                                  .map((_) => unit)),
+                          WIF(value: var value) => widget._encryptionService
+                              .decryptT(
+                                  data: value,
+                                  password: password,
+                                  onError: (_, __) => "invalid password")
+                              .map((_) => unit)
+                        };
+
+                        final result = await validatePassword.run();
+
+                        if (result.isLeft()) {
+                          throw Exception("invalid password");
+                        }
+                      } catch (e) {
+                        if (dialogContext.mounted) {
+                          setState(() {
+                            errorText = 'Invalid Password';
+                            isLoading = false;
+                          });
+                        }
+                        return;
+                      }
+
+                      widget.confirmationStepContent
+                          .onNext(decryptionStrategy: Password(password));
+                      if (dialogContext.mounted) {
+                        Navigator.of(dialogContext).pop(true);
+                      }
                     },
                     onCancel: () {
                       setState(() {
