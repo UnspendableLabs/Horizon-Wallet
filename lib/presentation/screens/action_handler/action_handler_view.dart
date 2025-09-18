@@ -32,14 +32,12 @@ class ActionHandlerShell extends StatelessWidget {
     return Scaffold(
         body: Container(
       color: Theme.of(context).dialogTheme.backgroundColor,
-      child: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth:
-                MediaQuery.of(context).size.width > 500 ? 500 : double.infinity,
-          ),
-          child: child,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth:
+              MediaQuery.of(context).size.width > 500 ? 500 : double.infinity,
         ),
+        child: child,
       ),
     ));
   }

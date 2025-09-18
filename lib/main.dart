@@ -427,23 +427,76 @@ class AppRouter {
                             unsignedPsbt: action.psbt,
                           ),
                       child: ActionHandlerShell(
-                          child: SignPsbtForm(
-                        key: Key(action.psbt),
-                        passwordRequired: GetIt.I<SettingsRepository>()
-                            .requirePasswordForCryptoOperations,
-                        onSuccess: (signedPsbtHex) {
-                          final callback =
-                              GetIt.I<RPCSignPsbtSuccessCallback>();
+                          child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  width: 48,
+                                  height: 48,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Center(
+                                    child: AppIcons.shieldIcon(
+                                      context: context,
+                                      width: 32,
+                                      height: 32,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                const Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'SIGN PSBT',
+                                        style: TextStyle(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      // Text(
+                                      //   'Requested by horizon.market',
+                                      //   style: TextStyle(
+                                      //     fontSize: 14,
+                                      //     color: Colors.grey,
+                                      //   ),
+                                      // ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+                            SignPsbtForm(
+                              key: Key(action.psbt),
+                              passwordRequired: GetIt.I<SettingsRepository>()
+                                  .requirePasswordForCryptoOperations,
+                              onSuccess: (signedPsbtHex) {
+                                final callback =
+                                    GetIt.I<RPCSignPsbtSuccessCallback>();
 
-                          callback(RPCSignPsbtSuccessCallbackArgs(
-                              tabId: action.tabId,
-                              requestId: action.requestId,
-                              signedPsbt: signedPsbtHex));
+                                callback(RPCSignPsbtSuccessCallbackArgs(
+                                    tabId: action.tabId,
+                                    requestId: action.requestId,
+                                    signedPsbt: signedPsbtHex));
 
-                          if (GetIt.I<Config>().isWebExtension) {
-                            web.window.close();
-                          }
-                        },
+                                if (GetIt.I<Config>().isWebExtension) {
+                                  web.window.close();
+                                }
+                              },
+                            ),
+                          ],
+                        ),
                       )));
                 }),
             GoRoute(
