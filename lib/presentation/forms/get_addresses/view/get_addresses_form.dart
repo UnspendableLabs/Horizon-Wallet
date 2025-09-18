@@ -71,13 +71,13 @@ class GetAddressesForm extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          Text(
-                            'Requested by horizon.market',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey,
-                            ),
-                          ),
+                          // Text(
+                          //   'Requested by horizon.market',
+                          //   style: TextStyle(
+                          //     fontSize: 14,
+                          //     color: Colors.grey,
+                          //   ),
+                          // ),
                         ],
                       ),
                     ),
