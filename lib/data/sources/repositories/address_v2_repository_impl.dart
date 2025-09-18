@@ -11,7 +11,9 @@ import "package:horizon/domain/repositories/imported_address_repository.dart";
 import "package:horizon/domain/repositories/account_configurations_repository.dart";
 import 'package:horizon/domain/services/seed_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
 import "package:horizon/domain/entities/address_index_set.dart";
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 bool addressIsSegwit(String address) {
   return address.startsWith('bc1') || address.startsWith('tb1');
@@ -24,6 +26,8 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
   final ImportedAddressRepository _importedAddressRepository;
   final ImportedAddressService _importedAddressService;
   final AccountConfigurationsRepository _accountConfigurationsRepository;
+  final InMemoryKeyRepository _inMemoryKeyRepository;
+  final EncryptionService _encryptionService;
 
   AddressV2RepositoryImpl(
       {AddressService? addressService,
@@ -31,6 +35,8 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
       SeedService? seedService,
       ImportedAddressRepository? importedAddressRepository,
       ImportedAddressService? importedAddressService,
+      InMemoryKeyRepository? inMemoryKeyRepository,
+      EncryptionService? encryptionService,
       AccountConfigurationsRepository? accountConfigurationsRepository})
       : _accountConfigurationsRepository = accountConfigurationsRepository ??
             GetIt.I<AccountConfigurationsRepository>(),
@@ -41,7 +47,10 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
         _importedAddressRepository =
             importedAddressRepository ?? GetIt.I<ImportedAddressRepository>(),
         _importedAddressService =
-            importedAddressService ?? GetIt.I<ImportedAddressService>();
+            importedAddressService ?? GetIt.I<ImportedAddressService>(),
+        _inMemoryKeyRepository =
+            inMemoryKeyRepository ?? GetIt.I<InMemoryKeyRepository>(),
+        _encryptionService = encryptionService ?? GetIt.I<EncryptionService>();
 
   @override
   Future<AddressIndexSet> getByAccountAtIndex(
@@ -57,7 +66,7 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
                 walletConfig: walletConfig,
                 decryptionStrategy: InMemoryKey(),
                 onError: (_) => "invariant: could not read seed")
-            .flatMap((seed) => _addressService.deriveAddressWIPT(
+            .flatMap((seed) => _addressService.deriveAddressT(
                 addressKinds: walletConfig.supportedKinds,
                 path:
                     "${walletConfig.basePath.get(walletConfig.network)}${account.index}'/0/${index.value}",
@@ -106,7 +115,7 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
               accountConfig.fold(() => 0, (config) => config.addressIndex);
 
           final addresses = await $(_addressService
-              .deriveAddressWIPT(
+              .deriveAddressT(
                   addressKinds: walletConfig.supportedKinds,
                   path:
                       "${walletConfig.basePath.get(walletConfig.network)}$index'/0/${addressIndex}",
@@ -146,16 +155,46 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
   // TODO: what is the deal with ths
   @override
   Future<List<AddressV2>> getAllImported() async {
-    final task = TaskEither<String, List<AddressV2>>.Do(($) async {
-      final importedAddresses = await $(
-        _importedAddressRepository.getAllT(
+    final TaskEither<String, List<AddressV2>> task = _importedAddressRepository
+        .getAllT(
           onError: (_, __) => "invariant: could not read imported addresses",
-        ),
-      );
+        )
+        .flatMap((importedAddresses) => _inMemoryKeyRepository
+                .getMapT(
+              onError: (_, __) => "invariant: failed to read in memory key map",
+            )
+                .map((repo) {
+              print("repo:");
+              print(repo);
+              return repo;
+            }).flatMap((keyMap) => TaskEither.sequenceList(importedAddresses
+                    .map((addy) => TaskEither.fromOption(
+                          Option.fromNullable(keyMap[addy.encryptedWif]),
+                          () =>
+                              "invariant: decryption key not found for address: ${addy.address}",
+                        ).flatMap((decryptionKey) => _encryptionService
+                            .decryptWithKeyT(
+                              data: addy.encryptedWif,
+                              key: decryptionKey,
+                              onError: (_, __) =>
+                                  "failed to decrypt wif for address: ${addy.address}",
+                            )
+                            .flatMap((wif) => _importedAddressService
+                                .getAddressPublicKeyFromWIFT(
+                                    wif: wif,
+                                    network: addy.network,
+                                    onError: (_, __) =>
+                                        "failed to get public key for address: ${addy.address}"))
+                            .map((publicKey) => AddressV2(
+                                publicKey: publicKey,
+                                address: addy.address,
+                                derivation: WIF(value: addy.encryptedWif),
+                                type: addy.type))))
+                    .toList())));
 
-      return [];
-    });
+    final result = await task.run();
 
-    throw UnimplementedError("");
+    return result.fold(
+        (error) => throw Exception(error), (addresses) => addresses);
   }
 }

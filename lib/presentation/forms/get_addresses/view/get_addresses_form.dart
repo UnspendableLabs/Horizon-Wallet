@@ -93,9 +93,9 @@ class GetAddressesForm extends StatelessWidget {
                       value: AddressSelectionMode.byAccount,
                       groupValue: state.addressSelectionMode,
                       onChanged: (mode) {
-                        context
-                            .read<GetAddressesBloc>()
-                            .add(AddressSelectionModeChanged(mode!));
+                        context.read<GetAddressesBloc>().add(
+                            AddressSelectionModeChanged(
+                                AddressSelectionMode.byAccount));
                       },
                     ),
                     const Text('All Addresses in Account'),
@@ -104,9 +104,9 @@ class GetAddressesForm extends StatelessWidget {
                       value: AddressSelectionMode.importedAddresses,
                       groupValue: state.addressSelectionMode,
                       onChanged: (mode) {
-                        context
-                            .read<GetAddressesBloc>()
-                            .add(AddressSelectionModeChanged(mode!));
+                        context.read<GetAddressesBloc>().add(
+                            AddressSelectionModeChanged(
+                                AddressSelectionMode.importedAddresses));
                       },
                     ),
                     const Text('Imported Addresses'),

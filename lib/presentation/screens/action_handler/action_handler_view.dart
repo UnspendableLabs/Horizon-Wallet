@@ -139,12 +139,16 @@ class GetAddressesPage extends StatelessWidget {
                   encryptionService: GetIt.I<EncryptionService>(),
                   importedAddressService: GetIt.I<ImportedAddressService>(),
                   addressService: GetIt.I<AddressService>(),
-                  accounts: session.accounts,
+                  accounts: session.accounts
+                      .where((account) => account.isBip32)
+                      .toList(),
                 ),
                 child: GetAddressesForm(
                   passwordRequired: GetIt.I<SettingsRepository>()
                       .requirePasswordForCryptoOperations,
-                  accounts: session.accounts,
+                  accounts: session.accounts
+                      .where((account) => account.isBip32)
+                      .toList(),
                   onCancel: () {
                     if (GetIt.I<Config>().isWebExtension) {
                       web.window.close();

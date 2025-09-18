@@ -30,6 +30,21 @@ class ImportedAddressServiceImpl implements ImportedAddressService {
   }
 
   @override
+  Future<String> getAddressPublicKeyFromWIF(
+      {required String wif, required Network network}) async {
+    final ecpair.ECPairInterface ecpair_ =
+        ecpairFactory.fromWIF(wif, network.toJS);
+
+    if (ecpair_.privateKey == null) {
+      throw Exception("Private key not found");
+    }
+
+    final publicKey = ecpair_.publicKey.toDart;
+
+    return hex.encode(publicKey);
+  }
+
+  @override
   Future<String> getAddressFromWIF(
       {required String wif,
       required ImportAddressPkFormat format,

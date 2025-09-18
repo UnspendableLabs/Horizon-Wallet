@@ -5,6 +5,9 @@ import "package:horizon/domain/entities/network.dart";
 sealed class AccountV2 {
   String get name;
   String get hash;
+
+  bool get isImportedWif => this is ImportedWIF;
+  bool get isBip32 => this is Bip32;
 }
 
 class Bip32 extends AccountV2 {

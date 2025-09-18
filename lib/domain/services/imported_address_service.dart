@@ -7,6 +7,10 @@ abstract class ImportedAddressService {
     required String wif,
     required Network network,
   });
+  Future<String> getAddressPublicKeyFromWIF({
+    required String wif,
+    required Network network,
+  });
   Future<String> getAddressFromWIF({
     required String wif,
     required ImportAddressPkFormat format,
@@ -22,6 +26,17 @@ extension ImportedAddressServiceX on ImportedAddressService {
   }) {
     return TaskEither.tryCatch(
       () => getAddressPrivateKeyFromWIF(wif: wif, network: network),
+      onError,
+    );
+  }
+
+  TaskEither<E, String> getAddressPublicKeyFromWIFT<E>({
+    required String wif,
+    required Network network,
+    required E Function(Object error, StackTrace stack) onError,
+  }) {
+    return TaskEither.tryCatch(
+      () => getAddressPublicKeyFromWIF(wif: wif, network: network),
       onError,
     );
   }
