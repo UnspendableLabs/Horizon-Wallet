@@ -116,7 +116,7 @@ class _ToolsViewState extends State<ToolsView> {
         Tool(
           name: "manage swaps",
           title: 'Atomic Swaps',
-          href: "${session.httpConfig.horizonMarket}/listings",
+          href: "${session.httpConfig.horizonMarket}/listing",
           description: "Manage your atomic swap listings",
           icon: AppIcons.swapIcon(context: context, width: 24, height: 24),
         ),
@@ -124,7 +124,7 @@ class _ToolsViewState extends State<ToolsView> {
           name: "orders",
           title: "DEX Orders",
           href:
-              "${session.httpConfig.horizonMarket}/listings?order_type=counterparty",
+              "${session.httpConfig.horizonMarket}/listing?order_type=counterparty",
           description: "Manage your Counterparty DEX orders",
           icon: AppIcons.orderIcon(context: context, width: 24, height: 24),
         ),
@@ -132,7 +132,7 @@ class _ToolsViewState extends State<ToolsView> {
           name: "Dispensers",
           title: "Dispensers",
           href:
-              "${session.httpConfig.horizonMarket}/listings?order_type=dispensers",
+              "${session.httpConfig.horizonMarket}/listing?order_type=dispensers",
           description: "Manage your Counterparty Dispensers",
           icon: AppIcons.dispenserIcon(context: context, width: 24, height: 24),
         ),

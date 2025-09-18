@@ -206,17 +206,20 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Expanded(
-                  child: HorizonUI.HorizonButton(
-                    disabled: state.submissionStatus.isInProgressOrSuccess,
-                    onPressed: state.submissionStatus.isInProgressOrSuccess
-                        ? null
-                        : () => context
-                            .read<SignPsbtBloc>()
-                            .add(SignPsbtSubmitted()),
-                    child: state.submissionStatus.isInProgress
-                        ? HorizonUI.WidgetButtonContent(
-                            value: const CircularProgressIndicator())
-                        : HorizonUI.TextButtonContent(value: 'Sign PSBT'),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: HorizonUI.HorizonButton(
+                      disabled: state.submissionStatus.isInProgressOrSuccess,
+                      onPressed: state.submissionStatus.isInProgressOrSuccess
+                          ? null
+                          : () => context
+                              .read<SignPsbtBloc>()
+                              .add(SignPsbtSubmitted()),
+                      child: state.submissionStatus.isInProgress
+                          ? HorizonUI.WidgetButtonContent(
+                              value: const CircularProgressIndicator())
+                          : HorizonUI.TextButtonContent(value: 'Sign PSBT'),
+                    ),
                   ),
                 ),
               ],
