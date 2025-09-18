@@ -510,42 +510,151 @@ class AppRouter {
                   final action = actionRepository.dequeue().getOrThrow()
                       as RPCSignMessageAction;
 
+                  final address =
+                      session.addressIndexSet.getByAddress(action.address);
+
+                  if (address == null) {
+                    return ActionHandlerShell(
+                        child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                width: 48,
+                                height: 48,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Center(
+                                  child: AppIcons.shieldIcon(
+                                    context: context,
+                                    width: 32,
+                                    height: 32,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              const Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'SIGN MESSAGE',
+                                      style: TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    // Text(
+                                    //   'Requested by horizon.market',
+                                    //   style: TextStyle(
+                                    //     fontSize: 14,
+                                    //     color: Colors.grey,
+                                    //   ),
+                                    // ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          Expanded(
+                            child: Center(
+                              child: Text(
+                                  "${action.address} not found in current account"),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ));
+                  }
+
                   return BlocProvider(
                       create: (_) => SignMessageBloc(
-                            // TODO: it should be safe to access this value with bang
-                            // but we may as well render a specific error
-                            // page if the client is requesting sig for address
-                            // not in the current account
-                            address: session.addressIndexSet
-                                .getByAddress(action.address)!,
+                            address: address,
                             message: action.message,
                             httpConfig: session.httpConfig,
                             passwordRequired: GetIt.I<SettingsRepository>()
                                 .requirePasswordForCryptoOperations,
                           ),
                       child: ActionHandlerShell(
-                          child: SignMessageForm(
-                        key: Key(action.message),
-                        passwordRequired: GetIt.I<SettingsRepository>()
-                            .requirePasswordForCryptoOperations,
-                        onSuccess: (signature) {
-                          final callback =
-                              GetIt.I<RPCSignMessageSuccessCallback>();
+                          child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  width: 48,
+                                  height: 48,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Center(
+                                    child: AppIcons.shieldIcon(
+                                      context: context,
+                                      width: 32,
+                                      height: 32,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                const Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'SIGN MESSAGE',
+                                        style: TextStyle(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      // Text(
+                                      //   'Requested by horizon.market',
+                                      //   style: TextStyle(
+                                      //     fontSize: 14,
+                                      //     color: Colors.grey,
+                                      //   ),
+                                      // ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SignMessageForm(
+                              key: Key(action.message),
+                              passwordRequired: GetIt.I<SettingsRepository>()
+                                  .requirePasswordForCryptoOperations,
+                              onSuccess: (signature) {
+                                final callback =
+                                    GetIt.I<RPCSignMessageSuccessCallback>();
 
-                          callback(RPCSignMessageSuccessCallbackArgs(
-                            address: session.addressIndexSet
-                                .getByAddress(action.address)!
-                                .address,
-                            tabId: action.tabId,
-                            requestId: action.requestId,
-                            signature: signature,
-                            messageHash: action.message,
-                          ));
+                                callback(RPCSignMessageSuccessCallbackArgs(
+                                  address: "",
+                                  tabId: action.tabId,
+                                  requestId: action.requestId,
+                                  signature: signature,
+                                  messageHash: action.message,
+                                ));
 
-                          if (GetIt.I<Config>().isWebExtension) {
-                            web.window.close();
-                          }
-                        },
+                                if (GetIt.I<Config>().isWebExtension) {
+                                  web.window.close();
+                                }
+                              },
+                            ),
+                          ],
+                        ),
                       )));
                 }),
             StatefulShellRoute.indexedStack(
@@ -784,7 +893,6 @@ class AppRouter {
             onGoHome: () => context.go('/'),
           ),
       redirect: (context, state) {
-        print("state.matchedLocation: ${state.matchedLocation}");
         if (state.matchedLocation == "/db") {
           return "/db";
         }

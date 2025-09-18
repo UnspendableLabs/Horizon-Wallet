@@ -81,18 +81,23 @@ class _SignMessageFormState extends State<SignMessageForm> {
                 const SizedBox(height: 20),
                 // Submit Button
 
-                HorizonUI.HorizonButton(
-                  width: 120,
-                  height: 32,
-                  onPressed: state.submissionStatus.isInProgressOrSuccess
-                      ? null
-                      : () => context
-                          .read<SignMessageBloc>()
-                          .add(SignMessageSubmitted()),
-                  child: state.submissionStatus.isInProgress
-                      ? HorizonUI.WidgetButtonContent(
-                          value: const CircularProgressIndicator())
-                      : HorizonUI.TextButtonContent(value: 'Sign Message'),
+                Row(
+                  children: [
+                    Expanded(
+                      child: HorizonUI.HorizonButton(
+                        onPressed: state.submissionStatus.isInProgressOrSuccess
+                            ? null
+                            : () => context
+                                .read<SignMessageBloc>()
+                                .add(SignMessageSubmitted()),
+                        child: state.submissionStatus.isInProgress
+                            ? HorizonUI.WidgetButtonContent(
+                                value: const CircularProgressIndicator())
+                            : HorizonUI.TextButtonContent(
+                                value: 'Sign Message'),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 20),
                 // Status/Error Message
