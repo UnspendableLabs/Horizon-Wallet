@@ -64,31 +64,33 @@ class AccountsScreen extends StatelessWidget {
                       input: account.hash,
                       radius: 18,
                     ),
-                    trailing: PopupMenuButton(
-                      tooltip: "account actions",
-                      icon: const Icon(Icons.more_vert, size: 16),
-                      onSelected: (value) {
-                        switch (value) {
-                          case "manage_addresses":
-                            context.go(
-                              "/accounts/detail",
-                              extra: account,
-                            );
-                          default:
-                          // no op
-                        }
-                      },
-                      itemBuilder: (context) => [
-                        const PopupMenuItem(
-                          value: 'manage_addresses',
-                          child: Text('Manage Addresses'),
-                        ),
-                        // PopupMenuItem(
-                        //   value: 'delete',
-                        //   child: Text('Delete'),
-                        // ),
-                      ],
-                    ),
+                    trailing: account.isBip32
+                        ? PopupMenuButton(
+                            tooltip: "account actions",
+                            icon: const Icon(Icons.more_vert, size: 16),
+                            onSelected: (value) {
+                              switch (value) {
+                                case "manage_addresses":
+                                  context.go(
+                                    "/accounts/detail",
+                                    extra: account,
+                                  );
+                                default:
+                                // no op
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              const PopupMenuItem(
+                                value: 'manage_addresses',
+                                child: Text('Manage Addresses'),
+                              ),
+                              // PopupMenuItem(
+                              //   value: 'delete',
+                              //   child: Text('Delete'),
+                              // ),
+                            ],
+                          )
+                        : SizedBox.shrink(),
                     title: Text(
                       account.name,
                       style: const TextStyle(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:horizon/domain/usecases/validate_password.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
@@ -70,25 +71,22 @@ class _SecurityViewState extends State<SecurityView> {
                   isLoading = true;
                   errorText = null;
                 });
-                // TODO: this password check needs to moved out of callback in the UI
 
-                // try {
-                //   final wallet =
-                //       await GetIt.I<WalletRepository>().getCurrentWallet();
-                //   await GetIt.I<EncryptionService>()
-                //       .decrypt(wallet!.encryptedPrivKey, password);
-                //
-                //   if (dialogContext.mounted) {
-                //     Navigator.of(dialogContext).pop(true);
-                //   }
-                // } catch (e) {
-                //   if (dialogContext.mounted) {
-                //     setState(() {
-                //       errorText = 'Invalid Password';
-                //       isLoading = false;
-                //     });
-                //   }
-                // }
+                final isValid = await ValidatePasswordUseCase().call(password);
+
+                if (!isValid) {
+                  if (dialogContext.mounted) {
+                    setState(() {
+                      errorText = 'Invalid Password';
+                      isLoading = false;
+                    });
+                  }
+                  return;
+                }
+
+                if (dialogContext.mounted) {
+                  Navigator.of(dialogContext).pop(true);
+                }
               },
               onCancel: () {
                 setState(() {

@@ -11,6 +11,7 @@ import 'package:horizon/domain/repositories/wallet_config_repository.dart';
 import 'package:horizon/domain/services/seed_service.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/usecases/validate_password.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_broadcast_page.dart';
@@ -137,29 +138,10 @@ class TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
                         errorText = null;
                       });
                       try {
-                        // TODO: validatePassword should be abstracted into usecase
-                        final TaskEither<String, Unit> validatePassword =
-                            switch (widget.address.derivation) {
-                          Bip32Path() => widget._walletConfigRepository
-                              .getCurrentT((_) =>
-                                  "invariant: could not read wallet config")
-                              .flatMap((walletConfig) => widget._seedService
-                                  .getForWalletConfigT(
-                                      walletConfig: walletConfig,
-                                      decryptionStrategy: Password(password),
-                                      onError: (_) => "invalid password")
-                                  .map((_) => unit)),
-                          WIF(value: var value) => widget._encryptionService
-                              .decryptT(
-                                  data: value,
-                                  password: password,
-                                  onError: (_, __) => "invalid password")
-                              .map((_) => unit)
-                        };
+                        final isValid =
+                            await ValidatePasswordUseCase().call(password);
 
-                        final result = await validatePassword.run();
-
-                        if (result.isLeft()) {
+                        if (!isValid) {
                           throw Exception("invalid password");
                         }
                       } catch (e) {
