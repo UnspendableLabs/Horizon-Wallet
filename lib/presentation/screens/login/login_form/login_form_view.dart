@@ -136,7 +136,7 @@ class _LoginFormState extends State<LoginForm> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 14),
                 TextButton(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(

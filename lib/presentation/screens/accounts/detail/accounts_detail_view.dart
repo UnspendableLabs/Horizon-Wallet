@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
@@ -8,7 +7,7 @@ import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/wallet_config.dart';
 import 'package:horizon/domain/entities/account_configuration.dart';
 import 'package:get_it/get_it.dart';
-import 'package:fpdart/fpdart.dart';
+import 'package:fpdart/fpdart.dart' hide State;
 import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
@@ -19,6 +18,187 @@ import 'package:horizon/domain/repositories/address_v2_repository.dart';
 import 'package:horizon/domain/repositories/account_v2_repository.dart';
 import 'package:horizon/domain/repositories/wallet_config_repository.dart';
 import 'package:horizon/domain/repositories/account_configurations_repository.dart';
+
+class AccountAddressesTile extends StatefulWidget {
+  final String addressPath; // e.g. m/84'/0'/0'/0/12
+  final String? p2pkhAddress;
+  final String? p2wpkhAddress;
+  final WalletConfig walletConfig;
+  final VoidCallback? onTap;
+  final Widget? leading;
+  final void Function(String action)? onMenuAction;
+  final BitcoinRepository? bitcoinRepository;
+  final bool isCurrent;
+
+  const AccountAddressesTile({
+    super.key,
+    required this.addressPath,
+    required this.walletConfig,
+    this.p2pkhAddress,
+    this.p2wpkhAddress,
+    this.onTap,
+    this.leading,
+    this.onMenuAction,
+    this.bitcoinRepository,
+    this.isCurrent = false,
+  });
+
+  @override
+  State<AccountAddressesTile> createState() => _AccountAddressesTileState();
+}
+
+class _AccountAddressesTileState extends State<AccountAddressesTile>
+    with AutomaticKeepAliveClientMixin {
+  late final BitcoinRepository _bitcoinRepository =
+      widget.bitcoinRepository ?? GetIt.I<BitcoinRepository>();
+
+  // Cache the task so it isn't recreated on every build:
+  late final TaskEither<String, List<AddressInfo>> _addressInfoTask;
+
+  double get _height {
+    final kinds = widget.walletConfig.supportedKinds.length;
+    return kinds == 2 ? 126 : 104;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Build once:
+    final addresses = [widget.p2pkhAddress, widget.p2wpkhAddress]
+        .whereType<String>()
+        .toList();
+
+    // If there’s nothing to fetch, keep a completed task:
+    _addressInfoTask = addresses.isEmpty
+        ? TaskEither.right(<AddressInfo>[])
+        : _bitcoinRepository.getAddressInfoMultiT(
+            httpConfig: context
+                .read<SessionStateCubit>()
+                .state
+                .successOrThrow()
+                .httpConfig,
+            addresses: addresses,
+            onError: (e) => "failed to fetch BTC balance",
+          );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final theme = Theme.of(context);
+    final text = theme.textTheme;
+
+    final rows = <Widget>[
+      _InfoRow(
+        label: 'Path',
+        value: widget.addressPath,
+        valueStyle:
+            const TextStyle(fontFeatures: [FontFeature.tabularFigures()]),
+      ),
+      if (widget.walletConfig.supportedKinds.contains(AddressV2Type.p2pkh))
+        _InfoRow(
+          label: 'P2PKH',
+          value: widget.p2pkhAddress ?? "",
+          monospace: true,
+          ellipsizeMiddle: true,
+          copyable: false,
+        ),
+      if (widget.walletConfig.supportedKinds.contains(AddressV2Type.p2wpkh))
+        _InfoRow(
+          label: 'P2WPKH',
+          value: widget.p2wpkhAddress ?? "",
+          monospace: true,
+          ellipsizeMiddle: true,
+          copyable: false,
+        ),
+    ];
+
+    return SizedBox(
+      height: _height,
+      child: RepaintBoundary(
+        child: HoverTile(
+          selected: widget.isCurrent,
+          onTap: widget.onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Stack(
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    if (widget.leading != null) ...[
+                      widget.leading!,
+                      const SizedBox(width: 12),
+                    ],
+                    Expanded(
+                      child: DefaultTextStyle(
+                        style: text.bodyMedium!,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: rows,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Uses cached task; will NOT recreate on rebuilds:
+                    RemoteDataTaskEitherBuilder(
+                      task: _addressInfoTask,
+                      builder: (context, state, refresh) {
+                        return state.fold3(
+                          onNone: () => const SizedBox.shrink(),
+                          onFailure: (_) => const SizedBox.shrink(),
+                          onReplete: (list) {
+                            final total = list.fold<int>(0, (sum, info) {
+                              final funded = info.chainStats.fundedTxoSum;
+                              final spent = info.chainStats.spentTxoSum;
+                              return sum + (funded - spent);
+                            });
+                            return SatsToUsdDisplay(
+                              key: ValueKey(
+                                  "sats_display_${widget.addressPath}"),
+                              sats: BigInt.from(total),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                if (widget.isCurrent)
+                  Positioned(
+                    top: 4,
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text(
+                        'Current',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Keep items alive when scrolled off-screen so they don’t refetch:
+  @override
+  bool get wantKeepAlive => true;
+}
 
 class HoverTile extends StatelessWidget {
   final bool selected;
@@ -40,148 +220,12 @@ class HoverTile extends StatelessWidget {
       color: selected ? cs.primary.withOpacity(0.08) : Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        // full-row hover highlight (no splash/highlight flashes)
         hoverColor: cs.primary.withOpacity(0.06),
         splashColor: Colors.transparent,
         highlightColor: Colors.transparent,
         child: child,
       ),
     );
-  }
-}
-
-class AccountAddressesTile extends StatelessWidget {
-  final BitcoinRepository _bitcoinRepository;
-
-  final String addressPath; // e.g. m/84'/0'/0'/0/12
-  // final BigInt totalSats;            // total value across all addresses
-  final String? p2pkhAddress; // null if not present
-  final String? p2wpkhAddress; // null if not present
-  final WalletConfig walletConfig;
-  final VoidCallback? onTap;
-  final Widget? leading;
-  final void Function(String action)? onMenuAction; // 'copy', 'rename', etc.
-
-  AccountAddressesTile({
-    super.key,
-    required this.addressPath,
-    // required this.totalSats,
-    required this.walletConfig,
-    this.p2pkhAddress,
-    this.p2wpkhAddress,
-    this.onTap,
-    this.leading,
-    this.onMenuAction,
-    BitcoinRepository? bitcoinRepository,
-  }) : _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>();
-
-  double get _height {
-    final kinds = walletConfig.supportedKinds.length;
-    // Tweak to taste. Gives a comfy height for 1 or 2 address rows.
-
-    return kinds == 2 ? 126 : 104;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final text = theme.textTheme;
-    // build rows for present kinds
-    final rows = <Widget>[
-      _InfoRow(
-        label: 'Path',
-        value: addressPath,
-        valueStyle:
-            const TextStyle(fontFeatures: [FontFeature.tabularFigures()]),
-        // tooltip: addressPath,
-      ),
-      if (walletConfig.supportedKinds.contains(AddressV2Type.p2pkh))
-        _InfoRow(
-          label: 'P2PKH',
-          value: p2pkhAddress ?? "",
-          monospace: true,
-          ellipsizeMiddle: true,
-          copyable: false,
-        ),
-      if (walletConfig.supportedKinds.contains(AddressV2Type.p2wpkh))
-        _InfoRow(
-          label: 'P2WPKH',
-          value: p2wpkhAddress ?? "",
-          monospace: true,
-          ellipsizeMiddle: true,
-          copyable: false,
-        ),
-    ];
-
-    final session = context.watch<SessionStateCubit>().state.successOrThrow();
-
-    return SizedBox(
-      height: _height,
-      child: HoverTile(
-        selected: addressPath.endsWith("0"),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              if (leading != null) ...[
-                leading!,
-                const SizedBox(width: 12),
-              ],
-              // content
-              Expanded(
-                child: DefaultTextStyle(
-                  style: text.bodyMedium!,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: rows,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              // kebab
-              RemoteDataTaskEitherBuilder(
-                  task: TaskEither<String, List<AddressInfo>>.Do(($) async {
-                final addresses =
-                    [p2pkhAddress, p2wpkhAddress].nonNulls.toList();
-
-                return await $(_bitcoinRepository.getAddressInfoMultiT(
-                    httpConfig: session.httpConfig,
-                    addresses: addresses,
-                    onError: (
-                      e,
-                    ) =>
-                        "failed to fetch BTC balance"));
-              }), builder: (context, state, refresh) {
-                return state.fold3(
-                    onNone: () => const SizedBox.shrink(),
-                    onFailure: (_) => const SizedBox.shrink(),
-                    onReplete: (addressInfoList) {
-                      final total = addressInfoList.fold(0, (sum, info) {
-                        final funded = info.chainStats.fundedTxoSum;
-                        final spent = info.chainStats.spentTxoSum;
-                        final quantity = funded - spent;
-                        return sum + quantity;
-                      });
-
-                      return SatsToUsdDisplay(
-                        key: ValueKey("sats_display_$addressPath"),
-                        sats: BigInt.from(total),
-                      );
-                    });
-              })
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _formatSats(BigInt sats) {
-    // Simple formatter; replace with your SatsToUsdDisplay if needed.
-    return sats.toString();
   }
 }
 
@@ -289,7 +333,6 @@ class _MaybeEllipsizedText extends StatelessWidget {
 class Bip32AccountDetailView extends StatelessWidget {
   final Bip32 account;
   final AddressV2Repository _addressV2Repository;
-
   final WalletConfigRepository _walletConfigRepository;
   final AccountConfigurationsRepository _accountConfigurationsRepository;
 
@@ -308,80 +351,83 @@ class Bip32AccountDetailView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Only one watch here:
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
+    final currentAddrs =
+        session.addressIndexSet.list.map((a) => a.address).toSet();
 
     return ListView.builder(
-      // TODO: should we enforce item count?
-      // itemCount: 100,
-
+      itemCount: 1000,
+      addAutomaticKeepAlives: true, // works with the mixin in item
+      addRepaintBoundaries: true,
+      // If all rows have same height, set itemExtent. If not, consider prototypeItem:
+      prototypeItem: AccountAddressesTile(
+        addressPath:
+            "${session.walletConfig.basePath.get(session.walletConfig.network)}${account.index}'/0/0",
+        walletConfig: session.walletConfig,
+        isCurrent: false,
+      ),
       itemBuilder: (context, index) {
-        final item = account;
-
         final addressPath =
             "${session.walletConfig.basePath.get(session.walletConfig.network)}${account.index}'/0/$index";
 
-        print("adderss path in view $addressPath");
+        // Don’t fetch here—only ask for the derived addresses
         return RemoteDataTaskEitherBuilder(
-            task: _addressV2Repository.getByAccountAtIndexT(
-                index: Bip32AddressIndex(index),
-                account: item,
-                onError: (e, __) => e.toString()),
-            builder: (context, state, refresh) {
-              return state.fold3(
-                  onNone: () => AccountAddressesTile(
-                      // key: ValueKey("none:$addressPath"),
-                      //            p2pkhAddress:  maybeAddresses
-                      // ?.firstWhereOrNull(
-                      //  (address) => address.type == AddressV2Type.p2pkh)
-                      // ?.address,
-                      //            p2wpkhAddress:  maybeAddresses
-                      // ?.firstWhereOrNull(
-                      //  (address) => address.type == AddressV2Type.p2wpkh)
-                      // ?.address,
-                      addressPath: addressPath,
-                      walletConfig: session.walletConfig),
-                  // should never hit failure case
-                  onFailure: (error) => AccountAddressesTile(
-                      // key: ValueKey("failure:$addressPath"),
-                      p2wpkhAddress: error.toString(),
-                      addressPath: addressPath,
-                      walletConfig: session.walletConfig),
-                  onReplete: (addressIndexSet) {
-                    final p2pkh =
-                        addressIndexSet.getByType(AddressV2Type.p2pkh);
+          key: Key("address_tile_$addressPath"),
+          task: _addressV2Repository.getByAccountAtIndexT(
+            index: Bip32AddressIndex(index),
+            account: account,
+            onError: (e, __) => e.toString(),
+          ),
+          builder: (context, state, refresh) {
+            return state.fold3(
+              onNone: () => AccountAddressesTile(
+                addressPath: addressPath,
+                walletConfig: session.walletConfig,
+                isCurrent: false,
+              ),
+              onFailure: (error) => AccountAddressesTile(
+                addressPath: addressPath,
+                walletConfig: session.walletConfig,
+                // Show something benign; don’t block the list
+                p2wpkhAddress: null,
+                isCurrent: false,
+              ),
+              onReplete: (set) {
+                final p2pkh = set.getByType(AddressV2Type.p2pkh)?.address;
+                final p2wpkh = set.getByType(AddressV2Type.p2wpkh)?.address;
+                final isCurrent = [p2pkh, p2wpkh]
+                    .whereType<String>()
+                    .any(currentAddrs.contains);
 
-                    final p2wpkh =
-                        addressIndexSet.getByType(AddressV2Type.p2wpkh);
-
-                    onSuccess() {
-                      context.read<SessionStateCubit>().refresh();
-
-                      context.go("/accounts");
-                    }
-
-                    return AccountAddressesTile(
-                        // key: ValueKey("replete:$addressPath"),
-                        onTap: () async {
-                          final task = TaskEither<Never, void>.Do(($) async {
-                            await $(_accountConfigurationsRepository
-                                .createOrUpdateT(
-                                    config: AccountConfiguration(
-                                        walletUUID: session.walletConfig.uuid,
-                                        accountIndex: account.index,
-                                        addressIndex: index),
-                                    onError: (_, __) => throw ("invariant")));
-                          });
-
-                          await task.run();
-
-                          onSuccess();
-                        },
-                        p2pkhAddress: p2pkh?.address,
-                        p2wpkhAddress: p2wpkh?.address,
-                        addressPath: addressPath,
-                        walletConfig: session.walletConfig);
+                Future<void> onTap() async {
+                  final task = TaskEither<Never, void>.Do(($) async {
+                    await $(_accountConfigurationsRepository.createOrUpdateT(
+                      config: AccountConfiguration(
+                        walletUUID: session.walletConfig.uuid,
+                        accountIndex: account.index,
+                        addressIndex: index,
+                      ),
+                      onError: (_, __) => throw ("invariant"),
+                    ));
                   });
-            });
+                  await task.run();
+                  context.read<SessionStateCubit>().refresh();
+                  context.go("/accounts");
+                }
+
+                return AccountAddressesTile(
+                  onTap: onTap,
+                  p2pkhAddress: p2pkh,
+                  p2wpkhAddress: p2wpkh,
+                  addressPath: addressPath,
+                  walletConfig: session.walletConfig,
+                  isCurrent: isCurrent, // ← passed down
+                );
+              },
+            );
+          },
+        );
       },
     );
   }
