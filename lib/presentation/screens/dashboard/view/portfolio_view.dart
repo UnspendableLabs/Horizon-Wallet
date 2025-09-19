@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:collection/collection.dart';
+import 'package:horizon/presentation/common/remote_data_builder.dart';
+import 'package:horizon/presentation/common/sats_to_usd_display.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -24,11 +27,20 @@ import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/presentation/common/gradient_avatar.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
+import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:horizon/domain/entities/activity_feed_item.dart';
 
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+
 class PortfolioView extends StatefulWidget {
-  const PortfolioView({super.key});
+  final BitcoinRepository _bitcoinRepository;
+
+  PortfolioView({
+    super.key,
+    BitcoinRepository? bitcoinRepository,
+  }) : _bitcoinRepository =
+            bitcoinRepository ?? GetIt.I.get<BitcoinRepository>();
 
   @override
   State<PortfolioView> createState() => _PortfolioViewState();
@@ -97,18 +109,6 @@ class _PortfolioViewState extends State<PortfolioView>
             addresses: addresses,
             cacheProvider: GetIt.I.get<CacheProvider>(),
           )..add(Start(pollingInterval: const Duration(seconds: 30))),
-        ),
-        BlocProvider<DashboardActivityFeedBloc>(
-          create: (context) => DashboardActivityFeedBloc(
-            httpConfig: session.httpConfig,
-            logger: GetIt.I.get<Logger>(),
-            addresses: addresses,
-            eventsRepository: GetIt.I.get<EventsRepository>(),
-            bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
-            transactionLocalRepository:
-                GetIt.I.get<TransactionLocalRepository>(),
-            pageSize: 1000,
-          )..add(const Load()),
         ),
       ],
       child: Column(
@@ -370,7 +370,41 @@ class _PortfolioViewState extends State<PortfolioView>
                                                         .textTheme
                                                         .labelMedium),
                                                 trailing:
-                                                    const Text("tk balance"));
+                                                    RemoteDataTaskEitherBuilder(
+                                                        task: widget
+                                                            ._bitcoinRepository
+                                                            .getAddressInfoT(
+                                                          address: addy.address,
+                                                          httpConfig: session
+                                                              .httpConfig,
+                                                          onError: (err) =>
+                                                              "Failed to fetch address info: $err",
+                                                        ),
+                                                        builder: (context,
+                                                            state, refresh) {
+                                                          return state.fold3(
+                                                            onNone: () =>
+                                                                const SizedBox
+                                                                    .shrink(),
+                                                            onFailure: (_) =>
+                                                                const SizedBox
+                                                                    .shrink(),
+                                                            onReplete: (info) {
+                                                              final total = info
+                                                                      .chainStats
+                                                                      .fundedTxoSum -
+                                                                  info.chainStats
+                                                                      .spentTxoSum;
+                                                              return SatsToUsdDisplay(
+                                                                key: ValueKey(
+                                                                    "sats_display_${addy.address}"),
+                                                                sats:
+                                                                    BigInt.from(
+                                                                        total),
+                                                              );
+                                                            },
+                                                          );
+                                                        }));
                                           },
                                         ))
                                   ]);
