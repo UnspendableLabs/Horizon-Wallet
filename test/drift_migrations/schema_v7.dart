@@ -1,6 +1,6 @@
+// dart format width=80
 // GENERATED CODE, DO NOT EDIT BY HAND.
 // ignore_for_file: type=lint
-//@dart=2.12
 import 'package:drift/drift.dart';
 
 class Wallets extends Table with TableInfo {
@@ -278,7 +278,7 @@ class WalletConfigs extends Table with TableInfo {
       'addr_kinds_mask', aliasedName, false,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultValue: const Constant(0));
+      defaultValue: const CustomExpression('0'));
   @override
   List<GeneratedColumn> get $columns => [
         uuid,

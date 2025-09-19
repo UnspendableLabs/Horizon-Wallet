@@ -203,7 +203,7 @@ class DB extends _$DB {
       GROUP BY w.uuid
     )
     INSERT OR IGNORE INTO wallet_configs (
-      uuid, network, base_path, account_index_start, account_index_end, seed_derivation
+      uuid, network, base_path, account_index_start, account_index_end, seed_derivation, addr_kinds_mask
     )
     SELECT
       pw.wallet_uuid                    AS uuid,
@@ -221,7 +221,13 @@ class DB extends _$DB {
         WHEN pw.has_counterwallet > 0 THEN 'mnemonicJSToHex'
         WHEN pw.has_freewallet    > 0 THEN 'bip39MnemonicToEntropy'
         ELSE 'bip39MnemonicToSeed'
-      END                                 AS seed_derivation
+      END                                 AS seed_derivation,
+      CASE
+	WHEN pw.has_horizon       > 0 THEN 2       -- p2wpkh only
+	WHEN pw.has_counterwallet > 0 THEN 3       -- p2pkh | p2wpkh
+	WHEN pw.has_freewallet    > 0 THEN 3       -- p2pkh | p2wpkh
+	ELSE 2                                     -- default p2wpkh
+      END                               AS addr_kinds_mask
     FROM per_wallet pw
     LIMIT 1;
   ''');
