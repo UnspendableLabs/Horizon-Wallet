@@ -64,6 +64,8 @@ class _OnboardingImportPageState extends State<OnboardingImportPage> {
           error: (error) => error,
         );
 
+        final session = context.read<SessionStateCubit>();
+
         return OnboardingShell(
           steps: [
             SeedInputStep(seedInputKey: _seedInputKey),
@@ -99,6 +101,8 @@ class _OnboardingImportPageState extends State<OnboardingImportPage> {
               context
                   .read<OnboardingImportBloc>()
                   .add(ImportFormatBackPressed());
+
+              session.onOnboarding();
             } else if (state.currentStep ==
                 OnboardingImportStep.inputPassword) {
               _passwordStepKey.currentState?.clearPassword();
