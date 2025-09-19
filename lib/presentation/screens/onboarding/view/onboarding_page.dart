@@ -5,6 +5,8 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/presentation/common/footer/view/footer.dart';
+import 'package:horizon/presentation/common/footer/view/footer.dart';
+import 'package:horizon/presentation/common/terms_of_service.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/onboarding/bloc/onboarding_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding/bloc/onboarding_events.dart';
@@ -129,7 +131,6 @@ class OnboardingView extends StatelessWidget {
     final isWideScreen = screenWidth > 500;
 
     final pageContent = Scaffold(
-      bottomNavigationBar: const Footer(),
       body: Column(
         children: [
           // _buildThemeToggle(context, isDarkMode),
@@ -224,6 +225,7 @@ class OnboardingView extends StatelessWidget {
                       ],
                     ),
                   ),
+                  TermsOfService(),
                 ],
               ),
             ),

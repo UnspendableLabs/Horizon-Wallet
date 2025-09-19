@@ -5,6 +5,7 @@ import 'package:formz/formz.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/presentation/common/colors.dart';
+import 'package:horizon/presentation/common/terms_of_service.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/forgot_password/forgot_password_view.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
@@ -165,6 +166,8 @@ class _LoginFormState extends State<LoginForm> {
                     value: "Unlock",
                   ),
                 ),
+                const SizedBox(height: 42),
+                TermsOfService()
               ]));
     });
   }
