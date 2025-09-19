@@ -32,10 +32,10 @@ class LoginView extends StatelessWidget {
                 height: MediaQuery.of(context).size.height,
                 child: const Stack(
                   children: [
-                    Align(
-                      alignment: Alignment.topCenter,
-                      child: HorizonThemeToggle(),
-                    ),
+                    // Align(
+                    //   alignment: Alignment.topCenter,
+                    //   child: HorizonThemeToggle(),
+                    // ),
                     Align(alignment: Alignment.center, child: LoginForm()),
                   ],
                 )),

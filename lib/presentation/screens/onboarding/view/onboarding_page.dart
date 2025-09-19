@@ -132,7 +132,7 @@ class OnboardingView extends StatelessWidget {
       bottomNavigationBar: const Footer(),
       body: Column(
         children: [
-          _buildThemeToggle(context, isDarkMode),
+          // _buildThemeToggle(context, isDarkMode),
           Expanded(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: isWideScreen ? 30 : 16),
