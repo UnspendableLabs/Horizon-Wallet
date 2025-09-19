@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
+import 'package:horizon/presentation/screens/forgot_password/forgot_password_view.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:lottie/lottie.dart';
@@ -132,6 +133,28 @@ class _LoginFormState extends State<LoginForm> {
                       return 'Invalid Password';
                     }
                     return null;
+                  },
+                ),
+                const SizedBox(height: 28),
+                TextButton(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 12.0, horizontal: 16.0),
+                    child: Text(
+                      "Forgot Password?",
+                      style: TextStyle(
+                        color: Theme.of(context).textTheme.bodyMedium?.color,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (dialogContext) {
+                        return Dialog.fullscreen(child: ForgotPasswordView());
+                      },
+                    );
                   },
                 ),
                 const SizedBox(height: 28),
