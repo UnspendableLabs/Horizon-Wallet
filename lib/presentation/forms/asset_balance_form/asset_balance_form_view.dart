@@ -135,7 +135,42 @@ class AssetBalanceForm extends StatelessWidget {
       Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           child: state.utxoSwapMap.fold3(
-              onNone: () => const Text("Loading UTXO swaps..."),
+              onNone: () => MultiAddressBalanceDropdown(
+                  utxoSwapMap: {},
+                  balances: MultiAddressBalance.empty,
+                  selectedItemBuilder: (entry) => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "${entry.quantityNormalized} ${state.multiAddressBalance.asset}",
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme
+                                  .extension<CustomThemeExtension>()
+                                  ?.mutedDescriptionTextColor,
+                            ),
+                          ),
+                          Text(
+                            // TODO: i don't love this, period
+                            entry.address ?? entry.utxo!,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              fontSize: 10,
+                              color: theme
+                                  .extension<CustomThemeExtension>()
+                                  ?.offColorText,
+                            ),
+                          ),
+                        ],
+                      ),
+                  onChanged: (value) {
+                    actions.onBalanceSelected(
+                      AssetBalanceFormOption(
+                        entry: value!,
+                      ),
+                    );
+                  },
+                  selectedValue: state.balanceInput.value?.entry,
+                  loading: true),
               onFailure: (_) => const Text("Failed to load UTXO swaps"),
               onReplete: (utxoSwapMap) => MultiAddressBalanceDropdown(
                   utxoSwapMap: utxoSwapMap,
