@@ -63,6 +63,16 @@ class Response<T> {
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
+class GetDetachDataResponse {
+  final String data;
+
+  const GetDetachDataResponse({required this.data});
+
+  factory GetDetachDataResponse.fromJson(Map<String, dynamic> json) =>
+      _$GetDetachDataResponseFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
 class Block {
   final int blockIndex;
   final String blockHash;
@@ -5600,6 +5610,23 @@ abstract class V2Api {
   @GET("/utxos/withbalances")
   Future<Response<UtxoWithBalancesResponse>> utxosWithBalances(
       @Query("utxos") String utxos);
+
+  // public async getDetachData(
+  //   destination: string,
+  //   init?: FetchRetryInit,
+  // ): Promise<string> {
+  //   const res: { result: { data: string } } = await this.request_(
+  //     `/utxos/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:0/compose/detach?validate=false&return_only_data=true&destination=${destination}`,
+  //     init,
+  //   );
+  //   return res.result.data;
+  // }
+
+  @GET(
+      "/utxos/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:0/compose/detach?validate=false&return_only_data=true")
+  Future<Response<GetDetachDataResponse>> getDetachData(
+    @Query("destination") String destination,
+  );
 }
 
 @JsonSerializable()
