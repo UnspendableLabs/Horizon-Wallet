@@ -238,18 +238,28 @@ Map<String, dynamic> _$UtxoSwapMapResponseToJson(
       'map': instance.map,
     };
 
+RoyaltyByAssetResponse _$RoyaltyByAssetResponseFromJson(
+        Map<String, dynamic> json) =>
+    RoyaltyByAssetResponse(
+      royalty: (json['royalty'] as num).toInt(),
+      issuerAddress: json['issuer_address'] as String,
+    );
+
+Map<String, dynamic> _$RoyaltyByAssetResponseToJson(
+        RoyaltyByAssetResponse instance) =>
+    <String, dynamic>{
+      'royalty': instance.royalty,
+      'issuer_address': instance.issuerAddress,
+    };
+
 // **************************************************************************
 // RetrofitGenerator
 // **************************************************************************
 
-// ignore_for_file: unnecessary_brace_in_string_interps,no_leading_underscores_for_local_identifiers,unused_element
+// ignore_for_file: unnecessary_brace_in_string_interps,no_leading_underscores_for_local_identifiers,unused_element,unnecessary_string_interpolations,unused_element_parameter
 
 class _HorizonExplorerApii implements HorizonExplorerApii {
-  _HorizonExplorerApii(
-    this._dio, {
-    this.baseUrl,
-    this.errorLogger,
-  });
+  _HorizonExplorerApii(this._dio, {this.baseUrl, this.errorLogger});
 
   final Dio _dio;
 
@@ -272,22 +282,16 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<AssetSrcResponse>(Options(
-      method: 'GET',
-      headers: _headers,
-      extra: _extra,
-    )
-        .compose(
-          _dio.options,
-          '/explorer/asset-src',
-          queryParameters: queryParameters,
-          data: _data,
-        )
-        .copyWith(
-            baseUrl: _combineBaseUrls(
-          _dio.options.baseUrl,
-          baseUrl,
-        )));
+    final _options = _setStreamType<AssetSrcResponse>(
+      Options(method: 'GET', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/explorer/asset-src',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
     late AssetSrcResponse _value;
     try {
@@ -305,22 +309,16 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
     final queryParameters = <String, dynamic>{r's': query};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<String>(Options(
-      method: 'GET',
-      headers: _headers,
-      extra: _extra,
-    )
-        .compose(
-          _dio.options,
-          '/explorer/search',
-          queryParameters: queryParameters,
-          data: _data,
-        )
-        .copyWith(
-            baseUrl: _combineBaseUrls(
-          _dio.options.baseUrl,
-          baseUrl,
-        )));
+    final _options = _setStreamType<String>(
+      Options(method: 'GET', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/explorer/search',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
     final _result = await _dio.fetch<String>(_options);
     late String _value;
     try {
@@ -334,28 +332,23 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
 
   @override
   Future<DataWrapper<OnChainPaymentModel>> _createOnChainPayment(
-      Map<String, dynamic> body) async {
+    Map<String, dynamic> body,
+  ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     final _data = <String, dynamic>{};
     _data.addAll(body);
-    final _options = _setStreamType<DataWrapper<OnChainPaymentModel>>(Options(
-      method: 'POST',
-      headers: _headers,
-      extra: _extra,
-    )
-        .compose(
-          _dio.options,
-          '/on-chain-payment',
-          queryParameters: queryParameters,
-          data: _data,
-        )
-        .copyWith(
-            baseUrl: _combineBaseUrls(
-          _dio.options.baseUrl,
-          baseUrl,
-        )));
+    final _options = _setStreamType<DataWrapper<OnChainPaymentModel>>(
+      Options(method: 'POST', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/on-chain-payment',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
     late DataWrapper<OnChainPaymentModel> _value;
     try {
@@ -372,29 +365,23 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
 
   @override
   Future<DataWrapper<AtomicSwapCreateResponseData>> _createSwap(
-      Map<String, dynamic> body) async {
+    Map<String, dynamic> body,
+  ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     final _data = <String, dynamic>{};
     _data.addAll(body);
-    final _options =
-        _setStreamType<DataWrapper<AtomicSwapCreateResponseData>>(Options(
-      method: 'POST',
-      headers: _headers,
-      extra: _extra,
-    )
-            .compose(
-              _dio.options,
-              '/atomic-swaps',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            )));
+    final _options = _setStreamType<DataWrapper<AtomicSwapCreateResponseData>>(
+      Options(method: 'POST', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/atomic-swaps',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
     late DataWrapper<AtomicSwapCreateResponseData> _value;
     try {
@@ -412,29 +399,24 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
 
   @override
   Future<DataWrapper<UtxoSwapMapResponse>> getUtxoSwapMap(
-      String sellerAddressk) async {
+    String sellerAddressk,
+  ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
-      r'seller_address': sellerAddressk
+      r'seller_address': sellerAddressk,
     };
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<DataWrapper<UtxoSwapMapResponse>>(Options(
-      method: 'GET',
-      headers: _headers,
-      extra: _extra,
-    )
-        .compose(
-          _dio.options,
-          '/atomic-swaps/asset-utxo-id',
-          queryParameters: queryParameters,
-          data: _data,
-        )
-        .copyWith(
-            baseUrl: _combineBaseUrls(
-          _dio.options.baseUrl,
-          baseUrl,
-        )));
+    final _options = _setStreamType<DataWrapper<UtxoSwapMapResponse>>(
+      Options(method: 'GET', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/atomic-swaps/asset-utxo-id',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
     late DataWrapper<UtxoSwapMapResponse> _value;
     try {
@@ -464,23 +446,16 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _options =
-        _setStreamType<DataWrapper<AtomicSwapListResponseData>>(Options(
-      method: 'GET',
-      headers: _headers,
-      extra: _extra,
-    )
-            .compose(
-              _dio.options,
-              '/atomic-swaps',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            )));
+    final _options = _setStreamType<DataWrapper<AtomicSwapListResponseData>>(
+      Options(method: 'GET', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/atomic-swaps',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
     late DataWrapper<AtomicSwapListResponseData> _value;
     try {
@@ -488,6 +463,41 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
         _result.data!,
         (json) =>
             AtomicSwapListResponseData.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<DataWrapper<RoyaltyByAssetResponse?>> _getRoyaltyByAsset([
+    String? assetName,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<DataWrapper<RoyaltyByAssetResponse?>>(
+      Options(method: 'GET', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/royalties/${assetName}',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late DataWrapper<RoyaltyByAssetResponse?> _value;
+    try {
+      _value = DataWrapper<RoyaltyByAssetResponse?>.fromJson(
+        _result.data!,
+        (json) => json == null
+            ? null
+            : RoyaltyByAssetResponse.fromJson(json as Map<String, dynamic>),
       );
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);
@@ -506,23 +516,16 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
     final _headers = <String, dynamic>{};
     final _data = <String, dynamic>{};
     _data.addAll(body);
-    final _options =
-        _setStreamType<DataWrapper<List<AtomicSwapBuyResponse>>>(Options(
-      method: 'PUT',
-      headers: _headers,
-      extra: _extra,
-    )
-            .compose(
-              _dio.options,
-              '/atomic-swaps/${id}/multi-buy',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            )));
+    final _options = _setStreamType<DataWrapper<List<AtomicSwapBuyResponse>>>(
+      Options(method: 'PUT', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/atomic-swaps/${id}/multi-buy',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
     late DataWrapper<List<AtomicSwapBuyResponse>> _value;
     try {
@@ -530,8 +533,11 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
         _result.data!,
         (json) => json is List<dynamic>
             ? json
-                .map<AtomicSwapBuyResponse>((i) =>
-                    AtomicSwapBuyResponse.fromJson(i as Map<String, dynamic>))
+                .map<AtomicSwapBuyResponse>(
+                  (i) => AtomicSwapBuyResponse.fromJson(
+                    i as Map<String, dynamic>,
+                  ),
+                )
                 .toList()
             : List.empty(),
       );
@@ -544,29 +550,23 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
 
   @override
   Future<DataWrapper<AtomicSwapSaleResponse>> _atomicSwapSale(
-      Map<String, dynamic> body) async {
+    Map<String, dynamic> body,
+  ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     final _data = <String, dynamic>{};
     _data.addAll(body);
-    final _options =
-        _setStreamType<DataWrapper<AtomicSwapSaleResponse>>(Options(
-      method: 'POST',
-      headers: _headers,
-      extra: _extra,
-    )
-            .compose(
-              _dio.options,
-              '/atomic-swaps',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            )));
+    final _options = _setStreamType<DataWrapper<AtomicSwapSaleResponse>>(
+      Options(method: 'POST', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/atomic-swaps',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
     late DataWrapper<AtomicSwapSaleResponse> _value;
     try {
@@ -579,31 +579,6 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
       rethrow;
     }
     return _value;
-  }
-
-  RequestOptions newRequestOptions(Object? options) {
-    if (options is RequestOptions) {
-      return options as RequestOptions;
-    }
-    if (options is Options) {
-      return RequestOptions(
-        method: options.method,
-        sendTimeout: options.sendTimeout,
-        receiveTimeout: options.receiveTimeout,
-        extra: options.extra,
-        headers: options.headers,
-        responseType: options.responseType,
-        contentType: options.contentType.toString(),
-        validateStatus: options.validateStatus,
-        receiveDataWhenStatusError: options.receiveDataWhenStatusError,
-        followRedirects: options.followRedirects,
-        maxRedirects: options.maxRedirects,
-        requestEncoder: options.requestEncoder,
-        responseDecoder: options.responseDecoder,
-        path: '',
-      );
-    }
-    return RequestOptions(path: '');
   }
 
   RequestOptions _setStreamType<T>(RequestOptions requestOptions) {
@@ -619,10 +594,7 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
     return requestOptions;
   }
 
-  String _combineBaseUrls(
-    String dioBaseUrl,
-    String? baseUrl,
-  ) {
+  String _combineBaseUrls(String dioBaseUrl, String? baseUrl) {
     if (baseUrl == null || baseUrl.trim().isEmpty) {
       return dioBaseUrl;
     }

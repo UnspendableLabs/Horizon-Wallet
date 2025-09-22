@@ -4,6 +4,7 @@ import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:horizon/domain/entities/asset_search_result.dart';
 import 'package:horizon/domain/entities/atomic_swap/on_chain_payment.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
+import 'package:horizon/domain/entities/royalty_by_asset.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:retrofit/retrofit.dart';
 import 'package:json_annotation/json_annotation.dart';
@@ -274,6 +275,33 @@ class UtxoSwapMapResponse {
   Map<String, dynamic> toJson() => map;
 }
 
+// {
+//   "data": {
+//     "royalty": 200,
+//     "issuer_address": "tb1q4zepxe42rkhq00l72tzk73seuqw9ydckgynzv5"
+//   }
+// }
+@JsonSerializable(fieldRename: FieldRename.snake)
+class RoyaltyByAssetResponse {
+  final int royalty; // in basis points
+  final String issuerAddress;
+
+  RoyaltyByAssetResponse({
+    required this.royalty,
+    required this.issuerAddress,
+  });
+
+  factory RoyaltyByAssetResponse.fromJson(Map<String, dynamic> json) =>
+      _$RoyaltyResponseFromJson(json);
+
+  RoyaltyByAsset toEntity() {
+    return RoyaltyByAsset(
+      royalty: royalty,
+      issuerAddress: issuerAddress,
+    );
+  }
+}
+
 @RestApi()
 abstract class HorizonExplorerApii {
   factory HorizonExplorerApii(Dio dio, {String baseUrl}) = _HorizonExplorerApii;
@@ -306,6 +334,11 @@ abstract class HorizonExplorerApii {
     @Query('asset_name') String? assetName,
     @Query('order_by') String? orderBy,
     @Query('order') String? order,
+  ]);
+
+  @GET("/royalties/{asset_name}")
+  Future<DataWrapper<RoyaltyByAssetResponse?>> _getRoyaltyByAsset([
+    @Path('asset_name') String? assetName,
   ]);
 
   @PUT('/atomic-swaps/{id}/multi-buy')
@@ -412,6 +445,12 @@ class HorizonExplorerApi {
     } catch (e) {
       rethrow;
     }
+  }
+
+  Future<DataWrapper<RoyaltyByAssetResponse?>> getRoyaltyByAsset(
+      {required String assetName}) async {
+    final res = await _api._getRoyaltyByAsset(assetName);
+    return res;
   }
 
 // TODO: this is a misnomer
