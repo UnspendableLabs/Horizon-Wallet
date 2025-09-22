@@ -39,10 +39,6 @@ extension ListToJSArray<T extends JSAny?> on List<T> {
 /// and returns the ciphertext as a hex string.
 /// Matches CryptoJS: RC4.encrypt(WordArray(data), WordArray(key))
 
-List<int> encryptData(String dataHex, String arc4KeyHex) {
-  return RC4(arc4KeyHex).encodeBytes(utf8.encode(dataHex));
-}
-
 int calculateTxBytesFeeWithRate(
   int vinsLength,
   int voutsLength,
@@ -250,14 +246,15 @@ class TransactionServiceWeb implements TransactionService {
 
     if (detachData != null) {
       final encryptionKey = primaryUtxo.txid;
-      final encryptedDetachData = encryptData(
-        detachData,
-        encryptionKey,
+      JSString encryptedDetachData = horizon_utils.arc4Encrypt(
+        detachData.toJS,
+        encryptionKey.toJS,
       );
 
       final opReturnScript = bitcoinjs.scriptCompile([
         106.toJS,
-        Buffer.from(Uint8List.fromList(encryptedDetachData).toJS)
+        Buffer.from(
+            Uint8List.fromList(hex.decode(encryptedDetachData.toDart)).toJS)
       ].toJS);
 
       print("opReturnScript $opReturnScript");

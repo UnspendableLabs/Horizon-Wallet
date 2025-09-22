@@ -6,3 +6,6 @@ import 'package:horizon/js/bitcoin.dart';
 
 @JS("countSigOps")
 external int countSigOps(Transaction transaction);
+
+@JS("arc4Encrypt")
+external JSString arc4Encrypt(JSString data, JSString key);

@@ -18,6 +18,7 @@
   }
 })(function () {
   const bitcoin = __horizon_js_bundle__.bitcoinjs;
+  const CryptoJS = __horizon_js_bundle__.cryptoJS;
 
   const WITNESS_SCALE_FACTOR = 4;
   const MAX_PUB_KEYS_PER_MULTISIG = 20;
@@ -80,7 +81,22 @@
     return 1;
   }
 
+  function encryptData(data, arc4Key) {
+    // Convert hex key to WordArray (crypto-js format)
+    const key = CryptoJS.enc.Hex.parse(arc4Key);
+
+    // Convert data to WordArray
+    const dataWordArray = CryptoJS.enc.Hex.parse(data);
+
+    // Encrypt using RC4 (ARC4)
+    const encrypted = CryptoJS.RC4.encrypt(dataWordArray, key);
+
+    // Return as hex string
+    return encrypted.ciphertext.toString(CryptoJS.enc.Hex);
+  }
+
   return {
     countSigOps: countSigOps,
+    arc4Encrypt: encryptData,
   };
 });
