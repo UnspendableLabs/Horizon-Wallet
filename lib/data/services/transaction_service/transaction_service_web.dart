@@ -22,7 +22,6 @@ import 'package:horizon/js/bitcoinjs_message.dart' as bitcoinMessage;
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'dart:math';
 
-
 int calculateTxBytesFeeWithRate(
   int vinsLength,
   int voutsLength,
@@ -81,12 +80,6 @@ int calculateTxBytesFeeWithOpReturn(
 
 // TODO: ref config
 const DUST = 546;
-
-void logRaw(String meta, Object jsObject) {
-  print("meta");
-  (globalContext as dynamic).console.dir(jsObject);
-  print("\n");
-}
 
 const DEFAULT_SEQUENCE = 0xffffffff;
 const SIGHASH_DEFAULT = 0x00;
@@ -465,8 +458,6 @@ class TransactionServiceWeb implements TransactionService {
       ),
     );
 
-    logRaw("dummyBuyerInput", dummyBuyerInput);
-
     final sellerInput = await createInputConfig(
       utxo: UtxoID(txid: utxoTxid, vout: utxoVoutIndex),
       vout: utxoVout,
@@ -474,7 +465,6 @@ class TransactionServiceWeb implements TransactionService {
       bitcoinRepository: bitcoinRepository,
       httpConfig: httpConfig,
     );
-    logRaw("sellerInput", sellerInput);
 
     final dummyOutputToBeReplaceedByBuyer = bitcoinjs.TxOutput.make(
       address: source,
