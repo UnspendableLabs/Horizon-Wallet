@@ -684,6 +684,18 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
+  Future<String> getDetachData({
+    required String destination,
+    required HttpConfig httpConfig,
+  }) async {
+    final client = _counterpartyClientFactory.getClient(httpConfig);
+
+    final response = await client.getDetachData(destination);
+
+    return response.result!.data;
+  }
+
+  @override
   Future<compose_detach_utxo.ComposeDetachUtxoResponse> composeDetachUtxo(
       num satPerVbyte,
       List<Utxo> inputsSet,
