@@ -142,3 +142,11 @@ extension type Address._(JSObject _) implements JSObject {
   external static String fromOutputScript(
       JSUint8Array script, JSObject network);
 }
+
+typedef StackElement = JSAny;
+
+/// Represents `StackElement[]`
+typedef Stack = JSArray<StackElement>;
+
+@JS("script.compile")
+external JSUint8Array scriptCompile(Stack chunks);
