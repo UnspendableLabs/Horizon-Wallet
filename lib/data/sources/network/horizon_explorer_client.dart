@@ -292,7 +292,7 @@ class RoyaltyByAssetResponse {
   });
 
   factory RoyaltyByAssetResponse.fromJson(Map<String, dynamic> json) =>
-      _$RoyaltyResponseFromJson(json);
+      _$RoyaltyByAssetResponseFromJson(json);
 
   RoyaltyByAsset toEntity() {
     return RoyaltyByAsset(
