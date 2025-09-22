@@ -433,8 +433,8 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
                                     width: 127,
                                     key: const ValueKey('lottie'),
                                   )),
-                                  onReplete: (_) =>
-                                      const Center(child: TxnSuccessAnimation()),
+                                  onReplete: (_) => const Center(
+                                      child: TxnSuccessAnimation()),
                                   onFailure: (err) => TransactionError(
                                     errorMessage: err.toString(),
                                     onErrorButtonAction: retry,
@@ -444,14 +444,14 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
                             commonHeightSizedBox,
                             state.fold3(
                               onNone: () => Text(
-                                "Creating swap...",
+                                "Completing swap...",
                                 style: Theme.of(context).textTheme.titleMedium,
                               ),
                               onFailure: (_) => const SizedBox.shrink(),
                               onReplete: (hash) => Column(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  Text("Successfully created swap",
+                                  Text("Swap completed...",
                                       style: Theme.of(context)
                                           .textTheme
                                           .titleMedium!),
