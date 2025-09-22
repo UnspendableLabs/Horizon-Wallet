@@ -1,6 +1,7 @@
 import 'dart:js_interop';
 import 'dart:typed_data';
 
+import 'package:simple_rc4/simple_rc4.dart';
 import 'package:collection/collection.dart';
 import 'package:convert/convert.dart';
 import 'dart:convert';
@@ -21,6 +22,26 @@ import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
 import 'package:horizon/js/bitcoinjs_message.dart' as bitcoinMessage;
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'dart:math';
+import 'package:pointycastle/pointycastle.dart'; // StreamCipher, KeyParameter
+import 'package:convert/convert.dart' as convert; // hex.decode/encode
+
+extension ListToJSArray<T extends JSAny?> on List<T> {
+  JSArray<T> toJSArray() {
+    final jsArray = JSArray<T>();
+    for (final element in this) {
+      jsArray.add(element);
+    }
+    return jsArray;
+  }
+}
+
+/// Encrypts hex-encoded `data` with a hex-encoded RC4 key (`arc4KeyHex`)
+/// and returns the ciphertext as a hex string.
+/// Matches CryptoJS: RC4.encrypt(WordArray(data), WordArray(key))
+
+List<int> encryptData(String dataHex, String arc4KeyHex) {
+  return RC4(arc4KeyHex).encodeBytes(utf8.encode(dataHex));
+}
 
 int calculateTxBytesFeeWithRate(
   int vinsLength,
@@ -156,6 +177,8 @@ class TransactionServiceWeb implements TransactionService {
     String? royaltyAddress,
     String? detachData,
   }) async {
+    // detachData = null;
+
     // can only do multi swap with P2WPKH seller inputs
     if (swapsWithSellerTransactions.length > 1) {
       for (var i = 0; i < swapsWithSellerTransactions.length; i++) {
@@ -226,7 +249,23 @@ class TransactionServiceWeb implements TransactionService {
     }
 
     if (detachData != null) {
-      throw Exception("detachData is not supported in multi-buy PSBT yet");
+      final encryptionKey = primaryUtxo.txid;
+      final encryptedDetachData = encryptData(
+        detachData,
+        encryptionKey,
+      );
+
+      final opReturnScript = bitcoinjs.scriptCompile([
+        106.toJS,
+        Buffer.from(Uint8List.fromList(encryptedDetachData).toJS)
+      ].toJS);
+
+      print("opReturnScript $opReturnScript");
+
+      psbt.addOutput(bitcoinjs.TxOutput.make(
+        script: opReturnScript,
+        value: 0,
+      ));
     } else {
       psbt.addOutput(bitcoinjs.TxOutput.make(
         address: buyerAddress,
@@ -256,6 +295,7 @@ class TransactionServiceWeb implements TransactionService {
     }
 
     // add additional inputs if  need to cover outputs + fees
+    print("\n\n\n\n\n");
     for (var i = 1; i < utxosWithBuyerTransactions.length; i++) {
       final utxo = utxosWithBuyerTransactions[i].utxo;
       final tx = utxosWithBuyerTransactions[i].transaction;
@@ -268,7 +308,14 @@ class TransactionServiceWeb implements TransactionService {
 
       final totalRequired = totalOutputValue + BigInt.from(estimatedFee);
 
+      print("totalInputValue: $totalInputValue");
+
+      print("totalRequired`: $totalRequired`");
+
+      print("utxo $utxo");
       if (totalInputValue >= totalRequired) {
+        print("max index ${utxosWithBuyerTransactions.length}");
+        print("index ${i}");
         break;
       }
 
@@ -310,6 +357,8 @@ class TransactionServiceWeb implements TransactionService {
         value: change.toInt(),
       ));
     }
+
+    print("inputIndices: $inputIndices");
 
     return MakeBuyPsbtReturn(
       psbtHex: psbt.toHex(),
