@@ -7,6 +7,7 @@ import "package:horizon/domain/entities/bitcoin_tx.dart";
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/atomic_swap_repository.dart';
+import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/utxo.dart';
@@ -280,6 +281,7 @@ class SwapMultiBuySignFormBloc
   final TransactionService _transactionService;
   final UtxoRepository _utxoRepository;
   final BitcoinRepository _bitcoinRepository;
+  final ComposeRepository _composeRepository;
   // final AtomicSwapRepository _atomicSwapRepository;
 
   SwapMultiBuySignFormBloc({
@@ -291,9 +293,11 @@ class SwapMultiBuySignFormBloc
     UtxoRepository? utxoRepository,
     BitcoinRepository? bitcoinRepository,
     AtomicSwapRepository? atomicSwapRepository,
+    ComposeRepository? composeRepository,
   })  : _transactionService =
             transactionService ?? GetIt.I<TransactionService>(),
         _utxoRepository = utxoRepository ?? GetIt.I<UtxoRepository>(),
+        _composeRepository = composeRepository ?? GetIt.I<ComposeRepository>(),
         _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>(),
         // _atomicSwapRepository =
         //     atomicSwapRepository ?? GetIt.I<AtomicSwapRepository>(),
@@ -375,6 +379,16 @@ class SwapMultiBuySignFormBloc
             ),
           ));
 
+      for (var utxo in utxosWithTransactions) {
+        print("utxo: ${utxo}");
+      }
+
+      final detachData = await $(_composeRepository.getDetachDataT(
+        destination: buyerAddress.address,
+        httpConfig: httpConfig,
+        onError: (error, st) => 'Failed to get detach data: $error \n\n$st',
+      ));
+
       return await $(_transactionService.makeMultiBuyPsbtT(
         buyerAddress: buyerAddress.address,
         swapsWithSellerTransactions: swapsWithTransactions,
@@ -382,6 +396,7 @@ class SwapMultiBuySignFormBloc
         httpConfig: httpConfig,
         royaltyAmount: royaltyAmount,
         feeRate: satsPerVByte.toDouble(),
+        detachData: detachData,
         onError: (error, st) =>
             'Failed to create PSBT for multi-buy: $error \n\n$st',
       ));
