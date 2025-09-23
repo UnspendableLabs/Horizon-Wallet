@@ -208,6 +208,7 @@ class SwapMultiBuySignFormModel {
   final Option<String> error;
   final Option<MakeBuyPsbtReturn> psbtWithArgs;
   final bool showSignPsbtModal;
+  final bool detachAssetsAfterSwap;
 
   SwapMultiBuySignFormModel({
     required this.address,
@@ -218,6 +219,7 @@ class SwapMultiBuySignFormModel {
     required this.error,
     required this.psbtWithArgs,
     required this.showSignPsbtModal,
+    required this.detachAssetsAfterSwap,
   });
 
   SwapMultiBuySignFormModel copyWith(
@@ -228,17 +230,19 @@ class SwapMultiBuySignFormModel {
       FormzSubmissionStatus? signatureStatus,
       Option<String>? error,
       Option<MakeBuyPsbtReturn>? psbtWithArgs,
-      bool? showSignPsbtModal}) {
+      bool? showSignPsbtModal,
+      bool? detachAssetsAfterSwap}) {
     return SwapMultiBuySignFormModel(
-      address: address ?? this.address,
-      atomicSwaps: atomicSwaps ?? this.atomicSwaps,
-      feeEstimates: feeEstimates ?? this.feeEstimates,
-      feeOptionInput: feeOptionInput ?? this.feeOptionInput,
-      signatureStatus: signatureStatus ?? this.signatureStatus,
-      error: error ?? this.error,
-      psbtWithArgs: psbtWithArgs ?? this.psbtWithArgs,
-      showSignPsbtModal: showSignPsbtModal ?? this.showSignPsbtModal,
-    );
+        address: address ?? this.address,
+        atomicSwaps: atomicSwaps ?? this.atomicSwaps,
+        feeEstimates: feeEstimates ?? this.feeEstimates,
+        feeOptionInput: feeOptionInput ?? this.feeOptionInput,
+        signatureStatus: signatureStatus ?? this.signatureStatus,
+        error: error ?? this.error,
+        psbtWithArgs: psbtWithArgs ?? this.psbtWithArgs,
+        showSignPsbtModal: showSignPsbtModal ?? this.showSignPsbtModal,
+        detachAssetsAfterSwap:
+            detachAssetsAfterSwap ?? this.detachAssetsAfterSwap);
   }
 
   num get getSatsPerVByte => switch (feeOptionInput.value) {
@@ -266,6 +270,13 @@ class SubmitClicked extends SwapMultiBuySignFormEvent {}
 
 class CloseSignPsbtModalClicked extends SwapMultiBuySignFormEvent {
   const CloseSignPsbtModalClicked();
+}
+
+class DetachAssetsAfterSwapChanged extends SwapMultiBuySignFormEvent {
+  final bool value;
+  const DetachAssetsAfterSwapChanged(this.value);
+  @override
+  List<Object?> get props => [value];
 }
 
 class FeeOptionChanged extends SwapMultiBuySignFormEvent {
@@ -310,11 +321,20 @@ class SwapMultiBuySignFormBloc
           psbtWithArgs: const Option.none(),
           error: const Option.none(),
           showSignPsbtModal: false,
+          detachAssetsAfterSwap: true,
         )) {
     on<SubmitClicked>(_handleSubmitClicked);
     on<FeeOptionChanged>(_onFeeOptionChanged);
     on<CloseSignPsbtModalClicked>(_handleCloseSignPsbtModalClicked);
     on<SignatureCompleted>(_handleSignatureCompleted);
+    on<DetachAssetsAfterSwapChanged>(_handleDetachAssetsAfterSwapChanged);
+  }
+
+  void _handleDetachAssetsAfterSwapChanged(
+    DetachAssetsAfterSwapChanged event,
+    Emitter<SwapMultiBuySignFormModel> emit,
+  ) {
+    emit(state.copyWith(detachAssetsAfterSwap: event.value));
   }
 
   void _handleCloseSignPsbtModalClicked(
@@ -383,11 +403,15 @@ class SwapMultiBuySignFormBloc
         print("utxo: ${utxo}");
       }
 
-      final detachData = await $(_composeRepository.getDetachDataT(
-        destination: buyerAddress.address,
-        httpConfig: httpConfig,
-        onError: (error, st) => 'Failed to get detach data: $error \n\n$st',
-      ));
+      String? detachData;
+
+      if (state.detachAssetsAfterSwap) {
+        detachData = await $(_composeRepository.getDetachDataT(
+          destination: buyerAddress.address,
+          httpConfig: httpConfig,
+          onError: (error, st) => 'Failed to get detach data: $error \n\n$st',
+        ));
+      }
 
       return await $(_transactionService.makeMultiBuyPsbtT(
         buyerAddress: buyerAddress.address,

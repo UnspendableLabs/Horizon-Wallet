@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:formz/formz.dart';
@@ -34,12 +35,14 @@ class SwapMultiBuySignFormActions {
   final VoidCallback onCloseSignPsbtModalClicked;
   final Function(FeeOption feeOptin) onFeeOptionChanged;
   final Function(String signedPsbtHex) onSignatureCompleted;
+  final Function(bool detach) onDetachAssetsAfterSwapChanged;
 
   SwapMultiBuySignFormActions({
     required this.onCloseSignPsbtModalClicked,
     required this.onSubmitClicked,
     required this.onFeeOptionChanged,
     required this.onSignatureCompleted,
+    required this.onDetachAssetsAfterSwapChanged,
   });
 }
 
@@ -87,6 +90,9 @@ class SwapMultiBuySignFormProvider extends StatelessWidget {
                       SwapMultiBuySignFormModel>(builder: (context, state) {
                     return child(
                         SwapMultiBuySignFormActions(
+                            onDetachAssetsAfterSwapChanged: (value) => context
+                                .read<SwapMultiBuySignFormBloc>()
+                                .add(DetachAssetsAfterSwapChanged(value)),
                             onCloseSignPsbtModalClicked: () => context
                                 .read<SwapMultiBuySignFormBloc>()
                                 .add(const CloseSignPsbtModalClicked()),
@@ -303,14 +309,30 @@ class _SwapMultiBuySignFormState extends State<SwapMultiBuySignForm> {
                                   Row(
                                     children: [
                                       Link(
-                                          href:
-                                              "${session.httpConfig.horizonMarket}/atomic-swaps/${current.id}",
-                                          key: Key("swap-link-${current.id}"),
-                                          display: Text(
+                                        href:
+                                            "${session.httpConfig.horizonMarket}/atomic-swaps/${current.id}",
+                                        key: Key("swap-link-${current.id}"),
+                                        display: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              current.id,
                                               style: const TextStyle(
-                                                color: moderateBlue,
+                                                fontFamily: "RobotoMono",
+                                                fontSize: 14,
+                                                decoration:
+                                                    TextDecoration.underline,
                                               ),
-                                              "${current.id.split("-").first} TK: polish link"))
+                                            ),
+                                            SizedBox(width: 16),
+                                            Icon(
+                                              LucideIcons.externalLink,
+                                              size: 16,
+                                            )
+                                          ],
+                                        ),
+                                      )
                                     ],
                                   )),
                               _renderPropertyWidget(
@@ -368,6 +390,60 @@ class _SwapMultiBuySignFormState extends State<SwapMultiBuySignForm> {
                       height: 14,
                     ),
                     commonHeightSizedBox,
+
+                    Container(
+                      height: 64,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(18),
+                        color: customTheme?.settingsItemBackground ??
+                            transparentBlack66,
+                        border: Border.all(
+                          color: Theme.of(context)
+                                  .inputDecorationTheme
+                                  .outlineBorder
+                                  ?.color ??
+                              transparentBlack8,
+                          width: 1,
+                        ),
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(18),
+                          hoverColor: transparentPurple8,
+                          highlightColor: transparentPurple8,
+                          onTap: () {},
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(14, 11, 14, 11),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    "Detach assets from UTXO after swap",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      letterSpacing: -0.2,
+                                      color: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.color,
+                                    ),
+                                  ),
+                                ),
+                                Switch(
+                                    value: widget.state.detachAssetsAfterSwap,
+                                    onChanged: (value) {
+                                      widget.actions
+                                          .onDetachAssetsAfterSwapChanged(
+                                              value);
+                                    })
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                     const Divider(
                       height: 20,
                       color: transparentWhite8,
@@ -380,6 +456,7 @@ class _SwapMultiBuySignFormState extends State<SwapMultiBuySignForm> {
                       },
                       feeEstimates: widget.state.feeEstimates,
                     ),
+
                     // CollapsableWidget(
                     //   title: "Fee Details",
                     //   child: Column(
