@@ -306,9 +306,13 @@ class ActivityFeedListItem extends StatelessWidget {
 
   String _formatQuantity(String? quantity) {
     if (quantity == null) return '';
-    return quantity
-        .replaceAll(RegExp(r'(?<=\d)0+$'), '')
-        .replaceAll(RegExp(r'\.$'), '');
+    if (quantity.contains(".")) {
+      return quantity.replaceFirst(RegExp(r'\.?0*$'), '');
+    }
+    return quantity;
+    // return quantity
+    //     .replaceAll(RegExp(r'(?<=\d)0+$'), '')
+    //     .replaceAll(RegExp(r'\.$'), '');
   }
 
   @override
