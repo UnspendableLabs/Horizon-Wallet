@@ -200,6 +200,8 @@ class AtomicSwapSignModel with FormzMixin {
 }
 
 class SwapMultiBuySignFormModel {
+  final BigInt royaltyAmount;
+  final String? royaltyAddress;
   final AddressV2 address;
   final List<AtomicSwap> atomicSwaps;
   final FeeEstimates feeEstimates;
@@ -211,6 +213,8 @@ class SwapMultiBuySignFormModel {
   final bool detachAssetsAfterSwap;
 
   SwapMultiBuySignFormModel({
+    required this.royaltyAmount,
+    this.royaltyAddress,
     required this.address,
     required this.atomicSwaps,
     required this.feeEstimates,
@@ -222,17 +226,21 @@ class SwapMultiBuySignFormModel {
     required this.detachAssetsAfterSwap,
   });
 
-  SwapMultiBuySignFormModel copyWith(
-      {AddressV2? address,
-      List<AtomicSwap>? atomicSwaps,
-      FeeEstimates? feeEstimates,
-      FeeOptionInput? feeOptionInput,
-      FormzSubmissionStatus? signatureStatus,
-      Option<String>? error,
-      Option<MakeBuyPsbtReturn>? psbtWithArgs,
-      bool? showSignPsbtModal,
-      bool? detachAssetsAfterSwap}) {
+  SwapMultiBuySignFormModel copyWith({
+    BigInt? royaltyAmount,
+    AddressV2? address,
+    List<AtomicSwap>? atomicSwaps,
+    FeeEstimates? feeEstimates,
+    FeeOptionInput? feeOptionInput,
+    FormzSubmissionStatus? signatureStatus,
+    Option<String>? error,
+    Option<MakeBuyPsbtReturn>? psbtWithArgs,
+    bool? showSignPsbtModal,
+    bool? detachAssetsAfterSwap,
+  }) {
     return SwapMultiBuySignFormModel(
+        royaltyAddress: royaltyAddress,
+        royaltyAmount: royaltyAmount ?? this.royaltyAmount,
         address: address ?? this.address,
         atomicSwaps: atomicSwaps ?? this.atomicSwaps,
         feeEstimates: feeEstimates ?? this.feeEstimates,
@@ -300,6 +308,8 @@ class SwapMultiBuySignFormBloc
     required List<AtomicSwap> atomicSwaps,
     required AddressV2 address,
     required this.httpConfig,
+    required BigInt royaltyAmount,
+    required String? royaltyAddress,
     TransactionService? transactionService,
     UtxoRepository? utxoRepository,
     BitcoinRepository? bitcoinRepository,
@@ -313,6 +323,8 @@ class SwapMultiBuySignFormBloc
         // _atomicSwapRepository =
         //     atomicSwapRepository ?? GetIt.I<AtomicSwapRepository>(),
         super(SwapMultiBuySignFormModel(
+          royaltyAddress: royaltyAddress,
+          royaltyAmount: royaltyAmount,
           address: address,
           atomicSwaps: atomicSwaps,
           signatureStatus: FormzSubmissionStatus.initial,
@@ -363,7 +375,6 @@ class SwapMultiBuySignFormBloc
       num satsPerVByte = state.getSatsPerVByte;
 
       // ignore  royalities fo now
-      int royaltyAmount = 0;
 
       List<(AtomicSwap, BitcoinTx)> swapsWithTransactions =
           await $(TaskEither.sequenceList(state.atomicSwaps
@@ -415,10 +426,12 @@ class SwapMultiBuySignFormBloc
 
       return await $(_transactionService.makeMultiBuyPsbtT(
         buyerAddress: buyerAddress.address,
+        royaltyAddress: state.royaltyAddress,
         swapsWithSellerTransactions: swapsWithTransactions,
         utxosWithBuyerTransactions: utxosWithTransactions,
         httpConfig: httpConfig,
-        royaltyAmount: royaltyAmount,
+        // TODO: change to BigInt
+        royaltyAmount: state.royaltyAmount.toInt(),
         feeRate: satsPerVByte.toDouble(),
         detachData: detachData,
         onError: (error, st) =>

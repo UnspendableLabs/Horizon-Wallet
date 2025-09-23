@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:horizon/domain/entities/bitcoin_tx.dart';
+import 'package:horizon/domain/entities/royalty_by_asset.dart';
+import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
 import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
@@ -39,17 +42,21 @@ class CreatePsbtFormActions {
 }
 
 class CreatePsbtFormProvider extends StatelessWidget {
+  final fp.Option<RoyaltyByAsset> assetRoyalty;
   final AddressV2 address;
-  final String utxoID;
+  final UtxoID utxoID;
+  final BitcoinTx utxoTransaction;
 
   final Widget Function(
       CreatePsbtFormActions actions, CreatePsbtFormModel state) child;
 
   const CreatePsbtFormProvider({
     super.key,
+    required this.assetRoyalty,
     required this.utxoID,
     required this.address,
     required this.child,
+    required this.utxoTransaction,
   });
 
   @override
@@ -57,6 +64,8 @@ class CreatePsbtFormProvider extends StatelessWidget {
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
     return BlocProvider(
         create: (context) => CreatePsbtFormBloc(
+              utxoTransaction: utxoTransaction,
+              assetRoyalty: assetRoyalty,
               address: address,
               httpConfig: session.httpConfig,
               utxoID: utxoID,
@@ -336,6 +345,9 @@ class _CreatePsbtFormState extends State<CreatePsbtForm> {
                             theme.textTheme.labelSmall?.copyWith(height: 1.2),
                       )),
               BtcPriceInputError.isDust => Text("price < dust ($dust sats)",
+                  style: theme.textTheme.labelSmall?.copyWith(height: 1.2)),
+              BtcPriceInputError.isTooSmallBecauseOfRoyalty => Text(
+                  "Min price with royalty = ${widget.state.minPrice} sats",
                   style: theme.textTheme.labelSmall?.copyWith(height: 1.2)),
               _ => const Text("")
             }

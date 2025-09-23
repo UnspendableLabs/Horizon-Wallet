@@ -174,6 +174,7 @@ class TransactionServiceWeb implements TransactionService {
     String? detachData,
   }) async {
     // detachData = null;
+    print("royaltyAmount $royaltyAmount");
 
     // can only do multi swap with P2WPKH seller inputs
     if (swapsWithSellerTransactions.length > 1) {

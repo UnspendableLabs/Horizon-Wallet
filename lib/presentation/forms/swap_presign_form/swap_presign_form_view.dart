@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:fpdart/fpdart.dart';
+import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/entities/remote_data.dart';
+import 'package:horizon/domain/repositories/royalties_repository.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -20,33 +25,53 @@ class SwapPresignFormProvider extends StatelessWidget {
   final HttpConfig httpConfig;
   final List<AtomicSwap> atomicSwaps;
   final String assetName;
+  final RoyaltiesRepository _royaltiesRepository;
 
   final Widget Function(
     SwapPresignFormActions actions,
     SwapPresignFormModel state,
   ) child;
 
-  const SwapPresignFormProvider({
+  SwapPresignFormProvider({
     super.key,
     required this.child,
     required this.httpConfig,
     required this.atomicSwaps,
     required this.assetName,
-  });
+    RoyaltiesRepository? royaltiesRepository,
+  }) : _royaltiesRepository =
+            royaltiesRepository ?? GetIt.I<RoyaltiesRepository>();
+
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) =>
-          SwapPresignFormBloc(atomicSwaps: atomicSwaps, assetName: assetName),
-      child: BlocBuilder<SwapPresignFormBloc, SwapPresignFormModel>(
-          builder: (context, state) {
-        return child(
-            SwapPresignFormActions(
-                onSubmitClicked: () =>
-                    context.read<SwapPresignFormBloc>().add(SubmitClicked())),
-            state);
-      }),
-    );
+    return RemoteDataTaskEitherBuilder(
+        task: _royaltiesRepository.getByAssetT(
+            assetName: assetName,
+            httpConfig: httpConfig,
+            onError: (_, __) => "Error fetching royalties"),
+        builder: (context, state, _refresh) => state.fold3(
+            onNone: () => const Center(child: CircularProgressIndicator()),
+            onFailure: (error) => Center(
+                  child: Text(
+                    error.toString(),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+            onReplete: (replete) => BlocProvider(
+                  create: (context) => SwapPresignFormBloc(
+                      royaltyByAsset: replete,
+                      atomicSwaps: atomicSwaps,
+                      assetName: assetName),
+                  child: BlocBuilder<SwapPresignFormBloc, SwapPresignFormModel>(
+                      builder: (context, state) {
+                    return child(
+                        SwapPresignFormActions(
+                            onSubmitClicked: () => context
+                                .read<SwapPresignFormBloc>()
+                                .add(SubmitClicked())),
+                        state);
+                  }),
+                )));
   }
 }
 
@@ -128,6 +153,21 @@ class SwapPresignForm extends StatelessWidget {
                       state.transactionCount.toString(), theme),
                   _gradQtyProperty("Total you’ll send (BTC)",
                       state.totalBtc.normalizedPretty(precision: 8), theme),
+
+                  ...state.royaltyByAsset.fold(
+                      () => [],
+                      (royalty) => [
+                            _gradQtyProperty(
+                                "Swap price (BTC)",
+                                state.totalSwapBtc
+                                    .normalizedPretty(precision: 8),
+                                theme),
+                            _gradQtyProperty(
+                                "${royalty.royalty / 100}% Royalty price (BTC)",
+                                state.totalRoyaltyBtc
+                                    .normalizedPretty(precision: 8),
+                                theme),
+                          ]),
                   _gradQtyProperty(
                       "Total you’ll receive (${state.assetName})",
                       state.totalRecieveAsset.normalizedPretty(precision: 8),

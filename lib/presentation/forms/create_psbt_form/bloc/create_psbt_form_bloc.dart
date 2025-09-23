@@ -1,9 +1,13 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/rendering.dart';
 import 'package:formz/formz.dart';
 import 'package:get_it/get_it.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:decimal/decimal.dart';
+import 'package:horizon/domain/entities/bitcoin_tx.dart';
+import 'package:horizon/domain/entities/royalty_by_asset.dart';
+import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/common/constants.dart';
@@ -17,15 +21,61 @@ import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/address_service.dart';
 
-enum BtcPriceInputError { required, isNaN, isNegative, isDust }
+BigInt _calculateMinPrice(RoyaltyByAsset royalty, BigInt dust, int voutValue) {
+  final baseMinimum = [
+    dust,
+    BigInt.from(voutValue),
+  ].reduce((max, curr) => curr > max ? curr : max);
+
+  final royaltyPercent =
+      Decimal.fromInt(royalty.royalty) / Decimal.fromInt(10000);
+
+  final minPriceForRoyalty = (dust.toDecimal() *
+          Decimal.fromInt(10000) /
+          Decimal.fromInt(royalty.royalty))
+      .ceil();
+
+  final minPriceForTotalReceive = (Decimal.fromBigInt(baseMinimum) /
+          (Decimal.one - royaltyPercent.toDecimal()))
+      .ceil();
+
+  return [
+    minPriceForRoyalty,
+    minPriceForTotalReceive,
+  ].reduce((max, curr) => curr > max ? curr : max);
+}
+
+enum BtcPriceInputError {
+  required,
+  isNaN,
+  isNegative,
+  isDust,
+  isTooSmallBecauseOfRoyalty
+}
 
 class BtcPriceInput extends FormzInput<String, BtcPriceInputError> {
-  const BtcPriceInput.pure() : super.pure('0.00');
-  const BtcPriceInput.dirty({required String value}) : super.dirty(value);
+  final BigInt minPrice;
+
+  const BtcPriceInput.pure({required this.minPrice}) : super.pure('0.00');
+  const BtcPriceInput.dirty({
+    required String value,
+    required this.minPrice,
+  }) : super.dirty(value);
   @override
   BtcPriceInputError? validator(String value) {
     if (value.isEmpty) {
       return BtcPriceInputError.required;
+    }
+
+    BtcPriceInputError? royaltyError = asSats.fold(() => null, (sats) {
+      if (sats < minPrice) {
+        return BtcPriceInputError.isTooSmallBecauseOfRoyalty;
+      }
+      return null;
+    });
+
+    if (royaltyError != null) {
+      return royaltyError;
     }
 
     BtcPriceInputError? dustError = asSats.fold(
@@ -57,6 +107,11 @@ class BtcPriceInput extends FormzInput<String, BtcPriceInputError> {
 }
 
 class CreatePsbtFormModel with FormzMixin {
+  final Option<RoyaltyByAsset> assetRoyalty;
+
+  final BitcoinTx utxoTransaction;
+  final UtxoID utxoID;
+
   final BtcPriceInput btcPriceInput;
   final FormzSubmissionStatus submissionStatus;
 
@@ -68,19 +123,25 @@ class CreatePsbtFormModel with FormzMixin {
   final String? signedPsbt;
 
   CreatePsbtFormModel(
-      {required this.btcPriceInput,
+      {required this.utxoID,
+      required this.btcPriceInput,
       required this.submissionStatus,
       required this.showSignPsbtModal,
       required this.unsignedPsbtHex,
+      required this.utxoTransaction,
       this.expiryDate,
       this.error,
-      this.signedPsbt});
+      this.signedPsbt,
+      required this.assetRoyalty});
 
   @override
   List<FormzInput> get inputs => [btcPriceInput];
 
   CreatePsbtFormModel copyWith(
-          {BtcPriceInput? btcPriceInput,
+          {Option<RoyaltyByAsset>? assetRoyalty,
+          UtxoID? utxoID,
+          BitcoinTx? utxoTransaction,
+          BtcPriceInput? btcPriceInput,
           DateTime? expiryDate,
           FormzSubmissionStatus? submissionStatus,
           String? error,
@@ -88,6 +149,9 @@ class CreatePsbtFormModel with FormzMixin {
           Option<String>? unsignedPsbtHex,
           Option<bool> showSignPsbtModal = const None()}) =>
       CreatePsbtFormModel(
+        utxoID: utxoID ?? this.utxoID,
+        utxoTransaction: utxoTransaction ?? this.utxoTransaction,
+        assetRoyalty: assetRoyalty ?? this.assetRoyalty,
         unsignedPsbtHex: unsignedPsbtHex ?? this.unsignedPsbtHex,
         showSignPsbtModal:
             showSignPsbtModal.getOrElse(() => this.showSignPsbtModal),
@@ -99,6 +163,12 @@ class CreatePsbtFormModel with FormzMixin {
       );
 
   get submitDisabled => isNotValid || submissionStatus.isInProgress;
+
+  Vout get vout => utxoTransaction.vout[utxoID.vout];
+
+  BigInt get minPrice => assetRoyalty.fold(() => dust, (royalty) {
+        return _calculateMinPrice(royalty, dust, vout.value);
+      });
 }
 
 sealed class CreatePsbtFormEvent extends Equatable {
@@ -136,7 +206,7 @@ class CreatePsbtFormBloc
     extends Bloc<CreatePsbtFormEvent, CreatePsbtFormModel> {
   final AddressV2 address;
 
-  final String utxoID;
+  final UtxoID utxoID;
   final HttpConfig httpConfig;
 
   final BitcoinRepository _bitcoinRepository;
@@ -150,9 +220,11 @@ class CreatePsbtFormBloc
   final AddressService _addressService;
 
   CreatePsbtFormBloc({
+    required Option<RoyaltyByAsset> assetRoyalty,
     required this.address,
     required this.httpConfig,
     required this.utxoID,
+    required BitcoinTx utxoTransaction,
     BitcoinRepository? bitcoinRepository,
     TransactionService? transactionService,
     WalletConfigRepository? walletConfigRepository,
@@ -172,9 +244,19 @@ class CreatePsbtFormBloc
         _addressService = addressService ?? GetIt.I<AddressService>(),
         super(
           CreatePsbtFormModel(
+            utxoID: utxoID,
+            utxoTransaction: utxoTransaction,
+            assetRoyalty: assetRoyalty,
             showSignPsbtModal: false,
             unsignedPsbtHex: const None(),
-            btcPriceInput: const BtcPriceInput.pure(), // const value
+            btcPriceInput: BtcPriceInput.pure(
+                minPrice: assetRoyalty.fold(
+                    () => dust,
+                    (royalty) => _calculateMinPrice(
+                        royalty,
+                        dust,
+                        utxoTransaction
+                            .vout[utxoID.vout].value))), // temp value
             submissionStatus: FormzSubmissionStatus.initial,
           ),
         ) {
@@ -207,7 +289,8 @@ class CreatePsbtFormBloc
     BtcPriceInputChanged event,
     Emitter<CreatePsbtFormModel> emit,
   ) {
-    final btcPriceInput = BtcPriceInput.dirty(value: event.value);
+    final btcPriceInput =
+        BtcPriceInput.dirty(minPrice: state.minPrice, value: event.value);
 
     emit(
       state.copyWith(
@@ -228,14 +311,11 @@ class CreatePsbtFormBloc
       // TODO: just get rid of this
     ));
 
-    final attachTxID = utxoID.split(":")[0];
-    final voutIndex = int.parse(utxoID.split(":")[1]);
+    final attachTxID = utxoID.txid;
+    final voutIndex = utxoID.vout;
 
     final task = TaskEither<String, String>.Do(($) async {
-      final tx = await $(_bitcoinRepository.getTransactionT(
-          txid: attachTxID,
-          httpConfig: httpConfig,
-          onError: (_) => "Error fetching tx with id: $utxoID"));
+      final tx = state.utxoTransaction;
 
       final priceInSats = await $(TaskEither.fromOption(
           state.btcPriceInput.asSats,

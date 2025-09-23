@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/services.dart';
+import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 
 import 'package:horizon/domain/entities/remote_data.dart';
@@ -75,9 +76,16 @@ class _SwapSuccessStepState extends State<SwapSuccessStep> {
 }
 
 class AtomicSwapsToSign {
+  final AssetQuantity royaltyAmount;
+  final String? royaltyAddress;
+
   final List<AtomicSwap> atomicSwaps;
   final String assetName;
-  const AtomicSwapsToSign({required this.atomicSwaps, required this.assetName});
+  const AtomicSwapsToSign(
+      {required this.royaltyAmount,
+      required this.atomicSwaps,
+      required this.assetName,
+      required this.royaltyAddress});
 }
 
 class AtomicSwapBuyModel extends Equatable {
@@ -287,6 +295,9 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
                         SwapPresignSuccessHandler(onSuccess: (swaps) {
                           _controller.update((model) => model.copyWith(
                               atomicSwapsToSign: Option.of(AtomicSwapsToSign(
+                                  royaltyAmount: state.totalRoyaltyBtc,
+                                  royaltyAddress: state.royaltyByAsset
+                                      .fold(() => null, (r) => r.issuerAddress),
                                   atomicSwaps: swaps,
                                   assetName: widget.receiveAsset.name))));
                         }),
@@ -297,18 +308,37 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
                       ],
                     ),
                   )))),
-          model.atomicSwapsToSign.map((atomciSwapsToSign) => MaterialPage(
+          model.atomicSwapsToSign.map((atomicSwapsToSign) => MaterialPage(
               child: SwapMultiBuySignFormProvider(
+                  royaltyAddress: atomicSwapsToSign.royaltyAddress,
+                  royaltyAmount: atomicSwapsToSign.royaltyAmount.quantity,
                   address: widget.addresses.firstWhere(
                     (address) =>
                         address.address ==
                         model.bitcoinBalance.getOrThrow().address,
                   ),
                   httpConfig: session.httpConfig,
-                  atomicSwaps: atomciSwapsToSign.atomicSwaps,
-                  assetName: atomciSwapsToSign.assetName,
+                  atomicSwaps: atomicSwapsToSign.atomicSwaps,
+                  assetName: atomicSwapsToSign.assetName,
                   child: (actions, state) => FlowStep(
                       leading: IconButton(
+                        onPressed: () {
+                          if (state.signatureStatus.isInProgressOrSuccess) {
+                            return;
+                          }
+
+                          _controller.update((model) => model.copyWith(
+                                atomicSwapsToSign: const Option.none(),
+                              ));
+                        },
+                        icon: AppIcons.backArrowIcon(
+                          context: context,
+                          width: 24,
+                          height: 24,
+                          fit: BoxFit.fitHeight,
+                        ),
+                      ),
+                      trailing: IconButton(
                         onPressed: () {
                           if (state.signatureStatus.isInProgressOrSuccess) {
                             return;

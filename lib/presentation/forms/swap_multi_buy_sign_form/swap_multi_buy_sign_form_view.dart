@@ -52,6 +52,8 @@ class SwapMultiBuySignFormProvider extends StatelessWidget {
   final String assetName;
   final FeeEstimatesRespository _feeEstimatesRepository;
   final AddressV2 address;
+  final BigInt royaltyAmount;
+  final String? royaltyAddress;
 
   final Widget Function(
     SwapMultiBuySignFormActions actions,
@@ -65,6 +67,8 @@ class SwapMultiBuySignFormProvider extends StatelessWidget {
     required this.atomicSwaps,
     required this.assetName,
     required this.address,
+    required this.royaltyAmount,
+    required this.royaltyAddress,
     FeeEstimatesRespository? feeEstimatesRepository,
   }) : _feeEstimatesRepository =
             feeEstimatesRepository ?? GetIt.I<FeeEstimatesRespository>();
@@ -82,6 +86,8 @@ class SwapMultiBuySignFormProvider extends StatelessWidget {
                 child: CircularProgressIndicator()), // should not happen
             onSuccess: (feeEstimates) => BlocProvider(
                   create: (context) => SwapMultiBuySignFormBloc(
+                      royaltyAmount: royaltyAmount,
+                      royaltyAddress: royaltyAddress,
                       httpConfig: session.httpConfig,
                       address: address,
                       feeEstimates: feeEstimates,

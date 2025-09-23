@@ -95,6 +95,9 @@ import 'package:horizon/data/sources/repositories/events_repository_impl.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/data/sources/repositories/bitcoin_repository_impl.dart';
 
+import 'package:horizon/domain/repositories/royalties_repository.dart';
+import 'package:horizon/data/sources/repositories/royalties_repository_impl.dart';
+
 import 'package:horizon/domain/repositories/asset_search_repository.dart';
 import 'package:horizon/data/sources/repositories/asset_search_repository_impl.dart';
 
@@ -625,6 +628,8 @@ void setup() {
 
   injector.registerSingleton<MempoolPriceService>(MempoolPriceServiceImpl(
       mempoolSpaceClientFactory: GetIt.I.get<MempoolSpaceClientFactory>()));
+
+  injector.registerSingleton<RoyaltiesRepository>(RoyaltiesRepositoryImpl());
 }
 
 class CustomDioException extends DioException {

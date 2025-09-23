@@ -3,7 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
+import 'package:horizon/data/sources/network/horizon_explorer_client.dart';
+import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/http_config.dart';
+import 'package:horizon/domain/entities/royalty_by_asset.dart';
+import 'package:horizon/domain/repositories/royalties_repository.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/presentation/forms/asset_balance_form/bloc/asset_balance_form_bloc.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/utxo.dart';
@@ -15,6 +20,7 @@ import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:horizon/presentation/common/transactions/success_animation.dart';
 import 'package:horizon/presentation/common/transactions/transaction_error.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/presentation/forms/base/flow/view/flow_step.dart';
@@ -169,6 +175,8 @@ class AtomicSwapSellFlowView extends StatefulWidget {
   final Config _config;
 
   final AtomicSwapRepository _atomicSwapRepository;
+  final RoyaltiesRepository _royaltiesRepository;
+  final BitcoinRepository _bitcoinRepository;
   final UtxoRepository _utxoRepository;
 
   final List<AddressV2> addresses;
@@ -181,11 +189,16 @@ class AtomicSwapSellFlowView extends StatefulWidget {
       Config? config,
       AtomicSwapRepository? atomicSwapRepository,
       UtxoRepository? utxoRepository,
+      RoyaltiesRepository? royaltiesRepository,
+      BitcoinRepository? bitcoinRepository,
       super.key})
       : _config = config ?? GetIt.I<Config>(),
         _utxoRepository = utxoRepository ?? GetIt.I<UtxoRepository>(),
+        _royaltiesRepository =
+            royaltiesRepository ?? GetIt.I<RoyaltiesRepository>(),
         _atomicSwapRepository =
-            atomicSwapRepository ?? GetIt.I<AtomicSwapRepository>();
+            atomicSwapRepository ?? GetIt.I<AtomicSwapRepository>(),
+        _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>();
 
   @override
   State<AtomicSwapSellFlowView> createState() => _AtomicSwapSellFlowViewState();
@@ -344,46 +357,83 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                             )),
                         title: "Create PSBT",
                         widthFactor: .8,
-                        body: CreatePsbtFormProvider(
-                          utxoID: variant.utxoId.toString(),
-                          address: widget.addresses.firstWhere((address) =>
-                              address.address == variant.utxoAddress),
-                          child: (actions, state) => Column(
-                            children: [
-                              CreatePsbtSuccessHandler(
-                                  onSuccess: (createPsbtSuccess) {
-                                _controller.update(
-                                  (model) => model.copyWith(
-                                    swapSellConfirmationDetails: Option.of(
-                                        SwapSellConfirmationDetails(
-                                            expiresAt:
-                                                createPsbtSuccess.expiryDate,
-                                            signedPsbt:
-                                                createPsbtSuccess.signedPsbtHex,
-                                            btcPrice:
-                                                createPsbtSuccess.btcQuantity,
-                                            sellDetails: variant)),
-                                  ),
-                                );
-                              }),
-                              CreatePsbtSignHandler(
-                                  address: variant.utxoAddress,
-                                  onSuccess: actions.onSignatureCompleted,
-                                  onClose: () {
-                                    actions.onCloseSignPsbtModalClicked();
-                                  }),
-                              CreatePsbtForm(
-                                actions: actions,
-                                state: state,
-                                asset: variant.asset,
-                                quantity: variant.quantity,
-                                quantityNormalized: variant.quantityNormalized,
-                                utxo: variant.utxoId.toString(),
-                                utxoAddress: variant.utxoAddress,
-                              ),
-                            ],
-                          ),
-                        ))),
+                        body: RemoteDataTaskEitherBuilder(
+                            task: TaskEither.sequenceList([
+                              widget._bitcoinRepository.getTransactionT(
+                                  txid: variant.utxoId.txid,
+                                  httpConfig: widget.httpConfig,
+                                  onError: (_) =>
+                                      "Error fetching tx with id: ${variant.utxoId.txid}"),
+                              // widget._royaltiesRepository.getByAssetT(
+                              //     assetName: variant.asset,
+                              //     httpConfig: widget.httpConfig,
+                              //     onError: (_, __) =>
+                              //         "Error fetching royalties"),
+                            ]),
+                            builder: (context, state, _) {
+                              return state.fold3(
+                                  onNone: () => Center(
+                                      child: CircularProgressIndicator()),
+                                  onFailure: (err) => Text(err.toString()),
+                                  onReplete: (replete) {
+                                    final transaction = replete[0];
+                                    // final royalties =
+                                    //     replete[1] as Option<RoyaltyByAsset>;
+                                    final royalties = Option.of(RoyaltyByAsset(
+                                        royalty: 300, issuerAddress: "asfa"));
+
+                                    return CreatePsbtFormProvider(
+                                      assetRoyalty: royalties,
+                                      utxoID: variant.utxoId,
+                                      utxoTransaction: transaction,
+                                      address: widget.addresses.firstWhere(
+                                          (address) =>
+                                              address.address ==
+                                              variant.utxoAddress),
+                                      child: (actions, state) => Column(
+                                        children: [
+                                          CreatePsbtSuccessHandler(
+                                              onSuccess: (createPsbtSuccess) {
+                                            _controller.update(
+                                              (model) => model.copyWith(
+                                                swapSellConfirmationDetails: Option.of(
+                                                    SwapSellConfirmationDetails(
+                                                        expiresAt:
+                                                            createPsbtSuccess
+                                                                .expiryDate,
+                                                        signedPsbt:
+                                                            createPsbtSuccess
+                                                                .signedPsbtHex,
+                                                        btcPrice:
+                                                            createPsbtSuccess
+                                                                .btcQuantity,
+                                                        sellDetails: variant)),
+                                              ),
+                                            );
+                                          }),
+                                          CreatePsbtSignHandler(
+                                              address: variant.utxoAddress,
+                                              onSuccess:
+                                                  actions.onSignatureCompleted,
+                                              onClose: () {
+                                                actions
+                                                    .onCloseSignPsbtModalClicked();
+                                              }),
+                                          CreatePsbtForm(
+                                            actions: actions,
+                                            state: state,
+                                            asset: variant.asset,
+                                            quantity: variant.quantity,
+                                            quantityNormalized:
+                                                variant.quantityNormalized,
+                                            utxo: variant.utxoId.toString(),
+                                            utxoAddress: variant.utxoAddress,
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  });
+                            })))
               }),
           model.swapSellConfirmationDetails.map((details) => MaterialPage(
                 child: FlowStep(

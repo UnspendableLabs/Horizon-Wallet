@@ -1,16 +1,22 @@
+import 'package:decimal/decimal.dart';
+import 'package:fpdart/fpdart.dart' show Option;
+import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
 import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 import 'package:equatable/equatable.dart';
+import 'package:horizon/domain/entities/royalty_by_asset.dart';
 
 class SwapPresignFormModel with FormzMixin {
+  final Option<RoyaltyByAsset> royaltyByAsset;
   final String assetName;
   final List<AtomicSwap> atomicSwaps;
 
   final FormzSubmissionStatus submissionStatus;
 
   const SwapPresignFormModel({
+    required this.royaltyByAsset,
     required this.atomicSwaps,
     required this.assetName,
     required this.submissionStatus,
@@ -24,9 +30,26 @@ class SwapPresignFormModel with FormzMixin {
   }
 
   AssetQuantity get totalBtc {
+    return totalSwapBtc + totalRoyaltyBtc;
+  }
+
+  AssetQuantity get totalSwapBtc {
     return atomicSwaps.fold(
         AssetQuantity(divisible: true, quantity: BigInt.zero),
         (previousValue, element) => previousValue + element.price);
+  }
+
+  AssetQuantity get totalRoyaltyBtc {
+    final quantity = royaltyByAsset.fold(
+      () => BigInt.zero,
+      (royalty) => ((Decimal.fromBigInt(totalSwapBtc.quantity) *
+              (Decimal.fromInt(royalty.royalty) / Decimal.fromInt(100))
+                  .toDecimal() /
+              Decimal.fromInt(100))
+          .floor()),
+    );
+
+    return AssetQuantity(divisible: true, quantity: quantity);
   }
 
   AssetQuantity get totalRecieveAsset {
@@ -37,8 +60,10 @@ class SwapPresignFormModel with FormzMixin {
 
   SwapPresignFormModel copyWith({
     FormzSubmissionStatus? submissionStatus,
+    Option<RoyaltyByAsset>? royaltyByAsset,
   }) {
     return SwapPresignFormModel(
+      royaltyByAsset: royaltyByAsset ?? this.royaltyByAsset,
       atomicSwaps: atomicSwaps,
       assetName: assetName,
       submissionStatus: submissionStatus ?? this.submissionStatus,
@@ -58,9 +83,11 @@ class SubmitClicked extends SwapPresignFormEvent {}
 class SwapPresignFormBloc
     extends Bloc<SwapPresignFormEvent, SwapPresignFormModel> {
   SwapPresignFormBloc({
+    required Option<RoyaltyByAsset> royaltyByAsset,
     required List<AtomicSwap> atomicSwaps,
     required String assetName,
   }) : super(SwapPresignFormModel(
+            royaltyByAsset: royaltyByAsset,
             atomicSwaps: atomicSwaps,
             assetName: assetName,
             submissionStatus: FormzSubmissionStatus.initial)) {

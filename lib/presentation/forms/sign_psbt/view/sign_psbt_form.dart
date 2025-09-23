@@ -375,25 +375,25 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
           ],
         ),
 
-        output.balances.isNotEmpty
-            ? Card(
-                margin: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(8.0, 16.0, 8.0, 16.0),
-                  child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment
-                          .start, // <-- This ensures left alignment
-                      children: [
-                        Text("Attached Assets",
-                            style: theme.textTheme.labelSmall),
-                        ...balancesWidget,
-                      ]),
-                ))
-            : const SizedBox.shrink()
+        // output.balances.isNotEmpty
+        //     ? Card(
+        //         margin: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+        //         shape: RoundedRectangleBorder(
+        //           borderRadius: BorderRadius.circular(8.0),
+        //         ),
+        //         child: Padding(
+        //           padding: const EdgeInsets.fromLTRB(8.0, 16.0, 8.0, 16.0),
+        //           child: Column(
+        //               mainAxisAlignment: MainAxisAlignment.start,
+        //               crossAxisAlignment: CrossAxisAlignment
+        //                   .start, // <-- This ensures left alignment
+        //               children: [
+        //                 Text("Attached Assets",
+        //                     style: theme.textTheme.labelSmall),
+        //                 ...balancesWidget,
+        //               ]),
+        //         ))
+        //     : const SizedBox.shrink()
         // Right side: value
       ],
     );
