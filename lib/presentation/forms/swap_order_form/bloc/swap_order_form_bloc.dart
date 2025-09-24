@@ -894,6 +894,10 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     emit(state.copyWith(
         amountInput: AmountInput.dirty(
             value: state.giveAssetBalance.quantityNormalized)));
+
+    print("max button clicked");
+
+    add(PriceInputChanged(value: state.priceInput.value));
   }
 
   _handleRelativePriceValueClicked(
