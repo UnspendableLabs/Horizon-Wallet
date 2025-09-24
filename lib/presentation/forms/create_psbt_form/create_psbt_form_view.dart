@@ -97,13 +97,15 @@ class CreatePsbtFormProvider extends StatelessWidget {
 
 class CreatePsbtSuccess {
   final String signedPsbtHex;
-  final BigInt btcQuantity;
+  final BigInt btcTotal;
+  final BigInt royaltyTotal;
   final DateTime? expiryDate;
 
   const CreatePsbtSuccess({
     required this.signedPsbtHex,
-    required this.btcQuantity,
+    required this.btcTotal,
     required this.expiryDate,
+    required this.royaltyTotal,
   });
 }
 
@@ -118,9 +120,10 @@ class CreatePsbtSuccessHandler extends StatelessWidget {
         listener: (context, state) {
           if (state.submissionStatus.isSuccess) {
             onSuccess(CreatePsbtSuccess(
+                royaltyTotal: state.royaltyAmount,
                 expiryDate: state.expiryDate,
                 signedPsbtHex: state.signedPsbt!,
-                btcQuantity: state.btcPriceInput.asSats
+                btcTotal: state.btcPriceInput.asSats
                     .getOrThrow() // will never be called if this is undefiend
 
                 ));

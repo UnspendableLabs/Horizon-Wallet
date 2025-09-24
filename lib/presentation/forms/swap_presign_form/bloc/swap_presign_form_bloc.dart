@@ -40,16 +40,20 @@ class SwapPresignFormModel with FormzMixin {
   }
 
   AssetQuantity get totalRoyaltyBtc {
-    final quantity = royaltyByAsset.fold(
+    final qty = royaltyByAsset.fold<BigInt>(
       () => BigInt.zero,
-      (royalty) => ((Decimal.fromBigInt(totalSwapBtc.quantity) *
-              (Decimal.fromInt(royalty.royalty) / Decimal.fromInt(100))
-                  .toDecimal() /
-              Decimal.fromInt(100))
-          .floor()),
+      (royalty) {
+        final net = totalSwapBtc.quantity; // BigInt, e.g. 17654
+        final bps = royalty.royalty; // basis points, e.g. 300 = 3%
+
+        final expectedRoyalty =
+            (net * BigInt.from(bps)) ~/ BigInt.from(10000 - bps);
+
+        return expectedRoyalty;
+      },
     );
 
-    return AssetQuantity(divisible: true, quantity: quantity);
+    return AssetQuantity(divisible: true, quantity: qty);
   }
 
   AssetQuantity get totalRecieveAsset {

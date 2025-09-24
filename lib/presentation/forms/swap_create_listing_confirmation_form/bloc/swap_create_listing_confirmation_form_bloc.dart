@@ -1,3 +1,4 @@
+import 'package:decimal/decimal.dart';
 import 'package:equatable/equatable.dart';
 import 'package:formz/formz.dart';
 import 'package:get_it/get_it.dart';
@@ -29,7 +30,9 @@ class SwapCreateListingFormModel
   final String giveAsset;
   final int giveQuantity;
   final String giveQuantityNormalized;
+
   final BigInt btcPrice;
+  final BigInt royaltyPrice;
   final bool showSignPsbtModal;
 
   final RemoteData<OnChainPayment> onChainPayment;
@@ -45,6 +48,7 @@ class SwapCreateListingFormModel
       required this.giveQuantity,
       required this.giveQuantityNormalized,
       required this.btcPrice,
+      required this.royaltyPrice,
       required this.onChainPayment});
 
   @override
@@ -60,6 +64,7 @@ class SwapCreateListingFormModel
       AttachedAtomicSwapSell? attachedAtomicSwapSell,
       String? error,
       BigInt? btcPrice,
+      BigInt? royaltyPrice,
       int? giveQuantity,
       RemoteData<OnChainPayment>? onChainPayment,
       Option<bool> showSignPsbtModal = const None()}) {
@@ -67,6 +72,7 @@ class SwapCreateListingFormModel
       address: address,
       giveQuantity: giveQuantity ?? this.giveQuantity,
       btcPrice: btcPrice ?? this.btcPrice,
+      royaltyPrice: royaltyPrice ?? this.royaltyPrice,
       feeEstimates: feeEstimates ?? this.feeEstimates,
       feeOptionInput: feeOptionInput ?? this.feeOptionInput,
       giveAsset: giveAsset ?? this.giveAsset,
@@ -92,8 +98,37 @@ class SwapCreateListingFormModel
     ].join(" ");
   }
 
+  BigInt get totalRecive => btcPrice - royaltyPrice;
+
   String get btcPriceNormalized {
-    return (btcPrice.toInt() / 100000000).toStringAsFixed(8);
+    return (Decimal.fromBigInt(btcPrice) / Decimal.fromInt(100000000))
+        .toDecimal()
+        .toStringAsFixed(8);
+  }
+
+  String get totalReceiveNormalized {
+    return (Decimal.fromBigInt(totalRecive) / Decimal.fromInt(100000000))
+        .toDecimal()
+        .toStringAsFixed(8);
+  }
+
+  String get totalRoyaltyNormalized {
+    return (Decimal.fromBigInt(royaltyPrice) / Decimal.fromInt(100000000))
+        .toDecimal()
+        .toStringAsFixed(8);
+  }
+
+  // const totalPrice = swaps.reduce((sum, swap) => sum + (BigInt(swap?.price || 0)), BigInt(0));
+  // const expectedRoyaltyAmount =
+  //     (totalPrice / (BigInt(100) - BigInt(royaltyInfo.royalty) / BigInt(100))) *
+  //     (BigInt(royaltyInfo.royalty) / BigInt(100));
+  //
+  int get royaltyPercentage {
+    return (Decimal.fromInt(100) *
+            Decimal.fromBigInt(royaltyPrice) /
+            Decimal.fromBigInt(btcPrice))
+        .floor()
+        .toInt();
   }
 }
 
@@ -139,10 +174,6 @@ class SignatureCompleted extends SwapCreateListingFormEvent {
 class SwapCreateListingFormBloc
     extends Bloc<SwapCreateListingFormEvent, SwapCreateListingFormModel> {
   final HttpConfig httpConfig;
-  final ComposeTransactionUseCase _composeTransactionUseCase;
-  final ComposeRepository _composeRepository;
-  final SignAndBroadcastTransactionUseCase _signAndBroadcastTransactionUseCase;
-  final BitcoinRepository _bitcoinRepository;
   final AtomicSwapRepository _atomicSwapRepository;
   final UtxoRepository _utxoRepository;
 
@@ -154,23 +185,18 @@ class SwapCreateListingFormBloc
     required int giveQuantity,
     required String giveQuantityNormalized,
     required BigInt btcPrice,
+    required BigInt royaltyPrice,
     ComposeTransactionUseCase? composeTransactionUseCase,
     ComposeRepository? composeRepository,
     SignAndBroadcastTransactionUseCase? signAndBroadcastTransactionUseCase,
     BitcoinRepository? bitcoinRepository,
     AtomicSwapRepository? atomicSwapRepository,
     UtxoRepository? utxoRepository,
-  })  : _composeTransactionUseCase =
-            composeTransactionUseCase ?? GetIt.I<ComposeTransactionUseCase>(),
-        _composeRepository = composeRepository ?? GetIt.I<ComposeRepository>(),
-        _signAndBroadcastTransactionUseCase =
-            signAndBroadcastTransactionUseCase ??
-                GetIt.I<SignAndBroadcastTransactionUseCase>(),
-        _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>(),
-        _atomicSwapRepository =
+  })  : _atomicSwapRepository =
             atomicSwapRepository ?? GetIt.I<AtomicSwapRepository>(),
         _utxoRepository = utxoRepository ?? GetIt.I<UtxoRepository>(),
         super(SwapCreateListingFormModel(
+          royaltyPrice: royaltyPrice,
           feeEstimates: feeEstimates,
           address: address,
           showSignPsbtModal: false,

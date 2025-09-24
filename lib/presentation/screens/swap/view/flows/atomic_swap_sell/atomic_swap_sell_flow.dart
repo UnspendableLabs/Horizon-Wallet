@@ -115,13 +115,15 @@ extension AtomicSwapSellVariantX on AssetBalanceFormModel {
 }
 
 class SwapSellConfirmationDetails {
-  final BigInt btcPrice;
+  final BigInt totalBtc;
+  final BigInt royalty;
   final String signedPsbt;
   final AttachedAtomicSwapSell sellDetails;
   final DateTime? expiresAt;
 
   const SwapSellConfirmationDetails({
-    required this.btcPrice,
+    required this.totalBtc,
+    required this.royalty,
     required this.signedPsbt,
     required this.sellDetails,
     required this.expiresAt,
@@ -364,11 +366,11 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                                   httpConfig: widget.httpConfig,
                                   onError: (_) =>
                                       "Error fetching tx with id: ${variant.utxoId.txid}"),
-                              // widget._royaltiesRepository.getByAssetT(
-                              //     assetName: variant.asset,
-                              //     httpConfig: widget.httpConfig,
-                              //     onError: (_, __) =>
-                              //         "Error fetching royalties"),
+                              widget._royaltiesRepository.getByAssetT(
+                                  assetName: variant.asset,
+                                  httpConfig: widget.httpConfig,
+                                  onError: (_, __) =>
+                                      "Error fetching royalties"),
                             ]),
                             builder: (context, state, _) {
                               return state.fold3(
@@ -376,11 +378,11 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                                       child: CircularProgressIndicator()),
                                   onFailure: (err) => Text(err.toString()),
                                   onReplete: (replete) {
-                                    final transaction = replete[0];
+                                    final transaction = replete[0] as BitcoinTx;
                                     // final royalties =
                                     //     replete[1] as Option<RoyaltyByAsset>;
-                                    final royalties = Option.of(RoyaltyByAsset(
-                                        royalty: 300, issuerAddress: "asfa"));
+                                    final royalties =
+                                        replete[1] as Option<RoyaltyByAsset>;
 
                                     return CreatePsbtFormProvider(
                                       assetRoyalty: royalties,
@@ -404,9 +406,12 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                                                         signedPsbt:
                                                             createPsbtSuccess
                                                                 .signedPsbtHex,
-                                                        btcPrice:
+                                                        totalBtc:
                                                             createPsbtSuccess
-                                                                .btcQuantity,
+                                                                .btcTotal,
+                                                        royalty:
+                                                            createPsbtSuccess
+                                                                .royaltyTotal,
                                                         sellDetails: variant)),
                                               ),
                                             );
@@ -464,6 +469,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                     title: "Post Listing",
                     widthFactor: .9,
                     body: SwapCreateListingFormProvider(
+                        royaltyPrice: details.royalty,
                         signedSwapPsbtHex: details.signedPsbt,
                         address: widget.addresses.firstWhere((address) =>
                             address.address == details.sellDetails.utxoAddress),
@@ -471,7 +477,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                         giveQuantity: details.sellDetails.quantity,
                         giveQuantityNormalized:
                             details.sellDetails.quantityNormalized,
-                        btcPrice: details.btcPrice,
+                        btcPrice: details.totalBtc,
                         child: (actions, state) => Column(
                               children: [
                                 SwapOnChainFeeSignHandler(
@@ -521,7 +527,8 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
               // we can fallback to `defaultEnvelopeSize`
               int utxoValue = utxo?.value ?? widget._config.defaultEnvelopeSize;
 
-              final btcPrice = swapSellDetails.btcPrice;
+              final btcPrice = swapSellDetails.totalBtc;
+              final royaltyPrice = swapSellDetails.royalty;
 
               final assetQuantity = swapSellDetails.sellDetails.quantity;
 
@@ -534,7 +541,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                 assetUtxoId: assetUtxoId.toString(),
                 feePaymentPsbtHex: a.signedPsbtHex,
                 feePaymentId: a.id,
-                price: btcPrice.toInt(), // TODO
+                price: (btcPrice - royaltyPrice).toInt(), // TODO
                 assetQuantity: assetQuantity,
                 assetUtxoValue: utxoValue,
                 assetName: swapSellDetails.sellDetails.asset,

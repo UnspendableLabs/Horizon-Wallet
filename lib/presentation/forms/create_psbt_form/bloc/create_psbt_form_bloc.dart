@@ -169,6 +169,14 @@ class CreatePsbtFormModel with FormzMixin {
   BigInt get minPrice => assetRoyalty.fold(() => dust, (royalty) {
         return _calculateMinPrice(royalty, dust, vout.value);
       });
+
+  BigInt get royaltyAmount => assetRoyalty.fold(() => BigInt.zero, (royalty) {
+        return (Decimal.fromBigInt(
+                    btcPriceInput.asSats.getOrElse(() => BigInt.zero)) *
+                Decimal.fromInt(royalty.royalty) /
+                Decimal.fromInt(10000))
+            .floor();
+      });
 }
 
 sealed class CreatePsbtFormEvent extends Equatable {
@@ -321,8 +329,17 @@ class CreatePsbtFormBloc
           state.btcPriceInput.asSats,
           () => "Error parsing BTC price input as sats"));
 
+      final royaltyAmount = state.assetRoyalty.fold(
+          () => BigInt.zero,
+          (royalty) => (Decimal.fromBigInt(priceInSats) *
+                  Decimal.fromInt(royalty.royalty) /
+                  Decimal.fromInt(10000))
+              .floor());
+
+      final totalPrice = priceInSats - royaltyAmount;
+
       final newSalePsbtHex = await $(_transactionService.makeSalePsbtT(
-          price: priceInSats,
+          price: totalPrice,
           source: address.address,
           utxoTxid: attachTxID,
           utxoVoutIndex: voutIndex,

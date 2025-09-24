@@ -147,6 +147,7 @@ class SwapCreateListingFormProvider extends StatelessWidget {
   final int giveQuantity;
   final String giveQuantityNormalized;
   final BigInt btcPrice;
+  final BigInt royaltyPrice;
 
   final FeeEstimatesRespository _feeEstimatesRepository;
 
@@ -162,6 +163,7 @@ class SwapCreateListingFormProvider extends StatelessWidget {
     required this.giveQuantity,
     required this.giveQuantityNormalized,
     required this.btcPrice,
+    required this.royaltyPrice,
     FeeEstimatesRespository? feeEstimatesRepository,
   }) : _feeEstimatesRepository =
             feeEstimatesRepository ?? GetIt.I<FeeEstimatesRespository>();
@@ -180,6 +182,7 @@ class SwapCreateListingFormProvider extends StatelessWidget {
                 child: CircularProgressIndicator()), // should not happen
             onSuccess: (feeEstimates) => BlocProvider(
                 create: (context) => SwapCreateListingFormBloc(
+                      royaltyPrice: royaltyPrice,
                       address: address,
                       httpConfig: session.httpConfig,
                       feeEstimates: feeEstimates,
@@ -318,7 +321,7 @@ class _SwapCreateListingConfirmationFormState
                         Row(
                           children: [
                             QuantityText(
-                                quantity: widget.state.btcPriceNormalized,
+                                quantity: widget.state.totalReceiveNormalized,
                                 style: const TextStyle(fontSize: 16)),
                             const SizedBox(width: 8),
                             appIcons.assetIcon(
@@ -334,6 +337,28 @@ class _SwapCreateListingConfirmationFormState
                                 )),
                           ],
                         )),
+                    if (widget.state.royaltyPrice > BigInt.zero)
+                      _renderPropertyWidget(
+                          "Asset creator will receive ${widget.state.royaltyPercentage}% royalty",
+                          Row(
+                            children: [
+                              QuantityText(
+                                  quantity: widget.state.totalRoyaltyNormalized,
+                                  style: const TextStyle(fontSize: 16)),
+                              const SizedBox(width: 8),
+                              appIcons.assetIcon(
+                                  httpConfig: session.httpConfig,
+                                  context: context,
+                                  assetName: "BTC",
+                                  width: 12,
+                                  height: 12),
+                              const SizedBox(width: 4),
+                              Text("BTC",
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontSize: 16,
+                                  )),
+                            ],
+                          )),
                     const SizedBox(
                       height: 14,
                     ),
