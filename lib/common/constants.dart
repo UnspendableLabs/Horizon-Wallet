@@ -1,6 +1,7 @@
 import 'package:horizon/domain/entities/base_path.dart';
 
 import 'package:rational/rational.dart';
+import 'package:decimal/decimal.dart';
 
 enum WalletType {
   horizon("Horizon", "Horizon Native"),
@@ -63,12 +64,13 @@ enum BalanceType {
 
 enum TransactionType { send, lockQuantity }
 
-class TenToTheSeventh {
+class TenToTheEigth {
   static const int value = 100000000;
   static const double doubleValue = 100000000.0;
   static const String stringValue = "100000000";
   static BigInt bigIntValue = BigInt.from(100000000);
   static Rational rational = Rational(bigIntValue);
+  static Decimal decimal = Decimal.parse(stringValue);
 }
 
 final dust = BigInt.from(546);

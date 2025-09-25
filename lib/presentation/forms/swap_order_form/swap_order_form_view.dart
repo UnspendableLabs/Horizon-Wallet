@@ -28,6 +28,11 @@ import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 
+String _fmtPrice(Price p, {int precision = 8}) => p.normalizedRational
+    .toDecimal(scaleOnInfinitePrecision: precision + 1)
+    .ceil(scale: precision)
+    .toString();
+
 class CustomButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
@@ -1103,39 +1108,32 @@ class OrderBookView extends StatelessWidget {
           if (index == 1 + buyCount) {
             return const Divider();
           }
-
           if (index > 0 && index < 1 + buyCount) {
+            // ASK rows (built with side = buy)
             final ask = asks[index - 1];
+
+            // priceType.give => show GIVE/GET, which is the inverse of buy-side default (GET/GIVE)
+            final Price displayedAskPrice =
+                priceType == PriceType.give ? ask.invertedPrice : ask.price;
 
             return _OrderRow(
               quantity: ask.quantity.normalized(precision: 8),
-              price: priceType == PriceType.give
-                  ? ask.price.normalized(precision: 8)
-                  // when get asset is not divisible we have to normalize the price
-                  : adjustForDivisibility(
-                          Rational.parse(ask.invertedPrice.quantity.toString()),
-                          fromDivisible: giveAsset.divisible,
-                          toDivisible: getAsset.divisible)
-                      .toDecimal(scaleOnInfinitePrecision: 9)
-                      .ceil(scale: 8)
-                      .toString(),
+              price: _fmtPrice(displayedAskPrice, precision: 8),
               color: Colors.red,
             );
           }
 
-          // TODO: i need to verify this
+// BIDS start here (built with side = sell)
           final bid = bids[index - sellStartIndex];
+
+// priceType.give => show GIVE/GET, which matches sell-side default (GIVE/GET)
+// priceType.get  => show GET/GIVE, which is the inverse of sell-side default
+          final Price displayedBidPrice =
+              priceType == PriceType.give ? bid.price : bid.invertedPrice;
+
           return _OrderRow(
             quantity: bid.quantity.normalized(precision: 8),
-            price: priceType == PriceType.give
-                ? bid.price.normalized(precision: 8)
-                : adjustForDivisibility(
-                        Rational.parse(bid.price.quantity.toString()),
-                        fromDivisible: giveAsset.divisible,
-                        toDivisible: getAsset.divisible)
-                    .toDecimal(scaleOnInfinitePrecision: 9)
-                    .ceil(scale: 8)
-                    .toString(),
+            price: _fmtPrice(displayedBidPrice, precision: 8),
             color: Colors.green,
           );
         },
