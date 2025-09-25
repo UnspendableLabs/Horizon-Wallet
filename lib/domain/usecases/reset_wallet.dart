@@ -14,7 +14,7 @@ import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:get_it/get_it.dart';
 
-final class ResetWalletUseCase implements UseCase<void, NoParams> {
+final class ResetWalletUseCase implements UseCaseFuture<void, NoParams> {
   final WalletRepositoryDeprecated _walletRepoDeprecated;
   final AccountRepositoryDeprecated _accountRepoDeprecated;
   final AddressRepositoryDeprecated _addressRepoDeprecated;

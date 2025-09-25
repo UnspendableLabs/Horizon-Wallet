@@ -11,49 +11,19 @@ import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/domain/entities/http_config.dart';
+import 'package:horizon/domain/entities/simulated_order.dart';
+import 'package:horizon/domain/usecases/simulate_orders.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/repositories/order_repository.dart';
 import 'package:horizon/common/constants.dart';
 
-// {
-//   "results": {
-//     "assets": [
-//       {
-//         "name": "GERPER",
-//         "href": "/assets/GERPER",
-//         "image": "https://horizon-assets.storage.googleapis.com/small/GERPER.jpg",
-//         "collection_name": "Rare Pepes",
-//         "collection_slug": "rare-pepes"
-//       }
-//     ],
-//     "collections": [],
-//     "addresses": [],
-//     "blocks": [],
-//     "transactions": []
-//   }
-// }
-
-class SimulatedOrderSummary {
-  AssetQuantity totalGive;
-  AssetQuantity giveNow;
-  AssetQuantity giveEscrow;
-  AssetQuantity getNow;
-
-  SimulatedOrderSummary({
-    required this.totalGive,
-    required this.giveNow,
-    required this.giveEscrow,
-    required this.getNow,
-  });
-}
-
 Rational adjustForDivisibility(Rational amount,
     {required bool fromDivisible, required bool toDivisible}) {
   if (fromDivisible && !toDivisible) {
-    return amount / TenToTheEigth.rational;
+    return amount / TenToTheSeventh.rational;
   } else if (!fromDivisible && toDivisible) {
-    return amount * TenToTheEigth.rational;
+    return amount * TenToTheSeventh.rational;
   } else {
     return amount;
   }
@@ -65,28 +35,7 @@ Rational rationalMinList(List<Rational> values) {
 }
 
 Rational toRawUnits(Rational quantity, bool divisible) =>
-    divisible ? quantity * Rational(TenToTheEigth.bigIntValue) : quantity;
-
-sealed class SimulatedOrder extends Equatable {
-  final AssetQuantity give;
-  final AssetQuantity get;
-
-  const SimulatedOrder({required this.give, required this.get});
-
-  @override
-  List<Object?> get props => [runtimeType, give, get];
-
-  @override
-  String toString() => '$runtimeType(give: $give, get: $get)';
-}
-
-class SimulatedOrderMatch extends SimulatedOrder {
-  const SimulatedOrderMatch({required super.give, required super.get});
-}
-
-class SimulatedOrderCreate extends SimulatedOrder {
-  const SimulatedOrderCreate({required super.give, required super.get});
-}
+    divisible ? quantity * Rational(TenToTheSeventh.bigIntValue) : quantity;
 
 enum AmountInputError { required }
 
@@ -111,6 +60,26 @@ class PriceInput extends FormzInput<String, PriceInputError> {
   @override
   PriceInputError? validator(String value) {
     return value.isEmpty ? PriceInputError.required : null;
+  }
+}
+
+enum PriceInputAsRationalError { isZero, isNegative }
+
+class PriceInputAsRational
+    extends FormzInput<Rational, PriceInputAsRationalError> {
+  PriceInputAsRational.pure() : super.pure(Rational.zero);
+  const PriceInputAsRational.dirty({
+    required Rational value,
+  }) : super.dirty(value);
+  @override
+  PriceInputAsRationalError? validator(Rational value) {
+    if (value == Rational.zero) {
+      return PriceInputAsRationalError.isZero;
+    }
+    if (value < Rational.zero) {
+      return PriceInputAsRationalError.isNegative;
+    }
+    return null;
   }
 }
 
@@ -249,26 +218,26 @@ extension OrderViewModelExtension on Order {
   OrderViewModel toViewModel({
     required OrderViewModelSide side,
   }) {
-    final divisible = giveQuantity != double.parse(giveRemainingNormalized);
+    final divisible = giveQuantity != double.parse(giveQuantityNormalized);
 
     int price = side == OrderViewModelSide.buy
         ? (double.parse(getQuantityNormalized) /
                 double.parse(giveQuantityNormalized) *
-                TenToTheEigth.doubleValue)
+                TenToTheSeventh.doubleValue)
             .round()
         : (double.parse(giveQuantityNormalized) /
                 double.parse(getQuantityNormalized) *
-                TenToTheEigth.doubleValue)
+                TenToTheSeventh.doubleValue)
             .round();
 
     int invertedPrice = side == OrderViewModelSide.buy
         ? (double.parse(giveQuantityNormalized) /
                 double.parse(getQuantityNormalized) *
-                TenToTheEigth.doubleValue)
+                TenToTheSeventh.doubleValue)
             .round()
         : (double.parse(getQuantityNormalized) /
                 double.parse(giveQuantityNormalized) *
-                TenToTheEigth.doubleValue)
+                TenToTheSeventh.doubleValue)
             .round();
 
     return OrderViewModel(
@@ -295,14 +264,15 @@ class SwapOrderFormModel with FormzMixin {
   final Asset giveAsset;
   final Asset getAsset;
 
-  final List<Order> buyOrders;
-  final List<Order> sellOrders;
+  final List<Order> asks;
+  final List<Order> bids;
 
   final AmountType amountType;
   final PriceType priceType;
 
   final AmountInput amountInput;
   final PriceInput priceInput;
+  final PriceInputAsRational priceInputAsRational;
 
   final Option<DateTime> expiry;
 
@@ -312,38 +282,22 @@ class SwapOrderFormModel with FormzMixin {
     required this.giveAssetBalance,
     required this.amountInput,
     required this.priceInput,
-    // required this.giveQuantityInput,
-    // required this.receiveQuantityInput,
     required this.amountType,
     required this.giveAsset,
     required this.getAsset,
-    required this.buyOrders,
-    required this.sellOrders,
+    required this.asks,
+    required this.bids,
     required this.priceType,
+    required this.priceInputAsRational,
   });
 
-  // AssetQuantity totalGiveAsMultipleOfPrice({required Rational price}) {
-  //   final desiredGetAmount = toRawUnits(
-  //     Rational.tryParse(amountInput.value) ?? Rational.zero,
-  //     getAsset.divisible,
-  //   );
-  //
-  //   Rational quantity = adjustForDivisibility(desiredGetAmount * price,
-  //       fromDivisible: getAsset.divisible, toDivisible: giveAsset.divisible);
-  //
-  //   return AssetQuantity(
-  //       divisible: giveAsset.divisible, quantity: quantity.ceil());
-  // }
-
-  bool get hasBuyOrders => buyOrders.isNotEmpty;
+  bool get hasBuyOrders => asks.isNotEmpty;
 
   AssetQuantity giveAssetQuantityWhenAmountGet({required Rational price}) {
     final desiredGetAmount = toRawUnits(
       Rational.tryParse(amountInput.value) ?? Rational.zero,
       getAsset.divisible,
     );
-
-    print("desiredGetAmount $desiredGetAmount");
 
     Rational rational = adjustForDivisibility(desiredGetAmount * price,
         fromDivisible: getAsset.divisible, toDivisible: giveAsset.divisible);
@@ -352,99 +306,10 @@ class SwapOrderFormModel with FormzMixin {
       return AssetQuantity(
           divisible: giveAsset.divisible, quantity: rational.toBigInt());
     } else {
-      // this needs to be ceiled due to edge case
       return AssetQuantity(
           divisible: giveAsset.divisible, quantity: rational.ceil());
     }
-
-    //   Rational totalGet = Rational.zero;
-    //
-    //   Rational totalGive = Rational.zero;
-    //
-    //   for (final order in buyOrders) {
-    //     if (totalGet >= desiredGetAmount) {
-    //       break;
-    //     }
-    //
-    //     print(
-    //         "giveAssetQUantityWHenAmontGet ${order.getQuantity}; ${order.giveQuantity}");
-    //
-    //     final matchPrice =
-    //         Rational.fromInt(order.getQuantity, order.giveQuantity);
-    //
-    //     final orderGiveRemaining = Rational(
-    //         BigInt.tryParse(order.giveRemaining.toString()) ?? BigInt.zero);
-    //
-    //     final getAmount = rationalMinList(
-    //         [orderGiveRemaining, (desiredGetAmount - totalGet)]);
-    //
-    //     totalGet += getAmount;
-    //
-    //     totalGive += matchPrice * getAmount;
-    //   }
-    //
-    //   if (desiredGetAmount - totalGet > Rational.zero) {
-    //     Rational quantity = adjustForDivisibility(desiredGetAmount - totalGet,
-    //         fromDivisible: getAsset.divisible,
-    //         toDivisible: giveAsset.divisible);
-    //
-    //     totalGive += quantity * price;
-    //   }
-    //
-    //   return AssetQuantity(
-    //       divisible: giveAsset.divisible, quantity: totalGive.toBigInt());
-    // } catch (e, _) {
-    //   rethrow;
-    // }
   }
-
-  // AssetQuantity giveAssetQuantityWhenAmountGet({required Rational price}) {
-  //   try {
-  //     final desiredGetAmount = toRawUnits(
-  //       Rational.tryParse(amountInput.value) ?? Rational.zero,
-  //       getAsset.divisible,
-  //     );
-  //
-  //     Rational totalGet = Rational.zero;
-  //
-  //     Rational totalGive = Rational.zero;
-  //
-  //     for (final order in buyOrders) {
-  //       if (totalGet >= desiredGetAmount) {
-  //         break;
-  //       }
-  //
-  //       print(
-  //           "giveAssetQUantityWHenAmontGet ${order.getQuantity}; ${order.giveQuantity}");
-  //
-  //       final matchPrice =
-  //           Rational.fromInt(order.getQuantity, order.giveQuantity);
-  //
-  //       final orderGiveRemaining = Rational(
-  //           BigInt.tryParse(order.giveRemaining.toString()) ?? BigInt.zero);
-  //
-  //       final getAmount = rationalMinList(
-  //           [orderGiveRemaining, (desiredGetAmount - totalGet)]);
-  //
-  //       totalGet += getAmount;
-  //
-  //       totalGive += matchPrice * getAmount;
-  //     }
-  //
-  //     if (desiredGetAmount - totalGet > Rational.zero) {
-  //       Rational quantity = adjustForDivisibility(desiredGetAmount - totalGet,
-  //           fromDivisible: getAsset.divisible,
-  //           toDivisible: giveAsset.divisible);
-  //
-  //       totalGive += quantity * price;
-  //     }
-  //
-  //     return AssetQuantity(
-  //         divisible: giveAsset.divisible, quantity: totalGive.toBigInt());
-  //   } catch (e, _) {
-  //     rethrow;
-  //   }
-  // }
 
   GiveQuantityInput get giveQuantityInput {
     final userBalance = AssetQuantity(
@@ -466,69 +331,49 @@ class SwapOrderFormModel with FormzMixin {
   }
 
   GetQuantityAsRationalInput get getQuantityInputRational {
-    final giveMax = maxGiveQuantityInput.value;
     final give = giveQuantityInput.value;
 
-    print("giveMax: $giveMax");
-    print("give $give");
+    final price = priceInputAsRational.value;
 
-    final price = Rational.tryParse(priceInput.value);
-
-    if (price == null || price == Rational.zero) {
+    if (price == Rational.zero) {
       return GetQuantityAsRationalInput.pure(divisible: getAsset.divisible);
     }
 
     Rational price_ = priceType == PriceType.give ? price.inverse : price;
 
-    Rational giveQuantityRational = Rational(give.quantity);
+    Rational quantity = Rational(give.quantity) * price_;
 
-    Rational intermediate;
-    Rational quantity;
-
-    switch ((give.divisible, getAsset.divisible)) {
-      case (true, false):
-        intermediate = giveQuantityRational * price_ / TenToTheEigth.rational;
-        quantity = intermediate;
-        break;
-      case (false, true):
-        intermediate = giveQuantityRational * price_ * TenToTheEigth.rational;
-        quantity = intermediate;
-        break;
-      default:
-        intermediate = giveQuantityRational * price_;
-        quantity = intermediate;
-    }
+    // print("give quantity ${give.quantity}");
+    // print("price: $price_");
+    // print("quantity: $quantity");
 
     return GetQuantityAsRationalInput.dirty(
         value: quantity, divisible: getAsset.divisible);
   }
-  // GetQuantityInput get getQuantityInputActual {
+
+  // GetQuantityInput get getQuantityInput_ {
   //   final give = giveQuantityInput.value;
-  //   final price = Rational.tryParse(priceInput.value);
   //
-  //   if (price == null || price == Rational.zero) {
+  //   final price = priceInputAsRational.value;
+  //
+  //   print("give: $give");
+  //   print("price: $price");
+  //   if (price == Rational.zero) {
   //     return GetQuantityInput.pure(divisible: getAsset.divisible);
   //   }
   //
   //   Rational price_ = priceType == PriceType.give ? price.inverse : price;
   //
-  //   BigInt quantity = switch ((give.divisible, getAsset.divisible)) {
-  //     (true, false) =>
-  //       (Rational(give.quantity) * price_ / TenToTheEigth.rational).toBigInt(),
-  //     (false, true) =>
-  //       (Rational(give.quantity) * price_ * TenToTheEigth.rational).toBigInt(),
-  //     (_, _) => (Rational(give.quantity) * price_).toBigInt(),
-  //   };
+  //   Rational quantity =
+  //       toRawUnits(Rational(give.quantity) * price_, getAsset.divisible);
   //
-  //
-  //   print("\n\n\n: quantity = $quantity\n\n\n");
-  //   print("give = ${give.quantity}");
-  //   print("price = ${price}");
-  //   print("price = ${price_}");
+  //   // print("give quantity ${give.quantity}");
+  //   // print("price: $price_");
+  //   // print("quantity: $quantity");
   //
   //   return GetQuantityInput.dirty(
-  //       value:
-  //           AssetQuantity(divisible: getAsset.divisible, quantity: quantity));
+  //       value: AssetQuantity(
+  //           quantity: quantity.toBigInt(), divisible: getAsset.divisible));
   // }
 
   GiveQuantityInput get maxGiveQuantityInput =>
@@ -545,15 +390,15 @@ class SwapOrderFormModel with FormzMixin {
                 quantity: BigInt.from(giveAssetBalance.quantity))),
         ((AmountType.get, PriceType.give)) => GiveQuantityInput.dirty(
             value: giveAssetQuantityWhenAmountGet(
-                price: Rational.tryParse(priceInput.value) ?? Rational.zero),
+              price: priceInputAsRational.value,
+            ),
             userBalance: AssetQuantity(
                 divisible: giveAsset.divisible,
                 quantity: BigInt.from(giveAssetBalance.quantity))),
         ((AmountType.get, PriceType.get)) => GiveQuantityInput.dirty(
             // TODO: rename
             value: giveAssetQuantityWhenAmountGet(
-                price: Rational.tryParse(priceInput.value)?.inverse ??
-                    Rational.zero),
+                price: priceInputAsRational.value.inverse),
             userBalance: AssetQuantity(
               divisible: giveAsset.divisible,
               quantity: BigInt.from(giveAssetBalance.quantity),
@@ -562,122 +407,122 @@ class SwapOrderFormModel with FormzMixin {
       };
 
   GetQuantityInput get getQuantityInput => switch ((amountType, priceType)) {
-        ((AmountType.get, _)) => GetQuantityInput.dirty(
-            value: AssetQuantity.fromNormalizedStringSafe(
-                    divisible: getAsset.divisible, input: amountInput.value)
-                .getOrElse((_) => AssetQuantity(
-                    divisible: getAsset.divisible, quantity: BigInt.zero))),
+        ((AmountType.get, PriceType.give)) => GetQuantityInput.dirty(
+            value: getAssetQuantityWhenAmountGetAndPriceGive),
+        ((AmountType.get, PriceType.get)) => GetQuantityInput.dirty(
+            value: getAssetQuantityWhenAmountGetAndPriceGet),
         ((AmountType.give, PriceType.give)) => GetQuantityInput.dirty(
             value: getAssetQuantityWhenAmountGiveAndPriceGive),
         ((AmountType.give, PriceType.get)) => GetQuantityInput.dirty(
             value: getAssetQuantityWhenAmountGiveAndPriceGet),
       };
 
-  AssetQuantity get getAssetQuantityWhenAmountGiveAndPriceGive {
-    Rational price = toRawUnits(
-        Rational.tryParse(priceInput.value) ?? Rational.zero,
-        giveAsset.divisible);
-
-    final giveAmount = toRawUnits(
-      Rational.tryParse(amountInput.value) ?? Rational.zero,
-      giveAsset.divisible,
-    );
-
-    Rational totalGet = Rational.zero;
-    Rational totalGive = Rational.zero;
-
-    if (price <= Rational.zero || giveAmount <= Rational.zero) {
-      return AssetQuantity(
-          divisible: getAsset.divisible, quantity: BigInt.zero);
-    }
-
-    for (final order in buyOrders) {
-      if (totalGive >= giveAmount) break;
-
-      final orderGiveRemaining = Rational.fromInt(order.giveRemaining);
-      final matchPrice =
-          Rational.fromInt(order.getQuantity, order.giveQuantity);
-
-      // assume sorted
-      if (matchPrice > price) {
-        break;
-      }
-
-      // Max give amount we can take from this order
-      final remainingGive = giveAmount - totalGive;
-
-      final orderGive = rationalMinList([
-        remainingGive * matchPrice.inverse,
-        orderGiveRemaining,
-      ]);
-
-      totalGet += orderGive;
-
-      totalGive += orderGive * matchPrice;
-    }
-
-    // Handle unmatched give via fallback price
-    final unmatchedGive = giveAmount - totalGive;
-    if (unmatchedGive > Rational.zero) {
-      totalGet += toRawUnits(unmatchedGive / price, getAsset.divisible);
-    }
-
-    return AssetQuantity(
-        quantity: totalGet.toBigInt(), divisible: getAsset.divisible);
-  }
-
-  AssetQuantity get getAssetQuantityWhenAmountGiveAndPriceGet {
-    Rational price = Rational.tryParse(priceInput.value) ?? Rational.zero;
+  AssetQuantity get getAssetQuantityWhenAmountGetAndPriceGive {
+    Rational price =
+        toRawUnits(priceInputAsRational.value, giveAsset.divisible);
 
     if (price == Rational.zero) {
       return AssetQuantity(
           divisible: getAsset.divisible, quantity: BigInt.zero);
     }
 
-    Rational giveAmount = toRawUnits(
-        Rational.tryParse(amountInput.value) ?? Rational.zero,
-        giveAsset.divisible);
-
-    Rational totalGet = Rational.zero;
-    Rational totalGive = Rational.zero;
-
-    for (final order in buyOrders) {
-      if (totalGive >= giveAmount) break;
-
-      final orderGiveRemaining = Rational.fromInt(order.giveRemaining);
-      final orderGetRemaining = Rational.fromInt(order.getRemaining);
-      final matchPrice =
-          Rational.fromInt(order.getQuantity, order.giveQuantity);
-
-      // TODO: validate that we don't caer babot price here
-
-      final remainingGive = giveAmount - totalGive;
-
-      final orderGive = rationalMinList([
-        remainingGive * matchPrice.inverse,
-        orderGiveRemaining,
-      ]);
-
-      totalGet += orderGive;
-
-      totalGive += orderGive * matchPrice;
-    }
-
-    final unmatchedGive = giveAmount - totalGive;
-
-    if (unmatchedGive > Rational.zero) {
-      totalGet += adjustForDivisibility(unmatchedGive * price,
-          fromDivisible: giveAsset.divisible, toDivisible: getAsset.divisible);
-    }
+    final getAmount = toRawUnits(
+      Rational.tryParse(amountInput.value) ?? Rational.zero,
+      getAsset.divisible,
+    );
 
     return AssetQuantity(
-        quantity: totalGet.toBigInt(), divisible: getAsset.divisible);
+        quantity: getAmount.toBigInt(), divisible: getAsset.divisible);
   }
+
+  AssetQuantity get getAssetQuantityWhenAmountGetAndPriceGet {
+    // when get amount is specified explicitly, it needs to be rounded to price
+
+    Rational price = toRawUnits(priceInputAsRational.value, getAsset.divisible);
+
+    if (price == Rational.zero) {
+      return AssetQuantity(
+          divisible: getAsset.divisible, quantity: BigInt.zero);
+    }
+
+    final getAmount = toRawUnits(
+      Rational.tryParse(amountInput.value) ?? Rational.zero,
+      getAsset.divisible,
+    );
+
+    return AssetQuantity(
+        quantity: getAmount.toBigInt(), divisible: getAsset.divisible);
+  }
+
+  AssetQuantity get getAssetQuantityWhenAmountGiveAndPriceGive {
+    Rational price =
+        toRawUnits(priceInputAsRational.value, giveAsset.divisible);
+
+    if (price == Rational.zero) {
+      return AssetQuantity(
+          divisible: getAsset.divisible, quantity: BigInt.zero);
+    }
+
+    final giveAmount = toRawUnits(
+      Rational.tryParse(amountInput.value) ?? Rational.zero,
+      giveAsset.divisible,
+    );
+
+    final quantity = toRawUnits(giveAmount / price, getAsset.divisible);
+
+    return AssetQuantity(
+        quantity: quantity.toBigInt(), divisible: getAsset.divisible);
+  }
+
+  AssetQuantity get getAssetQuantityWhenAmountGiveAndPriceGet {
+    Rational price = toRawUnits(priceInputAsRational.value, getAsset.divisible);
+    print('Parsed price: $price');
+
+    if (price == Rational.zero) {
+      print('Price is zero, returning zero quantity.');
+      return AssetQuantity(
+          divisible: getAsset.divisible, quantity: BigInt.zero);
+    }
+
+    final giveAmount = toRawUnits(
+      Rational.tryParse(amountInput.value) ?? Rational.zero,
+      giveAsset.divisible,
+    );
+    print('Parsed giveAmount: $giveAmount');
+
+    final quantity = toRawUnits(giveAmount * price, getAsset.divisible);
+    print('Computed quantity: ${quantity.toBigInt()}');
+
+    return AssetQuantity(
+        quantity: quantity.toBigInt(), divisible: getAsset.divisible);
+  }
+
+  // AssetQuantity get getAssetQuantityWhenAmountGiveAndPriceGet {
+  //
+  //   Rational price = toRawUnits(priceInputAsRational.value, getAsset.divisible);
+  //
+  //
+  //   if (price == Rational.zero) {
+  //     return AssetQuantity(
+  //         divisible: getAsset.divisible, quantity: BigInt.zero);
+  //   }
+  //
+  //   final giveAmount = toRawUnits(
+  //     Rational.tryParse(amountInput.value) ?? Rational.zero,
+  //     giveAsset.divisible,
+  //   );
+  //
+  //   final quantity = toRawUnits(giveAmount * price, getAsset.divisible);
+  //
+  //   return AssetQuantity(
+  //       quantity: quantity.toBigInt(), divisible: getAsset.divisible);
+  // }
 
   @override
   List<FormzInput> get inputs => [
         amountInput,
         priceInput,
+        priceInputAsRational,
         getQuantityInput,
         giveQuantityInput,
         getQuantityInputRational
@@ -687,10 +532,11 @@ class SwapOrderFormModel with FormzMixin {
     MultiAddressBalanceEntry? giveAssetBalance,
     AmountInput? amountInput,
     PriceInput? priceInput,
+    PriceInputAsRational? priceInputAsRational,
     Asset? giveAsset,
     Asset? getAsset,
-    List<Order>? buyOrders,
-    List<Order>? sellOrders,
+    List<Order>? asks,
+    List<Order>? bids,
     AmountType? amountType,
     PriceType? priceType,
     GetQuantityInput? getQuantityInput,
@@ -698,19 +544,18 @@ class SwapOrderFormModel with FormzMixin {
     Option<DateTime>? expiry,
   }) {
     return SwapOrderFormModel(
-      // giveQuantityInput: giveQuantityInput ?? this.giveQuantityInput,
-      // receiveQuantityInput: receiveQuantityInput ?? this.receiveQuantityInput,
       expiry: expiry ?? this.expiry,
       simulatedOrders: simulatedOrders ?? this.simulatedOrders,
       giveAssetBalance: giveAssetBalance ?? this.giveAssetBalance,
+      priceInputAsRational: priceInputAsRational ?? this.priceInputAsRational,
       priceInput: priceInput ?? this.priceInput,
       amountInput: amountInput ?? this.amountInput,
       priceType: priceType ?? this.priceType,
       amountType: amountType ?? this.amountType,
       giveAsset: giveAsset ?? this.giveAsset,
       getAsset: getAsset ?? this.getAsset,
-      buyOrders: buyOrders ?? this.buyOrders,
-      sellOrders: sellOrders ?? this.sellOrders,
+      asks: asks ?? this.asks,
+      bids: bids ?? this.bids,
     );
   }
 
@@ -721,7 +566,7 @@ class SwapOrderFormModel with FormzMixin {
   }
 
   List<OrderViewModel> get buyOrdersView {
-    return buyOrders
+    return asks
         .map((el) => el.toViewModel(side: OrderViewModelSide.buy))
         .toList()
       ..sort(
@@ -729,7 +574,7 @@ class SwapOrderFormModel with FormzMixin {
   }
 
   List<OrderViewModel> get sellOrdersView {
-    return sellOrders
+    return bids
         .map((el) => el.toViewModel(side: OrderViewModelSide.sell))
         .toList()
       ..sort(
@@ -868,24 +713,27 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
             giveAssetBalance: giveAssetBalance,
             amountInput: const AmountInput.dirty(value: "0"),
             priceInput: const PriceInput.pure(),
+            priceInputAsRational: PriceInputAsRational.pure(),
             amountType: AmountType.get,
             priceType: PriceType.give,
             giveAsset: giveAsset,
             getAsset: getAsset,
-            buyOrders: buyOrders,
-            sellOrders: sellOrders,
+            asks: buyOrders,
+            bids: sellOrders,
             simulatedOrders: const Initial())) {
     on<AmountTypeClicked>(_handleAmountTypeClicked);
     on<PriceTypeClicked>(_handlePriceTypeClicked);
     on<AmountInputChanged>(_handleAmountInputChanged);
     on<PriceInputChanged>(_handlePriceInputChanged);
     on<RelativePriceButtonClicked>(_handleRelativePriceValueClicked);
-    on<SimulatedOrdersRequested>(_handleSimulateOrdersRequested);
+    on<SimulatedOrdersRequested>(
+      _handleSimulateOrdersRequested,
+    );
     on<ExpiryChanged>(_handleExpiryChanged);
     on<MaxButtonClicked>(_handleMaxButtonClicked);
   }
 
-  _handleMaxButtonClicked(
+  void _handleMaxButtonClicked(
     MaxButtonClicked event,
     Emitter<SwapOrderFormModel> emit,
   ) {
@@ -895,16 +743,14 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
         amountInput: AmountInput.dirty(
             value: state.giveAssetBalance.quantityNormalized)));
 
-    print("max button clicked");
-
-    add(PriceInputChanged(value: state.priceInput.value));
+    add(SimulatedOrdersRequested());
   }
 
-  _handleRelativePriceValueClicked(
+  void _handleRelativePriceValueClicked(
     RelativePriceButtonClicked event,
     Emitter<SwapOrderFormModel> emit,
   ) {
-    final floorOrders = state.buyOrders
+    final floorOrders = state.asks
       ..sort((a, b) => b.getPriceNormalized.compareTo(a.getPriceNormalized));
 
     final floorOrder = floorOrders.firstOrNull;
@@ -930,46 +776,26 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
       (RelativePriceValue.plus15, PriceType.get) => 0.85,
     };
 
-    final adjustmentFactorDecimal = Decimal.parse(adjustmentFactor.toString());
+    final adjustmentFactorDecimal = Rational.parse(adjustmentFactor.toString());
 
-    final Decimal result =
-        (displayPrice.toDecimal(scaleOnInfinitePrecision: 9) *
-                adjustmentFactorDecimal)
-            .ceil(scale: 8);
+    final priceAsRationalInput = PriceInputAsRational.dirty(
+        value: displayPrice * adjustmentFactorDecimal);
 
-    add(PriceInputChanged(value: result.toString()));
+    final priceInput = PriceInput.dirty(
+        value: priceAsRationalInput.value
+            .toDecimal(scaleOnInfinitePrecision: 9)
+            .ceil(scale: 8)
+            .toString());
 
-    // floor price
+    emit(state.copyWith(
+      priceInput: priceInput,
+      priceInputAsRational: priceAsRationalInput,
+    ));
+
+    add(SimulatedOrdersRequested());
   }
-  // _handleRelativePriceValueClicked(
-  //   RelativePriceButtonClicked event,
-  //   Emitter<SwapOrderFormModel> emit,
-  // ) {
-  //   final floorOrder = state.buyOrders.firstOrNull;
-  //   if (floorOrder == null) return;
-  //
-  //   final basePrice = floorOrder.giveRemaining / floorOrder.getRemaining;
-  //
-  //   // Determine how to display the base price (inverted if get-denominated)
-  //   final displayPrice =
-  //       state.priceType == PriceType.give ? 1 / basePrice : basePrice;
-  //
-  //   final adjustmentFactor = switch ((event.value, state.priceType)) {
-  //     (RelativePriceValue.floor, _) => 1.0,
-  //     (RelativePriceValue.plus1, PriceType.give) => 1.01,
-  //     (RelativePriceValue.plus3, PriceType.give) => 1.03,
-  //     (RelativePriceValue.plus5, PriceType.give) => 1.05,
-  //     (RelativePriceValue.plus1, PriceType.get) => 0.99,
-  //     (RelativePriceValue.plus3, PriceType.get) => 0.97,
-  //     (RelativePriceValue.plus5, PriceType.get) => 0.95,
-  //   };
-  //   add(PriceInputChanged(
-  //       value: (displayPrice * adjustmentFactor).toStringAsFixed(8)));
-  //
-  //   // floor price
-  // }
 
-  _handleExpiryChanged(
+  void _handleExpiryChanged(
     ExpiryChanged event,
     Emitter<SwapOrderFormModel> emit,
   ) {
@@ -979,7 +805,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     emit(state.copyWith(expiry: expiry));
   }
 
-  _handlePriceInputChanged(
+  void _handlePriceInputChanged(
     PriceInputChanged event,
     Emitter<SwapOrderFormModel> emit,
   ) {
@@ -988,6 +814,8 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     emit(state.copyWith(
       simulatedOrders: const Initial(),
       priceInput: priceInput,
+      priceInputAsRational: PriceInputAsRational.dirty(
+          value: Rational.tryParse(event.value) ?? Rational.zero),
     ));
 
     add(SimulatedOrdersRequested());
@@ -1004,12 +832,9 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
       return;
     }
 
-    print("\n \n \nAMOUNT INPUT CHANGED: ${event.value}");
-
     final amountInput = AmountInput.dirty(
       value: event.value,
     );
-    print(amountInput);
     print("\n\n\n");
 
     emit(state.copyWith(
@@ -1042,6 +867,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
       state.copyWith(
         simulatedOrders: const Initial(),
         priceInput: const PriceInput.pure(),
+        priceInputAsRational: PriceInputAsRational.pure(),
         priceType:
             state.priceType == PriceType.give ? PriceType.get : PriceType.give,
       ),
@@ -1052,27 +878,16 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     SimulatedOrdersRequested event,
     Emitter<SwapOrderFormModel> emit,
   ) async {
-    print("⏳ [_handleSimulateOrdersRequested] Start with state: "
-        "priceInput=${state.priceInput.value}, "
-        "amountInput=${state.amountInput.value}, "
-        "priceType=${state.priceType}, "
-        "amountType=${state.amountType}, "
-        "giveAsset=${state.giveAsset.asset} (div=${state.giveAsset.divisible}), "
-        "getAsset=${state.getAsset.asset} (div=${state.getAsset.divisible})");
-
     if (Rational.tryParse(state.priceInput.value) == null ||
         Rational.tryParse(state.amountInput.value) == null) {
-      print("⚠️ Invalid input: Could not parse price or amount as Rational");
       return;
     }
 
     emit(state.copyWith(simulatedOrders: const Loading()));
-    print("➡️ Emitted Loading() for simulatedOrders");
 
     final task =
         TaskEither<String, (List<Order>, List<Order>, List<SimulatedOrder>)>.Do(
       ($) async {
-        print("🔍 Fetching orders from repository...");
         final result = await $(TaskEither.sequenceList([
           _orderRepository.getByPairTE(
               status: "open",
@@ -1088,149 +903,29 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
           ),
         ]));
 
-        final buyOrders = result[0];
-        final sellOrders = result[1];
+        final asks = result[0];
+        final bids = result[1];
 
-        // print("first buy order ${buyOrders.first.giveQuantity}");
-        print("📥 Orders fetched: "
-            "buyOrders=${buyOrders.length}, sellOrders=${sellOrders.length}");
+        final simulatedOrders = SimulateOrdersUseCase().call(
+            SimulateOrdersParams(
+                asks: asks,
+                giveQuantity: state.maxGiveQuantityInput.value,
+                getQuantity: state.getQuantityInput.value));
 
-        final price = switch (state.priceType) {
-          PriceType.give => Rational.parse(state.priceInput.value),
-          PriceType.get => Rational.parse(state.priceInput.value).inverse,
-        };
-        print(
-            "💲 Computed price=${price.toString()} (from priceType=${state.priceType})");
-
-        // TODO: fix price filter
-        final priceFilter = price;
-
-        // final priceFilter = Rational(
-        //   state.giveAsset.divisible
-        //       ? price.numerator * TenToTheEigth.bigIntValue
-        //       : price.numerator,
-        //   state.getAsset.divisible
-        //       ? price.denominator * TenToTheEigth.bigIntValue
-        //       : price.denominator,
-        // );
-        print("🔎 priceFilter=$priceFilter");
-
-        final buyOrdersFiltered = buyOrders;
-        // .where((order) =>
-        //     Rational.fromInt(order.getQuantity, order.giveQuantity) <=
-        //     priceFilter)
-        // .toList();
-        print("📊 Filtered buyOrders=${buyOrdersFiltered.length}");
-
-        BigInt tx1GiveQuantity = state.maxGiveQuantityInput.value.quantity;
-        print("tx1GiveQuantityMax $tx1GiveQuantity");
-        BigInt tx1GetQuantity = state.getQuantityInput.value.quantity;
-
-        BigInt tx1GiveRemaining = tx1GiveQuantity;
-        BigInt tx1GetRemaining = tx1GetQuantity;
-        print(
-            "🎯 Target quantities: give=$tx1GiveQuantity, get=$tx1GetQuantity");
-
-        final giveDivisible = state.giveAsset.divisible;
-        final getDivisible = state.getAsset.divisible;
-
-        final simulatedOrders = <SimulatedOrder>[];
-        for (final tx0 in buyOrdersFiltered) {
-          if (tx1GetRemaining <= BigInt.zero) {
-            print("⏭️ Skipping order (no remaining quantity)");
-            break;
-          }
-
-          final tx0GiveRemaining = Rational.fromInt(tx0.giveRemaining);
-          final tx0Price = Rational.fromInt(tx0.getQuantity, tx0.giveQuantity);
-          final tx1InversePrice = Rational(tx1GiveRemaining, tx1GetRemaining);
-
-          print("➡️ Candidate order: giveRemaining=$tx0GiveRemaining, "
-              "price=$tx0Price vs tx1InversePrice=$tx1InversePrice");
-          if (tx0Price > tx1InversePrice) {
-            print("⏭️ Skipping order (tx0Price > tx1InversePrice)");
-            continue;
-          }
-
-          final forwardQuantity = Rational(rationalMinList([
-            tx0GiveRemaining,
-            Rational(tx1GiveRemaining) / tx0Price,
-          ]).toBigInt());
-
-          final backwardQuantity = forwardQuantity * tx0Price;
-          print("Backwardquantity = forwardQuantity * tx0Price");
-          print("                   $forwardQuantity * $tx0Price");
-
-          print(
-              "🔄 forwardQuantity=$forwardQuantity, backwardQuantity=$backwardQuantity");
-
-          if (forwardQuantity == Rational.zero ||
-              backwardQuantity == Rational.zero) {
-            print("⏭️ Skipping order (zero match quantities)");
-            continue;
-          }
-
-          print("tx1giveremianing befor deduct $tx1GiveRemaining");
-          print("tx1getremaining befor deduct $tx1GetRemaining");
-          print("backwardQuantity.toBigInt() ${backwardQuantity.toBigInt()}");
-          print("forwardQuantity.toBigInt() ${forwardQuantity.toBigInt()}");
-
-          print(
-              "tx1giveremianing after deduct ${tx1GiveRemaining - backwardQuantity.toBigInt()}");
-          print(
-              "tx1getremaining after deduct ${tx1GetRemaining - forwardQuantity.toBigInt()}");
-          tx1GiveRemaining = tx1GiveRemaining - backwardQuantity.toBigInt();
-          tx1GetRemaining = tx1GetRemaining - forwardQuantity.toBigInt();
-          print("📉 Remaining after match: "
-              "give=$tx1GiveRemaining, get=$tx1GetRemaining");
-
-          simulatedOrders.add(SimulatedOrderMatch(
-            give: AssetQuantity(
-                divisible: giveDivisible,
-                quantity: backwardQuantity.toBigInt()),
-            get: AssetQuantity(
-                divisible: getDivisible, quantity: forwardQuantity.toBigInt()),
-          ));
-        }
-
-        if (tx1GiveRemaining > BigInt.zero) {
-          final giveQuantity = tx1GiveRemaining;
-
-          // get quantity is just 0 here since
-          // all we are computing is an escrowed amount.
-          final getQuantity = BigInt.zero;
-
-          print("➕ Adding leftover SimulatedOrderCreate (amountType=get): "
-              "give=$giveQuantity, get=$getQuantity");
-
-          simulatedOrders.add(SimulatedOrderCreate(
-            give:
-                AssetQuantity(divisible: giveDivisible, quantity: giveQuantity),
-            get: AssetQuantity(divisible: getDivisible, quantity: getQuantity),
-          ));
-        }
-
-        print(
-            "✅ Simulation complete: simulatedOrders=${simulatedOrders.length}");
-        return (buyOrders, sellOrders, simulatedOrders);
+        return (asks, bids, simulatedOrders);
       },
     );
 
     final result = await task.run();
-    print("📦 Task completed: success=${result.isRight()}");
 
     final nextState = result.fold(
       (error) {
-        print("❌ Simulation failed: $error");
         return state.copyWith(simulatedOrders: Failure(error));
       },
       (success) {
-        print("🎉 Simulation succeeded: "
-            "buyOrders=${success.$1.length}, sellOrders=${success.$2.length}, "
-            "simulatedOrders=${success.$3.length}");
         return state.copyWith(
-          buyOrders: success.$1,
-          sellOrders: success.$2,
+          asks: success.$1,
+          bids: success.$2,
           simulatedOrders: Success(SimulatedOrders(
               giveAsset: state.giveAsset,
               getAsset: state.getAsset,
@@ -1240,163 +935,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     );
 
     emit(nextState);
-    print(
-        "📤 Emitted new state with simulatedOrders=${nextState.simulatedOrders}");
-
-    print("nextState.giveQuantity ${nextState.giveQuantityInput} ");
   }
-
-  //
-  // _handleSimulateOrdersRequested(
-  //   SimulatedOrdersRequested event,
-  //   Emitter<SwapOrderFormModel> emit,
-  // ) async {
-  //   if (Rational.tryParse(state.priceInput.value) == null ||
-  //       Rational.tryParse(state.amountInput.value) == null) {
-  //     return;
-  //   }
-  //
-  //   emit(state.copyWith(simulatedOrders: const Loading()));
-  //
-  //   final task =
-  //       TaskEither<String, (List<Order>, List<Order>, List<SimulatedOrder>)>.Do(
-  //           ($) async {
-  //     final result = await $(TaskEither.sequenceList([
-  //       _orderRepository.getByPairTE(
-  //         status: "open",
-  //         giveAsset: state.getAsset.asset,
-  //         getAsset: state.giveAsset.asset,
-  //         httpConfig: httpConfig,
-  //       ),
-  //       _orderRepository.getByPairTE(
-  //         giveAsset: state.giveAsset.asset,
-  //         getAsset: state.getAsset.asset,
-  //         status: "open",
-  //         httpConfig: httpConfig,
-  //       ),
-  //     ]));
-  //
-  //     final buyOrders = result[0];
-  //     final sellOrders = result[1];
-  //
-  //     final price = switch (state.priceType) {
-  //       PriceType.give => Rational.parse(state.priceInput.value),
-  //       PriceType.get => Rational.parse(state.priceInput.value).inverse,
-  //     };
-  //
-  //     final priceFilter = Rational(
-  //         state.giveAsset.divisible
-  //             ? price.numerator * TenToTheEigth.bigIntValue
-  //             : price.numerator,
-  //         state.getAsset.divisible
-  //             ? price.denominator * TenToTheEigth.bigIntValue
-  //             : price.denominator);
-  //
-  //     final buyOrdersFiltered = buyOrders
-  //         .where((order) =>
-  //             Rational.fromInt(order.getQuantity, order.giveQuantity) <=
-  //             priceFilter)
-  //         .toList();
-  //
-  //     BigInt tx1GiveQuantity = state.giveQuantityInput.value.quantity;
-  //     BigInt tx1GetQuantity = state.getQuantityInput.value.quantity;
-  //
-  //     BigInt tx1GiveRemaining = tx1GiveQuantity;
-  //
-  //     BigInt tx1GetRemaining = tx1GetQuantity;
-  //
-  //     final giveDivisible = state.giveAsset.divisible;
-  //     final getDivisible = state.getAsset.divisible;
-  //
-  //     final candidateMatches = buyOrdersFiltered;
-  //     final simulatedOrders = <SimulatedOrder>[];
-  //
-  //     for (final tx0 in candidateMatches) {
-  //       final tx0GiveRemaining = Rational.fromInt(tx0.giveRemaining);
-  //       final tx0Price = Rational.fromInt(tx0.getQuantity, tx0.giveQuantity);
-  //
-  //       final tx1InversePrice = Rational(tx1GiveRemaining, tx1GetRemaining);
-  //
-  //       if (tx0Price > tx1InversePrice) {
-  //         continue;
-  //       }
-  //
-  //       Rational forwardQuantity = rationalMinList([
-  //         tx0GiveRemaining,
-  //         Rational(tx1GiveRemaining) / tx0Price,
-  //       ]);
-  //
-  //       Rational backwardQuantity = (forwardQuantity * tx0Price);
-  //
-  //       if (forwardQuantity == Rational.zero) {
-  //         continue;
-  //       }
-  //
-  //       if (backwardQuantity == Rational.zero) {
-  //         continue;
-  //       }
-  //
-  //       tx1GiveRemaining -= backwardQuantity.toBigInt();
-  //       tx1GetRemaining -= forwardQuantity.toBigInt();
-  //
-  //       simulatedOrders.add(SimulatedOrderMatch(
-  //         give: AssetQuantity(
-  //           divisible: giveDivisible,
-  //           quantity: backwardQuantity.toBigInt(),
-  //         ),
-  //         get: AssetQuantity(
-  //           divisible: getDivisible,
-  //           quantity: forwardQuantity.toBigInt(),
-  //         ),
-  //       ));
-  //     }
-  //
-  //     if (state.amountType == AmountType.give &&
-  //         tx1GiveRemaining > BigInt.zero) {
-  //       final getAmount = tx1GetRemaining;
-  //
-  //       final getQuantity = switch ((giveDivisible, getDivisible)) {
-  //         (true, true) => getAmount,
-  //         (true, false) => getAmount,
-  //         (false, true) => getAmount,
-  //         (false, false) => getAmount
-  //       };
-  //
-  //       simulatedOrders.add(SimulatedOrderCreate(
-  //           give: AssetQuantity(
-  //               divisible: giveDivisible, quantity: tx1GiveRemaining),
-  //           get:
-  //               AssetQuantity(divisible: getDivisible, quantity: getQuantity)));
-  //     } if (state.amountType == AmountType.get && tx1GetRemaining > BigInt.zero) { // given that amount type is get final giveQuantity = switch ((giveDivisible, getDivisible)) {r(true, false) => ((price * Rational(tx1GetRemaining)) * TenToTheEigth.rational)
-  //               .toBigInt(),
-  //         (false, true) =>
-  //           ((price * Rational(tx1GetRemaining)) / TenToTheEigth.rational)
-  //               .toBigInt(),
-  //         _ => (price * Rational(tx1GetRemaining)).toBigInt()
-  //       };
-  //
-  //       simulatedOrders.add(SimulatedOrderCreate(
-  //           give:
-  //               AssetQuantity(divisible: giveDivisible, quantity: giveQuantity),
-  //           get: AssetQuantity(
-  //               divisible: getDivisible, quantity: tx1GetRemaining)));
-  //     }
-  //     return (buyOrders, sellOrders, simulatedOrders);
-  //   });
-  //
-  //   final result = await task.run();
-  //
-  //   final nextState = result.fold(
-  //     (error) => state.copyWith(simulatedOrders: Failure(error)),
-  //     (success) => state.copyWith(
-  //       buyOrders: success.$1,
-  //       sellOrders: success.$2,
-  //       simulatedOrders: Success(success.$3),
-  //     ),
-  //   );
-  //
-  //   emit(nextState);
-  // }
 }
 
 EventTransformer<E> debounce<E>(Duration duration) {

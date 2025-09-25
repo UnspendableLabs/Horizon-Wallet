@@ -9,7 +9,7 @@ import "package:horizon/domain/services/seed_service.dart";
 import "./usecase.dart";
 export "./usecase.dart";
 
-class ValidatePasswordUseCase implements UseCase<bool, String> {
+class ValidatePasswordUseCase implements UseCaseFuture<bool, String> {
   final WalletConfigRepository _walletConfigRepository;
   final SeedService _seedService;
 

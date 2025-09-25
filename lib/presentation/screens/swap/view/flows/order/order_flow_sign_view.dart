@@ -1,6 +1,8 @@
+import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:formz/formz.dart';
 import 'package:horizon/presentation/common/transactions/transaction_fee_selection.dart';
+import 'package:horizon/presentation/forms/swap_order_form/bloc/swap_order_form_bloc.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
@@ -163,13 +165,38 @@ class _OrderFlowSignViewState extends State<OrderFlowSignView> {
               ],
             )),
         _renderPropertyWidget(
+            "give",
+            Row(
+              children: [
+                Text(widget.state.giveQuantity.normalized(precision: 8)),
+              ],
+            )),
+        _renderPropertyWidget(
+            "give raw",
+            Row(
+              children: [
+                Text(widget.state.giveQuantity.quantity.toString()),
+              ],
+            )),
+        _renderPropertyWidget(
+            "get", Text(widget.state.getQuantity.normalized(precision: 8))),
+        _renderPropertyWidget(
+            "get raw", Text(widget.state.getQuantity.quantity.toString())),
+        _renderPropertyWidget(
             "Price",
             Row(
               children: [
                 QuantityText(
-                    quantity:
-                        (widget.state.giveQuantity / widget.state.getQuantity)
-                            .normalized(precision: 8),
+                    quantity: adjustForDivisibility(
+                            Decimal.fromBigInt(
+                                    widget.state.giveQuantity.quantity) /
+                                Decimal.fromBigInt(
+                                    widget.state.getQuantity.quantity),
+                            fromDivisible: false,
+                            toDivisible: true)
+                        .toDecimal(scaleOnInfinitePrecision: 9)
+                        .ceil(scale: 8)
+                        .toString(),
                     style: const TextStyle(fontSize: 16)),
                 const SizedBox(width: 8),
                 appIcons.assetIcon(

@@ -63,7 +63,7 @@ enum BalanceType {
 
 enum TransactionType { send, lockQuantity }
 
-class TenToTheEigth {
+class TenToTheSeventh {
   static const int value = 100000000;
   static const double doubleValue = 100000000.0;
   static const String stringValue = "100000000";

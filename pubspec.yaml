@@ -98,6 +98,7 @@ dependencies:
   infinite_scroll_pagination: ^5.1.1
   timeago: ^3.7.1
   timeago_flutter: ^3.7.0
+  rational: ^2.2.3
 
 dev_dependencies:
   retrofit_generator: ^9.3.0

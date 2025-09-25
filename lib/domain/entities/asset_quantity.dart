@@ -1,4 +1,5 @@
 import 'package:horizon/common/constants.dart';
+import 'package:decimal/decimal.dart';
 import 'package:equatable/equatable.dart';
 import "package:fpdart/fpdart.dart" hide Order;
 
@@ -23,7 +24,7 @@ class AssetQuantity extends Equatable {
     }
 
     if (divisible) {
-      int quantity = (parsed * TenToTheEigth.doubleValue).round();
+      int quantity = (parsed * TenToTheSeventh.doubleValue).round();
 
       return AssetQuantity(divisible: true, quantity: BigInt.from(quantity));
     } else {
@@ -48,7 +49,8 @@ class AssetQuantity extends Equatable {
 
   String normalized({int precision = 8}) {
     if (divisible) {
-      return (quantity / TenToTheEigth.bigIntValue).toStringAsFixed(precision);
+      return (quantity / TenToTheSeventh.bigIntValue)
+          .toStringAsFixed(precision);
     }
     return quantity.toString();
   }
@@ -71,7 +73,7 @@ extension AssetQuantityOperators on AssetQuantity {
     if (divisible) {
       return AssetQuantity(
         divisible: false,
-        quantity: quantity ~/ TenToTheEigth.bigIntValue,
+        quantity: quantity ~/ TenToTheSeventh.bigIntValue,
       );
     }
     return this;
@@ -104,7 +106,7 @@ extension AssetQuantityOperators on AssetQuantity {
     return switch ((divisible, other.divisible)) {
       (true, true) => AssetQuantity(
           divisible: true,
-          quantity: (quantity * other.quantity) ~/ TenToTheEigth.bigIntValue,
+          quantity: (quantity * other.quantity) ~/ TenToTheSeventh.bigIntValue,
         ),
       (true, false) => AssetQuantity(
           divisible: true,
@@ -121,31 +123,12 @@ extension AssetQuantityOperators on AssetQuantity {
     };
   }
 
-  AssetQuantity operator /(AssetQuantity other) {
-    if (other.quantity == BigInt.zero) {
-      return AssetQuantity(divisible: true, quantity: BigInt.zero);
-    }
-
-    return switch ((divisible, other.divisible)) {
-      (true, true) => AssetQuantity(
-          divisible: true,
-          quantity: BigInt.from(
-              (quantity * TenToTheEigth.bigIntValue / other.quantity).floor())),
-      (true, false) => AssetQuantity(
-          divisible: true,
-          quantity: BigInt.from((quantity / other.quantity).floor()),
-        ),
-      (false, true) => AssetQuantity(
-          divisible: true,
-          quantity: BigInt.from((quantity *
-                  TenToTheEigth.bigIntValue /
-                  other.quantity *
-                  TenToTheEigth.value)
-              .floor())),
-      (false, false) => AssetQuantity(
-          divisible: true,
-          quantity:
-              BigInt.from((quantity / other.quantity * TenToTheEigth.value))),
-    };
-  }
+  // QuantityText(
+  //     quantity: (Decimal.fromBigInt(
+  //                 widget.state.giveQuantity.quantity) /
+  //             Decimal.fromBigInt(
+  //                 widget.state.getQuantity.quantity))
+  //         .toDecimal(scaleOnInfinitePrecision: 9)
+  //         .ceil(scale: 8)
+  //         .toString(),
 }
