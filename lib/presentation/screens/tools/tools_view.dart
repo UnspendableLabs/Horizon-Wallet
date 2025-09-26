@@ -132,7 +132,7 @@ class _ToolsViewState extends State<ToolsView> {
           name: "Dispensers",
           title: "Dispensers",
           href:
-              "${session.httpConfig.horizonMarket}/listing?order_type=dispensers",
+              "${session.httpConfig.horizonMarket}/listing?order_type=dispenser",
           description: "Manage your Counterparty Dispensers",
           icon: AppIcons.dispenserIcon(context: context, width: 24, height: 24),
         ),
