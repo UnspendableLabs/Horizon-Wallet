@@ -52,6 +52,7 @@ class BtcFeedStateReplete extends Equatable {
       ];
 
   List<ActivityFeedItem> get items => transactions
+      .filter((tx) => !tx.isCounterpartyTx(null))
       .map((tx) => ActivityFeedItem(
             id: tx.txid,
             hash: tx.txid,

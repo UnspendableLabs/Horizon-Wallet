@@ -44,6 +44,8 @@ class TransactionInfo extends Equatable {
     required this.btcAmountNormalized,
   });
 
+  String get name => "xcp";
+
   TransactionInfo copyWith({
     String? hash,
     String? source,
@@ -101,6 +103,9 @@ class TransactionInfoEnhancedSend extends TransactionInfo {
   List<Object?> get props => [unpackedData, ...super.props];
 
   @override
+  String get name => "enhanced send";
+
+  @override
   TransactionInfoEnhancedSend copyWith({
     String? hash,
     String? source,
@@ -144,6 +149,9 @@ class TransactionInfoIssuance extends TransactionInfo {
   });
 
   @override
+  String get name => "issuance";
+
+  @override
   List<Object?> get props => [unpackedData, ...super.props];
 
   @override
@@ -174,6 +182,9 @@ class TransactionInfoIssuance extends TransactionInfo {
 
 class TransactionInfoDispenser extends TransactionInfo {
   final DispenserUnpackedVerbose unpackedData;
+
+  @override
+  String get name => "dispenser";
 
   const TransactionInfoDispenser({
     required super.hash,
@@ -232,6 +243,9 @@ class TransactionInfoDispense extends TransactionInfo {
   });
 
   @override
+  String get name => "dispense";
+
+  @override
   List<Object?> get props => [unpackedData, ...super.props];
 
   @override
@@ -262,6 +276,9 @@ class TransactionInfoDispense extends TransactionInfo {
 
 class TransactionInfoFairmint extends TransactionInfo {
   final FairmintUnpackedVerbose unpackedData;
+
+  @override
+  String get name => "fairmint";
 
   const TransactionInfoFairmint({
     required super.hash,
@@ -322,6 +339,9 @@ class TransactionInfoFairminter extends TransactionInfo {
   });
 
   @override
+  String get name => "fairminter";
+
+  @override
   List<Object?> get props => [unpackedData, ...super.props];
 
   @override
@@ -364,6 +384,10 @@ class TransactionInfoOrder extends TransactionInfo {
     required super.btcAmountNormalized,
     // required super.unpackedData,
   });
+
+  @override
+  String get name => "order";
+
   @override
   List<Object?> get props => [unpackedData, ...super.props];
   @override
@@ -406,6 +430,10 @@ class TransactionInfoCancel extends TransactionInfo {
     required super.btcAmountNormalized,
     // required super.unpackedData,
   });
+
+  @override
+  String get name => "cancel";
+
   @override
   List<Object?> get props => [unpackedData, ...super.props];
   @override
@@ -447,6 +475,10 @@ class TransactionInfoAttach extends TransactionInfo {
     required this.unpackedData,
     required super.btcAmountNormalized,
   });
+
+  @override
+  String get name => "attach";
+
   @override
   List<Object?> get props => [unpackedData, ...super.props];
   @override
@@ -488,6 +520,10 @@ class TransactionInfoDetach extends TransactionInfo {
     required this.unpackedData,
     required super.btcAmountNormalized,
   });
+
+  @override
+  String get name => "detach";
+
   @override
   List<Object?> get props => [unpackedData, ...super.props];
   @override
@@ -527,6 +563,10 @@ class TransactionInfoMoveToUtxo extends TransactionInfo {
     required super.domain,
     required super.btcAmountNormalized,
   });
+
+  @override
+  String get name => "utxo move";
+
   @override
   List<Object?> get props => [...super.props];
   @override
@@ -567,6 +607,9 @@ class TransactionInfoMpmaSend extends TransactionInfo {
     required super.btcAmountNormalized,
     required this.unpackedData,
   });
+
+  @override
+  String get name => "mpma send";
 
   @override
   List<Object?> get props => [unpackedData, ...super.props];
@@ -612,6 +655,9 @@ class TransactionInfoAssetDestruction extends TransactionInfo {
   });
 
   @override
+  String get name => "asset destruction";
+
+  @override
   List<Object?> get props => [unpackedData, ...super.props];
 
   @override
@@ -654,6 +700,9 @@ class TransactionInfoAssetDividend extends TransactionInfo {
   });
 
   @override
+  String get name => "asset dividend";
+
+  @override
   List<Object?> get props => [unpackedData, ...super.props];
   @override
   TransactionInfoAssetDividend copyWith({
@@ -693,6 +742,10 @@ class TransactionInfoSweep extends TransactionInfo {
     required super.btcAmountNormalized,
     required this.unpackedData,
   });
+
+  @override
+  String get name => "sweep";
+
   @override
   List<Object?> get props => [unpackedData, ...super.props];
   @override

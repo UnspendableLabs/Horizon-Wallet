@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/domain/repositories/transaction_repository.dart';
+import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/common/tx_hash_display.dart';
 import 'package:horizon/presentation/screens/dashboard/view/balances_display.dart';
@@ -12,10 +16,79 @@ import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/screens/transactions/rbf/view/rbf_page.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
 
 import "./bloc/btc_activity_bloc.dart";
 import "./btc_view.dart" show BtcActivityActions;
+
+extension StringExtension on String {
+  String capitalize() {
+    return "${this[0].toUpperCase()}${substring(1).toLowerCase()}";
+  }
+}
+
+class XCPTitle extends StatelessWidget {
+  final BitcoinRepository _bitcoinRepository;
+  final TransactionRepository _transactionRepository;
+  final String txid;
+
+  XCPTitle({
+    required this.txid,
+    BitcoinRepository? bitcoinRepository,
+    TransactionRepository? transactionRepository,
+    super.key,
+  })  : _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>(),
+        _transactionRepository =
+            transactionRepository ?? GetIt.I<TransactionRepository>();
+
+  @override
+  Widget build(BuildContext context) {
+    final session = context.read<SessionStateCubit>().state.successOrThrow();
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        RemoteDataTaskEitherBuilder(
+            task: _bitcoinRepository
+                .getTransactionHexT(
+                  httpConfig: session.httpConfig,
+                  txid: txid,
+                  onError: (e) => 'Error fetching transaction: $txid',
+                )
+                .flatMap((txHex) => _transactionRepository.getInfoT(
+                      httpConfig: session.httpConfig,
+                      raw: txHex,
+                      onError: (e, callstack) {
+                        print(callstack);
+                        e.toString();
+                      },
+                    )),
+            builder: (context, state, _refresh) {
+              return state.fold3(
+                onNone: () => Text("-",
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    )),
+                onFailure: (e) => Text(e.toString(),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    )),
+                onReplete: (r) => Text(r.name.capitalize(),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    )),
+              );
+            }),
+        AppIcons.xcpIcon(width: 14, height: 14)
+      ],
+    );
+  }
+}
 
 class SendTitle extends StatelessWidget {
   final String quantityNormalized;
@@ -254,6 +327,12 @@ class ActivityFeedListItem extends StatelessWidget {
 
   Widget _buildBitcoinTxTitle(BitcoinTx tx) {
     final addresses_ = addresses.map((a) => a).toList();
+
+    if (tx.isCounterpartyTx(null)) {
+      return XCPTitle(
+        txid: tx.txid,
+      );
+    }
 
     return switch (tx.getTransactionType(addresses_)) {
       TransactionType.sender => SendTitle(
