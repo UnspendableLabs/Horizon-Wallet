@@ -591,11 +591,7 @@ class SwapOrderForm extends StatelessWidget {
                 onSuccess: (simulatedOrders) {
                   return () => actions.onSubmitClicked(SubmitParams(
                         giveQuantity: state.giveQuantityInput.value,
-                        getQuantity: AssetQuantity.fromNormalizedString(
-                            divisible: state.getAsset.divisible,
-                            input: state.getQuantityInputRational.value
-                                .toDouble()
-                                .toString()),
+                        getQuantity: state.getQuantityInput.value,
                         simulatedOrders: simulatedOrders,
                       ));
                 },
@@ -947,14 +943,6 @@ class PriceToggle extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // appIcons.assetIcon(
-              //     httpConfig: session.httpConfig,
-              //     assetName: numerator.asset,
-              //     context: context,
-              //     width: 24,
-              //     height: 24),
-              // const SizedBox(width: 8),
-
               Text(
                   "${truncateAssetName(numerator.displayName.toUpperCase())} / ${truncateAssetName(denominator.displayName.toUpperCase())}",
                   style: theme.textTheme.titleMedium!.copyWith(
@@ -1015,12 +1003,6 @@ class AssetPill extends StatelessWidget {
                     fontSize: 12,
                   )),
               const SizedBox(width: 2),
-              // const SizedBox(width: 4),
-              // AppIcons.caretDownIcon(
-              //   context: context,
-              //   width: 18,
-              //   height: 18,
-              // )
             ],
           ),
         ),
@@ -1109,12 +1091,10 @@ class OrderBookView extends StatelessWidget {
             return const Divider();
           }
           if (index > 0 && index < 1 + buyCount) {
-            // ASK rows (built with side = buy)
             final ask = asks[index - 1];
 
-            // priceType.give => show GIVE/GET, which is the inverse of buy-side default (GET/GIVE)
             final Price displayedAskPrice =
-                priceType == PriceType.give ? ask.invertedPrice : ask.price;
+                priceType == PriceType.give ? ask.price : ask.invertedPrice;
 
             return _OrderRow(
               quantity: ask.quantity.normalized(precision: 8),
@@ -1123,11 +1103,8 @@ class OrderBookView extends StatelessWidget {
             );
           }
 
-// BIDS start here (built with side = sell)
           final bid = bids[index - sellStartIndex];
 
-// priceType.give => show GIVE/GET, which matches sell-side default (GIVE/GET)
-// priceType.get  => show GET/GIVE, which is the inverse of sell-side default
           final Price displayedBidPrice =
               priceType == PriceType.give ? bid.price : bid.invertedPrice;
 

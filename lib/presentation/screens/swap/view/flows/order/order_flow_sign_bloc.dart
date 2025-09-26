@@ -67,6 +67,13 @@ class OrderReviewFormModel with FormzMixin {
   final Option<String> error;
   final Option<ComposeOrderResponse> composeResponse;
 
+  Price get price => Price(
+      pair: MarketPair(
+          quoteDivisible: getQuantity.divisible,
+          baseDivisible: giveQuantity.divisible),
+      numer: getQuantity.quantity,
+      denom: giveQuantity.quantity); // give / get
+
   @override
   get inputs => [
         feeOptionInput,

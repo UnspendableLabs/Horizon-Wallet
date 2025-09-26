@@ -60,7 +60,10 @@ class OrderFlowSignProvider extends StatelessWidget {
     required this.child,
     FeeEstimatesRespository? feeEstimatesRepository,
   }) : _feeEstimatesRepository =
-            feeEstimatesRepository ?? GetIt.I<FeeEstimatesRespository>();
+            feeEstimatesRepository ?? GetIt.I<FeeEstimatesRespository>() {
+    print("give asset $giveQuantity");
+    print("get asset $getQuantity");
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -165,38 +168,11 @@ class _OrderFlowSignViewState extends State<OrderFlowSignView> {
               ],
             )),
         _renderPropertyWidget(
-            "give",
-            Row(
-              children: [
-                Text(widget.state.giveQuantity.normalized(precision: 8)),
-              ],
-            )),
-        _renderPropertyWidget(
-            "give raw",
-            Row(
-              children: [
-                Text(widget.state.giveQuantity.quantity.toString()),
-              ],
-            )),
-        _renderPropertyWidget(
-            "get", Text(widget.state.getQuantity.normalized(precision: 8))),
-        _renderPropertyWidget(
-            "get raw", Text(widget.state.getQuantity.quantity.toString())),
-        _renderPropertyWidget(
-            "Price",
+            "Buy",
             Row(
               children: [
                 QuantityText(
-                    quantity: adjustForDivisibility(
-                            Decimal.fromBigInt(
-                                    widget.state.giveQuantity.quantity) /
-                                Decimal.fromBigInt(
-                                    widget.state.getQuantity.quantity),
-                            fromDivisible: false,
-                            toDivisible: true)
-                        .toDecimal(scaleOnInfinitePrecision: 9)
-                        .ceil(scale: 8)
-                        .toString(),
+                    quantity: widget.state.getQuantity.normalized(precision: 8),
                     style: const TextStyle(fontSize: 16)),
                 const SizedBox(width: 8),
                 appIcons.assetIcon(
@@ -206,11 +182,29 @@ class _OrderFlowSignViewState extends State<OrderFlowSignView> {
                     width: 12,
                     height: 12),
                 const SizedBox(width: 4),
-                Text(truncateAssetName(widget.state.giveAsset)),
+                Text(widget.state.getAsset),
+              ],
+            )),
+        _renderPropertyWidget(
+            "Price",
+            Row(
+              children: [
+                QuantityText(
+                    quantity: widget.state.price.normalized(precision: 8),
+                    style: const TextStyle(fontSize: 16)),
+                const SizedBox(width: 8),
+                appIcons.assetIcon(
+                    httpConfig: session.httpConfig,
+                    context: context,
+                    assetName: widget.state.getAsset,
+                    width: 12,
+                    height: 12),
+                const SizedBox(width: 4),
+                Text(truncateAssetName(widget.state.getAsset)),
                 const SizedBox(width: 4),
                 const Text("/"),
                 const SizedBox(width: 4),
-                Text(truncateAssetName(widget.state.getAsset)),
+                Text(truncateAssetName(widget.state.giveAsset)),
               ],
             )),
         const SizedBox(

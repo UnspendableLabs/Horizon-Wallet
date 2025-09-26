@@ -1,6 +1,8 @@
 import 'package:get_it/get_it.dart';
 import "package:horizon/presentation/forms/base/base_form_bloc.dart";
 import 'package:horizon/domain/entities/multi_address_balance.dart';
+import 'package:horizon/domain/entities/asset_info.dart';
+import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 
 import 'package:horizon/domain/entities/address_v2.dart';
@@ -35,26 +37,26 @@ class SwapFormLoaderFn extends Loader<SwapFormLoaderArgs, SwapFormLoaderData> {
             httpConfig: args.httpConfig,
             addresses: args.addresses.map((a) => a.address).toList());
 
-    // final mockXCPBalance = MultiAddressBalance(
-    //   asset: "XCP",
-    //   total: 10000000000,
-    //   totalNormalized: "100",
-    //   assetLongname: "Counterparty",
-    //   entries: [
-    //     MultiAddressBalanceEntry(
-    //       address: args.addresses.first.address,
-    //       quantityNormalized: "100",
-    //       quantity: 10000000000,
-    //     )
-    //   ],
-    //   assetInfo: AssetInfo(
-    //     assetLongname: "Counterparty",
-    //     description: "Counterparty Asset",
-    //     divisible: true,
-    //     owner: null,
-    //     locked: false,
-    //   ),
-    // );
+    final mockXCPBalance = MultiAddressBalance(
+      asset: "XCP",
+      total: 10000000000,
+      totalNormalized: "100",
+      assetLongname: "Counterparty",
+      entries: [
+        MultiAddressBalanceEntry(
+          address: args.addresses.first.address,
+          quantityNormalized: "100",
+          quantity: 10000000000,
+        )
+      ],
+      assetInfo: AssetInfo(
+        assetLongname: "Counterparty",
+        description: "Counterparty Asset",
+        divisible: true,
+        owner: null,
+        locked: false,
+      ),
+    );
     //
     // final mockGerperBalance = MultiAddressBalance(
     //   asset: "GERPER",
@@ -77,7 +79,7 @@ class SwapFormLoaderFn extends Loader<SwapFormLoaderArgs, SwapFormLoaderData> {
     //   ),
     // );
     //
-    // multiAddressBalance.add(mockGerperBalance);
+    multiAddressBalance.add(mockXCPBalance);
 
     return SwapFormLoaderData(
       balances: multiAddressBalance,

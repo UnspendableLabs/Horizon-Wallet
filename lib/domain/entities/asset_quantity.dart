@@ -188,12 +188,12 @@ class MarketPair extends Equatable {
   BigInt get quoteScale => quoteDivisible ? kTen8 : BigInt.one;
 }
 
-/// Price is QUOTE per BASE, measured in **raw units per raw unit**, as an exact rational.
-/// i.e., quotePerBaseRaw = numer / denom = (raw quote) / (raw base)
 class Price extends Equatable {
   final MarketPair pair;
-  final BigInt numer; // raw quote units
-  final BigInt denom; // raw base units (always > 0)
+
+  /// raw quote units per raw base unit (exact fraction)
+  final BigInt numer; // raw quote
+  final BigInt denom; // raw base  (must be > 0)
 
   Price({
     required this.pair,
@@ -203,45 +203,49 @@ class Price extends Equatable {
 
   @override
   List<Object?> get props => [pair, numer, denom];
+
+  /// Exact normalized QUOTE/BASE as a rational
   Rational get normalizedRational =>
       Rational(numer, denom) * Rational(pair.baseScale, pair.quoteScale);
 
+  /// Compare by normalized numeric value
   int compareNormalized(Price other) =>
       normalizedRational.compareTo(other.normalizedRational);
 
-  /// Build a price from a normalized UI value:
-  /// `quotePerBaseNormalized` = (normalized QUOTE) per 1 normalized BASE
-  ///
-  /// Conversion:
-  /// raw ratio = (quotePerBaseNormalized * quoteScale) / baseScale
-  /// Store as exact rational (numer/denom) by flooring numerator to integer raw units.
+  /// Build a price from a normalized UI value (QUOTE per BASE in normalized units)
+  /// WITHOUT truncation: lift to raw units exactly and reduce the fraction.
   factory Price.fromNormalized({
     required MarketPair pair,
     required Decimal quotePerBaseNormalized,
   }) {
-    // Translate to raw-per-raw:
-    // numerRaw = floor(quotePerBaseNormalized * quoteScale)
-    final Decimal scaledQuote =
-        quotePerBaseNormalized * Decimal.fromBigInt(pair.quoteScale);
-    final BigInt numer = scaledQuote.floor().toBigInt();
-    final BigInt denom =
-        pair.baseScale; // per 1 normalized base -> divide by base scale
-    // Reduce fraction (optional). We can leave unreduced to keep it cheap.
-    return Price(pair: pair, numer: numer, denom: denom);
+    // Parse Decimal → Rational exactly (via string) to avoid binary/scale drift
+    final Rational r = Rational.parse(quotePerBaseNormalized.toString());
+
+    // Lift to raw units:
+    //   raw = (r.numer / r.denom) * (quoteScale / baseScale)
+    BigInt n = r.numerator * pair.quoteScale;
+    BigInt d = r.denominator * pair.baseScale;
+
+    // Reduce by gcd (nice to keep numbers small & comparisons fast)
+    final BigInt g = n.gcd(d);
+    n = n ~/ g;
+    d = d ~/ g;
+
+    return Price(pair: pair, numer: n, denom: d);
   }
 
+  /// Normalized UI string (ceil at [precision] so you never under-quote in display)
   String normalized({int precision = 8}) {
     final Rational r =
         Rational(numer, denom) * Rational(pair.baseScale, pair.quoteScale);
-
     return r
         .toDecimal(scaleOnInfinitePrecision: precision + 1)
         .ceil(scale: precision)
         .toString();
   }
 
-  /// Compute QUOTE amount for a given BASE amount (both raw).
-  /// Rounds **up** to avoid underpay (esp. divisible quotes).
+  /// QUOTE needed for a given BASE amount (both in raw units).
+  /// Ceil by default to avoid underpaying.
   AssetQuantity costForBase(AssetQuantity baseAmount,
       {bool ceilOnRemainder = true}) {
     if (baseAmount.divisible != pair.baseDivisible) {
@@ -251,14 +255,14 @@ class Price extends Equatable {
       return AssetQuantity(
           divisible: pair.quoteDivisible, quantity: BigInt.zero);
     }
-    final BigInt numerFull = baseAmount.quantity * numer; // (raw base) * numer
+    final BigInt numerFull = baseAmount.quantity * numer; // base * numer
     final BigInt qRaw =
         ceilOnRemainder ? _ceilDiv(numerFull, denom) : (numerFull ~/ denom);
     return AssetQuantity(divisible: pair.quoteDivisible, quantity: qRaw);
   }
 
-  /// Compute BASE amount you can buy for a QUOTE budget.
-  /// Rounds **down** by default (conservative).
+  /// BASE you can buy for a QUOTE budget (both in raw units).
+  /// Floor by default (conservative received/base).
   AssetQuantity baseForQuote(AssetQuantity quoteBudget,
       {bool floorResult = true}) {
     if (quoteBudget.divisible != pair.quoteDivisible) {
@@ -268,7 +272,7 @@ class Price extends Equatable {
       return AssetQuantity(
           divisible: pair.baseDivisible, quantity: BigInt.zero);
     }
-    // baseRaw = (quoteRaw * denom) / numer
+    // baseRaw = floor_or_ceil( quoteRaw * denom / numer )
     final BigInt numerFull = quoteBudget.quantity * denom;
     final BigInt bRaw =
         floorResult ? (numerFull ~/ numer) : _ceilDiv(numerFull, numer);
@@ -285,9 +289,7 @@ class Price extends Equatable {
         denom: numer,
       );
 
-  // helper
-  static BigInt _ceilDiv(BigInt numer, BigInt denom) {
-    if (numer == BigInt.zero) return BigInt.zero;
-    return (numer + denom - BigInt.one) ~/ denom;
-  }
+  // ---- helpers ----
+  static BigInt _ceilDiv(BigInt a, BigInt b) =>
+      a == BigInt.zero ? BigInt.zero : (a + b - BigInt.one) ~/ b;
 }
