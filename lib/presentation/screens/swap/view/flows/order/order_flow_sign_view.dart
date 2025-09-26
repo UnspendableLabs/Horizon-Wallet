@@ -61,8 +61,6 @@ class OrderFlowSignProvider extends StatelessWidget {
     FeeEstimatesRespository? feeEstimatesRepository,
   }) : _feeEstimatesRepository =
             feeEstimatesRepository ?? GetIt.I<FeeEstimatesRespository>() {
-    print("give asset $giveQuantity");
-    print("get asset $getQuantity");
   }
 
   @override

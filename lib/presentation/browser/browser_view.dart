@@ -8,17 +8,14 @@ class InAppBrowserController extends ChromeSafariBrowser {
   BuildContext? context;
   @override
   void onOpened() {
-    print("ChromeSafari browser opened");
   }
 
   @override
   void onCompletedInitialLoad(didLoadSuccessfully) {
-    print("ChromeSafari browser initial load completed");
   }
 
   @override
   void onClosed() {
-    print("ChromeSafari browser closed");
   }
 }
 
@@ -86,7 +83,6 @@ class _EmbeddedBrowserViewState extends State<EmbeddedBrowserView> {
           webViewController = controller;
         },
         onLoadStart: (controller, url) {
-          print("Started loading: $url");
           controller.addJavaScriptHandler(
             handlerName: 'walletBridge',
             callback: (args) async {
@@ -94,14 +90,11 @@ class _EmbeddedBrowserViewState extends State<EmbeddedBrowserView> {
               final method = message['method'];
               final id = message['id'];
 
-              print('📩 Flutter received method: $method');
 
               if (method == 'getAddresses') {
                 final addresses = await _showGetAddressesDialog(context);
-                print("\n\n\naddresses: $addresses \n\n");
 
                 if (addresses != null) {
-                  print("about tocall _postMessage");
                   print({
                     'jsonrpc': '2.0',
                     'id': id,
@@ -142,17 +135,14 @@ class _EmbeddedBrowserViewState extends State<EmbeddedBrowserView> {
         onLoadStop: (controller, url) async {
           await controller.evaluateJavascript(
               source: _injectHorizonProviderScript());
-          print('✅ Injected HorizonWalletProvider into page');
         },
       ),
     );
   }
 
   Future<void> _postMessage(Map<String, dynamic> message) async {
-    print("\n\n\nymessage in postMessage $message\n\n");
 
     final jsonString = jsonEncode(message);
-    print("\n\nder json $jsonString\n\n\n\n");
     await webViewController?.evaluateJavascript(source: '''
       window.postMessage($jsonString, window.location.origin);
     ''');

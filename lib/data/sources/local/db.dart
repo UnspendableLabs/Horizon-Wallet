@@ -249,7 +249,6 @@ class DB extends _$DB {
 
   // Method to reset the database
   Future<void> resetDatabase() async {
-    print("is this being called");
     await close(); // Close the existing database connection
     // Reinitialize the database connection
     // Optionally, you can re-run the onCreate methods if needed

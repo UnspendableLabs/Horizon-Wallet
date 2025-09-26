@@ -13,7 +13,6 @@ extension BasePathX on BasePath {
   /// - horizon: {p2wpkh}
   /// Plus sensible heuristics for other paths (84' => p2wpkh, 86' => p2tr).
   Set<AddressV2Type> defaultKinds() {
-    print("islegacy: $isLegacy, isHorizon: $isHorizon");
     if (isLegacy) return {AddressV2Type.p2pkh, AddressV2Type.p2wpkh};
     if (isHorizon) return {AddressV2Type.p2wpkh};
     return {};

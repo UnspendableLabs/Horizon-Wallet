@@ -289,12 +289,9 @@ class _AssetAttachFormState extends State<AssetAttachForm> {
                   : HorizonButton(
                       disabled: widget.state.submitDisabled,
                       onPressed: () {
-                        print("onpressed");
                         if (widget.state.submitDisabled) {
-                          print("submit disabled");
                           return;
                         }
-                        print("callbck trigged");
                         widget.actions.onSubmitClicked();
                       },
                       isLoading: widget.state.submissionStatus.isInProgress,

@@ -274,7 +274,6 @@ class SwapCreateListingFormBloc
     SubmitClicked event,
     Emitter<SwapCreateListingFormModel> emit,
   ) async {
-    print(event);
 
     emit(state.copyWith(
         submissionStatus: FormzSubmissionStatus.inProgress,

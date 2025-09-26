@@ -587,7 +587,6 @@ class _SendViewState extends State<SendView> {
                             commonHeightSizedBox,
                             HorizonButton(
                               onPressed: () {
-                                print("asf");
                               },
                               child: TextButtonContent(value: "Close"),
                               disabled: state.fold3(

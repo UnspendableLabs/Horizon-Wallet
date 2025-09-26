@@ -174,7 +174,6 @@ class TransactionServiceWeb implements TransactionService {
     String? detachData,
   }) async {
     // detachData = null;
-    print("royaltyAmount $royaltyAmount");
 
     // can only do multi swap with P2WPKH seller inputs
     if (swapsWithSellerTransactions.length > 1) {
@@ -258,7 +257,6 @@ class TransactionServiceWeb implements TransactionService {
             Uint8List.fromList(hex.decode(encryptedDetachData.toDart)).toJS)
       ].toJS);
 
-      print("opReturnScript $opReturnScript");
 
       psbt.addOutput(bitcoinjs.TxOutput.make(
         script: opReturnScript,
@@ -293,7 +291,6 @@ class TransactionServiceWeb implements TransactionService {
     }
 
     // add additional inputs if  need to cover outputs + fees
-    print("\n\n\n\n\n");
     for (var i = 1; i < utxosWithBuyerTransactions.length; i++) {
       final utxo = utxosWithBuyerTransactions[i].utxo;
       final tx = utxosWithBuyerTransactions[i].transaction;
@@ -306,14 +303,9 @@ class TransactionServiceWeb implements TransactionService {
 
       final totalRequired = totalOutputValue + BigInt.from(estimatedFee);
 
-      print("totalInputValue: $totalInputValue");
 
-      print("totalRequired`: $totalRequired`");
 
-      print("utxo $utxo");
       if (totalInputValue >= totalRequired) {
-        print("max index ${utxosWithBuyerTransactions.length}");
-        print("index ${i}");
         break;
       }
 
@@ -356,7 +348,6 @@ class TransactionServiceWeb implements TransactionService {
       ));
     }
 
-    print("inputIndices: $inputIndices");
 
     return MakeBuyPsbtReturn(
       psbtHex: psbt.toHex(),

@@ -401,7 +401,6 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
 
   String _shortenAddress(String? address, {int prefix = 6, int suffix = 5}) {
     if (address == null || address.length < (prefix + suffix)) {
-      print("address: $address");
       return address ?? 'Unknown';
     }
     final start = address.substring(0, prefix);

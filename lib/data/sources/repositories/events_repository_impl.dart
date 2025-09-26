@@ -1339,7 +1339,6 @@ class EventsRepositoryImpl implements EventsRepository {
         .getClient(httpConfig)
         .getEventsByAddressesVerbose(addressesParam);
 
-    print("resopnse $response");
 
     if (response.error != null) {
       throw Exception("Error getting events by addresses: ${response.error}");

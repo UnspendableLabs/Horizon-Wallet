@@ -164,8 +164,6 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
               onError: (_, __) => "invariant: failed to read in memory key map",
             )
                 .map((repo) {
-              print("repo:");
-              print(repo);
               return repo;
             }).flatMap((keyMap) => TaskEither.sequenceList(importedAddresses
                     .map((addy) => TaskEither.fromOption(

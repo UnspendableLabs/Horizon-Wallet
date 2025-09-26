@@ -1278,7 +1278,6 @@ class _HorizonRedesignDropdownState<T>
                                     hintText: 'Search',
                                     controller: _searchQuery,
                                     onChanged: (value) {
-                                      print("value $value");
                                     }),
                               ),
                             ],
@@ -1355,8 +1354,6 @@ class _HorizonRedesignDropdownState<T>
                           controller: _searchQuery,
                           hintText: 'Search',
                           onChanged: (value) {
-                            print("onchanged");
-                            print(value);
                           }),
                     ),
                   ],

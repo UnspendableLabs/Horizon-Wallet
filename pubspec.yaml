@@ -120,6 +120,7 @@ dev_dependencies:
   drift_dev: ^2.16.0
   bloc_test: ^10.0.0
   dead_code_analyzer: ^1.1.0
+  print_remover: ^1.0.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

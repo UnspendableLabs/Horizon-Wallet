@@ -179,7 +179,6 @@ class SessionStateCubit extends Cubit<SessionState> {
         LoggedIn(decryptionKey: _) => "LoggedIn",
       };
 
-      print("session state: $sesssinStateStr");
 
       switch (sessionState) {
         case NoWallet():
@@ -203,7 +202,6 @@ class SessionStateCubit extends Cubit<SessionState> {
             walletConfigID: walletConfig.uuid,
           );
 
-          print(accounts);
 
           String? currentAccountHash =
               cacheProvider.getString("current-account-hash");
@@ -229,7 +227,6 @@ class SessionStateCubit extends Cubit<SessionState> {
           return;
       }
     } catch (error) {
-      print("error $error");
       emit(SessionState.error(error.toString()));
     }
   }
@@ -247,9 +244,7 @@ class SessionStateCubit extends Cubit<SessionState> {
   // }
 
   void onNetworkChanged(Network network, [VoidCallback? cb]) async {
-    print("before read wallet");
     WalletConfig current = await _walletConfigRepository.getCurrent();
-    print("aftre");
 
     WalletConfig walletConfig = await _walletConfigRepository.findOrCreate(
       basePath: current.basePath,

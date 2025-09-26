@@ -211,7 +211,6 @@ class SwapCreateListingFormProvider extends StatelessWidget {
                                   );
                             },
                             onSignatureCompleted: (signedPsbtHex) {
-                              print("signed psbt hex $signedPsbtHex");
 
                               context.read<SwapCreateListingFormBloc>().add(
                                   SignatureCompleted(

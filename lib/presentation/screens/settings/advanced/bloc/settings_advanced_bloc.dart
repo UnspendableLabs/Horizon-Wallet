@@ -225,11 +225,9 @@ class SettingsAdvancedBloc
         ));
 
         if (event.onSuccess != null) {
-          print("callback time???");
 
           event.onSuccess!(newWallet);
         } else {
-          print("no callback");
         }
       },
     ).run();

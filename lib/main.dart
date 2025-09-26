@@ -801,7 +801,6 @@ class AppRouter {
               path: '/accounts/detail',
               builder: (context, state) {
                 final account = state.extra as AccountV2; // <-- retrieve it
-                print("this is the paraset account in rounter $account");
                 return Scaffold(
                     appBar: AppBar(
                       backgroundColor:
@@ -999,7 +998,6 @@ class AppRouter {
             // if the session state is not yet loaded, show a loading screen
             orElse: () => null);
 
-        print("pasfdath iireasdfct: $path");
         return path;
       });
 }
@@ -1512,7 +1510,6 @@ class MyApp extends StatelessWidget {
       ],
       child: BlocListener<SessionStateCubit, SessionState>(
         listener: (context, state) {
-          print("calling router refresh");
           AppRouter.router.refresh();
         },
         child: BlocBuilder<ThemeBloc, ThemeMode>(

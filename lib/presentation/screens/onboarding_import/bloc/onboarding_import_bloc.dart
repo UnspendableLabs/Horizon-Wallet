@@ -125,11 +125,9 @@ class OnboardingImportBloc
               WalletType.bip32 => SeedDerivation.mnemonicJSToHex,
             });
 
-        print("before set wawlletconif iid ${walletConfig.uuid}");
 
         await _settingsRepository.setWalletConfigID(walletConfig.uuid);
 
-        print("after set wawlletconif iid ${walletConfig.uuid}");
         // await accountV2Repository.insert(AccountV2(uuid: uuid.v4(), index: 0));
 
         emit(state.copyWith(importState: const ImportState.success()));

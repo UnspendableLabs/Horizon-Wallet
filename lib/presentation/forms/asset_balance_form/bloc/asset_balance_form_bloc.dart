@@ -248,7 +248,6 @@ class AssetBalanceFormBloc
       return;
     }
 
-    print("disallowSelections: ${state.disallowSelections}");
 
     emit(state.copyWith(
       balanceInput: BalanceInput.dirty(value: event.option),

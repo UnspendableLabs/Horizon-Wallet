@@ -411,7 +411,6 @@ class SwapMultiBuySignFormBloc
           ));
 
       for (var utxo in utxosWithTransactions) {
-        print("utxo: ${utxo}");
       }
 
       String? detachData;
@@ -442,7 +441,6 @@ class SwapMultiBuySignFormBloc
     final result = await task.run();
 
     final nextState = result.fold((error) {
-      print("error: $error");
       return state.copyWith(
         signatureStatus: FormzSubmissionStatus.failure,
         error: Option.of(error),

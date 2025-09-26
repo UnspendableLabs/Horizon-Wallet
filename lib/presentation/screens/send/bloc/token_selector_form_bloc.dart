@@ -111,7 +111,6 @@ class TokenSelectorFormBloc
 
   _handleTokenSelected(
       TokenSelected event, Emitter<TokenSelectorFormModel> emit) {
-    print(state.balances);
     emit(state.copyWith(
         tokenSelectorInput: TokenSelectorInput.dirty(value: event.option)));
   }

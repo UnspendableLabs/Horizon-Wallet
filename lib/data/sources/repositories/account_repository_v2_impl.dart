@@ -96,8 +96,6 @@ class AccountV2RepositoryImpl implements AccountV2Repository {
                       key: key,
                       onError: (_, __) => "invariant: failed to decrypt WIF"))
                   .flatMap((wif) {
-                print("wif: $wif");
-                print("network: $network");
 
                 return _importedAddressService.getAddressFromWIFT<String>(
                     wif: wif,
@@ -125,7 +123,6 @@ class AccountV2RepositoryImpl implements AccountV2Repository {
     return result.fold(
       (error) => throw Exception(error.toString()),
       (importedAddresses) {
-        print("imported addresses: $importedAddresses");
         return importedAddresses;
       },
     );

@@ -202,7 +202,6 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
     on<FetchFormEvent>(_handleFetchForm);
     on<PasswordChanged>(_handlePasswordChanged);
     on<SignPsbtSubmitted>(_handleSignPsbtSubmitted);
-    print(unsignedPsbt);
   }
 
   Future<void> _handleFetchForm(
@@ -295,8 +294,6 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
 
       Map<String, Decimal> map = {};
 
-      print("debigts: $debits");
-      print("credits: $credits");
 
       for (final debit in debits) {
         map.putIfAbsent(debit.asset, () => Decimal.zero);
@@ -332,8 +329,6 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
         isFormDataLoaded: true,
       ));
     } catch (e, callstack) {
-      print(e);
-      print(callstack);
       emit(state.copyWith(
         isFormDataLoaded: true,
       ));
@@ -391,7 +386,6 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
     final result = await task.run();
 
     result.fold((msg) {
-      print("error: $msg");
       emit(state.copyWith(
           submissionStatus: FormzSubmissionStatus.failure,
           error: msg.toString()));
