@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:formz/formz.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/asset_search_repository.dart';
+import 'package:horizon/domain/repositories/atomic_swap_repository.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/entities/asset_search_result.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
@@ -53,7 +54,9 @@ class ReceiveAssetInputClicked extends AssetPairFormEvent {
 
 class SearchInputChanged extends AssetPairFormEvent {
   final String value;
-  const SearchInputChanged(this.value);
+  const SearchInputChanged(
+    this.value,
+  );
 }
 
 class ReceiveAssetSelected extends AssetPairFormEvent {
@@ -256,13 +259,17 @@ class AssetPairFormModel with FormzMixin {
 class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
   final HttpConfig httpConfig;
   final AssetSearchRepository _assetSearchRepository;
+  final AtomicSwapRepository _atomicSwapRepository;
 
   AssetPairFormBloc({
     AssetSearchRepository? assetSearchRepository,
+    AtomicSwapRepository? atomicSwapRepository,
     required this.httpConfig,
     required List<MultiAddressBalance> initialGiveAssets,
   })  : _assetSearchRepository =
             assetSearchRepository ?? GetIt.I<AssetSearchRepository>(),
+        _atomicSwapRepository =
+            atomicSwapRepository ?? GetIt.I<AtomicSwapRepository>(),
         super(
           AssetPairFormModel(
               submissionStatus: FormzSubmissionStatus.initial,
@@ -329,10 +336,28 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
         searchResults: receiveAssetsNext,
         searchAssetInput: SearchAssetInput.dirty(event.value)));
 
-    final task = _assetSearchRepository.searchT(
-        httpConfig: httpConfig,
-        term: event.value,
-        onError: (err, __) => "Error: $err");
+    final task = switch (state.giveAssetInput.value?.name) {
+      "BTC" => _atomicSwapRepository
+            .searchSwapsT(
+                httpConfig: httpConfig,
+                search: event.value,
+                onError: (err, __) => "Error: $err")
+            .map((swaps) {
+          final Map<String, AssetSearchResult> resultMap = {};
+          for (final swap in swaps) {
+            resultMap.putIfAbsent(
+              swap.assetName,
+              () => AssetSearchResult(name: swap.assetName, description: ""),
+            );
+          }
+
+          return resultMap.values.toList();
+        }),
+      _ => _assetSearchRepository.searchT(
+          httpConfig: httpConfig,
+          term: event.value,
+          onError: (err, __) => "Error: $err"),
+    };
 
     final result = await task.run();
 

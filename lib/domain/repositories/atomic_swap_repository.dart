@@ -65,6 +65,13 @@ abstract class AtomicSwapRepository {
     required String orderBy,
     required String order,
   });
+
+  Future<List<AtomicSwap>> searchSwaps({
+    required HttpConfig httpConfig,
+    required String search,
+    required String orderBy,
+    required String order,
+  });
 }
 
 extension AtomicSwapRepositoryX on AtomicSwapRepository {
@@ -168,6 +175,25 @@ extension AtomicSwapRepositoryX on AtomicSwapRepository {
       () => getUtxoSwapMap(
         httpConfig: httpConfig,
         sellerAddress: sellerAddress,
+      ),
+      (error, stacktrace) =>
+          onError != null ? onError(error, stacktrace) : error.toString(),
+    );
+  }
+
+  TaskEither<String, List<AtomicSwap>> searchSwapsT({
+    required HttpConfig httpConfig,
+    required String search,
+    String orderBy = "price",
+    String order = "asc",
+    String Function(Object error, StackTrace stacktrace)? onError,
+  }) {
+    return TaskEither.tryCatch(
+      () => searchSwaps(
+        httpConfig: httpConfig,
+        search: search,
+        orderBy: orderBy,
+        order: order,
       ),
       (error, stacktrace) =>
           onError != null ? onError(error, stacktrace) : error.toString(),

@@ -113,34 +113,10 @@ class AssetPairForm extends StatefulWidget {
   final AssetPairFormActions actions;
   final AssetPairFormModel state;
 
-  // final List<AssetPairFormOption> giveAssets;
-  // final RemoteData<List<AssetSearchResult>> receiveAssets;
-  // final GiveAssetInput giveAssetInput;
-  // final ReceiveAssetInput receiveAssetInput;
-  // final SearchAssetInput searchAssetInput;
-  // final Function(AssetPairFormOption option)? onGiveAssetSelected;
-  // final Function(AssetPairFormOption option)? onReceiveAssetSelected;
-  // final VoidCallback onInvertClicked;
-  //
-  // final bool receiveAssetModalVisible;
-  // final VoidCallback onReceiveAssetInputClicked;
-  // final Function(String value) onSearchAssetInputChanged;
-
   const AssetPairForm(
       {required this.onSubmit,
       required this.actions,
       required this.state,
-      //   required this.receiveAssetModalVisible,
-      // required this.onReceiveAssetInputClicked,
-      // required this.giveAssets,
-      // required this.giveAssetInput,
-      // required this.receiveAssets,
-      // required this.receiveAssetInput,
-      // required this.searchAssetInput,
-      // required this.onSearchAssetInputChanged,
-      // required this.onInvertClicked,
-      // this.onGiveAssetSelected,
-      // this.onReceiveAssetSelected,
       super.key});
 
   @override

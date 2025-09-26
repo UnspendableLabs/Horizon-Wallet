@@ -37,26 +37,26 @@ class SwapFormLoaderFn extends Loader<SwapFormLoaderArgs, SwapFormLoaderData> {
             httpConfig: args.httpConfig,
             addresses: args.addresses.map((a) => a.address).toList());
 
-    final mockXCPBalance = MultiAddressBalance(
-      asset: "XCP",
-      total: 10000000000,
-      totalNormalized: "100",
-      assetLongname: "Counterparty",
-      entries: [
-        MultiAddressBalanceEntry(
-          address: args.addresses.first.address,
-          quantityNormalized: "100",
-          quantity: 10000000000,
-        )
-      ],
-      assetInfo: AssetInfo(
-        assetLongname: "Counterparty",
-        description: "Counterparty Asset",
-        divisible: true,
-        owner: null,
-        locked: false,
-      ),
-    );
+    // final mockXCPBalance = MultiAddressBalance(
+    //   asset: "XCP",
+    //   total: 10000000000,
+    //   totalNormalized: "100",
+    //   assetLongname: "Counterparty",
+    //   entries: [
+    //     MultiAddressBalanceEntry(
+    //       address: args.addresses.first.address,
+    //       quantityNormalized: "100",
+    //       quantity: 10000000000,
+    //     )
+    //   ],
+    //   assetInfo: AssetInfo(
+    //     assetLongname: "Counterparty",
+    //     description: "Counterparty Asset",
+    //     divisible: true,
+    //     owner: null,
+    //     locked: false,
+    //   ),
+    // );
     //
     // final mockGerperBalance = MultiAddressBalance(
     //   asset: "GERPER",
@@ -79,7 +79,7 @@ class SwapFormLoaderFn extends Loader<SwapFormLoaderArgs, SwapFormLoaderData> {
     //   ),
     // );
     //
-    multiAddressBalance.add(mockXCPBalance);
+    // multiAddressBalance.add(mockXCPBalance);
 
     return SwapFormLoaderData(
       balances: multiAddressBalance,

@@ -334,6 +334,7 @@ abstract class HorizonExplorerApii {
     @Query('asset_name') String? assetName,
     @Query('order_by') String? orderBy,
     @Query('order') String? order,
+    @Query('search') String? search,
   ]);
 
   @GET("/royalties/{asset_name}")
@@ -455,8 +456,11 @@ class HorizonExplorerApi {
 
 // TODO: this is a misnomer
   Future<DataWrapper<AtomicSwapListResponseData>> getAtomicSwaps(
-      {String? assetName, String? orderBy, String? order}) async {
-    return await _api._getAtomicSwapsRaw(assetName, orderBy, order);
+      {String? assetName,
+      String? orderBy,
+      String? order,
+      String? search}) async {
+    return await _api._getAtomicSwapsRaw(assetName, orderBy, order, search);
   }
 
   Future<DataWrapper<List<AtomicSwapBuyResponse>>> atomicSwapMultiBuy({

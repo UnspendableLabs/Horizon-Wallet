@@ -436,12 +436,14 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
     String? assetName,
     String? orderBy,
     String? order,
+    String? search,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'asset_name': assetName,
       r'order_by': orderBy,
       r'order': order,
+      r'search': search,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};

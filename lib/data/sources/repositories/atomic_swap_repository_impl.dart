@@ -100,6 +100,26 @@ class AtomicSwapRepositoryImpl implements AtomicSwapRepository {
   }
 
   @override
+  Future<List<AtomicSwap>> searchSwaps({
+    required HttpConfig httpConfig,
+    required String search,
+    required String orderBy,
+    required String order,
+  }) async {
+    // TODO: handle pagination?
+
+    final client = _horizonExplorerClientFactory.getClient(httpConfig);
+
+    final res = await client.getAtomicSwaps(
+        search: search, orderBy: orderBy, order: order);
+
+    return res.data.atomicSwaps
+        .map((swap) => swap.toEntity())
+        .where((swap) => !swap.pendingSales)
+        .toList();
+  }
+
+  @override
   Future<List<AtomicSwapBuy>> atomicSwapMultiBuy({
     required HttpConfig httpConfig,
     required List<String> ids,
