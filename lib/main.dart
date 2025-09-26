@@ -914,7 +914,7 @@ class AppRouter {
 
         final session = context.read<SessionStateCubit>();
 
-        final actionParam = state.uri.queryParameters['action'];
+//        final actionParam = state.uri.queryParameters['action'];
         // // print("actionParam: $actionParam");
 
         // final actionParam =
@@ -925,7 +925,7 @@ class AppRouter {
         //
         // print("actionParam: $actionParam");
 
-        // final actionParam = "getAddresses:ext,0,1";
+        final actionParam = "getAddresses:ext,0,1";
         // final actionParam =
         //     "signPsbt:ext,1423373097,ddc38fce-13e4-4d70-ba1d-0f5162c54835,70736274ff01009a020000000200000000000000000000000000000000000000000000000000000000000000000000000000ffffffff1e8728d1ea12bfa4bed9fea098e6a06a1f3422bfc5c71afceb94d650b2e829f10000000000ffffffff020000000000000000160014a8b21366aa1dae07bffe52c56f4619e01c523716e803000000000000160014a8b21366aa1dae07bffe52c56f4619e01c5237160000000000010304020000000001011f2202000000000000160014a8b21366aa1dae07bffe52c56f4619e01c52371601030483000000000000,eyJ0YjFxNHplcHhlNDJya2hxMDBsNzJ0ems3M3NldXF3OXlkY2tneW56djUiOlsxXX0=,WzEzMSwxLDJd";
         // //

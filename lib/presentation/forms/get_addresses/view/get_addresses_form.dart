@@ -144,6 +144,7 @@ class GetAddressesForm extends StatelessWidget {
                         AddressSelectionMode.importedAddresses &&
                     state.importedAddresses != null) ...[
                   HorizonUI.HorizonRedesignDropdown<String>(
+                    disabled: state.importedAddresses?.isEmpty ?? false,
                     selectedValue: state.importedAddress.value.isEmpty
                         ? null
                         : state.importedAddress.value,
@@ -160,7 +161,9 @@ class GetAddressesForm extends StatelessWidget {
                               child: Text(address.address),
                             ))
                         .toList(),
-                    hintText: 'Select an Imported Address',
+                    hintText: (state.importedAddresses?.isEmpty ?? true)
+                        ? "None"
+                        : 'Select an Imported Address',
                   ),
                 ],
 

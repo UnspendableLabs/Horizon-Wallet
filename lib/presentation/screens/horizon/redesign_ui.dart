@@ -1141,6 +1141,7 @@ class HorizonRedesignDropdown<T> extends StatefulWidget {
   final EdgeInsetsGeometry? itemPadding;
   final EdgeInsetsGeometry? selectorPadding;
   final bool enableSearch;
+  final bool disabled;
 
   final bool Function({required String query, required T item})? filterFn;
 
@@ -1148,6 +1149,7 @@ class HorizonRedesignDropdown<T> extends StatefulWidget {
       true;
   const HorizonRedesignDropdown({
     super.key,
+    this.disabled = false,
     required this.items,
     required this.onChanged,
     required this.selectedValue,
@@ -1208,6 +1210,7 @@ class _HorizonRedesignDropdownState<T>
   }
 
   void _toggleDropdown() {
+    if (widget.disabled) return;
     setState(() {
       _isOpen = !_isOpen;
       if (_isOpen) {
@@ -1277,8 +1280,7 @@ class _HorizonRedesignDropdownState<T>
                                 child: HorizonTextField(
                                     hintText: 'Search',
                                     controller: _searchQuery,
-                                    onChanged: (value) {
-                                    }),
+                                    onChanged: (value) {}),
                               ),
                             ],
                             ...filteredItems.map((item) {
@@ -1353,8 +1355,7 @@ class _HorizonRedesignDropdownState<T>
                       child: HorizonTextField(
                           controller: _searchQuery,
                           hintText: 'Search',
-                          onChanged: (value) {
-                          }),
+                          onChanged: (value) {}),
                     ),
                   ],
                   ListView(
@@ -1412,9 +1413,11 @@ class _HorizonRedesignDropdownState<T>
     final hasValue = widget.selectedValue != null;
     return widget.useModal
         ? MouseRegion(
-            cursor: SystemMouseCursors.click,
+            cursor: widget.disabled
+                ? SystemMouseCursors.basic
+                : SystemMouseCursors.click, //
             child: GestureDetector(
-              onTap: _toggleDropdown,
+              onTap: widget.disabled ? null : _toggleDropdown,
               child: Container(
                 height: 56,
                 padding: widget.selectorPadding,
@@ -1431,8 +1434,9 @@ class _HorizonRedesignDropdownState<T>
                           const BorderSide()),
                   color: widget.buttonBg ??
                       (hasValue
-                          ? (isDarkMode ? grey5 : grey1)
-                          : (isDarkMode ? offBlack : offWhite)),
+                              ? (isDarkMode ? grey5 : grey1)
+                              : (isDarkMode ? offBlack : offWhite))
+                          .withOpacity(widget.disabled ? 0.6 : 1),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1478,9 +1482,11 @@ class _HorizonRedesignDropdownState<T>
         : CompositedTransformTarget(
             link: _layerLink,
             child: MouseRegion(
-              cursor: SystemMouseCursors.click,
+              cursor: widget.disabled
+                  ? SystemMouseCursors.basic
+                  : SystemMouseCursors.click, // <—
               child: GestureDetector(
-                onTap: _toggleDropdown,
+                onTap: widget.disabled ? null : _toggleDropdown, // <—
                 child: Container(
                   height: 56,
                   padding:
