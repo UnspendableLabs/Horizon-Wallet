@@ -38,12 +38,14 @@ class CustomButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool isDarkMode = true;
   final bool disabled;
+  final String? tooltip;
 
   const CustomButton({
     super.key,
     required this.label,
     required this.onPressed,
     this.disabled = false,
+    this.tooltip,
   });
 
   @override
@@ -53,7 +55,7 @@ class CustomButton extends StatelessWidget {
         : transparentPurple33;
     final Color textColor = isDarkMode ? yellow1 : duskGradient2;
 
-    return MouseRegion(
+    Widget button = MouseRegion(
       cursor: disabled ? SystemMouseCursors.basic : SystemMouseCursors.click,
       child: GestureDetector(
         onTap: disabled ? null : onPressed,
@@ -66,20 +68,37 @@ class CustomButton extends StatelessWidget {
               color: backgroundColor,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Center(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.w400,
-                  color: textColor,
+            child: Row(
+              children: [
+                Center(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w400,
+                      color: textColor,
+                    ),
+                  ),
                 ),
-              ),
+                if (tooltip != null && tooltip!.isNotEmpty) ...[
+                  SizedBox(width: 4),
+                  Tooltip(
+                    message: tooltip!,
+                    child: Icon(
+                      Icons.help,
+                      size: 14,
+                      color: textColor,
+                    ),
+                  ),
+                ]
+              ],
             ),
           ),
         ),
       ),
     );
+
+    return button;
   }
 }
 
@@ -807,6 +826,7 @@ class _OrderInputs extends State<OrderInputs> {
                                 children: [
                                   CustomButton(
                                     label: "Floor",
+                                    tooltip: "Match with lowest asking price",
                                     disabled: !widget.state.hasBuyOrders,
                                     onPressed: () {
                                       widget.actions
