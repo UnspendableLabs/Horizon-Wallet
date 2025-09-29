@@ -154,6 +154,7 @@ class _SendComposeFormState extends State<SendComposeForm> {
     final theme = Theme.of(context);
 
     return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
         ...widget.state.sendEntries.asMap().entries.map((entry) {
           final index = entry.key;

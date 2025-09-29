@@ -228,7 +228,6 @@ class _SendEntryFormState extends State<SendEntryForm> {
                   // ),
                 ),
             hintText: "Select Token"),
-        commonHeightSizedBox,
         // i need to put the max button on top of the graident quantity input upper right
         // space between dropdown and input
         commonHeightSizedBox,
@@ -321,13 +320,6 @@ class _SendEntryFormState extends State<SendEntryForm> {
         //     };
         //   },
         // ),
-        commonHeightSizedBox,
-        HorizonTextField(
-            controller: _memoController,
-            label: 'Description (Optional)',
-            onChanged: (value) {
-              widget.actions.onMemoChanged(value);
-            }),
         commonHeightSizedBox,
       ],
     );
