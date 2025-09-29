@@ -104,7 +104,7 @@ class SwapPresignForm extends StatelessWidget {
 
   _gradQtyProperty(label, value, theme) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -141,7 +141,6 @@ class SwapPresignForm extends StatelessWidget {
     final theme = Theme.of(context);
     return Column(
       children: [
-        commonHeightSizedBox,
         SingleChildScrollView(
             scrollDirection: Axis.vertical,
             child: Padding(
@@ -184,7 +183,7 @@ class SwapPresignForm extends StatelessWidget {
                   _regularProperty(
                       "Swap Completion", "Execute Immediately", theme),
                   const Divider(
-                    height: 20,
+                    height: 16,
                     thickness: 1,
                     color: transparentWhite8,
                   ),
@@ -192,7 +191,7 @@ class SwapPresignForm extends StatelessWidget {
                 ],
               ),
             )),
-        const SizedBox(height: 28),
+        const SizedBox(height: 12),
         HorizonButton(
             onPressed: () {
               actions.onSubmitClicked();
