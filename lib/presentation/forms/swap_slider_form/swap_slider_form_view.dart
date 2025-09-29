@@ -86,8 +86,9 @@ class _SwapSliderFormProviderState extends State<SwapSliderFormProvider> {
                 sliderDragged: (value) => context
                     .read<SwapSliderFormBloc>()
                     .add(SliderDragged(value: value)),
-                onSubmitClicked: () =>
-                    context.read<SwapSliderFormBloc>().add(const SubmitClicked())),
+                onSubmitClicked: () => context
+                    .read<SwapSliderFormBloc>()
+                    .add(const SubmitClicked())),
             state);
       }),
     );
@@ -176,7 +177,7 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
     final isInsufficientBalance = widget.state.totalCostInput.error ==
         TotalCostValidationError.insufficientBalance;
 
-    const cardHeight = 366.0;
+    const cardHeight = 334.0;
 
     return widget.state.atomicSwapListModel.fold3(
         onNone: () => Center(
@@ -299,8 +300,8 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
                                 ),
                                 Expanded(
                                   child: Padding(
-                                    padding:
-                                        const EdgeInsets.symmetric(horizontal: 10),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10),
                                     child: ListView.builder(
                                       controller: _scrollController,
                                       itemCount: model.items.length,

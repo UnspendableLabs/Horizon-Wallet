@@ -1526,7 +1526,7 @@ class MyApp extends StatelessWidget {
                   textDirection: TextDirection.ltr,
                   child: Center(
                       child: SizedBox(
-                          width: 440, height: 700, child: LoadingScreen())));
+                          width: 375, height: 600, child: LoadingScreen())));
             }
 
             final app = MaterialApp.router(
@@ -1567,8 +1567,8 @@ class MyApp extends StatelessWidget {
             if (kIsWeb && !GetIt.I<Config>().isWebExtension) {
               return Center(
                 child: SizedBox(
-                  width: 440,
-                  height: 700,
+                  width: 375,
+                  height: 600,
                   child: app,
                 ),
               );
