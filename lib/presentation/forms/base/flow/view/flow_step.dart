@@ -31,7 +31,7 @@ class FlowStep extends StatelessWidget {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: Center(
           child: Container(
-            width: 375,
+            // width: 375,
             height: 600,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),

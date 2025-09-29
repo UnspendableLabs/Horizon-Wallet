@@ -143,33 +143,33 @@ class _SendEntryFormState extends State<SendEntryForm> {
               _ => null
             };
           },
-          suffixIcon: SizedBox(
-            height: 32,
-            width: 86,
-            child: HorizonButton(
-              borderRadius: 12,
-              variant: ButtonVariant.purple,
-              onPressed: () {
-                Clipboard.getData(Clipboard.kTextPlain).then((value) {
-                  if (value?.text != null && value!.text!.trim().isNotEmpty) {
-                    _destinationController.text = value.text!;
-                    widget.actions
-                        .onDestinationChanged(_destinationController.text);
-                  }
-                });
-              },
-              icon: AppIcons.pasteIcon(
-                context: context,
-                width: 24,
-                height: 24,
-              ),
-              child: TextButtonContent(
-                  value: "Paste",
-                  style: theme.textTheme.labelMedium!.copyWith(
-                    fontWeight: FontWeight.w500,
-                  )),
-            ),
-          ),
+          // suffixIcon: SizedBox(
+          //   height: 32,
+          //   width: 86,
+          //   child: HorizonButton(
+          //     borderRadius: 12,
+          //     variant: ButtonVariant.purple,
+          //     onPressed: () {
+          //       Clipboard.getData(Clipboard.kTextPlain).then((value) {
+          //         if (value?.text != null && value!.text!.trim().isNotEmpty) {
+          //           _destinationController.text = value.text!;
+          //           widget.actions
+          //               .onDestinationChanged(_destinationController.text);
+          //         }
+          //       });
+          //     },
+          //     icon: AppIcons.pasteIcon(
+          //       context: context,
+          //       width: 24,
+          //       height: 24,
+          //     ),
+          //     child: TextButtonContent(
+          //         value: "Paste",
+          //         style: theme.textTheme.labelMedium!.copyWith(
+          //           fontWeight: FontWeight.w500,
+          //         )),
+          //   ),
+          // ),
         ),
         commonHeightSizedBox,
         HorizonRedesignDropdown<MultiAddressBalance>(
@@ -198,58 +198,129 @@ class _SendEntryFormState extends State<SendEntryForm> {
                   balance: widget.state.balanceSelectorInput.value,
                   selectedBalanceEntry:
                       widget.state.balanceSelectorInput.value?.entries.first,
-                  suffixIcon: GestureDetector(
-                    onTap: () {
-                      _quantityController.text = quantityRemoveTrailingZeros(
-                        widget.state.assetQuantityNormalized,
-                      );
-                      widget.actions.onMaxAmountSelected();
-                    },
-                    child: Container(
-                      height: 24,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      decoration: BoxDecoration(
-                        color: isDarkMode
-                            ? transparentYellow8
-                            : transparentPurple33,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'Max',
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w400,
-                            color: isDarkMode ? yellow1 : duskGradient2,
-                          ),
+                  // suffixIcon: GestureDetector(
+                  //   onTap: () {
+                  //     _quantityController.text = quantityRemoveTrailingZeros(
+                  //       widget.state.assetQuantityNormalized,
+                  //     );
+                  //     widget.actions.onMaxAmountSelected();
+                  //   },
+                  //   child: Container(
+                  //     height: 24,
+                  //     padding: const EdgeInsets.symmetric(horizontal: 8),
+                  //     decoration: BoxDecoration(
+                  //       color: isDarkMode
+                  //           ? transparentYellow8
+                  //           : transparentPurple33,
+                  //       borderRadius: BorderRadius.circular(8),
+                  //     ),
+                  //     child: Center(
+                  //       child: Text(
+                  //         'Max',
+                  //         style: TextStyle(
+                  //           fontSize: 9,
+                  //           fontWeight: FontWeight.w400,
+                  //           color: isDarkMode ? yellow1 : duskGradient2,
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
+                ),
+            hintText: "Select Token"),
+        commonHeightSizedBox,
+        // i need to put the max button on top of the graident quantity input upper right
+        // space between dropdown and input
+        commonHeightSizedBox,
+
+// Quantity with an overlaid Max button (top-right)
+        Stack(
+          children: [
+            // Give the input some right padding so the chip doesn't overlap text
+            GradientQuantityInputV2(
+              assetIsDivisible: widget.state.assetIsDivisible,
+              assetQuantityNormalized: widget.state.assetQuantityNormalized,
+              controller: _quantityController,
+              showMaxButton: false, // we'll draw our own
+              enabled: widget.state.balanceSelectorInput.isValid,
+              onChanged: (value) {
+                widget.actions.onQuantityChanged(value);
+              },
+              validator: (value) {
+                if (widget.state.quantityInput.isPure) return null;
+                return switch (widget.state.quantityInput.error) {
+                  SendEntryFormInputError.quantityRequired =>
+                    'Value is required',
+                  SendEntryFormInputError.quantityExceedsMax =>
+                    'Value exceeds max',
+                  SendEntryFormInputError.quantityIsZero => 'Value is zero',
+                  _ => null,
+                };
+              },
+            ),
+
+            // The "Max" chip/button
+            if (widget.state.balanceSelectorInput.isValid)
+              Positioned(
+                top: 12,
+                right: 12,
+                child: GestureDetector(
+                  onTap: () {
+                    _quantityController.text = quantityRemoveTrailingZeros(
+                      widget.state.assetQuantityNormalized,
+                    );
+                    widget.actions.onMaxAmountSelected();
+                  },
+                  child: Container(
+                    height: 24,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    decoration: BoxDecoration(
+                      // tweak these to match your theme
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? const Color(0x14FFFF00) // translucent yellow-ish
+                          : const Color(0x33B388FF), // translucent purple-ish
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Max',
+                        style: TextStyle(
+                          fontSize:
+                              9.0, // 9.0 but const not allowed inside TextStyle
+                          fontWeight: FontWeight.w500,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? const Color(0xFFFFFF00)
+                              : const Color(0xFF6A00FF),
                         ),
                       ),
                     ),
                   ),
                 ),
-            hintText: "Select Token"),
-        commonHeightSizedBox,
-        GradientQuantityInputV2(
-          assetIsDivisible: widget.state.assetIsDivisible,
-          assetQuantityNormalized: widget.state.assetQuantityNormalized,
-          controller: _quantityController,
-          showMaxButton: false,
-          enabled: widget.state.balanceSelectorInput.isValid,
-          onChanged: (value) {
-            widget.actions.onQuantityChanged(value);
-          },
-          validator: (value) {
-            if (widget.state.quantityInput.isPure) {
-              return null;
-            }
-            return switch (widget.state.quantityInput.error) {
-              SendEntryFormInputError.quantityRequired => 'Value is required',
-              SendEntryFormInputError.quantityExceedsMax => 'Value exceeds max',
-              SendEntryFormInputError.quantityIsZero => 'Value is zero',
-              _ => null
-            };
-          },
+              ),
+          ],
         ),
+
+        // GradientQuantityInputV2(
+        //   assetIsDivisible: widget.state.assetIsDivisible,
+        //   assetQuantityNormalized: widget.state.assetQuantityNormalized,
+        //   controller: _quantityController,
+        //   showMaxButton: false,
+        //   enabled: widget.state.balanceSelectorInput.isValid,
+        //   onChanged: (value) {
+        //     widget.actions.onQuantityChanged(value);
+        //   },
+        //   validator: (value) {
+        //     if (widget.state.quantityInput.isPure) {
+        //       return null;
+        //     }
+        //     return switch (widget.state.quantityInput.error) {
+        //       SendEntryFormInputError.quantityRequired => 'Value is required',
+        //       SendEntryFormInputError.quantityExceedsMax => 'Value exceeds max',
+        //       SendEntryFormInputError.quantityIsZero => 'Value is zero',
+        //       _ => null
+        //     };
+        //   },
+        // ),
         commonHeightSizedBox,
         HorizonTextField(
             controller: _memoController,
