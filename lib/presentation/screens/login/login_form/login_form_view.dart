@@ -136,6 +136,25 @@ class _LoginFormState extends State<LoginForm> {
                     return null;
                   },
                 ),
+                const SizedBox(height: 28),
+                HorizonButton(
+                  disabled: _passwordController.text.isEmpty,
+                  onPressed: () {
+                    if (state.status.isInProgressOrSuccess) return;
+
+                    context.read<b.LoginFormBloc>().add(b.FormSubmitted());
+                  },
+                  child: state.status.isInProgressOrSuccess
+                      ? WidgetButtonContent(
+                          value: SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: const CircularProgressIndicator(
+                                  strokeWidth: 4)))
+                      : TextButtonContent(
+                          value: "Unlock",
+                        ),
+                ),
                 const SizedBox(height: 14),
                 TextButton(
                   child: Padding(
@@ -157,14 +176,6 @@ class _LoginFormState extends State<LoginForm> {
                       },
                     );
                   },
-                ),
-                const SizedBox(height: 28),
-                HorizonButton(
-                  onPressed: () =>
-                      context.read<b.LoginFormBloc>().add(b.FormSubmitted()),
-                  child: TextButtonContent(
-                    value: "Unlock",
-                  ),
                 ),
                 const SizedBox(height: 42),
                 TermsOfService()
