@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 import 'package:horizon/presentation/common/remote_data_builder.dart';
@@ -274,15 +275,13 @@ class _PortfolioViewState extends State<PortfolioView>
                                                                           .address,
                                                                       size:
                                                                           256),
-                                                            ), // <- your QR code
-                                                            const SizedBox(
-                                                                height: 100),
+                                                            ),
                                                             Padding(
                                                               padding:
                                                                   const EdgeInsets
                                                                       .fromLTRB(
                                                                       16,
-                                                                      0,
+                                                                      32,
                                                                       0,
                                                                       0),
                                                               child: Text(
@@ -294,26 +293,22 @@ class _PortfolioViewState extends State<PortfolioView>
                                                                     .labelSmall,
                                                               ),
                                                             ),
-                                                            const SizedBox(
-                                                                height: 8),
                                                             Padding(
                                                               padding:
                                                                   const EdgeInsets
                                                                       .fromLTRB(
                                                                       16,
-                                                                      8,
+                                                                      0,
                                                                       8,
                                                                       8),
                                                               child: Row(
                                                                 children: [
                                                                   Expanded(
-                                                                    child: Text(
+                                                                    child:
+                                                                        AutoSizeText(
                                                                       addy.address,
-                                                                      softWrap:
-                                                                          true,
-                                                                      overflow:
-                                                                          TextOverflow
-                                                                              .visible,
+                                                                      maxLines:
+                                                                          1,
                                                                       style: Theme.of(
                                                                               context)
                                                                           .textTheme
