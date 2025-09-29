@@ -77,7 +77,8 @@ class AssetAttachFormProvider extends StatelessWidget {
                       assetName: asset,
                       assetDescription: description ?? "",
                       assetBalance: quantity,
-                      assetBalanceNormalized: quantityNormalized,
+                      assetBalanceNormalized: quantityNormalized.replaceFirst(
+                          RegExp(r'\.?0*$'), ''),
                       assetDivisibility: divisible,
                     ),
                 child: BlocBuilder<AssetAttachFormBloc, AssetAttachFormModel>(
