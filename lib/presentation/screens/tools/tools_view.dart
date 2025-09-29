@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -35,22 +36,30 @@ class Tool extends StatelessWidget {
 
     final href = _href ?? "${session.httpConfig.horizonMarket}/tools/$name";
 
-    return Link(
-      href: href,
-      display: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          color: customTheme?.settingsItemBackground ?? transparentBlack66,
-          border: Border.all(
-            color:
-                Theme.of(context).inputDecorationTheme.outlineBorder?.color ??
-                    transparentBlack8,
-            width: 1,
-          ),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        color: customTheme?.settingsItemBackground ?? transparentBlack66,
+        border: Border.all(
+          color: Theme.of(context).inputDecorationTheme.outlineBorder?.color ??
+              transparentBlack8,
+          width: 1,
         ),
-        child: Material(
-          color: Colors.transparent,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          hoverColor: transparentPurple8,
+          highlightColor: transparentPurple8,
+          onTap: () async {
+            final uri = Uri.parse(href);
+
+            if (!await launchUrl(uri)) {
+              throw Exception('Could not launch $uri');
+            }
+          },
           child: Padding(
             padding: const EdgeInsets.fromLTRB(14, 11, 14, 11),
             child: Row(
@@ -60,31 +69,30 @@ class Tool extends StatelessWidget {
                     ? const SizedBox(width: 12)
                     : const SizedBox.shrink(),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          letterSpacing: -0.2,
-                          color: Theme.of(context).textTheme.bodyMedium?.color,
+                    child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: -0.2,
+                        color: Theme.of(context).textTheme.bodyMedium?.color,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 4, 0, 0),
+                      child: Text(
+                        description,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.textTheme.bodyMedium?.color
+                              ?.withOpacity(0.6),
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 4, 0, 0),
-                        child: Text(
-                          description,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.textTheme.bodyMedium?.color
-                                ?.withOpacity(0.6),
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
+                    )
+                  ],
+                )),
                 trailing ??
                     AppIcons.chevronRightIcon(
                       context: context,
