@@ -306,6 +306,7 @@ class _CreatePsbtFormState extends State<CreatePsbtForm> {
             children: [
               Expanded(
                   child: QuantityInputV2(
+                      placeholder: "0.00",
                       style: const TextStyle(fontSize: 35),
                       divisible: true,
                       value: widget.state.btcPriceInput.value,

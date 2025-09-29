@@ -56,7 +56,7 @@ enum BtcPriceInputError {
 class BtcPriceInput extends FormzInput<String, BtcPriceInputError> {
   final BigInt minPrice;
 
-  const BtcPriceInput.pure({required this.minPrice}) : super.pure('0.00');
+  const BtcPriceInput.pure({required this.minPrice}) : super.pure('');
   const BtcPriceInput.dirty({
     required String value,
     required this.minPrice,
