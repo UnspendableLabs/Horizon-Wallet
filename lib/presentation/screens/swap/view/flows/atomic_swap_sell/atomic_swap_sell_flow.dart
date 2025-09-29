@@ -357,7 +357,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                               height: 24,
                               fit: BoxFit.fitHeight,
                             )),
-                        title: "Create PSBT",
+                        title: "Create Swap Listing",
                         widthFactor: .8,
                         body: RemoteDataTaskEitherBuilder(
                             task: TaskEither.sequenceList([
