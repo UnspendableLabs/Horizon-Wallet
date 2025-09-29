@@ -230,6 +230,11 @@ class _SendComposeFormState extends State<SendComposeForm> {
             selectedFeeOption: widget.state.feeOptionInput.value,
             onFeeOptionSelected: widget.actions.onFeeOptionSelected),
         const SizedBox(height: 24),
+        if (widget.state.error != null)
+          Text(
+            widget.state.error!,
+            style: theme.textTheme.bodySmall?.copyWith(color: red1),
+          ),
         HorizonButton(
             child: TextButtonContent(value: "Review Send"),
             disabled: !widget.state.isValid,
