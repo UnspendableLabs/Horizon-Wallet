@@ -11,6 +11,15 @@ import 'package:horizon/presentation/screens/horizon/redesign_ui.dart'
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 
+String _shortenAddress(String? address, {int prefix = 6, int suffix = 5}) {
+  if (address == null || address.length < (prefix + suffix)) {
+    return address ?? 'Unknown';
+  }
+  final start = address.substring(0, prefix);
+  final end = address.substring(address.length - suffix);
+  return '$start...$end';
+}
+
 class GetAddressesForm extends StatelessWidget {
   final bool passwordRequired;
   final List<AccountV2> accounts;
@@ -85,31 +94,37 @@ class GetAddressesForm extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 // Mode Selection
-                Row(
+                Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Radio<AddressSelectionMode>(
-                      activeColor: green2,
-                      value: AddressSelectionMode.byAccount,
-                      groupValue: state.addressSelectionMode,
-                      onChanged: (mode) {
-                        context.read<GetAddressesBloc>().add(
-                            AddressSelectionModeChanged(
-                                AddressSelectionMode.byAccount));
-                      },
+                    Row(
+                      children: [
+                        Radio<AddressSelectionMode>(
+                          activeColor: green2,
+                          value: AddressSelectionMode.byAccount,
+                          groupValue: state.addressSelectionMode,
+                          onChanged: (mode) {
+                            context.read<GetAddressesBloc>().add(
+                                AddressSelectionModeChanged(
+                                    AddressSelectionMode.byAccount));
+                          },
+                        ),
+                        const Text('All Addresses in Account'),
+                      ],
                     ),
-                    const Text('All Addresses in Account'),
-                    Radio<AddressSelectionMode>(
-                      activeColor: green2,
-                      value: AddressSelectionMode.importedAddresses,
-                      groupValue: state.addressSelectionMode,
-                      onChanged: (mode) {
-                        context.read<GetAddressesBloc>().add(
-                            AddressSelectionModeChanged(
-                                AddressSelectionMode.importedAddresses));
-                      },
-                    ),
-                    const Text('Imported Addresses'),
+                    Row(children: [
+                      Radio<AddressSelectionMode>(
+                        activeColor: green2,
+                        value: AddressSelectionMode.importedAddresses,
+                        groupValue: state.addressSelectionMode,
+                        onChanged: (mode) {
+                          context.read<GetAddressesBloc>().add(
+                              AddressSelectionModeChanged(
+                                  AddressSelectionMode.importedAddresses));
+                        },
+                      ),
+                      const Text('Imported Addresses'),
+                    ])
                   ],
                 ),
 
@@ -161,6 +176,7 @@ class GetAddressesForm extends StatelessWidget {
                               child: Text(address.address),
                             ))
                         .toList(),
+                    selectedItemBuilder: (item) => Text(_shortenAddress(item)),
                     hintText: (state.importedAddresses?.isEmpty ?? true)
                         ? "None"
                         : 'Select an Imported Address',
