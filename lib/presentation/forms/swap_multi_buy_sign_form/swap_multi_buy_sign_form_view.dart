@@ -313,6 +313,8 @@ class _SwapMultiBuySignFormState extends State<SwapMultiBuySignForm> {
                               _renderPropertyWidget(
                                   "Swap #${idx + 1}",
                                   Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Link(
                                         href:
@@ -326,7 +328,7 @@ class _SwapMultiBuySignFormState extends State<SwapMultiBuySignForm> {
                                               current.id,
                                               style: const TextStyle(
                                                 fontFamily: "RobotoMono",
-                                                fontSize: 14,
+                                                fontSize: 13,
                                                 decoration:
                                                     TextDecoration.underline,
                                               ),
@@ -334,7 +336,7 @@ class _SwapMultiBuySignFormState extends State<SwapMultiBuySignForm> {
                                             SizedBox(width: 16),
                                             Icon(
                                               LucideIcons.externalLink,
-                                              size: 16,
+                                              size: 12,
                                             )
                                           ],
                                         ),

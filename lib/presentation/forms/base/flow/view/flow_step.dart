@@ -31,8 +31,8 @@ class FlowStep extends StatelessWidget {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: Center(
           child: Container(
-            width: 500,
-            height: 812,
+            width: 375,
+            height: 600,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
             ),
@@ -42,7 +42,7 @@ class FlowStep extends StatelessWidget {
                 // Step indicators
                 Padding(
                   padding:
-                      EdgeInsets.symmetric(horizontal: isSmallScreen ? 16 : 30),
+                      EdgeInsets.symmetric(horizontal: isSmallScreen ? 18 : 30),
                   child: Center(
                     child: Container(
                       width: 48,
@@ -87,7 +87,7 @@ class FlowStep extends StatelessWidget {
                 // Main content
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
                     child: body,
                   ),
                 ),

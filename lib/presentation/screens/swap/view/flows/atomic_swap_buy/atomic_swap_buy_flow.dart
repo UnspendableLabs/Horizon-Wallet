@@ -256,7 +256,12 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
                                 _controller.update((model) => model.copyWith(
                                     atomicSwaps: Option.of(swaps)));
                               }),
-                              SwapSliderForm(actions: actions, state: state),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12.0),
+                                child: SwapSliderForm(
+                                    actions: actions, state: state),
+                              ),
                             ],
                           ))))),
           model.atomicSwaps.map((atomicSwaps) => MaterialPage(
