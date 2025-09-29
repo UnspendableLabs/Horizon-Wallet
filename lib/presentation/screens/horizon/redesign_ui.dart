@@ -548,7 +548,7 @@ String _stripLeadingZeros(String value, bool divisible) {
   return parts.length == 1 ? intPart : '$intPart.${parts[1]}';
 }
 
-Widget commonHeightSizedBox = const SizedBox(height: 8);
+Widget commonHeightSizedBox = const SizedBox(height: 10);
 Widget commonWidthSizedBox = const SizedBox(width: 10);
 
 const double defaultButtonHeight = 54;

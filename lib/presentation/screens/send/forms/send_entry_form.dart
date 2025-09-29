@@ -129,7 +129,7 @@ class _SendEntryFormState extends State<SendEntryForm> {
       children: [
         HorizonTextField(
           controller: _destinationController,
-          label: 'Recipient Wallet Address',
+          label: 'Enter address...',
           onChanged: (value) {
             widget.actions.onDestinationChanged(value);
           },

@@ -297,8 +297,31 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
     on<SubmitClicked>(_handleSubmitClicked);
   }
 
-  _handleGiveAssetChanged(
-      GiveAssetSelected event, Emitter<AssetPairFormModel> emit) {
+  Future<void> _handleGiveAssetChanged(
+      GiveAssetSelected event, Emitter<AssetPairFormModel> emit) async {
+    // if give asset is BTC, we prefetch swaps
+
+    TaskEither<String, List<AssetSearchResult>>? task;
+
+    if (event.value.name.toLowerCase() == "btc") {
+      task = _atomicSwapRepository
+          .searchSwapsT(
+              httpConfig: httpConfig,
+              search: "",
+              onError: (err, __) => "Error: $err")
+          .map((swaps) {
+        final Map<String, AssetSearchResult> resultMap = {};
+        for (final swap in swaps) {
+          resultMap.putIfAbsent(
+            swap.assetName,
+            () => AssetSearchResult(name: swap.assetName, description: ""),
+          );
+        }
+
+        return resultMap.values.toList();
+      });
+    }
+
     emit(state.copyWith(
         submissionStatus: FormzSubmissionStatus.initial,
         giveAssetInput: GiveAssetInput.dirty(value: event.value),
@@ -306,6 +329,37 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
             state.receiveAssetInput.value?.name == event.value.name
                 ? const ReceiveAssetInput.pure()
                 : state.receiveAssetInput));
+
+    if (task != null) {
+      emit(state.copyWith(
+          submissionStatus: FormzSubmissionStatus.initial,
+          searchAssetInput: const SearchAssetInput.pure(),
+          searchResults: const Success([])));
+
+      RemoteData<List<AssetSearchResult>> receiveAssetsNext = switch (
+          state.searchResults) {
+        Success(value: var value) => Refreshing(value),
+        _ => const Loading()
+      };
+
+      emit(state.copyWith(
+        submissionStatus: FormzSubmissionStatus.initial,
+        searchResults: receiveAssetsNext,
+      ));
+
+      final result = await task.run();
+
+      final nextState = result.fold(
+        (err) => state.copyWith(
+          searchResults: Failure(err),
+        ),
+        (value) => state.copyWith(
+          searchResults: Success([...value]),
+        ),
+      );
+
+      emit(nextState);
+    }
   }
 
   _handleReceiveAssetInputClicked(
