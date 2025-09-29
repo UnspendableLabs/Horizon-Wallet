@@ -385,7 +385,7 @@ class _GradientQuantityInputV2State extends State<GradientQuantityInputV2> {
             MouseRegion(
               cursor: SystemMouseCursors.text,
               child: Container(
-                height: 185,
+                height: 135,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(18),
                   color: _hasText
