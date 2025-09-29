@@ -24,6 +24,12 @@ class FlowStep extends StatelessWidget {
         appBar: AppBar(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           elevation: 0,
+          centerTitle: true,
+          title: Text(
+            title,
+            style: Theme.of(context).textTheme.titleMedium,
+            textAlign: TextAlign.center,
+          ),
           leading: leading,
           automaticallyImplyLeading: leading != null,
           actions: trailing != null ? [trailing!] : null,
@@ -73,15 +79,6 @@ class FlowStep extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 // Step title
-                Padding(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: isSmallScreen ? 16 : 30),
-                  child: Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
                 const SizedBox(height: 24),
 
                 // Main content
