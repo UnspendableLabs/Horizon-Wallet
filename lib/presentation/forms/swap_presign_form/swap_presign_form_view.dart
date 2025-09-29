@@ -104,7 +104,7 @@ class SwapPresignForm extends StatelessWidget {
 
   _gradQtyProperty(label, value, theme) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -113,7 +113,7 @@ class SwapPresignForm extends StatelessWidget {
               style: theme.inputDecorationTheme.hintStyle),
           QuantityText(
             quantity: value,
-            style: const TextStyle(fontSize: 35),
+            style: const TextStyle(fontSize: 24),
           )
         ],
       ),
@@ -172,11 +172,10 @@ class SwapPresignForm extends StatelessWidget {
                       state.totalRecieveAsset.normalizedPretty(precision: 8),
                       theme),
                   const Divider(
-                    height: 20,
+                    height: 16,
                     thickness: 1,
                     color: transparentWhite8,
                   ),
-                  commonHeightSizedBox,
                   // https://www.figma.com/design/88EA0Ok35kyGqO8h6IszKR/Horizon-Wallet?node-id=1421-42115&t=qbscR16mEPwzXLt7-4
                   _regularProperty(
                       "Transaction Type", "Listing Fulfilment", theme),
@@ -187,7 +186,6 @@ class SwapPresignForm extends StatelessWidget {
                     thickness: 1,
                     color: transparentWhite8,
                   ),
-                  commonHeightSizedBox,
                 ],
               ),
             )),
