@@ -99,6 +99,7 @@ dependencies:
   timeago: ^3.7.1
   timeago_flutter: ^3.7.0
   rational: ^2.2.3
+  auto_size_text_field: ^2.2.4
 
 dev_dependencies:
   retrofit_generator: ^9.3.0

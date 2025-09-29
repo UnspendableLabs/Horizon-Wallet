@@ -13,6 +13,7 @@ import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 import 'package:flutter/material.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
+import 'package:auto_size_text_field/auto_size_text_field.dart';
 
 /// -----------------------------
 /// Generic icon-triggered selector
@@ -442,7 +443,7 @@ class _QuantityInputV2State extends State<QuantityInputV2> {
     return ShaderMask(
       blendMode: BlendMode.srcIn,
       shaderCallback: (bounds) => gradient.createShader(bounds),
-      child: TextField(
+      child: AutoSizeTextField(
         controller: _controller,
         inputFormatters: formatters,
         keyboardType: TextInputType.numberWithOptions(
