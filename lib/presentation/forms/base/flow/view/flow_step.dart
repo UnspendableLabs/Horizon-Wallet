@@ -78,13 +78,10 @@ class FlowStep extends StatelessWidget {
 
                 const SizedBox(height: 16),
 
-                // Step title
-                const SizedBox(height: 24),
-
                 // Main content
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: body,
                   ),
                 ),
