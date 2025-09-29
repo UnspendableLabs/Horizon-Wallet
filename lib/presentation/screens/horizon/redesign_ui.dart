@@ -329,6 +329,8 @@ class HorizonDrawerSelect<T> extends StatelessWidget {
 
 class QuantityInputV2 extends StatefulWidget {
   /// Controlled value from parent (single source of truth)
+
+  final String? placeholder;
   final String value;
 
   /// Report sanitized changes to parent
@@ -339,6 +341,7 @@ class QuantityInputV2 extends StatefulWidget {
 
   const QuantityInputV2({
     super.key,
+    this.placeholder,
     required this.value,
     required this.onChanged,
     this.style,
@@ -451,11 +454,12 @@ class _QuantityInputV2State extends State<QuantityInputV2> {
         textAlign: TextAlign.left,
         style: baseStyle,
         cursorColor: Colors.white,
-        decoration: const InputDecoration(
-          border: InputBorder.none,
-          isCollapsed: true,
-          contentPadding: EdgeInsets.zero,
-        ),
+        decoration: InputDecoration(
+            border: InputBorder.none,
+            hintStyle: baseStyle, // Ensures
+            isCollapsed: true,
+            contentPadding: EdgeInsets.zero,
+            hintText: widget.placeholder ?? "0"),
       ),
     );
   }
