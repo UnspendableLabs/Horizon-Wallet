@@ -248,11 +248,15 @@ class BalanceRepositoryImpl implements BalanceRepository {
 
   @override
   Future<List<b.Balance>> getBalancesForUTXO(
-      {required HttpConfig httpConfig, required String utxo}) async {
-    final response = await counterpartyClientFactory
-        .getClient(httpConfig)
-        .getBalancesByUTXO(utxo);
-    final balances = response.result;
+      {required HttpConfig httpConfig,
+      required String utxo,
+      bool queryMempool = false}) async {
+    final response = await Future.wait([
+      counterpartyClientFactory.getClient(httpConfig).getBalancesByUTXO(utxo)
+    ]);
+
+    final balances = response[0].result;
+
     if (balances == null) {
       throw Exception('Failed to get balances for $utxo');
     }

@@ -1,4 +1,5 @@
 import "package:equatable/equatable.dart";
+import "package:horizon/domain/entities/asset_info.dart";
 
 sealed class EventStatus {}
 
@@ -1588,6 +1589,7 @@ class VerboseAttachToUtxoParams extends AttachToUtxoEventParams {
   // final AssetInfo assetInfo;
   final String quantityNormalized;
   final String feePaidNormalized;
+  final AssetInfo assetInfo;
 
   VerboseAttachToUtxoParams({
     required super.asset,
@@ -1595,7 +1597,9 @@ class VerboseAttachToUtxoParams extends AttachToUtxoEventParams {
     required super.destination,
     required super.feePaid,
     required super.source,
+    required super.quantity,
     // required this.assetInfo,
+    required this.assetInfo,
     required this.quantityNormalized,
     required this.feePaidNormalized,
   });
@@ -1607,6 +1611,7 @@ class AttachToUtxoEventParams {
   final String destination;
   final int feePaid;
   final String source;
+  final int quantity;
 
   AttachToUtxoEventParams({
     required this.asset,
@@ -1614,6 +1619,7 @@ class AttachToUtxoEventParams {
     required this.destination,
     required this.feePaid,
     required this.source,
+    required this.quantity,
   });
 }
 

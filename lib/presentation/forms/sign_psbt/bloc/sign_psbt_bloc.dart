@@ -1,5 +1,7 @@
 import "package:fpdart/fpdart.dart";
 import 'package:formz/formz.dart';
+import 'package:horizon/domain/entities/asset_quantity.dart';
+import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import "package:get_it/get_it.dart";
@@ -10,9 +12,10 @@ import 'package:decimal/decimal.dart';
 
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/failure.dart';
-import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
@@ -24,6 +27,7 @@ import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/wallet_config_repository.dart';
 import 'package:horizon/domain/services/seed_service.dart';
+import 'package:horizon/domain/usecases/get_utxo_balances.dart';
 
 import "./sign_psbt_state.dart";
 import "./sign_psbt_event.dart";
@@ -33,31 +37,29 @@ const dummyTxID =
 
 class AssetCredit {
   final String asset;
-  final int quantity;
-  final String quantityNormalized;
+  final AssetQuantity quantity;
 
-  const AssetCredit(
-      {required this.asset,
-      required this.quantity,
-      required this.quantityNormalized});
+  const AssetCredit({
+    required this.asset,
+    required this.quantity,
+  });
 }
 
 class AssetDebit {
   final String asset;
-  final int quantity;
-  final String quantityNormalized;
+  final AssetQuantity quantity;
 
-  const AssetDebit(
-      {required this.asset,
-      required this.quantity,
-      required this.quantityNormalized});
+  const AssetDebit({
+    required this.asset,
+    required this.quantity,
+  });
 }
 
 class AugmentedInput {
   final dbtc.Vin vin;
   final String? address;
   final Vout prevOut;
-  final List<Balance> balances;
+  final List<UtxoBalance> balances;
   final bool signatureRequired;
 
   const AugmentedInput({
@@ -82,17 +84,17 @@ class AugmentedInput {
       if (balances.isNotEmpty) {
         for (final balance in balances) {
           debits.add(AssetDebit(
-            asset: displayAssetName(
-                balance.asset, balance.assetInfo.assetLongname),
+            asset: displayAssetName(balance.asset, balance.assetLongname),
             quantity: balance.quantity,
-            quantityNormalized: balance.quantityNormalized,
           ));
         }
       } else {
         debits.add(AssetDebit(
           asset: "BTC",
-          quantity: prevOut.value,
-          quantityNormalized: satoshisToBtc(prevOut.value).toString(),
+          quantity: AssetQuantity(
+            quantity: BigInt.from(prevOut.value),
+            divisible: true,
+          ),
         ));
       }
     }
@@ -103,7 +105,7 @@ class AugmentedInput {
 
 class AugmentedOutput {
   final dbtc.Vout vout;
-  final List<Balance> balances;
+  final List<UtxoBalance> balances;
 
   AugmentedOutput({
     required this.balances,
@@ -130,17 +132,15 @@ class AugmentedOutput {
       if (balances.isNotEmpty) {
         for (final balance in balances) {
           credits.add(AssetCredit(
-            asset: displayAssetName(
-                balance.asset, balance.assetInfo.assetLongname),
+            asset: displayAssetName(balance.asset, balance.assetLongname),
             quantity: balance.quantity,
-            quantityNormalized: balance.quantityNormalized,
           ));
         }
       } else {
         credits.add(AssetCredit(
             asset: "BTC",
-            quantity: value,
-            quantityNormalized: satoshisToBtc(value).toString()));
+            quantity:
+                AssetQuantity(quantity: BigInt.from(value), divisible: true)));
       }
     }
     return credits;
@@ -164,6 +164,8 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
   final BitcoinRepository _bitcoinRepository;
   final BalanceRepository _balanceRepository;
   final UtxoRepository _utxoRepository;
+  final EventsRepository _eventsRepository;
+  final GetUTXOBalancesUseCase _getUTXOBalancesUseCase;
 
   final bool embeddedWitnessData;
 
@@ -184,6 +186,8 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
     WalletConfigRepository? walletConfigRepository,
     SeedService? seedService,
     UtxoRepository? utxoRepository,
+    EventsRepository? eventsRepository,
+    GetUTXOBalancesUseCase? getUTXOBalancesUseCase,
     this.embeddedWitnessData = false,
   })  : _balanceRepository = balanceRepository ?? GetIt.I<BalanceRepository>(),
         _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>(),
@@ -198,6 +202,9 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
             walletConfigRepository ?? GetIt.I<WalletConfigRepository>(),
         _seedService = seedService ?? GetIt.I<SeedService>(),
         _utxoRepository = utxoRepository ?? GetIt.I<UtxoRepository>(),
+        _eventsRepository = eventsRepository ?? GetIt.I<EventsRepository>(),
+        _getUTXOBalancesUseCase =
+            getUTXOBalancesUseCase ?? GetIt.I<GetUTXOBalancesUseCase>(),
         super(SignPsbtState()) {
     on<FetchFormEvent>(_handleFetchForm);
     on<PasswordChanged>(_handlePasswordChanged);
@@ -225,6 +232,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
             return $(TaskEither.right(const Option.none()));
           }
 
+          // TODO: don't go chasin' waterfalls.
           final getTransactionTask = _bitcoinRepository
               .getTransactionT(
                   txid: vin.txid,
@@ -237,15 +245,26 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
                 ),
               );
 
-          final getBalancesTask = TaskEither<Failure, List<Balance>>.tryCatch(
-              () => _balanceRepository.getBalancesForUTXO(
-                  httpConfig: httpConfig, utxo: "${vin.txid}:${vin.vout}"),
-              (_, stacktrace) => const UnexpectedFailure(
-                    message: "Failed to get balances for UTXO",
-                  ));
+          final utxoBalancesTask = _getUTXOBalancesUseCase
+              .call(GetUTXOBalancesUseCaseParams(
+                addresses: addresses.map((a) => a.address).toList(),
+                httpConfig: httpConfig,
+                utxoID: UtxoID.fromString("${vin.txid}:${vin.vout}"),
+              ))
+              .mapLeft((s) => UnexpectedFailure(message: s));
 
-          final transaction = await $(getTransactionTask);
-          final balances = await $(getBalancesTask);
+          print("before run");
+
+          final results = await $(TaskEither.sequenceList([
+            getTransactionTask,
+            utxoBalancesTask,
+          ]));
+
+          final transaction = results[0] as BitcoinTx;
+          final balances = results[1] as List<UtxoBalance>;
+
+          print("\n\n\n\n");
+          print(balances);
 
           final prevout = transaction.vout[vin.vout];
           final address = prevout.scriptpubkeyAddress;
@@ -292,34 +311,40 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
           .flatten
           .toList();
 
-      Map<String, Decimal> map = {};
-
+      Map<String, AssetQuantity> map = {};
 
       for (final debit in debits) {
-        map.putIfAbsent(debit.asset, () => Decimal.zero);
-        map[debit.asset] =
-            map[debit.asset]! - Decimal.fromJson(debit.quantityNormalized);
+        map.putIfAbsent(debit.asset,
+            () => AssetQuantity.empty(divisible: debit.quantity.divisible));
+        map[debit.asset] = map[debit.asset]! - debit.quantity;
       }
 
       for (final credit in credits) {
-        map.putIfAbsent(credit.asset, () => Decimal.zero);
-        map[credit.asset] =
-            map[credit.asset]! + Decimal.fromJson(credit.quantityNormalized);
+        map.putIfAbsent(credit.asset,
+            () => AssetQuantity.empty(divisible: credit.quantity.divisible));
+        map[credit.asset] = map[credit.asset]! + credit.quantity;
       }
 
       final netDebits = map.entries
-          .filter((entry) => entry.value < Decimal.zero)
+          .filter((entry) => entry.value.quantity < BigInt.zero)
           .map((e) => AssetDebit(
-              asset: e.key,
-              quantity: 0, // temp hack
-              quantityNormalized: e.value.abs().toString()));
+                asset: e.key,
+                quantity: e.value.map((value) => value.abs()),
+              ));
 
       final netCredits = map.entries
-          .filter((entry) => entry.value > Decimal.zero)
+          .filter((entry) => entry.value.quantity > BigInt.zero)
           .map((e) => AssetCredit(
-              asset: e.key,
-              quantity: 0, // temp hack
-              quantityNormalized: e.value.toString()));
+                asset: e.key,
+                quantity: e.value.map((value) => value.abs()),
+              ));
+
+      for (var credit in netCredits) {
+        print("Credit: ${credit.asset} - ${credit.quantity.quantity}");
+      }
+      for (var debit in netDebits) {
+        print("Debit: ${debit.asset} - ${debit.quantity.quantity}");
+      }
 
       emit(state.copyWith(
         debits: netDebits.toList(),
@@ -329,6 +354,8 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
         isFormDataLoaded: true,
       ));
     } catch (e, callstack) {
+      print(e);
+      print(callstack);
       emit(state.copyWith(
         isFormDataLoaded: true,
       ));

@@ -2,23 +2,41 @@ import 'package:horizon/domain/entities/asset_info.dart';
 import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 
-class Balance {
-  final String? address;
-  final int quantity;
-  final String quantityNormalized;
-  final String? utxo;
-  final String? utxoAddress;
+sealed class BalanceV2 {
+  final bool confirmed;
   final String asset;
-  final AssetInfo assetInfo;
+  final String? assetLongname;
+  final String address;
+  final AssetQuantity quantity;
 
-  Balance(
-      {required this.address,
-      required this.quantity,
+  BalanceV2(
+      {required this.confirmed,
       required this.asset,
-      required this.assetInfo,
-      required this.quantityNormalized,
-      this.utxo,
-      this.utxoAddress});
+      this.assetLongname,
+      required this.address,
+      required this.quantity});
+}
+
+class AddressBalance extends BalanceV2 {
+  AddressBalance(
+      {required super.confirmed,
+      required super.asset,
+      super.assetLongname,
+      required super.address,
+      required super.quantity});
+}
+
+class UtxoBalance extends BalanceV2 {
+  final UtxoID utxoId;
+
+  UtxoBalance({
+    required this.utxoId,
+    required super.asset,
+    super.assetLongname,
+    required super.address,
+    required super.quantity,
+    required super.confirmed,
+  });
 }
 
 // class UtxoBalance {

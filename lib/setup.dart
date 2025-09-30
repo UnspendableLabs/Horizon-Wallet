@@ -132,6 +132,8 @@ import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transacti
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import 'package:horizon/domain/usecases/get_utxo_balances.dart';
+import 'package:horizon/domain/usecases/get_all_balances.dart';
 import 'package:logger/logger.dart' as logger;
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/data/logging/logger_impl.dart';
@@ -630,6 +632,8 @@ void setup() {
       mempoolSpaceClientFactory: GetIt.I.get<MempoolSpaceClientFactory>()));
 
   injector.registerSingleton<RoyaltiesRepository>(RoyaltiesRepositoryImpl());
+
+  injector.registerSingleton<GetUTXOBalancesUseCase>(GetUTXOBalancesUseCase());
 }
 
 class CustomDioException extends DioException {

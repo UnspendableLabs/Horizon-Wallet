@@ -874,6 +874,8 @@ class VerboseAttachToUtxoParamsMapper {
   static VerboseAttachToUtxoParams toDomain(
       api.VerboseAttachToUtxoParams apiParams) {
     return VerboseAttachToUtxoParams(
+      assetInfo: apiParams.assetInfo.toDomain(),
+      quantity: apiParams.quantity,
       asset: apiParams.asset,
       source: apiParams.source,
       blockIndex: apiParams.blockIndex,
@@ -1338,7 +1340,6 @@ class EventsRepositoryImpl implements EventsRepository {
     final response = await _counterpartyClientFactory
         .getClient(httpConfig)
         .getEventsByAddressesVerbose(addressesParam);
-
 
     if (response.error != null) {
       throw Exception("Error getting events by addresses: ${response.error}");

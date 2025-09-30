@@ -36,6 +36,7 @@ abstract class BalanceRepository {
   Future<List<Balance>> getBalancesForUTXO({
     required HttpConfig httpConfig,
     required String utxo,
+    bool queryMempool = false,
   });
 }
 
@@ -107,12 +108,14 @@ extension BalanceRepositoryX on BalanceRepository {
   TaskEither<E, List<Balance>> getBalancesForUTXOT<E>({
     required HttpConfig httpConfig,
     required String utxo,
+    bool queryMempool = false,
     required E Function(Object error, StackTrace stack) onError,
   }) {
     return TaskEither.tryCatch(
       () => getBalancesForUTXO(
         httpConfig: httpConfig,
         utxo: utxo,
+        queryMempool: queryMempool,
       ),
       onError,
     );

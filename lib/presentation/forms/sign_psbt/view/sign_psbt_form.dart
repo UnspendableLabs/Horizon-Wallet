@@ -41,7 +41,7 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
         Text("+",
             style:
                 theme.textTheme.headlineSmall?.copyWith(color: Colors.green)),
-        Text(credit.quantityNormalized,
+        Text(credit.quantity.normalized(),
             style: theme.textTheme.headlineSmall?.copyWith(
               color: Colors.green,
             )),
@@ -58,7 +58,7 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
     return Column(children: [
       Row(children: [
         Text("-", style: theme.textTheme.headlineSmall),
-        Text(debit.quantityNormalized, style: theme.textTheme.headlineSmall),
+        Text(debit.quantity.normalized(), style: theme.textTheme.headlineSmall),
         const SizedBox(width: 8),
         Text(debit.asset, style: theme.textTheme.headlineSmall),
       ])
@@ -278,7 +278,7 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
             child: Row(
               children: [
                 Expanded(
-                  child: Text('${b.quantityNormalized} ${b.asset}',
+                  child: Text('${b.quantity.normalized()} ${b.asset}',
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodySmall),
                 ),
@@ -353,7 +353,7 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
             child: Row(
               children: [
                 Expanded(
-                  child: Text('${b.quantityNormalized} ${b.asset}',
+                  child: Text('${b.quantity.normalized()} ${b.asset}',
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodySmall),
                 ),
@@ -374,27 +374,6 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                 style: theme.textTheme.labelMedium),
           ],
         ),
-
-        // output.balances.isNotEmpty
-        //     ? Card(
-        //         margin: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-        //         shape: RoundedRectangleBorder(
-        //           borderRadius: BorderRadius.circular(8.0),
-        //         ),
-        //         child: Padding(
-        //           padding: const EdgeInsets.fromLTRB(8.0, 16.0, 8.0, 16.0),
-        //           child: Column(
-        //               mainAxisAlignment: MainAxisAlignment.start,
-        //               crossAxisAlignment: CrossAxisAlignment
-        //                   .start, // <-- This ensures left alignment
-        //               children: [
-        //                 Text("Attached Assets",
-        //                     style: theme.textTheme.labelSmall),
-        //                 ...balancesWidget,
-        //               ]),
-        //         ))
-        //     : const SizedBox.shrink()
-        // Right side: value
       ],
     );
   }
