@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fpdart/fpdart.dart' as fp;
 import 'package:horizon/common/format.dart';
+import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/presentation/common/asset_balance_list_item.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
@@ -15,7 +16,7 @@ import 'package:horizon/utils/app_icons.dart';
 class SendEntryFormActions {
   final Function(String value) onDestinationChanged;
   final Function(String value) onQuantityChanged;
-  final Function(MultiAddressBalance value) onBalanceSelected;
+  final Function(AssetBalanceSummary value) onBalanceSelected;
   final Function(String value) onMemoChanged;
   final Function() onMaxAmountSelected;
   const SendEntryFormActions(
@@ -27,8 +28,8 @@ class SendEntryFormActions {
 }
 
 class SendEntryFormProvider extends StatelessWidget {
-  final List<MultiAddressBalance> balances;
-  final MultiAddressBalance? initialBalance;
+  final List<AssetBalanceSummary> balances;
+  final AssetBalanceSummary? initialBalance;
   final Function(SendEntryFormModel) onFormChanged;
   final Widget Function(SendEntryFormActions actions, SendEntryFormModel state)
       child;
@@ -90,7 +91,7 @@ class SendEntryFormProvider extends StatelessWidget {
 class SendEntryForm extends StatefulWidget {
   final SendEntryFormModel state;
   final SendEntryFormActions actions;
-  final List<MultiAddressBalance> balances;
+  final List<AssetBalanceSummary> balances;
   const SendEntryForm(
       {super.key,
       required this.state,
@@ -172,7 +173,7 @@ class _SendEntryFormState extends State<SendEntryForm> {
           // ),
         ),
         commonHeightSizedBox,
-        HorizonRedesignDropdown<MultiAddressBalance>(
+        HorizonRedesignDropdown<AssetBalanceSummary>(
             itemPadding: const EdgeInsets.all(12),
             selectorPadding: widget.state.balanceSelectorInput.value == null
                 ? const EdgeInsets.symmetric(horizontal: 12, vertical: 6)
@@ -182,7 +183,7 @@ class _SendEntryFormState extends State<SendEntryForm> {
                       value: item,
                       child: AssetBalanceListItemWithOptionalBalance(
                           asset: item.asset,
-                          description: item.assetInfo.description,
+                          description: item.description,
                           balance: fp.Option.of(item)),
                     ))
                 .toList(),
@@ -192,12 +193,12 @@ class _SendEntryFormState extends State<SendEntryForm> {
               }
             },
             selectedValue: widget.state.balanceSelectorInput.value,
-            selectedItemBuilder: (MultiAddressBalance item) => TokenNameField(
+            selectedItemBuilder: (AssetBalanceSummary item) => TokenNameField(
                   loading: false,
                   decoration: const BoxDecoration(),
                   balance: widget.state.balanceSelectorInput.value,
                   selectedBalanceEntry:
-                      widget.state.balanceSelectorInput.value?.entries.first,
+                      widget.state.balanceSelectorInput.value?.balances.first,
                   // suffixIcon: GestureDetector(
                   //   onTap: () {
                   //     _quantityController.text = quantityRemoveTrailingZeros(

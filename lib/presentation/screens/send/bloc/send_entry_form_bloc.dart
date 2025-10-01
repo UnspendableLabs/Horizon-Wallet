@@ -2,6 +2,7 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 
 abstract class SendEntryFormEvent {
@@ -9,7 +10,7 @@ abstract class SendEntryFormEvent {
 }
 
 class AddressBalanceInputChanged extends SendEntryFormEvent {
-  final MultiAddressBalance value;
+  final AssetBalanceSummary value;
   const AddressBalanceInputChanged(this.value);
 }
 
@@ -34,7 +35,7 @@ class MaxAmountSelected extends SendEntryFormEvent {
 
 class SendEntryFormBloc extends Bloc<SendEntryFormEvent, SendEntryFormModel> {
   SendEntryFormBloc(
-      {MultiAddressBalance? initialBalance,
+      {AssetBalanceSummary? initialBalance,
       required String initialQuantity,
       required String initialDestination,
       required String initialMemo})
@@ -45,8 +46,9 @@ class SendEntryFormBloc extends Bloc<SendEntryFormEvent, SendEntryFormModel> {
           destinationInput: DestinationInput.dirty(value: initialDestination),
           quantityInput: QuantityInput.dirty(
               value: initialQuantity,
-              maxQuantity: BigInt.from(initialBalance?.total ?? 0),
-              divisible: initialBalance?.assetInfo.divisible ?? false),
+              maxQuantity:
+                  initialBalance?.balance.total.quantity ?? BigInt.zero,
+              divisible: initialBalance?.balance.total.divisible ?? false),
           memoInput: MemoInput.dirty(value: initialMemo),
         )) {
     on<AddressBalanceInputChanged>(_onAddressBalanceInputChanged);
@@ -157,14 +159,14 @@ class QuantityInput extends FormzInput<String, SendEntryFormInputError> {
 }
 
 class BalanceSelectorInput
-    extends FormzInput<MultiAddressBalance?, SendEntryFormInputError> {
-  const BalanceSelectorInput.dirty({required MultiAddressBalance value})
+    extends FormzInput<AssetBalanceSummary?, SendEntryFormInputError> {
+  const BalanceSelectorInput.dirty({required AssetBalanceSummary value})
       : super.dirty(value);
 
   const BalanceSelectorInput.pure() : super.pure(null);
 
   @override
-  SendEntryFormInputError? validator(MultiAddressBalance? value) {
+  SendEntryFormInputError? validator(AssetBalanceSummary? value) {
     if (value == null) {
       return SendEntryFormInputError.balanceRequired;
     }
@@ -213,12 +215,13 @@ class SendEntryFormModel with FormzMixin {
   }
 
   get assetIsDivisible =>
-      balanceSelectorInput.value?.assetInfo.divisible ?? false;
+      balanceSelectorInput.value?.balance.total.divisible ?? false;
 
   get assetQuantityNormalized =>
-      balanceSelectorInput.value?.totalNormalized ?? "";
+      balanceSelectorInput.value?.balance.total.normalized() ?? "";
 
-  int get assetBalance => balanceSelectorInput.value?.total ?? 0;
+  int get assetBalance =>
+      balanceSelectorInput.value?.balance.total.quantity.toInt() ?? 0;
 
   @override
   String toString() {

@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/services.dart';
 import 'package:horizon/domain/entities/asset_quantity.dart';
+import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 
 import 'package:horizon/domain/entities/remote_data.dart';
@@ -89,7 +90,7 @@ class AtomicSwapsToSign {
 }
 
 class AtomicSwapBuyModel extends Equatable {
-  final Option<MultiAddressBalanceEntry> bitcoinBalance;
+  final Option<AddressBalance> bitcoinBalance;
   final Option<List<AtomicSwap>> atomicSwaps;
   final Option<AtomicSwapsToSign> atomicSwapsToSign;
   final Option<String> signedPsbtHex;
@@ -107,7 +108,7 @@ class AtomicSwapBuyModel extends Equatable {
   List<Object?> get props => [];
 
   AtomicSwapBuyModel copyWith({
-    Option<MultiAddressBalanceEntry>? bitcoinBalance,
+    Option<AddressBalance>? bitcoinBalance,
     Option<List<AtomicSwap>>? atomicSwaps,
     Option<AtomicSwapsToSign>? atomicSwapsToSign,
     Option<String>? signedPsbtHex,
@@ -127,7 +128,7 @@ class AtomicSwapBuyFlowController extends FlowController<AtomicSwapBuyModel> {
 class AtomicSwapBuyFlowView extends StatefulWidget {
   final List<AddressV2> addresses;
 
-  final MultiAddressBalance balances;
+  final AssetBalanceSummary balances;
   final AssetPairFormOption receiveAsset;
 
   final VoidCallback onExitFlow;
@@ -199,12 +200,13 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
               disallowSelections: const [],
               httpConfig: session.httpConfig,
               addresses: widget.addresses.map((e) => e.address).toList(),
-              multiAddressBalance: widget.balances,
+              assetBalanceSummary: widget.balances,
               child: (actions, state) => Column(
                 children: [
-                  AssetBalanceSuccessHandler<MultiAddressBalanceEntry>(
+                  AssetBalanceSuccessHandler<AddressBalance>(
                       mapSuccess: (a) => Either.fromOption(
-                          Option.fromNullable(a.balanceInput.value?.entry),
+                          Option.fromNullable(
+                              a.balanceInput.value?.entry as AddressBalance),
                           () => "invariant"),
                       onSuccess: (option) {
                         _controller.update(

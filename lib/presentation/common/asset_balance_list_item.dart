@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
@@ -7,7 +8,7 @@ import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AssetBalanceListItem extends StatelessWidget {
-  final MultiAddressBalance balance;
+  final AssetBalanceSummary balance;
   const AssetBalanceListItem({super.key, required this.balance});
 
   @override
@@ -20,7 +21,7 @@ class AssetBalanceListItem extends StatelessWidget {
           httpConfig: session.httpConfig,
           context: context,
           assetName: balance.asset,
-          description: balance.assetInfo.description,
+          description: "", // TODO: add desc to summary.
           width: 34,
           height: 34,
         ),
@@ -35,7 +36,7 @@ class AssetBalanceListItem extends StatelessWidget {
                   ),
             ),
             Text(
-              "Balance: ${balance.totalNormalized}",
+              "Balance: ${balance.balance.total.normalized()}",
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     fontWeight: FontWeight.w500,
                   ),
@@ -50,7 +51,7 @@ class AssetBalanceListItem extends StatelessWidget {
 class AssetBalanceListItemWithOptionalBalance extends StatelessWidget {
   final String asset;
   final String? description;
-  final Option<MultiAddressBalance> balance;
+  final Option<AssetBalanceSummary> balance;
   const AssetBalanceListItemWithOptionalBalance(
       {super.key,
       required this.asset,
@@ -88,7 +89,7 @@ class AssetBalanceListItemWithOptionalBalance extends StatelessWidget {
                             fontSize: 14,
                           ),
                     ),
-                    Text(balance.totalNormalized,
+                    Text(balance.balance.total.normalized(),
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
                               fontWeight: FontWeight.w500,
                             ))

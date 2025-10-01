@@ -1,4 +1,5 @@
 import 'package:formz/formz.dart';
+import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/domain/entities/asset.dart';
@@ -235,7 +236,7 @@ class SwapSliderFormBloc
 
   SwapSliderFormBloc({
     required String assetName,
-    required MultiAddressBalanceEntry bitcoinBalance,
+    required AddressBalance bitcoinBalance,
     required this.httpConfig,
     AtomicSwapRepository? atomicSwapRepository,
     AssetRepository? assetRepository,
@@ -245,11 +246,8 @@ class SwapSliderFormBloc
         super(
           SwapSliderFormModel(
               manuallySelectedSwapIndices: {},
-              totalCostInput: TotalCostInput.pure(
-                  userBalance: AssetQuantity(
-                quantity: BigInt.from(bitcoinBalance.quantity),
-                divisible: true,
-              )),
+              totalCostInput:
+                  TotalCostInput.pure(userBalance: bitcoinBalance.quantity),
               selectedSwapsInput: const SelectedAtomicSwapsInput.pure(),
               assetName: assetName,
               atomicSwaps: const Initial<List<AtomicSwap>>(),

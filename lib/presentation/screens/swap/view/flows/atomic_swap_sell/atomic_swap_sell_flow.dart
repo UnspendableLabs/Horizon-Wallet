@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:horizon/data/sources/network/horizon_explorer_client.dart';
+import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/royalty_by_asset.dart';
@@ -81,36 +82,40 @@ extension AtomicSwapSellVariantX on AssetBalanceFormModel {
       return left("Balance input is null");
     }
 
-    final entry = input.entry;
-    final asset = multiAddressBalance.asset;
-
-    if (entry.address != null) {
-      return right(
-        UnattachedAtomicSwapSell(
-          address: entry.address!,
-          asset: asset,
-          quantityNormalized: entry.quantityNormalized,
-          quantity: entry.quantity,
-          description: multiAddressBalance.assetInfo.description,
-          divisible: multiAddressBalance.assetInfo.divisible,
+    return switch (input.entry) {
+      AddressBalance(
+        address: var address,
+        asset: var asset,
+        quantity: var quantity,
+        description: var description
+      ) =>
+        right(
+          UnattachedAtomicSwapSell(
+            address: address,
+            asset: asset,
+            quantityNormalized: quantity.normalized(),
+            quantity: quantity.quantity.toInt(), // TODO: don't do this cast
+            description: description,
+            divisible: quantity.divisible,
+          ),
         ),
-      );
-    }
-
-    if (entry.utxo != null && entry.utxoAddress != null) {
-      return right(
-        AttachedAtomicSwapSell(
-          asset: asset,
-          quantityNormalized: entry.quantityNormalized,
-          quantity: entry.quantity,
-          utxoId: UtxoID.fromString(entry.utxo!),
-          divisible: multiAddressBalance.assetInfo.divisible,
-          utxoAddress: entry.utxoAddress!,
+      UtxoBalance(
+        utxoId: var utxoId,
+        address: var address,
+        asset: var asset,
+        quantity: var quantity
+      ) =>
+        right(
+          AttachedAtomicSwapSell(
+            asset: asset,
+            quantityNormalized: quantity.normalized(),
+            quantity: quantity.quantity.toInt(), // TODO: don't to this cast
+            utxoId: utxoId,
+            divisible: quantity.divisible,
+            utxoAddress: address,
+          ),
         ),
-      );
-    }
-
-    return left("Invalid balance input");
+    };
   }
 }
 
@@ -182,7 +187,7 @@ class AtomicSwapSellFlowView extends StatefulWidget {
   final UtxoRepository _utxoRepository;
 
   final List<AddressV2> addresses;
-  final MultiAddressBalance balances;
+  final AssetBalanceSummary balances;
 
   AtomicSwapSellFlowView(
       {required this.httpConfig,
@@ -256,7 +261,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
               httpConfig: widget.httpConfig,
               addresses:
                   widget.addresses.map((address) => address.address).toList(),
-              multiAddressBalance: widget.balances,
+              assetBalanceSummary: widget.balances,
               child: (actions, state) => Column(
                 children: [
                   AssetBalanceSuccessHandler<AtomicSwapSellVariant>(

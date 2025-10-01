@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/format.dart';
+import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
@@ -10,8 +11,8 @@ import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 
 class TokenNameField extends StatelessWidget {
-  final MultiAddressBalance? balance;
-  final MultiAddressBalanceEntry? selectedBalanceEntry;
+  final AssetBalanceSummary? balance;
+  final BalanceV2? selectedBalanceEntry;
   final bool loading;
   final Widget? suffixIcon;
   final Decoration? decoration;
@@ -59,7 +60,7 @@ class TokenNameField extends StatelessWidget {
                       context: context,
                       width: 34,
                       height: 34,
-                      description: balance!.assetInfo.description),
+                      description: balance!.description),
               const SizedBox(width: 8),
               Expanded(
                 child: Column(
@@ -74,7 +75,7 @@ class TokenNameField extends StatelessWidget {
                     ),
                     if (selectedBalanceEntry != null)
                       Text(
-                        "Balance: ${quantityRemoveTrailingZeros(selectedBalanceEntry!.quantityNormalized)}",
+                        "Balance: ${selectedBalanceEntry!.quantity.normalizedPretty()}",
                         style: theme.textTheme.labelSmall,
                       ),
                   ],

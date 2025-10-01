@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/presentation/common/link.dart';
 import 'package:horizon/presentation/forms/asset_balance_form/bloc/asset_balance_form_bloc.dart';
 import 'package:flutter/services.dart';
@@ -36,7 +37,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import "./order_flow_sign_view.dart";
 
 class OrderModel extends Equatable {
-  Option<MultiAddressBalanceEntry> giveBalance;
+  Option<AddressBalance> giveBalance;
   Option<SubmitParams> orderParams;
   Option<String> signedPsbtHex;
 
@@ -51,7 +52,7 @@ class OrderModel extends Equatable {
 
   OrderModel copyWith({
     // TODO: this really just needs to be address...
-    Option<MultiAddressBalanceEntry>? giveBalance,
+    Option<AddressBalance>? giveBalance,
     Option<SubmitParams>? orderParams,
     Option<String>? signedPsbtHex,
   }) {
@@ -69,7 +70,7 @@ class OrderFlowController extends FlowController<OrderModel> {
 
 class OrderFlowView extends StatefulWidget {
   final List<AddressV2> addresses;
-  final MultiAddressBalance giveBalance;
+  final AssetBalanceSummary giveBalance;
   final AssetPairFormOption receiveAsset;
 
   const OrderFlowView({
@@ -124,13 +125,13 @@ class _OrderFlowViewState extends State<OrderFlowView> {
                       DisallowSelection.listingExists,
                       DisallowSelection.balanceIsUtxo,
                     ],
-                    multiAddressBalance: widget.giveBalance,
+                    assetBalanceSummary: widget.giveBalance,
                     addresses: widget.addresses.map((e) => e.address).toList(),
                     httpConfig: session.httpConfig,
                     child: (actions, state) => Column(children: [
-                          AssetBalanceSuccessHandler<MultiAddressBalanceEntry>(
-                            mapSuccess: (state) =>
-                                Either.of(state.balanceInput.value!.entry),
+                          AssetBalanceSuccessHandler<AddressBalance>(
+                            mapSuccess: (state) => Either.of(state
+                                .balanceInput.value!.entry as AddressBalance),
                             onSuccess: (value) =>
                                 _controller.update((model) => model.copyWith(
                                       giveBalance: Option.of(value),
@@ -140,7 +141,8 @@ class _OrderFlowViewState extends State<OrderFlowView> {
                             state: state,
                             actions: actions,
                             balanceIsUTXOError: (utxoId) => Column(children: [
-                              const Text("Cannot compose order with UTXO-bound asset",
+                              const Text(
+                                  "Cannot compose order with UTXO-bound asset",
                                   style: TextStyle(color: red1)),
                               const SizedBox(height: 8),
                               GradientLinkButton(
@@ -176,9 +178,7 @@ class _OrderFlowViewState extends State<OrderFlowView> {
                       },
                       multiAddressBalanceEntry: giveBalanceEntry,
                       address: widget.addresses.firstWhere((address) =>
-                          address.address ==
-                          (giveBalanceEntry.address ??
-                              giveBalanceEntry.utxoAddress!)),
+                          address.address == giveBalanceEntry.address),
                       httpConfig: session.httpConfig,
                       getAsset: widget.receiveAsset.name,
                       giveAsset: widget.giveBalance.asset,
@@ -203,7 +203,7 @@ class _OrderFlowViewState extends State<OrderFlowView> {
                     body: OrderFlowSignProvider(
                         address: widget.addresses.firstWhere((address) =>
                             address.address ==
-                            model.giveBalance.getOrThrow().address!),
+                            model.giveBalance.getOrThrow().address),
                         getQuantity: params.getQuantity,
                         giveQuantity: params.giveQuantity,
                         giveAsset: widget.giveBalance.asset,
@@ -213,7 +213,7 @@ class _OrderFlowViewState extends State<OrderFlowView> {
                                 children: [
                                   OrderSignHandler(
                                     address:
-                                        model.giveBalance.getOrThrow().address!,
+                                        model.giveBalance.getOrThrow().address,
                                     onSuccess: (value) {
                                       _controller.update((model) =>
                                           model.copyWith(

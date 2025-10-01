@@ -1,4 +1,6 @@
 import 'package:equatable/equatable.dart';
+import 'package:horizon/domain/entities/asset_quantity.dart';
+import 'package:horizon/domain/usecases/get_all_balances.dart';
 import 'package:horizon/presentation/common/link.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:flutter/services.dart';
@@ -19,6 +21,7 @@ import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/domain/entities/compose_mpma_send.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
+import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/extensions.dart';
 import 'package:horizon/presentation/forms/asset_balance_form/bloc/asset_balance_form_bloc.dart';
 import 'package:horizon/presentation/common/transactions/transaction_error.dart';
@@ -55,7 +58,7 @@ class SendFlowConfirmationStep {
 }
 
 class SendFlowModel extends Equatable {
-  final Option<MultiAddressBalance> balance; // step1
+  final Option<AssetBalanceSummary> balance; // step1
   final Option<String> address; // step2
   final Option<SendFlowComposeStep> composeStep; // step3
   final Option<SendFlowConfirmationStep> confirmationStep; // step4
@@ -71,7 +74,7 @@ class SendFlowModel extends Equatable {
   List<Object?> get props => [balance, address, composeStep, confirmationStep];
 
   SendFlowModel copyWith(
-          {Option<MultiAddressBalance>? balance,
+          {Option<AssetBalanceSummary>? balance,
           Option<String>? address,
           Option<SendFlowComposeStep>? composeStep,
           Option<SendFlowConfirmationStep>? confirmationStep}) =>
@@ -88,7 +91,10 @@ class SendFlowController extends FlowController<SendFlowModel> {
 }
 
 class SendView extends StatefulWidget {
-  const SendView({super.key});
+  final GetAllBalancesUseCase _getAllBalancesUseCase;
+  SendView({GetAllBalancesUseCase? getAllBalancesUseCase, super.key})
+      : _getAllBalancesUseCase =
+            getAllBalancesUseCase ?? GetIt.I<GetAllBalancesUseCase>();
 
   @override
   State<SendView> createState() => _SendViewState();
@@ -96,7 +102,7 @@ class SendView extends StatefulWidget {
 
 class _SendViewState extends State<SendView> {
   late SendFlowController _controller;
-  List<MultiAddressBalance>? _cachedBalances;
+  List<BalanceV2>? _cachedBalances;
   SvgPicture? _preloadedSvg;
 
   @override
@@ -131,29 +137,41 @@ class _SendViewState extends State<SendView> {
                     height: 24,
                     fit: BoxFit.fitHeight,
                   )),
-              body: SendFormLoader(
-                  httpConfig: session.httpConfig,
-                  addresses: session.addressIndexSet.list,
-                  child: (balances) {
-                    return Builder(builder: (context) {
-                      return TokenSelectorFormProvider(
-                        balances: balances,
-                        child: (actions, state) => Column(
-                          children: [
-                            TokenSelectorFormSuccessHandler(
-                                onTokenSelected: (option) {
-                              _cachedBalances = balances;
-                              context.flow<SendFlowModel>().update((model) =>
-                                  model.copyWith(balance: option.balance));
-                            }),
-                            SendFormTokenSelector(
-                              actions: actions,
-                              state: state,
-                            )
-                          ],
-                        ),
-                      );
-                    });
+              body: RemoteDataTaskEitherBuilder(
+                  task: widget._getAllBalancesUseCase.call(
+                      GetAllBalancesUseCaseParams(
+                          httpConfig: session.httpConfig,
+                          addresses: session.addressIndexSet.list
+                              .map((e) => e.address)
+                              .toList())),
+                  builder: (context, state, __refetch) {
+                    return state.fold3(
+                        onNone: () =>
+                            Center(child: CircularProgressIndicator()),
+                        onFailure: (error) =>
+                            Center(child: Text("Error: $error")),
+                        onReplete: (balancesSet) {
+                          return TokenSelectorFormProvider(
+                            // TODO: should this be configurable???
+                            balances: balancesSet.projected.summarize(),
+
+                            child: (actions, state) => Column(
+                              children: [
+                                TokenSelectorFormSuccessHandler(
+                                    onTokenSelected: (option) {
+                                  _cachedBalances = balancesSet.projected;
+                                  context.flow<SendFlowModel>().update(
+                                      (model) => model.copyWith(
+                                          balance: option.balance));
+                                }),
+                                SendFormTokenSelector(
+                                  actions: actions,
+                                  state: state,
+                                )
+                              ],
+                            ),
+                          );
+                        });
                   }),
             );
           }))),
@@ -185,6 +203,7 @@ class _SendViewState extends State<SendView> {
                         fit: BoxFit.fitHeight,
                       )),
                   body: AssetBalanceFormProvider(
+                    assetBalanceSummary: balance,
                     disallowSelections: const [
                       DisallowSelection.balanceIsUtxo,
                       DisallowSelection.listingExists
@@ -193,7 +212,6 @@ class _SendViewState extends State<SendView> {
                         .map((a) => a.address)
                         .toList(),
                     httpConfig: session.httpConfig,
-                    multiAddressBalance: balance,
                     child: (actions, state) => Column(
                       children: [
                         Builder(
@@ -255,16 +273,23 @@ class _SendViewState extends State<SendView> {
                       SendEntryFormModel(
                           destinationInput: const DestinationInput.pure(),
                           balanceSelectorInput: BalanceSelectorInput.dirty(
-                              value: model.balance.toNullable()!),
+                              value: model.balance.getOrThrow()),
                           quantityInput: QuantityInput.pure(
-                            maxQuantity:
-                                BigInt.from(model.balance.toNullable()!.total),
-                            divisible:
-                                model.balance.toNullable()!.assetInfo.divisible,
+                            // TODO: audit
+                            maxQuantity: model.balance
+                                .getOrThrow()
+                                .balance
+                                .total
+                                .quantity,
+                            divisible: model.balance
+                                .getOrThrow()
+                                .balance
+                                .total
+                                .divisible,
                           ),
                           memoInput: const MemoInput.pure())
                     ],
-                    balances: _cachedBalances!,
+                    balances: [], // TODO: update,
                     sourceAddress: model.address
                         .getOrElse(() => throw Exception("Invalid address")),
                     child: (actions, state) => Builder(builder: (context) {
@@ -586,8 +611,7 @@ class _SendViewState extends State<SendView> {
                             ),
                             commonHeightSizedBox,
                             HorizonButton(
-                              onPressed: () {
-                              },
+                              onPressed: () {},
                               child: TextButtonContent(value: "Close"),
                               disabled: state.fold3(
                                 onNone: () => true,

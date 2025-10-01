@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:formz/formz.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/domain/repositories/asset_search_repository.dart';
 import 'package:horizon/domain/repositories/atomic_swap_repository.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
@@ -15,7 +16,7 @@ class AssetPairFormOption {
   final String name;
   final String? description;
 
-  final Option<MultiAddressBalance> balance;
+  final Option<AssetBalanceSummary> balance;
 
   const AssetPairFormOption({
     required this.name,
@@ -26,7 +27,7 @@ class AssetPairFormOption {
   AssetPairFormOption copyWith({
     String? name,
     String? description,
-    Option<MultiAddressBalance>? balance,
+    Option<AssetBalanceSummary>? balance,
   }) {
     return AssetPairFormOption(
       name: name ?? this.name,
@@ -265,7 +266,7 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
     AssetSearchRepository? assetSearchRepository,
     AtomicSwapRepository? atomicSwapRepository,
     required this.httpConfig,
-    required List<MultiAddressBalance> initialGiveAssets,
+    required List<AssetBalanceSummary> initialGiveAssets,
   })  : _assetSearchRepository =
             assetSearchRepository ?? GetIt.I<AssetSearchRepository>(),
         _atomicSwapRepository =
@@ -276,7 +277,7 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
               giveAssets: initialGiveAssets
                   .map((balance) => AssetPairFormOption(
                         name: balance.asset,
-                        description: balance.assetInfo.description,
+                        description: balance.description,
                         balance: Option.of(balance),
                       ))
                   .toList(),

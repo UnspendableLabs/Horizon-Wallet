@@ -634,6 +634,7 @@ void setup() {
   injector.registerSingleton<RoyaltiesRepository>(RoyaltiesRepositoryImpl());
 
   injector.registerSingleton<GetUTXOBalancesUseCase>(GetUTXOBalancesUseCase());
+  injector.registerSingleton<GetAllBalancesUseCase>(GetAllBalancesUseCase());
 }
 
 class CustomDioException extends DioException {

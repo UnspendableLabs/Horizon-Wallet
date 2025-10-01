@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/domain/entities/compose_fn.dart';
 import 'package:horizon/domain/entities/compose_mpma_send.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
@@ -79,7 +80,7 @@ class ComposeSendSingle extends ComposeSendUnion {
 
 class SendComposeFormModel extends TransactionFormModelBase {
   final List<SendEntryFormModel> sendEntries;
-  final List<MultiAddressBalance> balances;
+  final List<AssetBalanceSummary> balances;
   final String sourceAddress;
 
   @override
@@ -104,7 +105,7 @@ class SendComposeFormModel extends TransactionFormModelBase {
 
   SendComposeFormModel copyWith({
     List<SendEntryFormModel>? sendEntries,
-    List<MultiAddressBalance>? balances,
+    List<AssetBalanceSummary>? balances,
     FeeEstimates? feeEstimates,
     FeeOptionInput? feeOptionInput,
     FormzSubmissionStatus? submissionStatus,
@@ -152,7 +153,8 @@ class SendComposeFormModel extends TransactionFormModelBase {
       if (!entry.isValid) {
         return left("Invalid entry");
       }
-      final isDivisible = entry.balanceSelectorInput.value!.assetInfo.divisible;
+      final isDivisible =
+          entry.balanceSelectorInput.value!.balance.total.divisible;
       final quantityNormalized = Decimal.parse(entry.quantityInput.value);
       final quantity = isDivisible
           ? quantityNormalized * Decimal.fromInt(100000000)
@@ -177,7 +179,7 @@ class SendComposeFormBloc
 
   SendComposeFormBloc({
     required List<SendEntryFormModel> initialEntries,
-    required List<MultiAddressBalance> initialBalances,
+    required List<AssetBalanceSummary> initialBalances,
     required FeeEstimates feeEstimates,
     required String sourceAddress,
     required this.httpConfig,
@@ -186,14 +188,8 @@ class SendComposeFormBloc
         composeRepository = GetIt.I<ComposeRepository>(),
         _transactionService =
             transactionService ?? GetIt.I<TransactionService>(),
-        super(SendComposeFormModel(
-          sendEntries: initialEntries,
-          balances: initialBalances,
-          feeEstimates: feeEstimates,
-          feeOptionInput: FeeOptionInput.pure(),
-          submissionStatus: FormzSubmissionStatus.initial,
-          sourceAddress: sourceAddress,
-        )) {
+        super(sendComposeFormModel(
+            initialEntries, initialBalances, feeEstimates, sourceAddress)) {
     on<AddEntry>(_onAddEntry);
     on<RemoveEntry>(_onRemoveEntry);
     on<FeeOptionChanged>(_onFeeOptionChanged);
@@ -203,6 +199,21 @@ class SendComposeFormBloc
       transformer: (events, mapper) => events
           .debounceTime(const Duration(milliseconds: 300))
           .switchMap(mapper),
+    );
+  }
+
+  static SendComposeFormModel sendComposeFormModel(
+      List<SendEntryFormModel> initialEntries,
+      List<AssetBalanceSummary> initialBalances,
+      FeeEstimates feeEstimates,
+      String sourceAddress) {
+    return SendComposeFormModel(
+      sendEntries: initialEntries,
+      balances: initialBalances,
+      feeEstimates: feeEstimates,
+      feeOptionInput: FeeOptionInput.pure(),
+      submissionStatus: FormzSubmissionStatus.initial,
+      sourceAddress: sourceAddress,
     );
   }
 

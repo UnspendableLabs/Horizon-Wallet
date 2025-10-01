@@ -1,23 +1,31 @@
-import 'package:get_it/get_it.dart';
-import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
-import 'package:horizon/domain/entities/swap_type.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/presentation/forms/base/flow/view/flow_step.dart';
+import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:flow_builder/flow_builder.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import "package:fpdart/fpdart.dart" hide State;
+import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
-import 'package:horizon/utils/app_icons.dart';
+import 'package:horizon/domain/entities/remote_data.dart';
+import 'package:horizon/domain/entities/swap_type.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:horizon/domain/usecases/get_all_balances.dart';
+import 'package:horizon/extensions.dart';
+import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:horizon/presentation/forms/asset_pair_form/asset_pair_form_view.dart';
+import 'package:horizon/presentation/forms/base/flow/view/flow_step.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
-import 'package:horizon/domain/entities/remote_data.dart';
-import 'package:horizon/extensions.dart';
+import 'package:horizon/utils/app_icons.dart';
 
-import "./flows/atomic_swap_sell/atomic_swap_sell_flow.dart";
 import "./flows/atomic_swap_buy/atomic_swap_buy_flow.dart";
+import "./flows/atomic_swap_sell/atomic_swap_sell_flow.dart";
 import "./flows/order/order_flow.dart";
+
+class SwapFlowController extends FlowController<SwapFlowModel> {
+  SwapFlowController({required SwapFlowModel initialState})
+      : super(initialState);
+}
 
 class SwapFlowModel extends Equatable {
   final Option<SwapType> swapType;
@@ -31,18 +39,17 @@ class SwapFlowModel extends Equatable {
       SwapFlowModel(swapType: swapType ?? this.swapType);
 }
 
-class SwapFlowController extends FlowController<SwapFlowModel> {
-  SwapFlowController({required SwapFlowModel initialState})
-      : super(initialState);
-}
-
 class SwapFlowView extends StatefulWidget {
   final Config _config;
+  final GetAllBalancesUseCase _getAllBalancesUseCase;
 
   SwapFlowView({
     super.key,
     Config? config,
-  }) : _config = config ?? GetIt.I.get<Config>();
+    GetAllBalancesUseCase? getAllBalancesUseCase,
+  })  : _getAllBalancesUseCase =
+            getAllBalancesUseCase ?? GetIt.I.get<GetAllBalancesUseCase>(),
+        _config = config ?? GetIt.I.get<Config>();
 
   @override
   State<SwapFlowView> createState() => _SwapFlowViewState();
@@ -50,14 +57,6 @@ class SwapFlowView extends StatefulWidget {
 
 class _SwapFlowViewState extends State<SwapFlowView> {
   late SwapFlowController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = SwapFlowController(
-        // initialState: const SwapFlowModel(swapType: Option.none()),
-        initialState: const SwapFlowModel(swapType: Option.none()));
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,29 +72,31 @@ class _SwapFlowViewState extends State<SwapFlowView> {
               // TODO: this needs to be dynamic based on current step / estimated number of steps
               widthFactor: .2,
               // TODO: rename to AssetPairForm
-              body: AssetPairLoader(
-                  addresses: session.addressIndexSet.list,
-                  httpConfig: session.httpConfig,
-                  child: (state) {
-                    return switch (state) {
-                      Initial() => const SizedBox.shrink(),
-                      Loading() =>
-                        const Center(child: CircularProgressIndicator()),
-                      Success(value: var data) => AssetPairFormProvider(
-                          balances: data.balances,
-                          child: (actions, state) => AssetPairForm(
-                              onSubmit: (swapType) {
-                                context
-                                    .flow<SwapFlowModel>()
-                                    .update((model) => model.copyWith(
-                                          swapType: Option.of(swapType),
-                                        ));
-                              },
-                              actions: actions,
-                              state: state)),
-                      Failure(error: var error) => Text(error.toString()),
-                      Refreshing() => throw UnimplementedError(),
-                    };
+              body: RemoteDataTaskEitherBuilder(
+                  task: widget._getAllBalancesUseCase.call(
+                      GetAllBalancesUseCaseParams(
+                          httpConfig: session.httpConfig,
+                          addresses: session.addressIndexSet.list
+                              .map((e) => e.address)
+                              .toList())),
+                  builder: (context, state, __refetch) {
+                    return state.fold3(
+                        onNone: () =>
+                            Center(child: CircularProgressIndicator()),
+                        onFailure: (error) => Text(error.toString()),
+                        onReplete: (data) => AssetPairFormProvider(
+                            balances:
+                                data.projected.summarize().values.toList(),
+                            child: (actions, state) => AssetPairForm(
+                                onSubmit: (swapType) {
+                                  context
+                                      .flow<SwapFlowModel>()
+                                      .update((model) => model.copyWith(
+                                            swapType: Option.of(swapType),
+                                          ));
+                                },
+                                actions: actions,
+                                state: state)));
                   }),
               leading: IconButton(
                 onPressed: () {
@@ -150,5 +151,13 @@ class _SwapFlowViewState extends State<SwapFlowView> {
             .toList();
       },
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = SwapFlowController(
+        // initialState: const SwapFlowModel(swapType: Option.none()),
+        initialState: const SwapFlowModel(swapType: Option.none()));
   }
 }

@@ -4,6 +4,7 @@ import 'package:formz/formz.dart';
 import 'package:fpdart/fpdart.dart' show TaskEither;
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
+import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
@@ -76,7 +77,8 @@ class TokenSelectorFormSuccessHandler extends StatelessWidget {
 }
 
 class TokenSelectorFormProvider extends StatelessWidget {
-  final List<MultiAddressBalance> balances;
+  final Map<String, AssetBalanceSummary> balances;
+
   final Widget Function(
       TokenSelectorFormActions actions, TokenSelectorFormModel state) child;
   const TokenSelectorFormProvider(

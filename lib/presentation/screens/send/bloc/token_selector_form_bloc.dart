@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:equatable/equatable.dart';
 
@@ -8,7 +9,7 @@ class TokenSelectorOption extends Equatable {
   final String name;
   final String? description;
 
-  final Option<MultiAddressBalance> balance;
+  final Option<AssetBalanceSummary> balance;
 
   const TokenSelectorOption(
       {required this.name, required this.description, required this.balance});
@@ -16,7 +17,7 @@ class TokenSelectorOption extends Equatable {
   TokenSelectorOption copyWith({
     String? name,
     String? description,
-    Option<MultiAddressBalance>? balance,
+    Option<AssetBalanceSummary>? balance,
   }) {
     return TokenSelectorOption(
       name: name ?? this.name,
@@ -94,12 +95,12 @@ class SubmitClicked extends TokenSelectorFormEvent {
 class TokenSelectorFormBloc
     extends Bloc<TokenSelectorFormEvent, TokenSelectorFormModel> {
   TokenSelectorFormBloc({
-    required List<MultiAddressBalance> initialBalances,
+    required Map<String, AssetBalanceSummary> initialBalances,
   }) : super(TokenSelectorFormModel(
-            balances: initialBalances
+            balances: initialBalances.values
                 .map((balance) => TokenSelectorOption(
                       name: balance.asset,
-                      description: balance.assetInfo.description,
+                      description: "",
                       balance: Option.of(balance),
                     ))
                 .toList(),

@@ -882,7 +882,7 @@ class AppRouter {
             ),
             GoRoute(
               path: "/send",
-              builder: (context, state) => const SendView(),
+              builder: (context, state) => SendView(),
             ),
           ],
         ),

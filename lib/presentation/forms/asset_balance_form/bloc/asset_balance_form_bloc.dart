@@ -1,16 +1,18 @@
 import 'package:equatable/equatable.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
+import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/atomic_swap_repository.dart';
 import 'package:formz/formz.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AssetBalanceFormOption {
-  final MultiAddressBalanceEntry entry;
+  final BalanceV2 entry;
   const AssetBalanceFormOption({
     required this.entry,
   });
@@ -93,9 +95,15 @@ class SwapExistsInput
   @override
   UtxoSwapInputError? validator(AssetBalanceFormOption? value) {
     if (value == null) return UtxoSwapInputErrorRequired();
+
+    UtxoID? utxo = switch (value.entry) {
+      UtxoBalance(utxoId: var utxoId) => utxoId,
+      _ => null
+    };
+
     if (utxoSwapMap != null &&
-        value.entry.utxo != null &&
-        utxoSwapMap![value.entry.utxo] == true) {
+        utxo != null &&
+        utxoSwapMap![utxo.toString()] == true) {
       return UtxoSwapInputErrorListed();
     }
     return null;
@@ -114,7 +122,7 @@ class AssetIsUtxoInput
   @override
   AssetIsUtxoInputError? validator(AssetBalanceFormOption? value) {
     if (value == null) return AssetIsUtxoInputError.required;
-    if (value.entry.utxo != null) {
+    if (value.entry is UtxoBalance) {
       return AssetIsUtxoInputError.isUtxo;
     }
     return null;
@@ -124,7 +132,7 @@ class AssetIsUtxoInput
 class AssetBalanceFormModel with FormzMixin {
   final List<DisallowSelection> disallowSelections;
 
-  final MultiAddressBalance multiAddressBalance;
+  final AssetBalanceSummary assetBalanceSummary;
 
   final RemoteData<Map<String, bool>> utxoSwapMap;
 
@@ -137,7 +145,7 @@ class AssetBalanceFormModel with FormzMixin {
   AssetBalanceFormModel({
     required this.disallowSelections,
     required this.utxoSwapMap,
-    required this.multiAddressBalance,
+    required this.assetBalanceSummary,
     required this.balanceInput,
     required this.swapExistsInput,
     required this.assetIsUtxoInput,
@@ -154,7 +162,7 @@ class AssetBalanceFormModel with FormzMixin {
       ];
 
   AssetBalanceFormModel copyWith({
-    MultiAddressBalance? multiAddressBalance,
+    AssetBalanceSummary? assetBalanceSummary,
     BalanceInput? balanceInput,
     SwapExistsInput? utxoSwapInput,
     AssetIsUtxoInput? assetIsUtxoInput,
@@ -166,7 +174,7 @@ class AssetBalanceFormModel with FormzMixin {
         disallowSelections: disallowSelections ?? this.disallowSelections,
         assetIsUtxoInput: assetIsUtxoInput ?? this.assetIsUtxoInput,
         utxoSwapMap: utxoSwapMap ?? this.utxoSwapMap,
-        multiAddressBalance: multiAddressBalance ?? this.multiAddressBalance,
+        assetBalanceSummary: assetBalanceSummary ?? this.assetBalanceSummary,
         submissionStatus: submissionStatus ?? this.submissionStatus,
         balanceInput: balanceInput ?? this.balanceInput,
         swapExistsInput: utxoSwapInput ?? swapExistsInput);
@@ -187,14 +195,14 @@ class AssetBalanceFormBloc
       required this.httpConfig,
       required this.disallowSelections,
       required List<String> addresses,
-      required MultiAddressBalance multiAddressBalance})
+      required AssetBalanceSummary assetBalanceSummary})
       : _atomicSwapRepository =
             atomicSwapRepository ?? GetIt.I<AtomicSwapRepository>(),
         super(AssetBalanceFormModel(
           utxoSwapMap: const Initial(),
           assetIsUtxoInput: const AssetIsUtxoInput.pure(),
           disallowSelections: disallowSelections,
-          multiAddressBalance: multiAddressBalance,
+          assetBalanceSummary: assetBalanceSummary,
           balanceInput: const BalanceInput.pure(),
           swapExistsInput: const SwapExistsInput.pure(),
           submissionStatus: FormzSubmissionStatus.initial,
@@ -247,7 +255,6 @@ class AssetBalanceFormBloc
     if (utxoSwapMap == null) {
       return;
     }
-
 
     emit(state.copyWith(
       balanceInput: BalanceInput.dirty(value: event.option),

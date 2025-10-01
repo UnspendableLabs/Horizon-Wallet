@@ -289,8 +289,8 @@ class _SendReviewFormState extends State<SendReviewForm> {
                         context: context,
                         width: 24,
                         height: 24,
-                        description: send
-                            .balanceSelectorInput.value?.assetInfo.description,
+                        description:
+                            send.balanceSelectorInput.value?.description,
                         assetName:
                             send.balanceSelectorInput.value?.asset ?? ""),
                     const SizedBox(width: 10),

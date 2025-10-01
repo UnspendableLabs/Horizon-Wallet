@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:horizon/domain/entities/asset_quantity.dart';
+import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -39,7 +40,7 @@ class SwapSliderFormProvider extends StatefulWidget {
     SwapSliderFormModel state,
   ) child;
 
-  final MultiAddressBalanceEntry bitcoinBalance;
+  final AddressBalance bitcoinBalance;
 
   const SwapSliderFormProvider({
     super.key,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
@@ -21,7 +22,7 @@ import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
 
 class SendComposeFormProvider extends StatelessWidget {
-  final List<MultiAddressBalance> balances;
+  final List<AssetBalanceSummary> balances;
   final List<SendEntryFormModel> initialEntries;
   final FeeEstimatesRespository _feeEstimatesRepository;
   final String sourceAddress;

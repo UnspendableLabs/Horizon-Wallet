@@ -1,3 +1,5 @@
+import 'package:horizon/domain/entities/balance_v2.dart';
+
 import "./bloc/loader/loader_bloc.dart";
 import 'package:formz/formz.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
@@ -19,36 +21,6 @@ import 'package:horizon/utils/app_icons.dart';
 import "./bloc/form/asset_pair_form_bloc.dart";
 import './view/show_receive_asset_modal.dart';
 
-class AssetPairLoader extends StatelessWidget {
-  final HttpConfig httpConfig;
-  final List<AddressV2> addresses;
-  final Widget Function(RemoteData<SwapFormLoaderData>) child;
-
-  const AssetPairLoader({
-    super.key,
-    required this.httpConfig,
-    required this.addresses,
-    required this.child,
-  });
-  @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => SwapFormLoaderBloc(
-        loader: SwapFormLoaderFn(),
-      )..load(SwapFormLoaderArgs(
-          httpConfig: httpConfig,
-          addresses: addresses,
-        )),
-      child: Builder(builder: (context) {
-        return BlocBuilder<SwapFormLoaderBloc, RemoteData<SwapFormLoaderData>>(
-            builder: (context, state) {
-          return child(state);
-        });
-      }),
-    );
-  }
-}
-
 class AssetPairFormActions {
   final VoidCallback onInvertClicked;
   final Function(AssetPairFormOption value) onGiveAssetSelected;
@@ -67,7 +39,7 @@ class AssetPairFormActions {
 }
 
 class AssetPairFormProvider extends StatelessWidget {
-  final List<MultiAddressBalance> balances;
+  final List<AssetBalanceSummary> balances;
   final Widget Function(AssetPairFormActions actions, AssetPairFormModel state)
       child;
 

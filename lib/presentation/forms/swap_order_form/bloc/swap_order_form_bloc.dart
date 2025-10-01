@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:fpdart/fpdart.dart' hide Order;
 import 'package:formz/formz.dart';
 import 'package:decimal/decimal.dart';
+import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:rational/rational.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:rxdart/rxdart.dart';
@@ -241,7 +242,7 @@ extension OrderViewModelExtension on Order {
 class SwapOrderFormModel with FormzMixin {
   final RemoteData<SimulatedOrders> simulatedOrders;
 
-  final MultiAddressBalanceEntry giveAssetBalance;
+  final AddressBalance giveAssetBalance;
 
   final Asset giveAsset;
   final Asset getAsset;
@@ -306,9 +307,7 @@ class SwapOrderFormModel with FormzMixin {
 
   // TODO: maybe just rip this out.
   GiveQuantityInput get giveQuantityInput {
-    final userBalance = AssetQuantity(
-        divisible: giveAsset.divisible,
-        quantity: BigInt.from(giveAssetBalance.quantity));
+    final userBalance = giveAssetBalance.quantity;
 
     return simulatedOrders.fold3(
         onNone: () => GiveQuantityInput.pure(userBalance: userBalance),
@@ -350,10 +349,7 @@ class SwapOrderFormModel with FormzMixin {
   }
 
   GiveQuantityInput get maxGiveQuantityInput {
-    final userBalance = AssetQuantity(
-      divisible: giveAsset.divisible,
-      quantity: BigInt.from(giveAssetBalance.quantity),
-    );
+    final userBalance = giveAssetBalance.quantity;
 
     final value = (amountType == AmountType.give)
         ? AssetQuantity.fromNormalizedStringSafe(
@@ -425,7 +421,7 @@ class SwapOrderFormModel with FormzMixin {
       ];
 
   SwapOrderFormModel copyWith({
-    MultiAddressBalanceEntry? giveAssetBalance,
+    AddressBalance? giveAssetBalance,
     AmountInput? amountInput,
     PriceInput? priceInput,
     Asset? giveAsset,
@@ -597,7 +593,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     required Asset giveAsset,
     required List<Order> buyOrders,
     required List<Order> sellOrders,
-    required MultiAddressBalanceEntry giveAssetBalance,
+    required AddressBalance giveAssetBalance,
     OrderRepository? orderRepository,
   })  : _orderRepository = orderRepository ?? GetIt.I<OrderRepository>(),
         super(SwapOrderFormModel(
@@ -632,7 +628,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
 
     emit(state.copyWith(
         amountInput: AmountInput.dirty(
-            value: state.giveAssetBalance.quantityNormalized)));
+            value: state.giveAssetBalance.quantity.normalized())));
 
     add(SimulatedOrdersRequested());
   }

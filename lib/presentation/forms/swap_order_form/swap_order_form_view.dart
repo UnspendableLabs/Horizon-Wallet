@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/format.dart';
+import 'package:horizon/domain/entities/balance_v2.dart';
 
 import 'package:rational/rational.dart';
 import 'package:decimal/decimal.dart';
@@ -245,7 +246,7 @@ class SwapOrderFormProvider extends StatefulWidget {
     SwapOrderFormModel state,
   ) child;
 
-  final MultiAddressBalanceEntry multiAddressBalanceEntry;
+  final AddressBalance multiAddressBalanceEntry;
 
   SwapOrderFormProvider(
       {super.key,
@@ -761,8 +762,8 @@ class _OrderInputs extends State<OrderInputs> {
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               Text(
-                                  widget.state.giveAssetBalance
-                                      .quantityNormalized,
+                                  widget.state.giveAssetBalance.quantity
+                                      .normalized(),
                                   style: theme.textTheme.labelSmall
                                       ?.copyWith(height: 1.2)),
                               const SizedBox(
