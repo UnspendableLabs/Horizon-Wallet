@@ -74,16 +74,31 @@ class AssetQuantity extends Equatable {
 
   String normalized({int precision = 8}) {
     if (!divisible) return quantity.toString();
+
     final Rational out =
         Decimal.fromBigInt(quantity) / Decimal.fromBigInt(kTen8);
-    return out
+
+    final Decimal dec = out
         .toDecimal(scaleOnInfinitePrecision: precision + 1)
-        .ceil(scale: precision)
-        .toString();
+        .ceil(scale: precision);
+
+    // Force fixed precision formatting
+    final s = dec.toString();
+    if (precision == 0) return s.split('.').first;
+
+    if (!s.contains('.')) {
+      return '$s.${'0' * precision}';
+    }
+    final parts = s.split('.');
+    final whole = parts[0];
+    final frac = parts[1].padRight(precision, '0');
+    return '$whole.$frac';
   }
 
   String normalizedPretty({int precision = 8}) {
-    return normalized(precision: precision).replaceFirst(RegExp(r'\.?0*$'), '');
+    final s = normalized(precision: precision);
+    if (!s.contains('.')) return s; // integer, leave it alone
+    return s.replaceFirst(RegExp(r'\.?0*$'), '');
   }
 
   AssetQuantity map(BigInt Function(BigInt) f) =>
@@ -245,15 +260,24 @@ class Price extends Equatable {
 
     return Price(pair: pair, numer: n, denom: d);
   }
-
-  /// Normalized UI string (ceil at [precision] so you never under-quote in display)
   String normalized({int precision = 8}) {
     final Rational r =
         Rational(numer, denom) * Rational(pair.baseScale, pair.quoteScale);
-    return r
+    final Decimal dec = r
         .toDecimal(scaleOnInfinitePrecision: precision + 1)
-        .ceil(scale: precision)
-        .toString();
+        .ceil(scale: precision);
+
+    // Force fixed precision formatting
+    final s = dec.toString();
+    if (precision == 0) return s.split('.').first;
+
+    if (!s.contains('.')) {
+      return '$s.${'0' * precision}';
+    }
+    final parts = s.split('.');
+    final whole = parts[0];
+    final frac = parts[1].padRight(precision, '0');
+    return '$whole.$frac';
   }
 
   /// QUOTE needed for a given BASE amount (both in raw units).
