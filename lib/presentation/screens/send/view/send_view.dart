@@ -611,7 +611,9 @@ class _SendViewState extends State<SendView> {
                             ),
                             commonHeightSizedBox,
                             HorizonButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                context.go("/");
+                              },
                               child: TextButtonContent(value: "Close"),
                               disabled: state.fold3(
                                 onNone: () => true,
