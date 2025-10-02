@@ -1,4 +1,5 @@
 import 'package:horizon/domain/entities/balance_v2.dart';
+import 'package:horizon/domain/usecases/get_all_balances.dart';
 
 import "./bloc/loader/loader_bloc.dart";
 import 'package:formz/formz.dart';
@@ -23,6 +24,8 @@ import './view/show_receive_asset_modal.dart';
 
 class AssetPairFormActions {
   final VoidCallback onInvertClicked;
+  final VoidCallback onToggleMempoolClicked;
+
   final Function(AssetPairFormOption value) onGiveAssetSelected;
   final Function(AssetPairFormOption value) onReceiveAssetSelected;
   final VoidCallback onReceiveAssetInputClicked;
@@ -35,16 +38,17 @@ class AssetPairFormActions {
       required this.onGiveAssetSelected,
       required this.onReceiveAssetInputClicked,
       required this.onSearchAssetInputChanged,
-      required this.onSubmitClicked});
+      required this.onSubmitClicked,
+      required this.onToggleMempoolClicked});
 }
 
 class AssetPairFormProvider extends StatelessWidget {
-  final List<AssetBalanceSummary> balances;
+  final BalancesSet balancesSet;
   final Widget Function(AssetPairFormActions actions, AssetPairFormModel state)
       child;
 
   const AssetPairFormProvider(
-      {required this.child, required this.balances, super.key});
+      {required this.child, required this.balancesSet, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -53,12 +57,15 @@ class AssetPairFormProvider extends StatelessWidget {
     return BlocProvider(create: (context) {
       return AssetPairFormBloc(
         httpConfig: session.httpConfig,
-        initialGiveAssets: balances,
+        balancesSet: balancesSet,
       );
     }, child: BlocBuilder<AssetPairFormBloc, AssetPairFormModel>(
         builder: (context, state) {
       return child(
           AssetPairFormActions(
+              onToggleMempoolClicked: () => context
+                  .read<AssetPairFormBloc>()
+                  .add(ToggleMempoolChanged(!state.includeMempool)),
               onInvertClicked: () =>
                   context.read<AssetPairFormBloc>().add(InvertClicked()),
               onGiveAssetSelected: (AssetPairFormOption value) => context
@@ -238,9 +245,31 @@ class _AssetPairFormState extends State<AssetPairForm> {
                             ),
                           ),
                         ),
-                      ))
+                      )),
                 ],
               ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 0, 0, 0),
+                  child: Text(
+                    "Include mempool balances",
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+                Switch(
+                  value: widget.state.includeMempool,
+                  onChanged: (value) {
+                    widget.actions.onToggleMempoolClicked();
+                  },
+                ),
+              ],
             ),
             const SizedBox(
               height: 24,

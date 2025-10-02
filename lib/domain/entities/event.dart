@@ -1472,8 +1472,10 @@ class MoveToUtxoEvent extends Event {
 
 class VerboseMoveToUtxoParams extends MoveToUtxoParams {
   final String quantityNormalized;
+  final String source;
 
   VerboseMoveToUtxoParams({
+    required this.source,
     required super.asset,
     required super.blockIndex,
     required super.destination,

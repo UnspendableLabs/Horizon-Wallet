@@ -11,6 +11,7 @@ import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:horizon/domain/entities/swap_type.dart';
 import 'package:horizon/domain/entities/http_config.dart';
+import 'package:horizon/domain/usecases/get_all_balances.dart';
 
 class AssetPairFormOption {
   final String name;
@@ -68,6 +69,11 @@ class ReceiveAssetSelected extends AssetPairFormEvent {
 class InvertClicked extends AssetPairFormEvent {}
 
 class SubmitClicked extends AssetPairFormEvent {}
+
+class ToggleMempoolChanged extends AssetPairFormEvent {
+  final bool value;
+  const ToggleMempoolChanged(this.value);
+}
 
 class GiveAssetInput extends FormzInput<AssetPairFormOption?, void> {
   const GiveAssetInput.dirty({required AssetPairFormOption? value})
@@ -129,7 +135,9 @@ class AssetPairFormModel with FormzMixin {
     ),
   };
 
-  final List<AssetPairFormOption> giveAssets;
+  final bool includeMempool;
+
+  final BalancesSet balancesSet;
   final GiveAssetInput giveAssetInput;
   final ReceiveAssetInput receiveAssetInput;
 
@@ -142,7 +150,8 @@ class AssetPairFormModel with FormzMixin {
   final FormzSubmissionStatus submissionStatus;
 
   AssetPairFormModel(
-      {required this.giveAssets,
+      {required this.balancesSet,
+      required this.includeMempool,
       required this.giveAssetInput,
       required this.receiveAssetInput,
       required this.privilegedSearchResults,
@@ -155,7 +164,6 @@ class AssetPairFormModel with FormzMixin {
   List<FormzInput> get inputs => [giveAssetInput, receiveAssetInput];
 
   AssetPairFormModel copyWith({
-    List<AssetPairFormOption>? giveAssets,
     GiveAssetInput? giveAssetInput,
     ReceiveAssetInput? receiveAssetInput,
     RemoteData<Map<String, AssetSearchResult>>? privilegedSearchResults,
@@ -163,18 +171,35 @@ class AssetPairFormModel with FormzMixin {
     Option<bool> receiveAssetModalVisible = const Option.none(),
     SearchAssetInput? searchAssetInput,
     FormzSubmissionStatus? submissionStatus,
+    bool? includeMempool,
+    BalancesSet? balancesSet,
   }) {
     return AssetPairFormModel(
+        balancesSet: balancesSet ?? this.balancesSet,
+        includeMempool: includeMempool ?? this.includeMempool,
         submissionStatus: submissionStatus ?? this.submissionStatus,
         privilegedSearchResults:
             privilegedSearchResults ?? this.privilegedSearchResults,
-        giveAssets: giveAssets ?? this.giveAssets,
         giveAssetInput: giveAssetInput ?? this.giveAssetInput,
         receiveAssetInput: receiveAssetInput ?? this.receiveAssetInput,
         searchResults: searchResults ?? this.searchResults,
         searchAssetInput: searchAssetInput ?? this.searchAssetInput,
         receiveAssetModalVisible: receiveAssetModalVisible
             .getOrElse(() => this.receiveAssetModalVisible));
+  }
+
+  List<AssetPairFormOption> get giveAssets {
+    final assets =
+        includeMempool ? balancesSet.projected : balancesSet.confirmed;
+
+    return assets
+        .summarizeOrdered()
+        .map((balance) => AssetPairFormOption(
+              name: balance.asset,
+              description: balance.description,
+              balance: Option.of(balance),
+            ))
+        .toList();
   }
 
   RemoteData<List<AssetSearchResult>> get filteredPrivilegedSearchResults {
@@ -266,21 +291,16 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
     AssetSearchRepository? assetSearchRepository,
     AtomicSwapRepository? atomicSwapRepository,
     required this.httpConfig,
-    required List<AssetBalanceSummary> initialGiveAssets,
+    required BalancesSet balancesSet,
   })  : _assetSearchRepository =
             assetSearchRepository ?? GetIt.I<AssetSearchRepository>(),
         _atomicSwapRepository =
             atomicSwapRepository ?? GetIt.I<AtomicSwapRepository>(),
         super(
           AssetPairFormModel(
+              balancesSet: balancesSet,
+              includeMempool: true,
               submissionStatus: FormzSubmissionStatus.initial,
-              giveAssets: initialGiveAssets
-                  .map((balance) => AssetPairFormOption(
-                        name: balance.asset,
-                        description: balance.description,
-                        balance: Option.of(balance),
-                      ))
-                  .toList(),
               giveAssetInput: const GiveAssetInput.pure(),
               receiveAssetInput: const ReceiveAssetInput.pure(),
               searchAssetInput: const SearchAssetInput.pure(),
@@ -296,6 +316,15 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
     on<ReceiveAssetSelected>(_handleReceiveAssetSelected);
     on<InvertClicked>(_handleInvertClicked);
     on<SubmitClicked>(_handleSubmitClicked);
+    on<ToggleMempoolChanged>(_handleToggleMempoolChanged);
+  }
+
+  _handleToggleMempoolChanged(
+      ToggleMempoolChanged event, Emitter<AssetPairFormModel> emit) {
+    emit(state.copyWith(
+        giveAssetInput: GiveAssetInput.pure(),
+        submissionStatus: FormzSubmissionStatus.initial,
+        includeMempool: event.value));
   }
 
   Future<void> _handleGiveAssetChanged(

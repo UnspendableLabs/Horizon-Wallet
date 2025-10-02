@@ -15,184 +15,6 @@ import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/event.dart';
-
-// {
-//         "asset": "A7863636638512758948",
-//         "asset_longname": null,
-//         "total": 10000000000,
-//         "addresses": [
-//             {
-//                 "address": "bc1q4sh3sfkpplg5v80ga907z7gnmhktyqqve7y5n2",
-//                 "utxo": null,
-//                 "utxo_address": null,
-//                 "quantity": 5000000000,
-//                 "quantity_normalized": "50.00000000"
-//             },
-//             {
-//                 "address": null,
-//                 "utxo": "6697246a7d43951a37a35797d126020ff498465b3a0a6404b6b67e6aaf7bed39:0",
-//                 "utxo_address": "bc1q4sh3sfkpplg5v80ga907z7gnmhktyqqve7y5n2",
-//                 "quantity": 5000000000,
-//                 "quantity_normalized": "50.00000000"
-//             }
-//         ],
-
-// {
-//   "result": [
-//     {
-//       "tx_hash": "02d6950c58fdd0f30eb04bc34bfc11c2054947ab5c2e2088bdb203799bde3183",
-//       "event": "ATTACH_TO_UTXO",
-//       "params": {
-//         "asset": "A7863636638512758948",
-//         "block_index": 9999999,
-//         "destination": "02d6950c58fdd0f30eb04bc34bfc11c2054947ab5c2e2088bdb203799bde3183:0",
-//         "destination_address": "bc1q4sh3sfkpplg5v80ga907z7gnmhktyqqve7y5n2",
-//         "fee_paid": 0,
-//         "msg_index": 0,
-//         "quantity": 300000000,
-//         "send_type": "attach",
-//         "source": "bc1q4sh3sfkpplg5v80ga907z7gnmhktyqqve7y5n2",
-//         "status": "valid",
-//         "tx_hash": "02d6950c58fdd0f30eb04bc34bfc11c2054947ab5c2e2088bdb203799bde3183",
-//         "tx_index": 3092541,
-//         "asset_info": {
-//           "asset_longname": null,
-//           "description": "",
-//           "issuer": "bc1q4sh3sfkpplg5v80ga907z7gnmhktyqqve7y5n2",
-//           "divisible": true,
-//           "locked": false,
-//           "owner": "bc1q4sh3sfkpplg5v80ga907z7gnmhktyqqve7y5n2"
-//         },
-//         "quantity_normalized": "3.00000000",
-//         "fee_paid_normalized": "0.00000000"
-//       },
-//       "timestamp": 1759420050.81948
-//     },
-//     {
-//       "tx_hash": "02d6950c58fdd0f30eb04bc34bfc11c2054947ab5c2e2088bdb203799bde3183",
-//       "event": "DEBIT",
-//       "params": {
-//         "action": "attach to utxo",
-//         "address": "bc1q4sh3sfkpplg5v80ga907z7gnmhktyqqve7y5n2",
-//         "asset": "A7863636638512758948",
-//         "block_index": 917390,
-//         "event": "02d6950c58fdd0f30eb04bc34bfc11c2054947ab5c2e2088bdb203799bde3183",
-//         "quantity": 300000000,
-//         "tx_index": 3092541,
-//         "utxo": null,
-//         "utxo_address": null,
-//         "block_time": 1759418255,
-//         "asset_info": {
-//           "asset_longname": null,
-//           "description": "",
-//           "issuer": "bc1q4sh3sfkpplg5v80ga907z7gnmhktyqqve7y5n2",
-//           "divisible": true,
-//           "locked": false,
-//           "owner": "bc1q4sh3sfkpplg5v80ga907z7gnmhktyqqve7y5n2"
-//         },
-//         "quantity_normalized": "3.00000000"
-//       },
-//       "timestamp": 1759420050.81948
-//     },
-//     {
-//       "tx_hash": "02d6950c58fdd0f30eb04bc34bfc11c2054947ab5c2e2088bdb203799bde3183",
-//       "event": "NEW_TRANSACTION",
-//       "params": {
-//         "block_hash": "mempool",
-//         "block_index": 9999999,
-//         "block_time": 1759420050.81948,
-//         "btc_amount": 546,
-//         "data": "6541373836333633363633383531323735383934387c3330303030303030307c",
-//         "destination": "bc1q4sh3sfkpplg5v80ga907z7gnmhktyqqve7y5n2",
-//         "fee": 768,
-//         "source": "bc1q4sh3sfkpplg5v80ga907z7gnmhktyqqve7y5n2",
-//         "transaction_type": "attach",
-//         "tx_hash": "02d6950c58fdd0f30eb04bc34bfc11c2054947ab5c2e2088bdb203799bde3183",
-//         "tx_index": 3092541,
-//         "utxos_info": " 02d6950c58fdd0f30eb04bc34bfc11c2054947ab5c2e2088bdb203799bde3183:0 3 1",
-//         "btc_amount_normalized": "0.00000546"
-//       },
-//       "timestamp": 1759420050.81948
-//     },
-//     {
-//       "tx_hash": "7de5f2235eda2a7db4ec2b4b8367836d457910442c11e598f078db53d7be8b2e",
-//       "event": "ATTACH_TO_UTXO",
-//       "params": {
-//         "asset": "A7863636638512758948",
-//         "block_index": 9999999,
-//         "destination": "7de5f2235eda2a7db4ec2b4b8367836d457910442c11e598f078db53d7be8b2e:0",
-//         "destination_address": "bc1q4sh3sfkpplg5v80ga907z7gnmhktyqqve7y5n2",
-//         "fee_paid": 0,
-//         "msg_index": 0,
-//         "quantity": 200000000,
-//         "send_type": "attach",
-//         "source": "bc1q4sh3sfkpplg5v80ga907z7gnmhktyqqve7y5n2",
-//         "status": "valid",
-//         "tx_hash": "7de5f2235eda2a7db4ec2b4b8367836d457910442c11e598f078db53d7be8b2e",
-//         "tx_index": 3092538,
-//         "asset_info": {
-//           "asset_longname": null,
-//           "description": "",
-//           "issuer": "bc1q4sh3sfkpplg5v80ga907z7gnmhktyqqve7y5n2",
-//           "divisible": true,
-//           "locked": false,
-//           "owner": "bc1q4sh3sfkpplg5v80ga907z7gnmhktyqqve7y5n2"
-//         },
-//         "quantity_normalized": "2.00000000",
-//         "fee_paid_normalized": "0.00000000"
-//       },
-//       "timestamp": 1759419788.29308
-//     },
-//     {
-//       "tx_hash": "7de5f2235eda2a7db4ec2b4b8367836d457910442c11e598f078db53d7be8b2e",
-//       "event": "DEBIT",
-//       "params": {
-//         "action": "attach to utxo",
-//         "address": "bc1q4sh3sfkpplg5v80ga907z7gnmhktyqqve7y5n2",
-//         "asset": "A7863636638512758948",
-//         "block_index": 917390,
-//         "event": "7de5f2235eda2a7db4ec2b4b8367836d457910442c11e598f078db53d7be8b2e",
-//         "quantity": 200000000,
-//         "tx_index": 3092538,
-//         "utxo": null,
-//         "utxo_address": null,
-//         "block_time": 1759418255,
-//         "asset_info": {
-//           "asset_longname": null,
-//           "description": "",
-//           "issuer": "bc1q4sh3sfkpplg5v80ga907z7gnmhktyqqve7y5n2",
-//           "divisible": true,
-//           "locked": false,
-//           "owner": "bc1q4sh3sfkpplg5v80ga907z7gnmhktyqqve7y5n2"
-//         },
-//         "quantity_normalized": "2.00000000"
-//       },
-//       "timestamp": 1759419788.29308
-//     },
-//     {
-//       "tx_hash": "7de5f2235eda2a7db4ec2b4b8367836d457910442c11e598f078db53d7be8b2e",
-//       "event": "NEW_TRANSACTION",
-//       "params": {
-//         "block_hash": "mempool",
-//         "block_index": 9999999,
-//         "block_time": 1759419788.29308,
-//         "btc_amount": 546,
-//         "data": "6541373836333633363633383531323735383934387c3230303030303030307c",
-//         "destination": "bc1q4sh3sfkpplg5v80ga907z7gnmhktyqqve7y5n2",
-//         "fee": 384,
-//         "source": "bc1q4sh3sfkpplg5v80ga907z7gnmhktyqqve7y5n2",
-//         "transaction_type": "attach",
-//         "tx_hash": "7de5f2235eda2a7db4ec2b4b8367836d457910442c11e598f078db53d7be8b2e",
-//         "tx_index": 3092538,
-//         "utxos_info": " 7de5f2235eda2a7db4ec2b4b8367836d457910442c11e598f078db53d7be8b2e:0 3 1",
-//         "btc_amount_normalized": "0.00000546"
-//       },
-//       "timestamp": 1759419788.29308
-//     }
-//   ],
-//   "next_cursor": null,
-//   "result_count": 6
-// }
 // attach => debit from the address, credit to the utxo
 // detach => debit from the utxo, credit to the address
 // move -> debit from the utxo, credit to the utxo
@@ -246,16 +68,16 @@ class GetAllBalancesUseCaseParams {
   });
 }
 
-// balances_set_projection.dart
-
 extension BalancesSetProjection on BalancesSet {
   List<BalanceV2> get projected {
-    // ===== baseline state =====
     final Map<_Key, AssetQuantity> state = {};
     final Map<String, bool> assetDivisibility = {}; // asset -> divisible
 
-    // NEW: utxoId string -> label address for display & lookups
     final Map<String, String> utxoAddressLabel = {};
+
+    final Set<_Key> confirmedRowKeys = {};
+
+    final Set<String> ownedAddresses = {};
 
     void _seed(BalanceV2 b) {
       final key = (b is UtxoBalance)
@@ -272,13 +94,20 @@ extension BalancesSetProjection on BalancesSet {
         );
       }
       assetDivisibility.putIfAbsent(b.asset, () => b.quantity.divisible);
+
+      ownedAddresses.add(b.address);
+
       if (b is UtxoBalance) {
         utxoAddressLabel[b.utxoId.toString()] = b.address;
       }
     }
 
     for (final b in confirmed) {
+      final key = (b is UtxoBalance)
+          ? _kUtxo(b.asset, b.utxoId)
+          : _kAddr(b.asset, b.address);
       _seed(b);
+      confirmedRowKeys.add(key);
     }
 
     // ===== deltas =====
@@ -377,6 +206,29 @@ extension BalancesSetProjection on BalancesSet {
       _addDelta(_kAddr(p.asset, p.destination), dq);
     }
 
+// ===== UTXO_MOVE (receiver-only): credit destination UTXO, unconfirmed =====
+    for (final e in _mempoolData.moves) {
+      final p = e.params;
+
+      final dq = _chooseRaw(
+        normalized: p.quantityNormalized,
+        asset: p.asset, // uses known divisibility or defaults to divisible=true
+      );
+      if (dq == BigInt.zero) continue;
+
+      final utxoId = UtxoID.fromString(p.destination); // "txid:vout"
+      final utxoKey = _kUtxo(p.asset, utxoId);
+
+      final utxoIdSource = UtxoID.fromString(p.source); // "txid:vout"
+      final utxoKeySource = _kUtxo(p.asset, utxoIdSource);
+
+      if (state.containsKey(utxoKeySource)) {
+        _addDelta(utxoKeySource, -dq); // apply-deltas will create this new row
+      } else {
+        _addDelta(utxoKey, dq); // apply-deltas will create this new row
+      }
+    }
+
     // ===== apply deltas =====
     deltas.forEach((key, dq) {
       final prev = state[key];
@@ -401,11 +253,15 @@ extension BalancesSetProjection on BalancesSet {
     for (final entry in state.entries) {
       final key = entry.key;
       final q = entry.value;
-      if (q.quantity == BigInt.zero) continue;
+
+      // Keep zero UTXO rows if you want, but skip zero address rows
+      if (q.quantity == BigInt.zero && _isAddrKey(key)) continue;
+
+      final isConfirmedRow = confirmedRowKeys.contains(key);
 
       if (_isAddrKey(key)) {
         out.add(AddressBalance(
-          confirmed: true,
+          confirmed: isConfirmedRow,
           asset: key.asset,
           assetLongname: null,
           address: _addrFromKey(key),
@@ -416,7 +272,7 @@ extension BalancesSetProjection on BalancesSet {
         final utxoId = UtxoID.fromString(utxoIdStr);
         final labelAddr = utxoAddressLabel[utxoIdStr] ?? '';
         out.add(UtxoBalance(
-          confirmed: true,
+          confirmed: isConfirmedRow,
           utxoId: utxoId,
           asset: key.asset,
           assetLongname: null,

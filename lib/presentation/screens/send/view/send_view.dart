@@ -153,7 +153,7 @@ class _SendViewState extends State<SendView> {
                         onReplete: (balancesSet) {
                           return TokenSelectorFormProvider(
                             // TODO: should this be configurable???
-                            balances: balancesSet.projected.summarize(),
+                            balancesSet: balancesSet,
 
                             child: (actions, state) => Column(
                               children: [

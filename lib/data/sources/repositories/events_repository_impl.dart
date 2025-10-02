@@ -906,6 +906,7 @@ class VerboseMoveToUtxoParamsMapper {
   static VerboseMoveToUtxoParams toDomain(
       api.VerboseMoveToUtxoParams apiParams) {
     return VerboseMoveToUtxoParams(
+      source: apiParams.source,
       asset: apiParams.asset,
       blockIndex: apiParams.blockIndex,
       destination: apiParams.destination,

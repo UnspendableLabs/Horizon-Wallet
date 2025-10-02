@@ -261,6 +261,12 @@ void main() {
             .quantity;
       }
 
+      UtxoBalance getUtxoBalance(String utxo) {
+        return out
+            .whereType<UtxoBalance>()
+            .firstWhere((b) => b.address == addr);
+      }
+
       expect(amt(null),
           equals(BigInt.from(45) * TenToTheEigth.bigIntValue)); // 50 - 3 - 2
       expect(amt(utxo0),
@@ -269,6 +275,9 @@ void main() {
           amt(utxoA), equals(BigInt.from(3) * TenToTheEigth.bigIntValue)); // +3
       expect(
           amt(utxoB), equals(BigInt.from(2) * TenToTheEigth.bigIntValue)); // +2
+
+      expect(getUtxoBalance(utxoA).confirmed, isFalse);
+      expect(getUtxoBalance(utxoB).confirmed, isFalse);
 
       final total =
           out.fold<BigInt>(BigInt.zero, (acc, b) => acc + b.quantity.quantity);
@@ -323,7 +332,6 @@ void main() {
           .quantity
           .quantity;
 
-      // If ATTACH mistakenly debits, you'd get 50 - 3 - 3 = 44e8. Assert that does NOT happen.
       expect(
           addrQty, isNot(equals(BigInt.from(44) * TenToTheEigth.bigIntValue)));
     });

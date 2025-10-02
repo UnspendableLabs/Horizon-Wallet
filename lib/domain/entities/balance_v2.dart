@@ -90,6 +90,28 @@ class UtxoBalance extends BalanceV2 {
 }
 
 extension BalanceListSummaryX on List<BalanceV2> {
+  List<AssetBalanceSummary> summarizeOrdered() {
+    final out = summarize(); // reuse your existing logic
+
+    final prioritized = ['BTC', 'XPC'];
+    final ordered = <AssetBalanceSummary>[];
+
+    for (final symbol in prioritized) {
+      if (out.containsKey(symbol)) {
+        ordered.add(out[symbol]!);
+      }
+    }
+
+    final remaining = out.keys.where((k) => !prioritized.contains(k)).toList()
+      ..sort();
+
+    for (final k in remaining) {
+      ordered.add(out[k]!);
+    }
+
+    return ordered;
+  }
+
   Map<String, AssetBalanceSummary> summarize() {
     // First pass: gather per-asset metadata + sums.
     final assetLongname = <String, String?>{};

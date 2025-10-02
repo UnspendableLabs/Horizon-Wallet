@@ -85,8 +85,7 @@ class _SwapFlowViewState extends State<SwapFlowView> {
                             Center(child: CircularProgressIndicator()),
                         onFailure: (error) => Text(error.toString()),
                         onReplete: (data) => AssetPairFormProvider(
-                            balances:
-                                data.projected.summarize().values.toList(),
+                            balancesSet: data,
                             child: (actions, state) => AssetPairForm(
                                 onSubmit: (swapType) {
                                   context

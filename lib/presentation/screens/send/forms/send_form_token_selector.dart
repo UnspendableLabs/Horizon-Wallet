@@ -9,6 +9,7 @@ import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:horizon/domain/usecases/get_all_balances.dart';
 import 'package:horizon/presentation/common/asset_balance_list_item.dart';
 import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
@@ -16,46 +17,15 @@ import 'package:horizon/presentation/screens/send/bloc/token_selector_form_bloc.
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 
-class SendFormLoader extends StatelessWidget {
-  final HttpConfig httpConfig;
-  final List<AddressV2> addresses;
-  final BalanceRepository _balanceRepository;
-  final Widget Function(List<MultiAddressBalance> balances) child;
-  SendFormLoader(
-      {super.key,
-      required this.httpConfig,
-      required this.addresses,
-      required this.child})
-      : _balanceRepository = GetIt.I<BalanceRepository>();
-
-  @override
-  Widget build(BuildContext context) {
-    final session = context.watch<SessionStateCubit>().state.successOrThrow();
-    return RemoteDataTaskEitherBuilder<String, List<MultiAddressBalance>>(
-      task: TaskEither.tryCatch(
-        () => _balanceRepository.getBalancesForAddresses(
-          httpConfig: session.httpConfig,
-          addresses: addresses.map((a) => a.address).toList(),
-        ),
-        (error, stackTrace) => 'Failed to load balances',
-      ),
-      builder: (context, state, refresh) => state.fold(
-        onInitial: () => const SizedBox.shrink(),
-        onLoading: () => const Center(child: CircularProgressIndicator()),
-        onRefreshing: (_) => const Center(child: CircularProgressIndicator()),
-        onSuccess: (balances) => child(balances),
-        onFailure: (failure) => const SizedBox.shrink(),
-      ),
-    );
-  }
-}
-
 class TokenSelectorFormActions {
   final Function(TokenSelectorOption value) onTokenSelected;
+  final VoidCallback onToggleMempoolClicked;
   final VoidCallback onSubmitClicked;
 
   const TokenSelectorFormActions(
-      {required this.onTokenSelected, required this.onSubmitClicked});
+      {required this.onToggleMempoolClicked,
+      required this.onTokenSelected,
+      required this.onSubmitClicked});
 }
 
 class TokenSelectorFormSuccessHandler extends StatelessWidget {
@@ -77,25 +47,29 @@ class TokenSelectorFormSuccessHandler extends StatelessWidget {
 }
 
 class TokenSelectorFormProvider extends StatelessWidget {
-  final Map<String, AssetBalanceSummary> balances;
+  final BalancesSet balancesSet;
 
   final Widget Function(
       TokenSelectorFormActions actions, TokenSelectorFormModel state) child;
   const TokenSelectorFormProvider(
-      {required this.child, required this.balances, super.key});
+      {required this.child, required this.balancesSet, super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) {
         return TokenSelectorFormBloc(
-          initialBalances: balances,
+          balancesSet: balancesSet,
         );
       },
       child: BlocBuilder<TokenSelectorFormBloc, TokenSelectorFormModel>(
           builder: (context, state) {
         return child(
-            TokenSelectorFormActions(onTokenSelected: (value) {
+            TokenSelectorFormActions(onToggleMempoolClicked: () {
+              context
+                  .read<TokenSelectorFormBloc>()
+                  .add(IncludeMempoolChanged(!state.includeMempool));
+            }, onTokenSelected: (value) {
               context.read<TokenSelectorFormBloc>().add(TokenSelected(value));
             }, onSubmitClicked: () {
               context.read<TokenSelectorFormBloc>().add(const SubmitClicked());
@@ -149,6 +123,29 @@ class _SendFormTokenSelectorState extends State<SendFormTokenSelector> {
                       description: item.description,
                       balance: item.balance),
               hintText: "Select Token"),
+          SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 0, 0),
+                child: Text(
+                  "Include mempool balances",
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey,
+                  ),
+                ),
+              ),
+              Switch(
+                value: widget.state.includeMempool,
+                onChanged: (value) {
+                  widget.actions.onToggleMempoolClicked();
+                },
+              ),
+            ],
+          ),
           const SizedBox(height: 24),
           HorizonButton(
             variant: ButtonVariant.green,
