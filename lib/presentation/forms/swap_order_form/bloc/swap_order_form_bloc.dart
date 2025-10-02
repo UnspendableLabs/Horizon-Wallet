@@ -10,7 +10,6 @@ import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/order.dart';
 import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:horizon/domain/entities/asset.dart';
-import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/simulated_order.dart';
 import 'package:horizon/domain/usecases/simulate_orders.dart';
