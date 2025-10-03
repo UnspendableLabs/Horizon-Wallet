@@ -299,7 +299,7 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
         super(
           AssetPairFormModel(
               balancesSet: balancesSet,
-              includeMempool: true,
+              includeMempool: false,
               submissionStatus: FormzSubmissionStatus.initial,
               giveAssetInput: const GiveAssetInput.pure(),
               receiveAssetInput: const ReceiveAssetInput.pure(),

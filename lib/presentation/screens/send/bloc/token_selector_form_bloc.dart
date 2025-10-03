@@ -122,7 +122,7 @@ class TokenSelectorFormBloc
   TokenSelectorFormBloc({
     required BalancesSet balancesSet,
   }) : super(TokenSelectorFormModel(
-            includeMempool: true,
+            includeMempool: false,
             balancesSet: balancesSet,
             tokenSelectorInput: const TokenSelectorInput.pure(),
             submissionStatus: FormzSubmissionStatus.initial)) {
