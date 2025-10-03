@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:formz/formz.dart';
@@ -319,10 +320,19 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
     on<ToggleMempoolChanged>(_handleToggleMempoolChanged);
   }
 
-  _handleToggleMempoolChanged(
+  void _handleToggleMempoolChanged(
       ToggleMempoolChanged event, Emitter<AssetPairFormModel> emit) {
+    AssetPairFormOption? current = state.giveAssetInput.value;
+    AssetPairFormOption? next;
+
+    if (current != null) {
+      next = state.giveAssets.firstWhereOrNull((a) => a.name == current.name);
+    }
+
     emit(state.copyWith(
-        giveAssetInput: GiveAssetInput.pure(),
+        giveAssetInput: next != null
+            ? GiveAssetInput.dirty(value: next)
+            : const GiveAssetInput.pure(),
         submissionStatus: FormzSubmissionStatus.initial,
         includeMempool: event.value));
   }

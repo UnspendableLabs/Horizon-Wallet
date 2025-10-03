@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 import 'package:fpdart/fpdart.dart';
@@ -5,6 +6,7 @@ import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:equatable/equatable.dart';
 import 'package:horizon/domain/usecases/get_all_balances.dart';
+import 'package:horizon/presentation/common/transactions/token_name_field.dart';
 
 class TokenSelectorOption extends Equatable {
   final String name;
@@ -131,21 +133,32 @@ class TokenSelectorFormBloc
     on<IncludeMempoolChanged>(_handleIncludeMempoolChanged);
   }
 
-  _handleIncludeMempoolChanged(
+  void _handleIncludeMempoolChanged(
       IncludeMempoolChanged event, Emitter<TokenSelectorFormModel> emit) {
+    TokenSelectorOption? current = state.tokenSelectorInput.value;
+
+    TokenSelectorOption? next;
+
+    if (current != null) {
+      next = state.balances
+          .firstWhereOrNull((option) => option.name == current.name);
+    }
+
     emit(state.copyWith(
       includeMempool: event.includeMempool,
-      tokenSelectorInput: TokenSelectorInput.pure(),
+      tokenSelectorInput: next != null
+          ? TokenSelectorInput.dirty(value: next)
+          : const TokenSelectorInput.pure(),
     ));
   }
 
-  _handleTokenSelected(
+  void _handleTokenSelected(
       TokenSelected event, Emitter<TokenSelectorFormModel> emit) {
     emit(state.copyWith(
         tokenSelectorInput: TokenSelectorInput.dirty(value: event.option)));
   }
 
-  _handleSubmitClicked(
+  void _handleSubmitClicked(
       SubmitClicked event, Emitter<TokenSelectorFormModel> emit) {
     if (state.tokenSelectorInput.value == null) {
       return;
