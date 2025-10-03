@@ -1,6 +1,7 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:formz/formz.dart';
+import 'package:horizon/domain/entities/psbt_type.dart';
 import 'package:horizon/presentation/common/transactions/transaction_fee_selection.dart';
 import 'package:horizon/presentation/forms/swap_order_form/bloc/swap_order_form_bloc.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
@@ -60,8 +61,7 @@ class OrderFlowSignProvider extends StatelessWidget {
     required this.child,
     FeeEstimatesRespository? feeEstimatesRepository,
   }) : _feeEstimatesRepository =
-            feeEstimatesRepository ?? GetIt.I<FeeEstimatesRespository>() {
-  }
+            feeEstimatesRepository ?? GetIt.I<FeeEstimatesRespository>() {}
 
   @override
   Widget build(BuildContext context) {
@@ -357,6 +357,7 @@ class OrderSignHandler extends StatelessWidget {
                             () => const SizedBox.shrink(),
                             (composeResponse) => BlocProvider(
                                 create: (context) => SignPsbtBloc(
+                                      psbtType: OpaquePsbt(),
                                       embeddedWitnessData: true,
                                       httpConfig: session.httpConfig,
                                       addresses: session.addressIndexSet.list,
@@ -373,6 +374,7 @@ class OrderSignHandler extends StatelessWidget {
                                       ],
                                     ),
                                 child: SignPsbtForm(
+                                  psbtType: OpaquePsbt(),
                                   key: Key(composeResponse.psbt),
                                   passwordRequired: settings
                                       .requirePasswordForCryptoOperations,

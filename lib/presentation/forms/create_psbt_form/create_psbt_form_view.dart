@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:horizon/domain/entities/psbt_type.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/royalty_by_asset.dart';
@@ -175,6 +176,7 @@ class CreatePsbtSignHandler extends StatelessWidget {
                             () => const SizedBox.shrink(),
                             (unsignedPsbtHex) => BlocProvider(
                                 create: (context) => SignPsbtBloc(
+                                        psbtType: OpaquePsbt(),
                                         httpConfig: session.httpConfig,
                                         addresses: session.addressIndexSet.list,
                                         passwordRequired: settings
@@ -188,6 +190,7 @@ class CreatePsbtSignHandler extends StatelessWidget {
                                           0x03 | 0x80 | 0x02,
                                         ]),
                                 child: SignPsbtForm(
+                                  psbtType: OpaquePsbt(),
                                   key: Key(unsignedPsbtHex),
                                   passwordRequired: settings
                                       .requirePasswordForCryptoOperations,

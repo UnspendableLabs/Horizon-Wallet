@@ -558,7 +558,7 @@ Widget commonWidthSizedBox = const SizedBox(width: 10);
 
 const double defaultButtonHeight = 54;
 
-enum ButtonVariant { black, green, gradient, red, purple }
+enum ButtonVariant { white, black, green, gradient, red, purple }
 
 class GradientContainer extends StatelessWidget {
   final bool isHovered;
@@ -709,11 +709,26 @@ class _HorizonButtonState extends State<HorizonButton> {
           blurRadius: 10,
           offset: Offset(0, 0),
         );
+      case ButtonVariant.white:
+        style = style.copyWith(
+          backgroundColor: WidgetStateProperty.all(offWhite),
+          foregroundColor: WidgetStateProperty.all(black),
+        );
+        textStyle = textStyle.copyWith(
+          color: black,
+        );
+        border = Border.all(color: transparentWhite8, width: 1);
+        boxShadow = const BoxShadow(
+          color: Color.fromRGBO(255, 255, 255, 0.1),
+          blurRadius: 10,
+          offset: Offset(0, 0),
+        );
       case ButtonVariant.green:
         style = style.copyWith(
           backgroundColor: WidgetStateProperty.all(green2),
           foregroundColor: WidgetStateProperty.all(offBlack),
         );
+        border = Border.all(color: transparentWhite8, width: 1);
         style = style.copyWith(
           overlayColor: WidgetStateProperty.resolveWith<Color?>(
             (Set<WidgetState> states) {
@@ -724,6 +739,11 @@ class _HorizonButtonState extends State<HorizonButton> {
               return null;
             },
           ),
+        );
+        boxShadow = const BoxShadow(
+          color: Color.fromRGBO(255, 255, 255, 0.1),
+          blurRadius: 10,
+          offset: Offset(0, 0),
         );
       case ButtonVariant.purple:
         style = style.copyWith(

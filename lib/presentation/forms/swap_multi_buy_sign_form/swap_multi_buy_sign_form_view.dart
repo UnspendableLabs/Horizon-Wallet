@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
+import 'package:horizon/domain/entities/psbt_type.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -166,6 +167,7 @@ class CreateMultiBuyPsbtSignHandler extends StatelessWidget {
                             () => const SizedBox.shrink(),
                             (psbtWithArgs) => BlocProvider(
                                 create: (context) => SignPsbtBloc(
+                                      psbtType: OpaquePsbt(),
                                       httpConfig: session.httpConfig,
                                       addresses: session.addressIndexSet.list,
                                       passwordRequired: settings
@@ -179,6 +181,7 @@ class CreateMultiBuyPsbtSignHandler extends StatelessWidget {
                                       ],
                                     ),
                                 child: SignPsbtForm(
+                                  psbtType: OpaquePsbt(),
                                   key: Key(psbtWithArgs.psbtHex),
                                   passwordRequired: settings
                                       .requirePasswordForCryptoOperations,
@@ -209,6 +212,7 @@ class CreateMultiBuyPsbtSignHandler extends StatelessWidget {
                             () => const SizedBox.shrink(),
                             (psbtWithArgs) => BlocProvider(
                                 create: (context) => SignPsbtBloc(
+                                      psbtType: OpaquePsbt(),
                                       httpConfig: session.httpConfig,
                                       addresses: session.addressIndexSet.list,
                                       passwordRequired: settings
@@ -222,6 +226,7 @@ class CreateMultiBuyPsbtSignHandler extends StatelessWidget {
                                       ],
                                     ),
                                 child: SignPsbtForm(
+                                  psbtType: OpaquePsbt(),
                                   key: Key(psbtWithArgs.psbtHex),
                                   passwordRequired: settings
                                       .requirePasswordForCryptoOperations,

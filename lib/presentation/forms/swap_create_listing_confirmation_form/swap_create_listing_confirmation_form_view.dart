@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/domain/entities/psbt_type.dart';
 import 'package:horizon/presentation/common/collapsable_view.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
@@ -89,6 +90,7 @@ class SwapOnChainFeeSignHandler extends StatelessWidget {
                             ),
                             onSuccess: (onChainPayment) => BlocProvider(
                                 create: (context) => SignPsbtBloc(
+                                      psbtType: AtomicSwapListingFee(),
                                       httpConfig: session.httpConfig,
                                       addresses: session.addressIndexSet.list,
                                       passwordRequired: settings
@@ -102,6 +104,7 @@ class SwapOnChainFeeSignHandler extends StatelessWidget {
                                       ],
                                     ),
                                 child: SignPsbtForm(
+                                  psbtType: AtomicSwapListingFee(),
                                   key: Key(onChainPayment.psbt),
                                   passwordRequired: settings
                                       .requirePasswordForCryptoOperations,
@@ -211,7 +214,6 @@ class SwapCreateListingFormProvider extends StatelessWidget {
                                   );
                             },
                             onSignatureCompleted: (signedPsbtHex) {
-
                               context.read<SwapCreateListingFormBloc>().add(
                                   SignatureCompleted(
                                       signedPsbtHex: signedPsbtHex));

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:horizon/domain/entities/psbt_type.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
@@ -102,6 +103,7 @@ class SendReviewSignHandler extends StatelessWidget {
                         //     style: Theme.of(context).textTheme.headlineSmall),
                         child: BlocProvider(
                             create: (context) => SignPsbtBloc(
+                                  psbtType: OpaquePsbt(),
                                   embeddedWitnessData: true,
                                   httpConfig: session.httpConfig,
                                   addresses: session.addressIndexSet.list,
@@ -128,6 +130,7 @@ class SendReviewSignHandler extends StatelessWidget {
                                   ],
                                 ),
                             child: SignPsbtForm(
+                              psbtType: OpaquePsbt(),
                               key: Key(
                                 switch (state.composeResponse) {
                                   ComposeSendMpma(response: var resp) =>

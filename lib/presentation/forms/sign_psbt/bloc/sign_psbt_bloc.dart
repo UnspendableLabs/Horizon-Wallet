@@ -9,6 +9,7 @@ import 'package:horizon/common/format.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:collection/collection.dart';
 import 'package:decimal/decimal.dart';
+import 'package:horizon/domain/entities/psbt_type.dart';
 
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/failure.dart';
@@ -161,11 +162,9 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
   final EncryptionService _encryptionService;
   final AddressService _addressService;
   final BitcoindService _bitcoindService;
-  final BitcoinRepository _bitcoinRepository;
-  final BalanceRepository _balanceRepository;
   final UtxoRepository _utxoRepository;
-  final EventsRepository _eventsRepository;
   final GetUTXOBalancesUseCase _getUTXOBalancesUseCase;
+  final BitcoinRepository _bitcoinRepository = GetIt.I<BitcoinRepository>();
 
   final bool embeddedWitnessData;
 
@@ -176,10 +175,10 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
     required this.unsignedPsbt,
     required this.signInputs,
     required this.sighashTypes,
+    required PsbtType psbtType,
     EncryptionService? encryptionService,
     AddressService? addressService,
     BitcoindService? bitcoindService,
-    BalanceRepository? balanceRepository,
     BitcoinRepository? bitcoinRepository,
     InMemoryKeyRepository? inMemoryKeyRepository,
     TransactionService? transactionService,
@@ -189,9 +188,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
     EventsRepository? eventsRepository,
     GetUTXOBalancesUseCase? getUTXOBalancesUseCase,
     this.embeddedWitnessData = false,
-  })  : _balanceRepository = balanceRepository ?? GetIt.I<BalanceRepository>(),
-        _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>(),
-        _bitcoindService = bitcoindService ?? GetIt.I<BitcoindService>(),
+  })  : _bitcoindService = bitcoindService ?? GetIt.I<BitcoindService>(),
         _transactionService =
             transactionService ?? GetIt.I<TransactionService>(),
         _inMemoryKeyRepository =
@@ -202,10 +199,11 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
             walletConfigRepository ?? GetIt.I<WalletConfigRepository>(),
         _seedService = seedService ?? GetIt.I<SeedService>(),
         _utxoRepository = utxoRepository ?? GetIt.I<UtxoRepository>(),
-        _eventsRepository = eventsRepository ?? GetIt.I<EventsRepository>(),
         _getUTXOBalancesUseCase =
             getUTXOBalancesUseCase ?? GetIt.I<GetUTXOBalancesUseCase>(),
-        super(SignPsbtState()) {
+        super(SignPsbtState(
+            addresses: addresses.map((addy) => addy.address).toList(),
+            psbtType: psbtType)) {
     on<FetchFormEvent>(_handleFetchForm);
     on<PasswordChanged>(_handlePasswordChanged);
     on<SignPsbtSubmitted>(_handleSignPsbtSubmitted);
@@ -268,6 +266,8 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
 
           final prevout = transaction.vout[vin.vout];
           final address = prevout.scriptpubkeyAddress;
+
+          print("prevout: $prevout");
 
           final signatureRequired =
               signInputs[address]?.contains(index) ?? false;

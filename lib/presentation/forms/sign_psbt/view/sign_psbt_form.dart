@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:horizon/common/format.dart';
+import 'package:horizon/domain/entities/network.dart';
+import 'package:horizon/domain/entities/psbt_type.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_state.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_event.dart';
@@ -10,9 +13,12 @@ import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_event.dart';
 // example import
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart'
     as HorizonUI;
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
 
 class SignPsbtForm extends StatefulWidget {
   final bool passwordRequired;
+  final PsbtType psbtType;
 
   final void Function(String) onSuccess;
 
@@ -20,6 +26,7 @@ class SignPsbtForm extends StatefulWidget {
     super.key,
     required this.onSuccess,
     required this.passwordRequired,
+    required this.psbtType,
   });
 
   @override
@@ -84,156 +91,300 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
           );
         }
 
-        return SingleChildScrollView(
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 0, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Summary',
-                    style: theme.textTheme.labelMedium,
-                  ),
-                  Column(
-                    children: state.debits
-                            ?.map(
-                              (debit) => _buildDebitView(debit, theme),
-                            )
-                            .toList() ??
-                        [],
-                  ),
-                  Column(
-                    children: state.credits
-                            ?.map(
-                              (credit) => _buildCreditView(credit, theme),
-                            )
-                            .toList() ??
-                        [],
-                  ),
-                ],
-              ),
-            ),
-            const Divider(),
-            ExpansionPanelList(
-              elevation: 0,
-              expansionCallback: (panelIndex, isExpanded) {
-                setState(() {
-                  _isExpanded = !_isExpanded;
-                });
-              },
-              children: [
-                ExpansionPanel(
-                  backgroundColor: Colors.transparent,
-                  canTapOnHeader: true,
-                  isExpanded: _isExpanded,
-                  headerBuilder: (context, isExpanded) {
-                    return ListTile(
-                      title: Text(
-                        'Details',
-                        style: theme.textTheme.labelMedium,
-                      ),
-                    );
-                  },
-                  body: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Inputs (${state.augmentedInputs?.length})',
-                          style: theme.textTheme.labelSmall,
-                        ),
-                        const SizedBox(height: 8),
-                        Column(
-                            children: state.augmentedInputs
-                                    ?.map((input) =>
-                                        _buildInputView(input, theme))
-                                    .toList() ??
-                                []),
-                        const SizedBox(height: 20),
-                        const Divider(),
-                        const SizedBox(height: 20),
+        final session =
+            context.watch<SessionStateCubit>().state.successOrThrow();
 
-                        // --- OUTPUTS LIST ---
-                        Text(
-                          'Outputs (${state.augmentedOutputs?.length})',
-                          style: theme.textTheme.labelSmall,
+        return SingleChildScrollView(
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("Network"),
+                Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: violet)),
+                    child: Text(
+                        switch (session.httpConfig.network) {
+                          Network.mainnet => "mainnet",
+                          Network.signet => "signet",
+                          Network.testnet4 => "testnet4",
+                        },
+                        style: TextStyle(color: violet)))
+              ],
+            ),
+          ),
+          Divider(),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                switch (state.psbtSummaryViewModel) {
+                  AtomicSwapListingFeeSummaryViewModel(
+                    serviceFee: var serviceFee,
+                    networkFee: var networkFee,
+                  ) =>
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 6.0, horizontal: 8.0),
+                          child: Row(
+                            children: [
+                              Text(
+                                  "Inputs ( ${state.augmentedInputs != null ? state.augmentedInputs!.length : 0} )",
+                                  style:
+                                      Theme.of(context).textTheme.labelSmall!),
+                              SizedBox(width: 8),
+                              Spacer(),
+                              Text(state.totalInputs.quantity.toString(),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall!
+                                      .copyWith(color: Colors.white)),
+                            ],
+                          ),
                         ),
-                        const SizedBox(height: 4),
-                        Column(
-                          children: state.augmentedOutputs
-                                  ?.map((output) =>
-                                      _buildOutputView(output, theme))
-                                  .toList() ??
-                              [],
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 6.0, horizontal: 8.0),
+                          child: Row(
+                            children: [
+                              Text("Service Fee",
+                                  style:
+                                      Theme.of(context).textTheme.labelSmall!),
+                              Spacer(),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(serviceFee.quantity.toString(),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall!
+                                          .copyWith(color: Colors.white)),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 6.0, horizontal: 8.0),
+                          child: Row(
+                            children: [
+                              Text("Network Fee",
+                                  style:
+                                      Theme.of(context).textTheme.labelSmall!),
+                              Spacer(),
+                              Text(networkFee.quantity.toString(),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall!
+                                      .copyWith(color: Colors.white)),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 6.0, horizontal: 8.0),
+                          child: Row(
+                            children: [
+                              Text("Change",
+                                  style:
+                                      Theme.of(context).textTheme.labelSmall!),
+                              Spacer(),
+                              Text(state.change.quantity.toString(),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall!
+                                      .copyWith(color: Colors.green)),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 6.0, horizontal: 8.0),
+                          child: Row(
+                            children: [
+                              Text("Total",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall!
+                                      .copyWith(color: Colors.white)),
+                              Spacer(),
+                              Text(state.net.quantity.toString(),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall!
+                                      .copyWith(color: Colors.white)),
+                            ],
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                ),
+                  _ => Text("placeholder")
+                },
+                // Column(
+                //   children: state.debits
+                //           ?.map(
+                //             (debit) => _buildDebitView(debit, theme),
+                //           )
+                //           .toList() ??
+                //       [],
+                // ),
+                // Column(
+                //   children: state.credits
+                //           ?.map(
+                //             (credit) => _buildCreditView(credit, theme),
+                //           )
+                //           .toList() ??
+                //       [],
+                // ),
               ],
             ),
+          ),
 
-            if (widget.passwordRequired)
-              Column(
-                children: [
-                  const Divider(),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-                    child: TextField(
-                      onChanged: (password) => context
-                          .read<SignPsbtBloc>()
-                          .add(PasswordChanged(password)),
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        errorText: state.password.displayError == null
-                            ? null
-                            : 'Password cannot be empty',
+          const Divider(),
+          ExpansionPanelList(
+            elevation: 0,
+            expansionCallback: (panelIndex, isExpanded) {
+              setState(() {
+                _isExpanded = !_isExpanded;
+              });
+            },
+            children: [
+              ExpansionPanel(
+                backgroundColor: Colors.transparent,
+                canTapOnHeader: true,
+                isExpanded: _isExpanded,
+                headerBuilder: (context, isExpanded) {
+                  return ListTile(
+                    title: Text(
+                      'Inputs & Outputs',
+                      style: theme.textTheme.labelMedium,
+                    ),
+                  );
+                },
+                body: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Inputs (${state.augmentedInputs?.length})',
+                        style: theme.textTheme.labelSmall,
                       ),
-                      obscureText: true,
-                    ),
-                  ),
-                ],
-              ),
+                      const SizedBox(height: 8),
+                      Column(
+                          children: state.augmentedInputs
+                                  ?.map(
+                                      (input) => _buildInputView(input, theme))
+                                  .toList() ??
+                              []),
+                      const SizedBox(height: 20),
+                      const Divider(),
+                      const SizedBox(height: 20),
 
-            // Submit Button
-            const Divider(),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+                      // --- OUTPUTS LIST ---
+                      Text(
+                        'Outputs (${state.augmentedOutputs?.length})',
+                        style: theme.textTheme.labelSmall,
+                      ),
+                      const SizedBox(height: 4),
+                      Column(
+                        children: state.augmentedOutputs
+                                ?.map(
+                                    (output) => _buildOutputView(output, theme))
+                                .toList() ??
+                            [],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          if (widget.passwordRequired)
+            Column(
               children: [
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: HorizonUI.HorizonButton(
-                      disabled: state.submissionStatus.isInProgressOrSuccess,
-                      onPressed: state.submissionStatus.isInProgressOrSuccess
+                const Divider(),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                  child: TextField(
+                    onChanged: (password) => context
+                        .read<SignPsbtBloc>()
+                        .add(PasswordChanged(password)),
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      errorText: state.password.displayError == null
                           ? null
-                          : () => context
-                              .read<SignPsbtBloc>()
-                              .add(SignPsbtSubmitted()),
-                      child: state.submissionStatus.isInProgress
-                          ? HorizonUI.WidgetButtonContent(
-                              value: const CircularProgressIndicator())
-                          : HorizonUI.TextButtonContent(value: 'Sign PSBT'),
+                          : 'Password cannot be empty',
                     ),
+                    obscureText: true,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
-            // Status/Error Message
-            if (state.submissionStatus.isFailure) ...[
-              Text(
-                state.error!,
-                style: const TextStyle(color: Colors.red),
+
+          // Submit Button
+          const Divider(),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: HorizonUI.HorizonButton(
+                    variant: HorizonUI.ButtonVariant.black,
+                    borderRadius: 10,
+                    disabled: state.submissionStatus.isInProgressOrSuccess,
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: HorizonUI.TextButtonContent(value: 'Cancel'),
+                  ),
+                ),
               ),
-            ]
-          ]),
-        );
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: HorizonUI.HorizonButton(
+                    variant: HorizonUI.ButtonVariant.white,
+                    borderRadius: 10,
+                    disabled: state.submissionStatus.isInProgressOrSuccess,
+                    onPressed: state.submissionStatus.isInProgressOrSuccess
+                        ? null
+                        : () => context
+                            .read<SignPsbtBloc>()
+                            .add(SignPsbtSubmitted()),
+                    child: state.submissionStatus.isInProgress
+                        ? HorizonUI.WidgetButtonContent(
+                            value: const CircularProgressIndicator())
+                        : HorizonUI.TextButtonContent(value: 'Confirm'),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          // Status/Error Message
+          if (state.submissionStatus.isFailure) ...[
+            Text(
+              state.error!,
+              style: const TextStyle(color: Colors.red),
+            ),
+          ]
+        ]));
       }),
     );
   }
@@ -244,7 +395,6 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
 
     // The BTC value from input.prevOut.value, if present
     final int btcValue = input.prevOut.value;
-    final valueStr = '${btcValue.toStringAsFixed(8)} BTC';
 
     // Show a "To sign" badge if signatureRequired
     final badge = input.signatureRequired

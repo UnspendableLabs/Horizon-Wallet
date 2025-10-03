@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:horizon/common/fn.dart';
 import 'package:horizon/domain/entities/action.dart' as URLAction;
 import 'package:horizon/domain/entities/extension_rpc.dart';
+import 'package:horizon/domain/entities/psbt_type.dart';
 import 'package:horizon/domain/repositories/action_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
@@ -60,6 +61,7 @@ class SignPsbtModal extends StatelessWidget {
     return BlocProvider(
       create: (_) => SignPsbtBloc(
         addresses: session.addressIndexSet.list,
+        psbtType: OpaquePsbt(),
         httpConfig: session.httpConfig,
         passwordRequired:
             GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
@@ -69,12 +71,11 @@ class SignPsbtModal extends StatelessWidget {
         unsignedPsbt: unsignedPsbt,
         transactionService: transactionService,
         bitcoindService: bitcoindService,
-        balanceRepository: balanceRepository,
-        bitcoinRepository: bitcoinRepository,
         encryptionService: encryptionService,
         addressService: addressService,
       ),
       child: SignPsbtForm(
+        psbtType: OpaquePsbt(),
         key: Key(unsignedPsbt),
         passwordRequired:
             GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
