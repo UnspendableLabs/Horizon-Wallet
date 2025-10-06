@@ -61,6 +61,22 @@ class XCPSendSummaryViewModel extends PsbtSummaryViewModel {
   });
 }
 
+class OrderSummaryViewModel extends PsbtSummaryViewModel {
+  final AssetQuantity networkFee;
+  final String giveAsset;
+  final String getAsset;
+
+  final AssetQuantity giveQuantity;
+  final AssetQuantity getQuantity;
+  OrderSummaryViewModel({
+    required this.networkFee,
+    required this.giveAsset,
+    required this.getAsset,
+    required this.giveQuantity,
+    required this.getQuantity,
+  });
+}
+
 class OpaquePsbtSummaryViewModel extends PsbtSummaryViewModel {
   OpaquePsbtSummaryViewModel();
 }
@@ -126,6 +142,18 @@ class SignPsbtState with FormzMixin {
             toAddress: toAddress,
             quantity: quantity,
             assetName: asset),
+      OrderPsbt(
+        giveAsset: var giveAsset,
+        getAsset: var getAsset,
+        giveQuantity: var giveQuantity,
+        getQuantity: var getQuantity,
+      ) =>
+        OrderSummaryViewModel(
+            networkFee: networkFee,
+            giveAsset: giveAsset,
+            getAsset: getAsset,
+            giveQuantity: giveQuantity,
+            getQuantity: getQuantity),
       OpaquePsbt() => OpaquePsbtSummaryViewModel(),
     };
   }

@@ -9,6 +9,7 @@ import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
 import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
 import 'package:horizon/utils/app_icons.dart';
+import 'package:http/http.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
@@ -273,6 +274,11 @@ class _OrderFlowSignViewState extends State<OrderFlowSignView> {
 }
 
 class OrderSignHandler extends StatelessWidget {
+  final String giveAsset;
+  final String getAsset;
+  final AssetQuantity giveQuantity;
+  final AssetQuantity getQuantity;
+
   final Function(String signedPsbtHex) onSuccess;
   final VoidCallback onClose;
   final String address;
@@ -281,7 +287,11 @@ class OrderSignHandler extends StatelessWidget {
       {super.key,
       required this.onSuccess,
       required this.onClose,
-      required this.address});
+      required this.address,
+      required this.giveAsset,
+      required this.getAsset,
+      required this.giveQuantity,
+      required this.getQuantity});
 
   @override
   Widget build(context) {
@@ -356,14 +366,18 @@ class OrderSignHandler extends StatelessWidget {
                               height: 24,
                             ),
                           ),
-                          hasTopBarLayer: false,
+                          hasTopBarLayer: true,
                           // pageTitle: Text("Sign PSBT",
                           //     style: Theme.of(context).textTheme.headlineSmall),
                           child: state.composeResponse.fold(
                             () => const SizedBox.shrink(),
                             (composeResponse) => BlocProvider(
                                 create: (context) => SignPsbtBloc(
-                                      psbtType: OpaquePsbt(),
+                                      psbtType: OrderPsbt(
+                                          giveAsset: giveAsset,
+                                          getAsset: getAsset,
+                                          giveQuantity: giveQuantity,
+                                          getQuantity: getQuantity),
                                       embeddedWitnessData: true,
                                       httpConfig: session.httpConfig,
                                       addresses: session.addressIndexSet.list,
@@ -380,7 +394,11 @@ class OrderSignHandler extends StatelessWidget {
                                       ],
                                     ),
                                 child: SignPsbtForm(
-                                  psbtType: OpaquePsbt(),
+                                  psbtType: OrderPsbt(
+                                      giveAsset: giveAsset,
+                                      getAsset: getAsset,
+                                      giveQuantity: giveQuantity,
+                                      getQuantity: getQuantity),
                                   key: Key(composeResponse.psbt),
                                   passwordRequired: settings
                                       .requirePasswordForCryptoOperations,

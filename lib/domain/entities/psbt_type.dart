@@ -49,3 +49,18 @@ class AtomicSwapSellPsbt extends TrustedPsbt {
 }
 
 class AtomicSwapListingFee extends TrustedPsbt {}
+
+class OrderPsbt extends TrustedPsbt {
+  final String giveAsset;
+  final String getAsset;
+
+  final AssetQuantity giveQuantity;
+  final AssetQuantity getQuantity;
+
+  OrderPsbt({
+    required this.giveAsset,
+    required this.getAsset,
+    required this.giveQuantity,
+    required this.getQuantity,
+  });
+}

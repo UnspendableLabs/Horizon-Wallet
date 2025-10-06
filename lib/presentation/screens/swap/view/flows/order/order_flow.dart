@@ -212,6 +212,10 @@ class _OrderFlowViewState extends State<OrderFlowView> {
                               return Column(
                                 children: [
                                   OrderSignHandler(
+                                    getQuantity: params.getQuantity,
+                                    giveQuantity: params.giveQuantity,
+                                    giveAsset: widget.giveBalance.asset,
+                                    getAsset: widget.receiveAsset.name,
                                     address:
                                         model.giveBalance.getOrThrow().address,
                                     onSuccess: (value) {
