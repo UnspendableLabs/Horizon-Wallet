@@ -159,6 +159,13 @@ class CreatePsbtSignHandler extends StatelessWidget {
                 modalTypeBuilder: (_) => WoltModalType.bottomSheet(),
                 pageListBuilder: (bottomSheetContext) => [
                       WoltModalSheetPage(
+                          isTopBarLayerAlwaysVisible: true,
+                          hasTopBarLayer: true,
+                          topBarTitle: Text("Review Transaction",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium!
+                                  .copyWith(color: Colors.white)),
                           trailingNavBarWidget: TextButton(
                             onPressed: () {
                               Navigator.of(context).pop();
@@ -169,7 +176,6 @@ class CreatePsbtSignHandler extends StatelessWidget {
                               height: 24,
                             ),
                           ),
-                          hasTopBarLayer: false,
                           // pageTitle: Text("Sign PSBT",
                           //     style: Theme.of(context).textTheme.headlineSmall),
                           child: state.unsignedPsbtHex.fold(

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:horizon/common/constants.dart';
+import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:horizon/domain/entities/psbt_type.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -82,12 +84,39 @@ class SendReviewSignHandler extends StatelessWidget {
         listener: (context, state) async {
           final settings = GetIt.I<SettingsRepository>();
 
+          final send = state.sendEntries.first;
+
+          // todo add extension to SendReviewFormModel to get psbt type
+          final psbtType =
+              send.balanceSelectorInput.value?.asset.toLowerCase() != "btc"
+                  ? XCPSendPsbt(
+                      toAddress: send.destinationInput.value,
+                      asset: send.balanceSelectorInput.value!.asset,
+                      quantity: AssetQuantity.fromNormalizedString(
+                        input: send.quantityInput.value,
+                        divisible: send.assetIsDivisible,
+                      ),
+                    )
+                  : BtcSendPsbt(
+                      toAddress: send.destinationInput.value,
+                      sats: BigInt.parse(
+                          (double.parse(send.quantityInput.value) *
+                                  TenToTheEigth.value)
+                              .toString()));
+
           if (state.showSignTransactionModal) {
             final result = await WoltModalSheet.show(
                 context: context,
                 modalTypeBuilder: (_) => WoltModalType.bottomSheet(),
                 pageListBuilder: (bottomSheetContext) => [
                       WoltModalSheetPage(
+                        isTopBarLayerAlwaysVisible: true,
+                        topBarTitle: Text("Review Transaction",
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium!
+                                .copyWith(color: Colors.white)),
+
                         trailingNavBarWidget: TextButton(
                           onPressed: () {
                             Navigator.of(context).pop();
@@ -98,12 +127,11 @@ class SendReviewSignHandler extends StatelessWidget {
                             height: 24,
                           ),
                         ),
-                        hasTopBarLayer: false,
                         // pageTitle: Text("Sign PSBT",
                         //     style: Theme.of(context).textTheme.headlineSmall),
                         child: BlocProvider(
                             create: (context) => SignPsbtBloc(
-                                  psbtType: OpaquePsbt(),
+                                  psbtType: psbtType,
                                   embeddedWitnessData: true,
                                   httpConfig: session.httpConfig,
                                   addresses: session.addressIndexSet.list,
@@ -130,7 +158,7 @@ class SendReviewSignHandler extends StatelessWidget {
                                   ],
                                 ),
                             child: SignPsbtForm(
-                              psbtType: OpaquePsbt(),
+                              psbtType: psbtType,
                               key: Key(
                                 switch (state.composeResponse) {
                                   ComposeSendMpma(response: var resp) =>
@@ -361,18 +389,18 @@ class _SendReviewFormState extends State<SendReviewForm> {
           thickness: 1,
         ),
         commonHeightSizedBox,
-        CollapsableWidget(
-            title: "Fee Details",
-            child: Column(
-              children: [
-                _buildLabelValueRow("Fee", "${response.btcFee} sats"),
-                _buildLabelValueRow("Virtual Size",
-                    "${response.signedTxEstimatedSize.virtualSize} vbytes"),
-                _buildLabelValueRow("Adjusted Virtual Size",
-                    "${response.signedTxEstimatedSize.adjustedVirtualSize} vbytes"),
-              ],
-            )),
-        commonHeightSizedBox,
+        // CollapsableWidget(
+        //     title: "Fee Details",
+        //     child: Column(
+        //       children: [
+        //         _buildLabelValueRow("Fee", "${response.btcFee} sats"),
+        //         _buildLabelValueRow("Virtual Size",
+        //             "${response.signedTxEstimatedSize.virtualSize} vbytes"),
+        //         _buildLabelValueRow("Adjusted Virtual Size",
+        //             "${response.signedTxEstimatedSize.adjustedVirtualSize} vbytes"),
+        //       ],
+        //     )),
+        // commonHeightSizedBox,
         HorizonButton(
             child: TextButtonContent(value: "Sign and Submit"),
             isLoading: widget.state.submissionStatus.isInProgress,

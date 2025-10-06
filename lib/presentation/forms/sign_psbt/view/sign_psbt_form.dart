@@ -16,6 +16,7 @@ import 'package:horizon/presentation/screens/horizon/redesign_ui.dart'
     as HorizonUI;
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
+import 'package:horizon/utils/app_icons.dart';
 
 class SignPsbtForm extends StatefulWidget {
   final bool passwordRequired;
@@ -95,20 +96,390 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
         final session =
             context.watch<SessionStateCubit>().state.successOrThrow();
 
+        final appIcons = AppIcons();
         return SingleChildScrollView(
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          // Padding(
+          //   padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+          //   child: Text("Review Transaction",
+          //       style: Theme.of(context)
+          //           .textTheme
+          //           .titleMedium!
+          //           .copyWith(color: Colors.white)),
+          // ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-            child: Text("Review Transaction",
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium!
-                    .copyWith(color: Colors.white)),
-          ),
-          Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
+              padding: const EdgeInsets.only(bottom: 8.0, top: 12),
               child: switch (state.psbtSummaryViewModel) {
+                XCPSendSummaryViewModel(
+                  toAddress: var toAddress,
+                  quantity: var quantity,
+                  assetName: var assetName,
+                ) =>
+                  Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(24.0, 0, 0, 4.0),
+                            child: Text(
+                              "You're sending",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelMedium!
+                                  .copyWith(color: Colors.grey),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                          width: double.infinity,
+                          child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16.0),
+                              child: HorizonUI.HorizonCard(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 16),
+                                child: Column(children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        "To",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelSmall!
+                                            .copyWith(color: Colors.grey),
+                                      ),
+                                      Text(
+                                        " ${_shortenAddress(toAddress)}",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelSmall!
+                                            .copyWith(color: Colors.white),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(
+                                    height: 12,
+                                  ),
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          appIcons.assetIcon(
+                                            httpConfig: session.httpConfig,
+                                            context: context,
+                                            assetName: assetName,
+                                            description:
+                                                "", // TODO: add desc to summary.
+                                            width: 34,
+                                            height: 34,
+                                          ),
+                                        ],
+                                      ),
+                                      Expanded(
+                                        child: Padding(
+                                          padding: const EdgeInsets.fromLTRB(
+                                              8, 0, 0, 0),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                "Quantity",
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .labelSmall!
+                                                    .copyWith(
+                                                        color: Colors.white),
+                                              ),
+                                              Text(
+                                                assetName,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .labelSmall!
+                                                    .copyWith(
+                                                        color: Colors.grey),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            quantity
+                                                .normalizedPretty()
+                                                .toString(),
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .labelSmall!
+                                                .copyWith(color: Colors.white),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  )
+                                ]),
+                              ))),
+                    ],
+                  ),
+                BtcSendSummaryViewModel(
+                  toAddress: var toAddress,
+                  btc: var btc,
+                ) =>
+                  Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(24.0, 0, 0, 4.0),
+                            child: Text(
+                              "You're sending",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelMedium!
+                                  .copyWith(color: Colors.grey),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                          width: double.infinity,
+                          child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16.0),
+                              child: HorizonUI.HorizonCard(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 16),
+                                child: Column(children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        "To",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelSmall!
+                                            .copyWith(color: Colors.grey),
+                                      ),
+                                      Text(
+                                        " ${_shortenAddress(toAddress)}",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelSmall!
+                                            .copyWith(color: Colors.white),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(
+                                    height: 12,
+                                  ),
+                                  Row(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          appIcons.assetIcon(
+                                            httpConfig: session.httpConfig,
+                                            context: context,
+                                            assetName: "BTC",
+                                            description:
+                                                "", // TODO: add desc to summary.
+                                            width: 34,
+                                            height: 34,
+                                          ),
+                                        ],
+                                      ),
+                                      Expanded(
+                                        child: Padding(
+                                          padding: const EdgeInsets.fromLTRB(
+                                              8, 0, 0, 0),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                "Quantity",
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .labelSmall!
+                                                    .copyWith(
+                                                        color: Colors.white),
+                                              ),
+                                              Text(
+                                                "BTC",
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .labelSmall!
+                                                    .copyWith(
+                                                        color: Colors.grey),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            "${btc.quantity.toString()} sat",
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .labelSmall!
+                                                .copyWith(color: Colors.white),
+                                          ),
+                                          SatsToUsdDisplay(
+                                              sats: btc.quantity,
+                                              child: (usdValue) => Text(
+                                                    '\$${usdValue.toStringAsFixed(2)}',
+                                                    style: theme
+                                                        .textTheme.labelSmall
+                                                        ?.copyWith(
+                                                            fontSize: 10,
+                                                            color: Colors.grey),
+                                                  )),
+                                        ],
+                                      ),
+                                    ],
+                                  )
+                                ]),
+                              ))),
+                    ],
+                  ),
+                AtomicSwapListingFeeSummaryViewModel(
+                  serviceFee: var btc,
+                ) =>
+                  Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(24.0, 0, 0, 4.0),
+                            child: Text(
+                              "You're sending",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelMedium!
+                                  .copyWith(color: Colors.grey),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                          width: double.infinity,
+                          child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16.0),
+                              child: HorizonUI.HorizonCard(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 16),
+                                child: Column(children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        "To",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelSmall!
+                                            .copyWith(color: Colors.grey),
+                                      ),
+                                      Text(
+                                        "horizon.market",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelSmall!
+                                            .copyWith(color: Colors.white),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(
+                                    height: 12,
+                                  ),
+                                  Row(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          appIcons.assetIcon(
+                                            httpConfig: session.httpConfig,
+                                            context: context,
+                                            assetName: "BTC",
+                                            description:
+                                                "", // TODO: add desc to summary.
+                                            width: 34,
+                                            height: 34,
+                                          ),
+                                        ],
+                                      ),
+                                      Expanded(
+                                        child: Padding(
+                                          padding: const EdgeInsets.fromLTRB(
+                                              8, 0, 0, 0),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                "Quantity",
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .labelSmall!
+                                                    .copyWith(
+                                                        color: Colors.white),
+                                              ),
+                                              Text(
+                                                "BTC",
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .labelSmall!
+                                                    .copyWith(
+                                                        color: Colors.grey),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            "${btc.quantity.toString()} sat",
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .labelSmall!
+                                                .copyWith(color: Colors.white),
+                                          ),
+                                          SatsToUsdDisplay(
+                                              sats: btc.quantity,
+                                              child: (usdValue) => Text(
+                                                    '\$${usdValue.toStringAsFixed(2)}',
+                                                    style: theme
+                                                        .textTheme.labelSmall
+                                                        ?.copyWith(
+                                                            fontSize: 10,
+                                                            color: Colors.grey),
+                                                  )),
+                                        ],
+                                      ),
+                                    ],
+                                  )
+                                ]),
+                              ))),
+                    ],
+                  ),
                 // AtomicSwapListingFeeSummaryViewModel() => SizedBox(
                 //     width: double.infinity,
                 //     child: Padding(
@@ -469,7 +840,243 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                         )
                       ],
                     ),
-                  _ => Text("placeholder")
+                  XCPSendSummaryViewModel(
+                    networkFee: var networkFee,
+                  ) =>
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 6.0, horizontal: 8.0),
+                          child: Row(
+                            children: [
+                              Text(
+                                  "Inputs ( ${state.augmentedInputs != null ? state.augmentedInputs!.length : 0} )",
+                                  style:
+                                      Theme.of(context).textTheme.labelSmall!),
+                              SizedBox(width: 8),
+                              Spacer(),
+                              Text(
+                                  "${state.totalInputs.quantity.toString()} sat",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall!
+                                      .copyWith(color: Colors.white)),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Text("Network Fee",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall!),
+                                  Spacer(),
+                                  Text("${networkFee.quantity.toString()} sat",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall!
+                                          .copyWith(color: Colors.white)),
+                                ],
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  SatsToUsdDisplay(
+                                      sats: networkFee.quantity,
+                                      child: (usdValue) => Text(
+                                            '\$${usdValue.toStringAsFixed(2)}',
+                                            style: theme.textTheme.labelSmall
+                                                ?.copyWith(
+                                                    fontSize: 10,
+                                                    color: Colors.grey),
+                                          )),
+                                ],
+                              )
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
+                          child: Row(
+                            children: [
+                              Text("Change",
+                                  style:
+                                      Theme.of(context).textTheme.labelSmall!),
+                              Spacer(),
+                              Text("${state.change.quantity.toString()} sat",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall!
+                                      .copyWith(color: Colors.green)),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(8, 12, 8, 2),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Text("Total",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall!
+                                          .copyWith(color: Colors.white)),
+                                  Spacer(),
+                                  Text(state.net.quantity.toString(),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall!
+                                          .copyWith(color: Colors.white)),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(right: 8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              SatsToUsdDisplay(
+                                  sats: state.net.quantity,
+                                  child: (usdValue) => Text(
+                                        '\$${usdValue.toStringAsFixed(2)}',
+                                        style: theme.textTheme.labelSmall
+                                            ?.copyWith(
+                                                fontSize: 10,
+                                                color: Colors.grey),
+                                      )),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                  BtcSendSummaryViewModel(
+                    networkFee: var networkFee,
+                  ) =>
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 6.0, horizontal: 8.0),
+                          child: Row(
+                            children: [
+                              Text(
+                                  "Inputs ( ${state.augmentedInputs != null ? state.augmentedInputs!.length : 0} )",
+                                  style:
+                                      Theme.of(context).textTheme.labelSmall!),
+                              SizedBox(width: 8),
+                              Spacer(),
+                              Text(
+                                  "${state.totalInputs.quantity.toString()} sat",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall!
+                                      .copyWith(color: Colors.white)),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Text("Network Fee",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall!),
+                                  Spacer(),
+                                  Text("${networkFee.quantity.toString()} sat",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall!
+                                          .copyWith(color: Colors.white)),
+                                ],
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  SatsToUsdDisplay(
+                                      sats: networkFee.quantity,
+                                      child: (usdValue) => Text(
+                                            '\$${usdValue.toStringAsFixed(2)}',
+                                            style: theme.textTheme.labelSmall
+                                                ?.copyWith(
+                                                    fontSize: 10,
+                                                    color: Colors.grey),
+                                          )),
+                                ],
+                              )
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
+                          child: Row(
+                            children: [
+                              Text("Change",
+                                  style:
+                                      Theme.of(context).textTheme.labelSmall!),
+                              Spacer(),
+                              Text("${state.change.quantity.toString()} sat",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall!
+                                      .copyWith(color: Colors.green)),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(8, 12, 8, 2),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Text("Total",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall!
+                                          .copyWith(color: Colors.white)),
+                                  Spacer(),
+                                  Text(state.net.quantity.toString(),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall!
+                                          .copyWith(color: Colors.white)),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(right: 8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              SatsToUsdDisplay(
+                                  sats: state.net.quantity,
+                                  child: (usdValue) => Text(
+                                        '\$${usdValue.toStringAsFixed(2)}',
+                                        style: theme.textTheme.labelSmall
+                                            ?.copyWith(
+                                                fontSize: 10,
+                                                color: Colors.grey),
+                                      )),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                  _ => Text(widget.psbtType.runtimeType.toString())
                 },
                 // Column(
                 //   children: state.debits

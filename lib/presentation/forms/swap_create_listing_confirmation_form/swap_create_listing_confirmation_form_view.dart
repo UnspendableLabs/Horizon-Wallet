@@ -63,6 +63,13 @@ class SwapOnChainFeeSignHandler extends StatelessWidget {
                 // },
                 pageListBuilder: (bottomSheetContext) => [
                       WoltModalSheetPage(
+                          isTopBarLayerAlwaysVisible: true,
+                          hasTopBarLayer: true,
+                          topBarTitle: Text("Review Transaction",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium!
+                                  .copyWith(color: Colors.white)),
                           trailingNavBarWidget: TextButton(
                             onPressed: () {
                               Navigator.of(context).pop();
@@ -73,7 +80,6 @@ class SwapOnChainFeeSignHandler extends StatelessWidget {
                               height: 24,
                             ),
                           ),
-                          hasTopBarLayer: false,
                           // pageTitle: Text("Sign PSBT",
                           //     style: Theme.of(context).textTheme.headlineSmall),
                           child: state.onChainPayment.fold(
@@ -376,31 +382,32 @@ class _SwapCreateListingConfirmationFormState
                       },
                       feeEstimates: widget.state.feeEstimates,
                     ),
-                    CollapsableWidget(
-                      title: "Fee Details",
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _renderPropertyWidget(
-                              "wip: fee psbt",
-                              switch (widget.state.onChainPayment) {
-                                Loading() => const Center(
-                                    child: CircularProgressIndicator()),
-                                Success(value: var onChainPayment) => Text(
-                                    onChainPayment.psbt,
-                                    style: theme.textTheme.bodySmall,
-                                  ),
-                                Failure(error: var error) => Text(
-                                    error.toString(),
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: customTheme?.errorColor,
-                                    ),
-                                  ),
-                                _ => const SizedBox.shrink(),
-                              }),
-                        ],
-                      ),
-                    ),
+                    // CollapsableWidget(
+                    //   title: "Fee Details",
+                    //   child: Column(
+                    //     crossAxisAlignment: CrossAxisAlignment.start,
+                    //     children: [
+                    //       _renderPropertyWidget(
+                    //           "wip: fee psbt",
+                    //           switch (widget.state.onChainPayment) {
+                    //             Loading() => const Center(
+                    //                 child: CircularProgressIndicator()),
+                    //             Success(value: var onChainPayment) => Text(
+                    //                 onChainPayment.psbt,
+                    //                 style: theme.textTheme.bodySmall,
+                    //               ),
+                    //             Failure(error: var error) => Text(
+                    //                 error.toString(),
+                    //                 style: theme.textTheme.bodySmall?.copyWith(
+                    //                   color: customTheme?.errorColor,
+                    //                 ),
+                    //               ),
+                    //             _ => const SizedBox.shrink(),
+                    //           }),
+                    //     ],
+                    //   ),
+                    // ),
+                    commonHeightSizedBox,
                     commonHeightSizedBox,
                     HorizonButton(
                         onPressed: () {

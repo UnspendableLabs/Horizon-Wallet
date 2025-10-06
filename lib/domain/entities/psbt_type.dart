@@ -8,17 +8,19 @@ sealed class TrustedPsbt extends PsbtType {}
 
 class BtcSendPsbt extends TrustedPsbt {
   BigInt sats;
-
-  BtcSendPsbt({required this.sats});
+  String toAddress;
+  BtcSendPsbt({required this.toAddress, required this.sats});
 }
 
 class XCPSendPsbt extends TrustedPsbt {
   String asset;
   AssetQuantity quantity;
+  String toAddress;
 
   XCPSendPsbt({
     required this.asset,
     required this.quantity,
+    required this.toAddress,
   });
 }
 

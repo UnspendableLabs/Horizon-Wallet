@@ -340,6 +340,12 @@ class OrderSignHandler extends StatelessWidget {
                       //           )),
                       //     )),
                       WoltModalSheetPage(
+                          isTopBarLayerAlwaysVisible: true,
+                          topBarTitle: Text("Review Transaction",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium!
+                                  .copyWith(color: Colors.white)),
                           trailingNavBarWidget: TextButton(
                             onPressed: () {
                               Navigator.of(context).pop();

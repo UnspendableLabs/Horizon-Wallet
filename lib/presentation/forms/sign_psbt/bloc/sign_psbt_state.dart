@@ -1,4 +1,5 @@
 import "package:decimal/decimal.dart";
+import "package:flutter/material.dart";
 import "package:formz/formz.dart";
 import "package:horizon/domain/entities/asset_quantity.dart";
 import 'package:horizon/domain/entities/psbt_type.dart';
@@ -30,6 +31,38 @@ class AtomicSwapListingFeeSummaryViewModel extends PsbtSummaryViewModel {
 
 class AtomicSwapSellSummaryViewModel extends PsbtSummaryViewModel {
   AtomicSwapSellSummaryViewModel();
+}
+
+class AtomicSwapBuySummaryViewModel extends PsbtSummaryViewModel {
+  AtomicSwapBuySummaryViewModel();
+}
+
+class BtcSendSummaryViewModel extends PsbtSummaryViewModel {
+  final String toAddress;
+  final AssetQuantity networkFee;
+  final AssetQuantity btc;
+  BtcSendSummaryViewModel({
+    required this.toAddress,
+    required this.networkFee,
+    required this.btc,
+  });
+}
+
+class XCPSendSummaryViewModel extends PsbtSummaryViewModel {
+  final String assetName;
+  final String toAddress;
+  final AssetQuantity quantity;
+  final AssetQuantity networkFee;
+  XCPSendSummaryViewModel({
+    required this.assetName,
+    required this.toAddress,
+    required this.quantity,
+    required this.networkFee,
+  });
+}
+
+class OpaquePsbtSummaryViewModel extends PsbtSummaryViewModel {
+  OpaquePsbtSummaryViewModel();
 }
 
 class Tmp extends PsbtSummaryViewModel {}
@@ -77,7 +110,23 @@ class SignPsbtState with FormzMixin {
           networkFee: networkFee,
         ),
       AtomicSwapSellPsbt() => AtomicSwapSellSummaryViewModel(),
-      _ => Tmp(),
+      AtomicSwapBuyPsbt() => AtomicSwapBuySummaryViewModel(),
+      BtcSendPsbt(toAddress: var toAddress, sats: var sats) =>
+        BtcSendSummaryViewModel(
+            networkFee: networkFee,
+            toAddress: toAddress,
+            btc: AssetQuantity(divisible: true, quantity: sats)),
+      XCPSendPsbt(
+        asset: var asset,
+        toAddress: var toAddress,
+        quantity: var quantity
+      ) =>
+        XCPSendSummaryViewModel(
+            networkFee: networkFee,
+            toAddress: toAddress,
+            quantity: quantity,
+            assetName: asset),
+      OpaquePsbt() => OpaquePsbtSummaryViewModel(),
     };
   }
 

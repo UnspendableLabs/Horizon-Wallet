@@ -401,6 +401,12 @@ class SwapOrderForm extends StatelessWidget {
                         modalTypeBuilder: (_) => WoltModalType.bottomSheet(),
                         pageListBuilder: (bottomSheetContext) => [
                               WoltModalSheetPage(
+                                isTopBarLayerAlwaysVisible: true,
+                                topBarTitle: Text("Review Transaction",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium!
+                                        .copyWith(color: Colors.white)),
                                 trailingNavBarWidget: TextButton(
                                   onPressed: () {
                                     Navigator.of(context).pop();
@@ -411,7 +417,7 @@ class SwapOrderForm extends StatelessWidget {
                                     height: 24,
                                   ),
                                 ),
-                                hasTopBarLayer: false,
+                                hasTopBarLayer: true,
                                 child: OrderBookView(
                                   priceType: state.priceType,
                                   priceString: state.priceString,
