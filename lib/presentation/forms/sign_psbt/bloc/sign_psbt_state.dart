@@ -17,7 +17,7 @@ class PasswordInput extends FormzInput<String, PasswordValidationError> {
   }
 }
 
-abstract class PsbtSummaryViewModel {}
+sealed class PsbtSummaryViewModel {}
 
 class AtomicSwapListingFeeSummaryViewModel extends PsbtSummaryViewModel {
   final AssetQuantity serviceFee;
@@ -34,7 +34,12 @@ class AtomicSwapSellSummaryViewModel extends PsbtSummaryViewModel {
 }
 
 class AtomicSwapBuySummaryViewModel extends PsbtSummaryViewModel {
-  AtomicSwapBuySummaryViewModel();
+  final AssetQuantity networkFee;
+  final AssetQuantity? royaltyFee;
+  AtomicSwapBuySummaryViewModel({
+    required this.networkFee,
+    required this.royaltyFee,
+  });
 }
 
 class BtcSendSummaryViewModel extends PsbtSummaryViewModel {
@@ -78,10 +83,11 @@ class OrderSummaryViewModel extends PsbtSummaryViewModel {
 }
 
 class OpaquePsbtSummaryViewModel extends PsbtSummaryViewModel {
-  OpaquePsbtSummaryViewModel();
+  final AssetQuantity networkFee;
+  OpaquePsbtSummaryViewModel({
+    required this.networkFee,
+  });
 }
-
-class Tmp extends PsbtSummaryViewModel {}
 
 class SignPsbtState with FormzMixin {
   final PsbtType psbtType;
@@ -126,7 +132,9 @@ class SignPsbtState with FormzMixin {
           networkFee: networkFee,
         ),
       AtomicSwapSellPsbt() => AtomicSwapSellSummaryViewModel(),
-      AtomicSwapBuyPsbt() => AtomicSwapBuySummaryViewModel(),
+      AtomicSwapBuyPsbt(royalty: var royaltyFee) =>
+        AtomicSwapBuySummaryViewModel(
+            networkFee: networkFee, royaltyFee: royaltyFee),
       BtcSendPsbt(toAddress: var toAddress, sats: var sats) =>
         BtcSendSummaryViewModel(
             networkFee: networkFee,
@@ -154,7 +162,9 @@ class SignPsbtState with FormzMixin {
             getAsset: getAsset,
             giveQuantity: giveQuantity,
             getQuantity: getQuantity),
-      OpaquePsbt() => OpaquePsbtSummaryViewModel(),
+      OpaquePsbt() => OpaquePsbtSummaryViewModel(
+          networkFee: networkFee,
+        ),
     };
   }
 

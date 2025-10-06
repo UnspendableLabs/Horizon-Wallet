@@ -672,6 +672,41 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                 //           ])),
                 //     ),
                 //   ),
+                OpaquePsbtSummaryViewModel() => SizedBox(
+                    width: double.infinity,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: HorizonUI.HorizonCard(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                          child: Row(children: [
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(4, 0, 8, 0),
+                                  child: Icon(
+                                    Icons.info,
+                                    size: 14,
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.color,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Expanded(
+                                child: Text(
+                                    "A third party has requested that you sign this transaction.  It will not be broadcasted from your wallet, but may be broadcast by the requesting party.  It is recommended that you verify the transaction inputs and outputs.",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall!
+                                        .copyWith(color: Colors.white)))
+                          ])),
+                    ),
+                  ),
                 AtomicSwapSellSummaryViewModel() => SizedBox(
                     width: double.infinity,
                     child: Padding(
@@ -707,7 +742,7 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                           ])),
                     ),
                   ),
-                _ => SizedBox.shrink()
+                AtomicSwapBuySummaryViewModel() => SizedBox.shrink(),
               }),
           Divider(),
           Padding(
@@ -1351,24 +1386,295 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                         )
                       ],
                     ),
-                  _ => Text(widget.psbtType.runtimeType.toString())
+                  AtomicSwapBuySummaryViewModel(
+                    networkFee: var networkFee,
+                    royaltyFee: var royaltyFee
+                  ) =>
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 6.0, horizontal: 8.0),
+                          child: Row(
+                            children: [
+                              Text(
+                                  "Inputs ( ${state.augmentedInputs != null ? state.augmentedInputs!.length : 0} )",
+                                  style:
+                                      Theme.of(context).textTheme.labelSmall!),
+                              SizedBox(width: 8),
+                              Spacer(),
+                              Text(
+                                  "${state.totalInputs.quantity.toString()} sat",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall!
+                                      .copyWith(color: Colors.white)),
+                            ],
+                          ),
+                        ),
+                        royaltyFee != null
+                            ? Padding(
+                                padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text("Royalty fee",
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .labelSmall!),
+                                        Spacer(),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                                "${royaltyFee.quantity.toString()} sat",
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .labelSmall!
+                                                    .copyWith(
+                                                        color: Colors.white)),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.fromLTRB(0, 2, 0, 0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          SatsToUsdDisplay(
+                                              sats: royaltyFee.quantity,
+                                              child: (usdValue) => Text(
+                                                    '\$${usdValue.toStringAsFixed(2)}',
+                                                    style: theme
+                                                        .textTheme.labelSmall
+                                                        ?.copyWith(
+                                                            fontSize: 10,
+                                                            color: Colors.grey),
+                                                  ))
+                                        ],
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              )
+                            : SizedBox.shrink(),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Text("Network Fee",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall!),
+                                  Spacer(),
+                                  Text("${networkFee.quantity.toString()} sat",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall!
+                                          .copyWith(color: Colors.white)),
+                                ],
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  SatsToUsdDisplay(
+                                      sats: networkFee.quantity,
+                                      child: (usdValue) => Text(
+                                            '\$${usdValue.toStringAsFixed(2)}',
+                                            style: theme.textTheme.labelSmall
+                                                ?.copyWith(
+                                                    fontSize: 10,
+                                                    color: Colors.grey),
+                                          )),
+                                ],
+                              )
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
+                          child: Row(
+                            children: [
+                              Text("Change",
+                                  style:
+                                      Theme.of(context).textTheme.labelSmall!),
+                              Spacer(),
+                              Text("${state.change.quantity.toString()} sat",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall!
+                                      .copyWith(color: Colors.green)),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(8, 12, 8, 2),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Text("Total",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall!
+                                          .copyWith(color: Colors.white)),
+                                  Spacer(),
+                                  Text(state.net.quantity.toString(),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall!
+                                          .copyWith(color: Colors.white)),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(right: 8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              SatsToUsdDisplay(
+                                  sats: state.net.quantity,
+                                  child: (usdValue) => Text(
+                                        '\$${usdValue.toStringAsFixed(2)}',
+                                        style: theme.textTheme.labelSmall
+                                            ?.copyWith(
+                                                fontSize: 10,
+                                                color: Colors.grey),
+                                      )),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                  OpaquePsbtSummaryViewModel(
+                    networkFee: var networkFee,
+                  ) =>
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 6.0, horizontal: 8.0),
+                          child: Row(
+                            children: [
+                              Text(
+                                  "Inputs ( ${state.augmentedInputs != null ? state.augmentedInputs!.length : 0} )",
+                                  style:
+                                      Theme.of(context).textTheme.labelSmall!),
+                              SizedBox(width: 8),
+                              Spacer(),
+                              Text(
+                                  "${state.totalInputs.quantity.toString()} sat",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall!
+                                      .copyWith(color: Colors.white)),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Text("Network Fee",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall!),
+                                  Spacer(),
+                                  Text("${networkFee.quantity.toString()} sat",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall!
+                                          .copyWith(color: Colors.white)),
+                                ],
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  SatsToUsdDisplay(
+                                      sats: networkFee.quantity,
+                                      child: (usdValue) => Text(
+                                            '\$${usdValue.toStringAsFixed(2)}',
+                                            style: theme.textTheme.labelSmall
+                                                ?.copyWith(
+                                                    fontSize: 10,
+                                                    color: Colors.grey),
+                                          )),
+                                ],
+                              )
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
+                          child: Row(
+                            children: [
+                              Text("Change",
+                                  style:
+                                      Theme.of(context).textTheme.labelSmall!),
+                              Spacer(),
+                              Text("${state.change.quantity.toString()} sat",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall!
+                                      .copyWith(color: Colors.green)),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(8, 12, 8, 2),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Text("Total",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall!
+                                          .copyWith(color: Colors.white)),
+                                  Spacer(),
+                                  Text(state.net.quantity.toString(),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall!
+                                          .copyWith(color: Colors.white)),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(right: 8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              SatsToUsdDisplay(
+                                  sats: state.net.quantity,
+                                  child: (usdValue) => Text(
+                                        '\$${usdValue.toStringAsFixed(2)}',
+                                        style: theme.textTheme.labelSmall
+                                            ?.copyWith(
+                                                fontSize: 10,
+                                                color: Colors.grey),
+                                      )),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
                 },
-                // Column(
-                //   children: state.debits
-                //           ?.map(
-                //             (debit) => _buildDebitView(debit, theme),
-                //           )
-                //           .toList() ??
-                //       [],
-                // ),
-                // Column(
-                //   children: state.credits
-                //           ?.map(
-                //             (credit) => _buildCreditView(credit, theme),
-                //           )
-                //           .toList() ??
-                //       [],
-                // ),
               ],
             ),
           ),

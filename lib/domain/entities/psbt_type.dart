@@ -25,14 +25,10 @@ class XCPSendPsbt extends TrustedPsbt {
 }
 
 class AtomicSwapBuyPsbt extends TrustedPsbt {
-  String asset;
-  AssetQuantity quantity;
-  BigInt sats;
+  AssetQuantity? royalty;
 
   AtomicSwapBuyPsbt({
-    required this.asset,
-    required this.quantity,
-    required this.sats,
+    required this.royalty,
   });
 }
 
