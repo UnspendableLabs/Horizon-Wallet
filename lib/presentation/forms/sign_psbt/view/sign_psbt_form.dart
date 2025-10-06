@@ -6,6 +6,7 @@ import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/network.dart';
 import 'package:horizon/domain/entities/psbt_type.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/sats_to_usd_display.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_state.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_event.dart';
@@ -98,14 +99,102 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+            child: Text("Review Transaction",
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium!
+                    .copyWith(color: Colors.white)),
+          ),
+          Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: switch (state.psbtSummaryViewModel) {
+                // AtomicSwapListingFeeSummaryViewModel() => SizedBox(
+                //     width: double.infinity,
+                //     child: Padding(
+                //       padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                //       child: HorizonUI.HorizonCard(
+                //           padding:
+                //               EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                //           child: Row(children: [
+                //             Column(
+                //               mainAxisAlignment: MainAxisAlignment.start,
+                //               children: [
+                //                 Padding(
+                //                   padding:
+                //                       const EdgeInsets.fromLTRB(4, 0, 8, 0),
+                //                   child: Icon(
+                //                     Icons.info,
+                //                     size: 14,
+                //                     color: Theme.of(context)
+                //                         .textTheme
+                //                         .bodySmall
+                //                         ?.color,
+                //                   ),
+                //                 ),
+                //               ],
+                //             ),
+                //             Expanded(
+                //                 child: Text(
+                //                     "horizon.market charges \$2.00 per atomic swap listing.  After confirming this transaction, your listing will be posted to horizon.market",
+                //                     style: Theme.of(context)
+                //                         .textTheme
+                //                         .bodySmall!
+                //                         .copyWith(color: Colors.white)))
+                //           ])),
+                //     ),
+                //   ),
+                AtomicSwapSellSummaryViewModel() => SizedBox(
+                    width: double.infinity,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: HorizonUI.HorizonCard(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                          child: Row(children: [
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(4, 0, 8, 0),
+                                  child: Icon(
+                                    Icons.info,
+                                    size: 14,
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.color,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Expanded(
+                                child: Text(
+                                    "You are creating a partially signed bitcoin transaction ( PSBT ).  Your listing will be posted to horizon.market when you broadcast the listing fee after creating the PSBT.  The transaction will not be broadcast to the network until a buyer purchases the listing.",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall!
+                                        .copyWith(color: Colors.white)))
+                          ])),
+                    ),
+                  ),
+                _ => SizedBox.shrink()
+              }),
+          Divider(),
+          Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Network"),
+                Text("Network",
+                    style: Theme.of(context)
+                        .textTheme
+                        .labelSmall!
+                        .copyWith(color: Colors.white)),
                 Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: violet)),
@@ -115,7 +204,10 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                           Network.signet => "signet",
                           Network.testnet4 => "testnet4",
                         },
-                        style: TextStyle(color: violet)))
+                        style: Theme.of(context)
+                            .textTheme
+                            .labelSmall!
+                            .copyWith(color: violet)))
               ],
             ),
           ),
@@ -126,6 +218,86 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 switch (state.psbtSummaryViewModel) {
+                  AtomicSwapSellSummaryViewModel() => Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 6.0, horizontal: 8.0),
+                          child: Row(
+                            children: [
+                              Text(
+                                  "Inputs ( ${state.augmentedInputs != null ? state.augmentedInputs!.length : 0} )",
+                                  style:
+                                      Theme.of(context).textTheme.labelSmall!),
+                              SizedBox(width: 8),
+                              Spacer(),
+                              Text(
+                                  "${state.totalInputs.quantity.toString()} sat",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall!
+                                      .copyWith(color: Colors.white)),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
+                          child: Row(
+                            children: [
+                              Text("Change",
+                                  style:
+                                      Theme.of(context).textTheme.labelSmall!),
+                              Spacer(),
+                              Text("${state.change.quantity.toString()} sat",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall!
+                                      .copyWith(color: Colors.green)),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(8, 12, 8, 2),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Text("Total",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall!
+                                          .copyWith(color: Colors.white)),
+                                  Spacer(),
+                                  Text(state.net.quantity.toString(),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall!
+                                          .copyWith(color: Colors.white)),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(right: 8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              SatsToUsdDisplay(
+                                  sats: state.net.quantity,
+                                  child: (usdValue) => Text(
+                                        '\$${usdValue.toStringAsFixed(2)}',
+                                        style: theme.textTheme.labelSmall
+                                            ?.copyWith(
+                                                fontSize: 10,
+                                                color: Colors.grey),
+                                      )),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
                   AtomicSwapListingFeeSummaryViewModel(
                     serviceFee: var serviceFee,
                     networkFee: var networkFee,
@@ -144,7 +316,8 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                                       Theme.of(context).textTheme.labelSmall!),
                               SizedBox(width: 8),
                               Spacer(),
-                              Text(state.totalInputs.quantity.toString(),
+                              Text(
+                                  "${state.totalInputs.quantity.toString()} sat",
                                   style: Theme.of(context)
                                       .textTheme
                                       .labelSmall!
@@ -153,18 +326,121 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 6.0, horizontal: 8.0),
+                          padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Text("Service Fee",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall!),
+                                  Spacer(),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                          "${serviceFee.quantity.toString()} sat",
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .labelSmall!
+                                              .copyWith(color: Colors.white)),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(0, 2, 0, 0),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text("Service fee for posting listing",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall!
+                                            .copyWith(
+                                                color: Colors.grey,
+                                                fontSize: 10)),
+                                    SatsToUsdDisplay(
+                                        sats: serviceFee.quantity,
+                                        child: (usdValue) => Text(
+                                              '\$${usdValue.toStringAsFixed(2)}',
+                                              style: theme.textTheme.labelSmall
+                                                  ?.copyWith(
+                                                      fontSize: 10,
+                                                      color: Colors.grey),
+                                            ))
+                                  ],
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Text("Network Fee",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall!),
+                                  Spacer(),
+                                  Text("${networkFee.quantity.toString()} sat",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall!
+                                          .copyWith(color: Colors.white)),
+                                ],
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  SatsToUsdDisplay(
+                                      sats: networkFee.quantity,
+                                      child: (usdValue) => Text(
+                                            '\$${usdValue.toStringAsFixed(2)}',
+                                            style: theme.textTheme.labelSmall
+                                                ?.copyWith(
+                                                    fontSize: 10,
+                                                    color: Colors.grey),
+                                          )),
+                                ],
+                              )
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
                           child: Row(
                             children: [
-                              Text("Service Fee",
+                              Text("Change",
                                   style:
                                       Theme.of(context).textTheme.labelSmall!),
                               Spacer(),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
+                              Text("${state.change.quantity.toString()} sat",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall!
+                                      .copyWith(color: Colors.green)),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(8, 12, 8, 2),
+                          child: Column(
+                            children: [
+                              Row(
                                 children: [
-                                  Text(serviceFee.quantity.toString(),
+                                  Text("Total",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall!
+                                          .copyWith(color: Colors.white)),
+                                  Spacer(),
+                                  Text(state.net.quantity.toString(),
                                       style: Theme.of(context)
                                           .textTheme
                                           .labelSmall!
@@ -175,58 +451,22 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 6.0, horizontal: 8.0),
+                          padding: EdgeInsets.only(right: 8.0),
                           child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              Text("Network Fee",
-                                  style:
-                                      Theme.of(context).textTheme.labelSmall!),
-                              Spacer(),
-                              Text(networkFee.quantity.toString(),
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .labelSmall!
-                                      .copyWith(color: Colors.white)),
+                              SatsToUsdDisplay(
+                                  sats: state.net.quantity,
+                                  child: (usdValue) => Text(
+                                        '\$${usdValue.toStringAsFixed(2)}',
+                                        style: theme.textTheme.labelSmall
+                                            ?.copyWith(
+                                                fontSize: 10,
+                                                color: Colors.grey),
+                                      )),
                             ],
                           ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 6.0, horizontal: 8.0),
-                          child: Row(
-                            children: [
-                              Text("Change",
-                                  style:
-                                      Theme.of(context).textTheme.labelSmall!),
-                              Spacer(),
-                              Text(state.change.quantity.toString(),
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .labelSmall!
-                                      .copyWith(color: Colors.green)),
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 6.0, horizontal: 8.0),
-                          child: Row(
-                            children: [
-                              Text("Total",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .labelSmall!
-                                      .copyWith(color: Colors.white)),
-                              Spacer(),
-                              Text(state.net.quantity.toString(),
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .labelSmall!
-                                      .copyWith(color: Colors.white)),
-                            ],
-                          ),
-                        ),
+                        )
                       ],
                     ),
                   _ => Text("placeholder")
@@ -266,23 +506,24 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                 isExpanded: _isExpanded,
                 headerBuilder: (context, isExpanded) {
                   return ListTile(
-                    title: Text(
-                      'Inputs & Outputs',
-                      style: theme.textTheme.labelMedium,
+                    title: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Text(
+                        _isExpanded ? "Inputs" : 'Inputs & Outputs',
+                        style: Theme.of(context)
+                            .textTheme
+                            .labelSmall!
+                            .copyWith(color: Colors.white),
+                      ),
                     ),
                   );
                 },
                 body: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Inputs (${state.augmentedInputs?.length})',
-                        style: theme.textTheme.labelSmall,
-                      ),
-                      const SizedBox(height: 8),
                       Column(
                           children: state.augmentedInputs
                                   ?.map(
@@ -295,14 +536,26 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
 
                       // --- OUTPUTS LIST ---
                       Text(
-                        'Outputs (${state.augmentedOutputs?.length})',
-                        style: theme.textTheme.labelSmall,
+                        "Outputs",
+                        style: Theme.of(context)
+                            .textTheme
+                            .labelSmall!
+                            .copyWith(color: Colors.white),
                       ),
                       const SizedBox(height: 4),
                       Column(
                         children: state.augmentedOutputs
-                                ?.map(
-                                    (output) => _buildOutputView(output, theme))
+                                ?.asMap()
+                                .map((i, output) => MapEntry(
+                                    i,
+                                    _buildOutputView(
+                                        output,
+                                        theme,
+                                        switch ((widget.psbtType, i)) {
+                                          (AtomicSwapSellPsbt(), 0) => true,
+                                          _ => false,
+                                        })))
+                                .values
                                 .toList() ??
                             [],
                       ),
@@ -447,24 +700,23 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
             // Left side: address + badge
             Row(
               children: [
-                Text(address, style: theme.textTheme.labelLarge),
+                Text(address, style: theme.textTheme.labelSmall),
                 const SizedBox(width: 8),
                 badge,
               ],
             ),
             // Right side: value
-            Text("${satoshisToBtc(btcValue).toString()} BTC",
-                style: theme.textTheme.labelMedium),
+            Text("${(btcValue)} sat", style: theme.textTheme.labelSmall),
           ],
         ),
         input.balances.isNotEmpty
             ? Card(
-                margin: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+                margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(8.0, 16.0, 8.0, 16.0),
+                  padding: const EdgeInsets.fromLTRB(8.0, 4, 8.0, 4),
                   child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment
@@ -481,11 +733,12 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
   }
 
   // Renders each AugmentedOutput
-  Widget _buildOutputView(AugmentedOutput output, ThemeData theme) {
+  Widget _buildOutputView(
+      AugmentedOutput output, ThemeData theme, bool isDummyOutput) {
     // The address from output.vout.scriptPubKey.address
     // But you also have a getter in AugmentedOutput for `address`.
 
-    final outputLabel =
+    String outputLabel =
         output.isOpReturn() ? "OP_RETURN" : _shortenAddress(output.address);
 
     // The BTC value from output.value
@@ -500,12 +753,16 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
         balancesWidget.add(
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 2),
-            child: Row(
+            child: Column(
               children: [
-                Expanded(
-                  child: Text('${b.quantity.normalized()} ${b.asset}',
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text('${b.quantity.normalized()} ${b.asset}',
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.labelSmall),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -514,14 +771,41 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
       }
     }
 
+    if (isDummyOutput) {
+      outputLabel = "BUYER_OUTPUT";
+    }
+
     return Column(
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(outputLabel, style: theme.textTheme.labelLarge),
-            Text("${satoshisToBtc(btcValue)} BTC",
-                style: theme.textTheme.labelMedium),
+            Row(
+              children: [
+                Text(outputLabel,
+                    style: Theme.of(context).textTheme.labelSmall),
+                isDummyOutput
+                    ? Padding(
+                        padding: const EdgeInsets.only(left: 4.0),
+                        child: Tooltip(
+                          message:
+                              "This output will be replaced by the swap buyer.",
+                          child: Icon(
+                            Icons.help,
+                            size: 14,
+                            color: Theme.of(context).textTheme.bodySmall?.color,
+                          ),
+                        ),
+                      )
+                    : SizedBox.shrink(),
+              ],
+            ),
+            Row(
+              children: [
+                Text("${btcValue} sat",
+                    style: Theme.of(context).textTheme.labelSmall),
+              ],
+            )
           ],
         ),
       ],

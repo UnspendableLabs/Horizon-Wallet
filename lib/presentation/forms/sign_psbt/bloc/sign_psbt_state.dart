@@ -28,6 +28,10 @@ class AtomicSwapListingFeeSummaryViewModel extends PsbtSummaryViewModel {
   });
 }
 
+class AtomicSwapSellSummaryViewModel extends PsbtSummaryViewModel {
+  AtomicSwapSellSummaryViewModel();
+}
+
 class Tmp extends PsbtSummaryViewModel {}
 
 class SignPsbtState with FormzMixin {
@@ -72,6 +76,7 @@ class SignPsbtState with FormzMixin {
               : AssetQuantity.empty(divisible: true),
           networkFee: networkFee,
         ),
+      AtomicSwapSellPsbt() => AtomicSwapSellSummaryViewModel(),
       _ => Tmp(),
     };
   }

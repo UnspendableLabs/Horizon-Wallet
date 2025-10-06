@@ -251,8 +251,6 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
               ))
               .mapLeft((s) => UnexpectedFailure(message: s));
 
-          print("before run");
-
           final results = await $(TaskEither.sequenceList([
             getTransactionTask,
             utxoBalancesTask,
@@ -261,13 +259,8 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
           final transaction = results[0] as BitcoinTx;
           final balances = results[1] as List<UtxoBalance>;
 
-          print("\n\n\n\n");
-          print(balances);
-
           final prevout = transaction.vout[vin.vout];
           final address = prevout.scriptpubkeyAddress;
-
-          print("prevout: $prevout");
 
           final signatureRequired =
               signInputs[address]?.contains(index) ?? false;
@@ -339,13 +332,6 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
                 quantity: e.value.map((value) => value.abs()),
               ));
 
-      for (var credit in netCredits) {
-        print("Credit: ${credit.asset} - ${credit.quantity.quantity}");
-      }
-      for (var debit in netDebits) {
-        print("Debit: ${debit.asset} - ${debit.quantity.quantity}");
-      }
-
       emit(state.copyWith(
         debits: netDebits.toList(),
         credits: netCredits.toList(),
@@ -354,8 +340,6 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
         isFormDataLoaded: true,
       ));
     } catch (e, callstack) {
-      print(e);
-      print(callstack);
       emit(state.copyWith(
         isFormDataLoaded: true,
       ));

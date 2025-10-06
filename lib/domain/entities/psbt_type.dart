@@ -35,15 +35,15 @@ class AtomicSwapBuyPsbt extends TrustedPsbt {
 }
 
 class AtomicSwapSellPsbt extends TrustedPsbt {
-  String asset;
-  AssetQuantity quantity;
-  BigInt sats;
+  // String asset;
+  // AssetQuantity quantity;
+  // BigInt sats;
 
-  AtomicSwapSellPsbt({
-    required this.asset,
-    required this.quantity,
-    required this.sats,
-  });
+  AtomicSwapSellPsbt(
+      // required this.asset,
+      // required this.quantity,
+      // required this.sats,
+      );
 }
 
 class AtomicSwapListingFee extends TrustedPsbt {}

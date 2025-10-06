@@ -176,7 +176,7 @@ class CreatePsbtSignHandler extends StatelessWidget {
                             () => const SizedBox.shrink(),
                             (unsignedPsbtHex) => BlocProvider(
                                 create: (context) => SignPsbtBloc(
-                                        psbtType: OpaquePsbt(),
+                                        psbtType: AtomicSwapSellPsbt(),
                                         httpConfig: session.httpConfig,
                                         addresses: session.addressIndexSet.list,
                                         passwordRequired: settings
@@ -190,7 +190,7 @@ class CreatePsbtSignHandler extends StatelessWidget {
                                           0x03 | 0x80 | 0x02,
                                         ]),
                                 child: SignPsbtForm(
-                                  psbtType: OpaquePsbt(),
+                                  psbtType: AtomicSwapSellPsbt(),
                                   key: Key(unsignedPsbtHex),
                                   passwordRequired: settings
                                       .requirePasswordForCryptoOperations,
