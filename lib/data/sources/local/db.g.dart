@@ -2475,27 +2475,40 @@ class $UtxoAttachesTable extends UtxoAttaches
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $UtxoAttachesTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _txidMeta = const VerificationMeta('txid');
-  @override
-  late final GeneratedColumn<String> txid = GeneratedColumn<String>(
-      'txid', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: true,
-      $customConstraints: 'UNIQUE NOT NULL');
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
   @override
   late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
       'created_at', aliasedName, false,
       type: DriftSqlType.dateTime, requiredDuringInsert: true);
-  static const VerificationMeta _utxoTxidMeta =
-      const VerificationMeta('utxoTxid');
+  static const VerificationMeta _utxoIDMeta = const VerificationMeta('utxoID');
   @override
-  late final GeneratedColumn<String> utxoTxid = GeneratedColumn<String>(
-      'utxo_txid', aliasedName, false,
+  late final GeneratedColumn<String> utxoID = GeneratedColumn<String>(
+      'utxo_i_d', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _assetMeta = const VerificationMeta('asset');
   @override
-  List<GeneratedColumn> get $columns => [txid, createdAt, utxoTxid];
+  late final GeneratedColumn<String> asset = GeneratedColumn<String>(
+      'asset', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _divisibleMeta =
+      const VerificationMeta('divisible');
+  @override
+  late final GeneratedColumn<bool> divisible = GeneratedColumn<bool>(
+      'divisible', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("divisible" IN (0, 1))'));
+  static const VerificationMeta _quantityMeta =
+      const VerificationMeta('quantity');
+  @override
+  late final GeneratedColumn<int> quantity = GeneratedColumn<int>(
+      'quantity', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [createdAt, utxoID, asset, divisible, quantity];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -2506,39 +2519,55 @@ class $UtxoAttachesTable extends UtxoAttaches
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('txid')) {
-      context.handle(
-          _txidMeta, txid.isAcceptableOrUnknown(data['txid']!, _txidMeta));
-    } else if (isInserting) {
-      context.missing(_txidMeta);
-    }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
     } else if (isInserting) {
       context.missing(_createdAtMeta);
     }
-    if (data.containsKey('utxo_txid')) {
-      context.handle(_utxoTxidMeta,
-          utxoTxid.isAcceptableOrUnknown(data['utxo_txid']!, _utxoTxidMeta));
+    if (data.containsKey('utxo_i_d')) {
+      context.handle(_utxoIDMeta,
+          utxoID.isAcceptableOrUnknown(data['utxo_i_d']!, _utxoIDMeta));
     } else if (isInserting) {
-      context.missing(_utxoTxidMeta);
+      context.missing(_utxoIDMeta);
+    }
+    if (data.containsKey('asset')) {
+      context.handle(
+          _assetMeta, asset.isAcceptableOrUnknown(data['asset']!, _assetMeta));
+    } else if (isInserting) {
+      context.missing(_assetMeta);
+    }
+    if (data.containsKey('divisible')) {
+      context.handle(_divisibleMeta,
+          divisible.isAcceptableOrUnknown(data['divisible']!, _divisibleMeta));
+    } else if (isInserting) {
+      context.missing(_divisibleMeta);
+    }
+    if (data.containsKey('quantity')) {
+      context.handle(_quantityMeta,
+          quantity.isAcceptableOrUnknown(data['quantity']!, _quantityMeta));
+    } else if (isInserting) {
+      context.missing(_quantityMeta);
     }
     return context;
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {txid};
+  Set<GeneratedColumn> get $primaryKey => {utxoID};
   @override
   UtxoAttach map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return UtxoAttach(
-      txid: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}txid'])!,
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
-      utxoTxid: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}utxo_txid'])!,
+      utxoID: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}utxo_i_d'])!,
+      asset: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}asset'])!,
+      divisible: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}divisible'])!,
+      quantity: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}quantity'])!,
     );
   }
 
@@ -2549,25 +2578,35 @@ class $UtxoAttachesTable extends UtxoAttaches
 }
 
 class UtxoAttach extends DataClass implements Insertable<UtxoAttach> {
-  final String txid;
   final DateTime createdAt;
-  final String utxoTxid;
+  final String utxoID;
+  final String asset;
+  final bool divisible;
+  final int quantity;
   const UtxoAttach(
-      {required this.txid, required this.createdAt, required this.utxoTxid});
+      {required this.createdAt,
+      required this.utxoID,
+      required this.asset,
+      required this.divisible,
+      required this.quantity});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['txid'] = Variable<String>(txid);
     map['created_at'] = Variable<DateTime>(createdAt);
-    map['utxo_txid'] = Variable<String>(utxoTxid);
+    map['utxo_i_d'] = Variable<String>(utxoID);
+    map['asset'] = Variable<String>(asset);
+    map['divisible'] = Variable<bool>(divisible);
+    map['quantity'] = Variable<int>(quantity);
     return map;
   }
 
   UtxoAttachesCompanion toCompanion(bool nullToAbsent) {
     return UtxoAttachesCompanion(
-      txid: Value(txid),
       createdAt: Value(createdAt),
-      utxoTxid: Value(utxoTxid),
+      utxoID: Value(utxoID),
+      asset: Value(asset),
+      divisible: Value(divisible),
+      quantity: Value(quantity),
     );
   }
 
@@ -2575,98 +2614,132 @@ class UtxoAttach extends DataClass implements Insertable<UtxoAttach> {
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return UtxoAttach(
-      txid: serializer.fromJson<String>(json['txid']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      utxoTxid: serializer.fromJson<String>(json['utxoTxid']),
+      utxoID: serializer.fromJson<String>(json['utxoID']),
+      asset: serializer.fromJson<String>(json['asset']),
+      divisible: serializer.fromJson<bool>(json['divisible']),
+      quantity: serializer.fromJson<int>(json['quantity']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'txid': serializer.toJson<String>(txid),
       'createdAt': serializer.toJson<DateTime>(createdAt),
-      'utxoTxid': serializer.toJson<String>(utxoTxid),
+      'utxoID': serializer.toJson<String>(utxoID),
+      'asset': serializer.toJson<String>(asset),
+      'divisible': serializer.toJson<bool>(divisible),
+      'quantity': serializer.toJson<int>(quantity),
     };
   }
 
-  UtxoAttach copyWith({String? txid, DateTime? createdAt, String? utxoTxid}) =>
+  UtxoAttach copyWith(
+          {DateTime? createdAt,
+          String? utxoID,
+          String? asset,
+          bool? divisible,
+          int? quantity}) =>
       UtxoAttach(
-        txid: txid ?? this.txid,
         createdAt: createdAt ?? this.createdAt,
-        utxoTxid: utxoTxid ?? this.utxoTxid,
+        utxoID: utxoID ?? this.utxoID,
+        asset: asset ?? this.asset,
+        divisible: divisible ?? this.divisible,
+        quantity: quantity ?? this.quantity,
       );
   UtxoAttach copyWithCompanion(UtxoAttachesCompanion data) {
     return UtxoAttach(
-      txid: data.txid.present ? data.txid.value : this.txid,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      utxoTxid: data.utxoTxid.present ? data.utxoTxid.value : this.utxoTxid,
+      utxoID: data.utxoID.present ? data.utxoID.value : this.utxoID,
+      asset: data.asset.present ? data.asset.value : this.asset,
+      divisible: data.divisible.present ? data.divisible.value : this.divisible,
+      quantity: data.quantity.present ? data.quantity.value : this.quantity,
     );
   }
 
   @override
   String toString() {
     return (StringBuffer('UtxoAttach(')
-          ..write('txid: $txid, ')
           ..write('createdAt: $createdAt, ')
-          ..write('utxoTxid: $utxoTxid')
+          ..write('utxoID: $utxoID, ')
+          ..write('asset: $asset, ')
+          ..write('divisible: $divisible, ')
+          ..write('quantity: $quantity')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(txid, createdAt, utxoTxid);
+  int get hashCode =>
+      Object.hash(createdAt, utxoID, asset, divisible, quantity);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is UtxoAttach &&
-          other.txid == this.txid &&
           other.createdAt == this.createdAt &&
-          other.utxoTxid == this.utxoTxid);
+          other.utxoID == this.utxoID &&
+          other.asset == this.asset &&
+          other.divisible == this.divisible &&
+          other.quantity == this.quantity);
 }
 
 class UtxoAttachesCompanion extends UpdateCompanion<UtxoAttach> {
-  final Value<String> txid;
   final Value<DateTime> createdAt;
-  final Value<String> utxoTxid;
+  final Value<String> utxoID;
+  final Value<String> asset;
+  final Value<bool> divisible;
+  final Value<int> quantity;
   final Value<int> rowid;
   const UtxoAttachesCompanion({
-    this.txid = const Value.absent(),
     this.createdAt = const Value.absent(),
-    this.utxoTxid = const Value.absent(),
+    this.utxoID = const Value.absent(),
+    this.asset = const Value.absent(),
+    this.divisible = const Value.absent(),
+    this.quantity = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   UtxoAttachesCompanion.insert({
-    required String txid,
     required DateTime createdAt,
-    required String utxoTxid,
+    required String utxoID,
+    required String asset,
+    required bool divisible,
+    required int quantity,
     this.rowid = const Value.absent(),
-  })  : txid = Value(txid),
-        createdAt = Value(createdAt),
-        utxoTxid = Value(utxoTxid);
+  })  : createdAt = Value(createdAt),
+        utxoID = Value(utxoID),
+        asset = Value(asset),
+        divisible = Value(divisible),
+        quantity = Value(quantity);
   static Insertable<UtxoAttach> custom({
-    Expression<String>? txid,
     Expression<DateTime>? createdAt,
-    Expression<String>? utxoTxid,
+    Expression<String>? utxoID,
+    Expression<String>? asset,
+    Expression<bool>? divisible,
+    Expression<int>? quantity,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
-      if (txid != null) 'txid': txid,
       if (createdAt != null) 'created_at': createdAt,
-      if (utxoTxid != null) 'utxo_txid': utxoTxid,
+      if (utxoID != null) 'utxo_i_d': utxoID,
+      if (asset != null) 'asset': asset,
+      if (divisible != null) 'divisible': divisible,
+      if (quantity != null) 'quantity': quantity,
       if (rowid != null) 'rowid': rowid,
     });
   }
 
   UtxoAttachesCompanion copyWith(
-      {Value<String>? txid,
-      Value<DateTime>? createdAt,
-      Value<String>? utxoTxid,
+      {Value<DateTime>? createdAt,
+      Value<String>? utxoID,
+      Value<String>? asset,
+      Value<bool>? divisible,
+      Value<int>? quantity,
       Value<int>? rowid}) {
     return UtxoAttachesCompanion(
-      txid: txid ?? this.txid,
       createdAt: createdAt ?? this.createdAt,
-      utxoTxid: utxoTxid ?? this.utxoTxid,
+      utxoID: utxoID ?? this.utxoID,
+      asset: asset ?? this.asset,
+      divisible: divisible ?? this.divisible,
+      quantity: quantity ?? this.quantity,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2674,14 +2747,20 @@ class UtxoAttachesCompanion extends UpdateCompanion<UtxoAttach> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (txid.present) {
-      map['txid'] = Variable<String>(txid.value);
-    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
-    if (utxoTxid.present) {
-      map['utxo_txid'] = Variable<String>(utxoTxid.value);
+    if (utxoID.present) {
+      map['utxo_i_d'] = Variable<String>(utxoID.value);
+    }
+    if (asset.present) {
+      map['asset'] = Variable<String>(asset.value);
+    }
+    if (divisible.present) {
+      map['divisible'] = Variable<bool>(divisible.value);
+    }
+    if (quantity.present) {
+      map['quantity'] = Variable<int>(quantity.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -2692,9 +2771,11 @@ class UtxoAttachesCompanion extends UpdateCompanion<UtxoAttach> {
   @override
   String toString() {
     return (StringBuffer('UtxoAttachesCompanion(')
-          ..write('txid: $txid, ')
           ..write('createdAt: $createdAt, ')
-          ..write('utxoTxid: $utxoTxid, ')
+          ..write('utxoID: $utxoID, ')
+          ..write('asset: $asset, ')
+          ..write('divisible: $divisible, ')
+          ..write('quantity: $quantity, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -4000,16 +4081,20 @@ typedef $$AccountConfigurationsTableProcessedTableManager
         PrefetchHooks Function()>;
 typedef $$UtxoAttachesTableCreateCompanionBuilder = UtxoAttachesCompanion
     Function({
-  required String txid,
   required DateTime createdAt,
-  required String utxoTxid,
+  required String utxoID,
+  required String asset,
+  required bool divisible,
+  required int quantity,
   Value<int> rowid,
 });
 typedef $$UtxoAttachesTableUpdateCompanionBuilder = UtxoAttachesCompanion
     Function({
-  Value<String> txid,
   Value<DateTime> createdAt,
-  Value<String> utxoTxid,
+  Value<String> utxoID,
+  Value<String> asset,
+  Value<bool> divisible,
+  Value<int> quantity,
   Value<int> rowid,
 });
 
@@ -4022,14 +4107,20 @@ class $$UtxoAttachesTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get txid => $composableBuilder(
-      column: $table.txid, builder: (column) => ColumnFilters(column));
-
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get utxoTxid => $composableBuilder(
-      column: $table.utxoTxid, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get utxoID => $composableBuilder(
+      column: $table.utxoID, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get asset => $composableBuilder(
+      column: $table.asset, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get divisible => $composableBuilder(
+      column: $table.divisible, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get quantity => $composableBuilder(
+      column: $table.quantity, builder: (column) => ColumnFilters(column));
 }
 
 class $$UtxoAttachesTableOrderingComposer
@@ -4041,14 +4132,20 @@ class $$UtxoAttachesTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<String> get txid => $composableBuilder(
-      column: $table.txid, builder: (column) => ColumnOrderings(column));
-
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get utxoTxid => $composableBuilder(
-      column: $table.utxoTxid, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get utxoID => $composableBuilder(
+      column: $table.utxoID, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get asset => $composableBuilder(
+      column: $table.asset, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get divisible => $composableBuilder(
+      column: $table.divisible, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get quantity => $composableBuilder(
+      column: $table.quantity, builder: (column) => ColumnOrderings(column));
 }
 
 class $$UtxoAttachesTableAnnotationComposer
@@ -4060,14 +4157,20 @@ class $$UtxoAttachesTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<String> get txid =>
-      $composableBuilder(column: $table.txid, builder: (column) => column);
-
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
-  GeneratedColumn<String> get utxoTxid =>
-      $composableBuilder(column: $table.utxoTxid, builder: (column) => column);
+  GeneratedColumn<String> get utxoID =>
+      $composableBuilder(column: $table.utxoID, builder: (column) => column);
+
+  GeneratedColumn<String> get asset =>
+      $composableBuilder(column: $table.asset, builder: (column) => column);
+
+  GeneratedColumn<bool> get divisible =>
+      $composableBuilder(column: $table.divisible, builder: (column) => column);
+
+  GeneratedColumn<int> get quantity =>
+      $composableBuilder(column: $table.quantity, builder: (column) => column);
 }
 
 class $$UtxoAttachesTableTableManager extends RootTableManager<
@@ -4093,27 +4196,35 @@ class $$UtxoAttachesTableTableManager extends RootTableManager<
           createComputedFieldComposer: () =>
               $$UtxoAttachesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
-            Value<String> txid = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
-            Value<String> utxoTxid = const Value.absent(),
+            Value<String> utxoID = const Value.absent(),
+            Value<String> asset = const Value.absent(),
+            Value<bool> divisible = const Value.absent(),
+            Value<int> quantity = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               UtxoAttachesCompanion(
-            txid: txid,
             createdAt: createdAt,
-            utxoTxid: utxoTxid,
+            utxoID: utxoID,
+            asset: asset,
+            divisible: divisible,
+            quantity: quantity,
             rowid: rowid,
           ),
           createCompanionCallback: ({
-            required String txid,
             required DateTime createdAt,
-            required String utxoTxid,
+            required String utxoID,
+            required String asset,
+            required bool divisible,
+            required int quantity,
             Value<int> rowid = const Value.absent(),
           }) =>
               UtxoAttachesCompanion.insert(
-            txid: txid,
             createdAt: createdAt,
-            utxoTxid: utxoTxid,
+            utxoID: utxoID,
+            asset: asset,
+            divisible: divisible,
+            quantity: quantity,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0

@@ -11,9 +11,11 @@ class UtxoAttachRepositoryImpl implements UtxoAttachRepository {
   @override
   Future<void> create(entity.UtxoAttach value) {
     return _dao.insert(UtxoAttach(
-      txid: value.txid,
       createdAt: value.createdAt,
-      utxoTxid: value.id.toString(),
+      utxoID: value.id.toString(),
+      quantity: value.quantity.quantity.toInt(),
+      divisible: value.quantity.divisible,
+      asset: value.asset,
     ));
   }
 }

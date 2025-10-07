@@ -2,10 +2,12 @@ import 'package:drift/drift.dart';
 
 @DataClassName("UtxoAttach")
 class UtxoAttaches extends Table {
-  TextColumn get txid => text().customConstraint('UNIQUE NOT NULL')();
   DateTimeColumn get createdAt => dateTime()();
-  TextColumn get utxoTxid => text()();
+  TextColumn get utxoID => text()();
+  TextColumn get asset => text()();
+  BoolColumn get divisible => boolean()();
+  IntColumn get quantity => integer()();
 
   @override
-  Set<Column> get primaryKey => {txid};
+  Set<Column> get primaryKey => {utxoID};
 }

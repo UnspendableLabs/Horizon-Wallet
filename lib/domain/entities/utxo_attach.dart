@@ -1,3 +1,4 @@
+import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 
 // {
@@ -21,12 +22,14 @@ import 'package:horizon/domain/entities/utxo.dart';
 //    },
 
 class UtxoAttach {
-  final String txid;
+  final String asset;
+  final AssetQuantity quantity;
   final UtxoID id;
   final DateTime createdAt;
 
   UtxoAttach({
-    required this.txid,
+    required this.asset,
+    required this.quantity,
     required this.id,
     required this.createdAt,
   });

@@ -4,11 +4,13 @@ import 'package:get_it/get_it.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:decimal/decimal.dart';
+import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/compose_attach_utxo.dart';
 import 'package:horizon/domain/entities/utxo.dart';
+import 'package:horizon/domain/entities/utxo_attach.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/utxo_attach_repository.dart';
@@ -283,6 +285,18 @@ class AssetAttachFormBloc
         decryptionStrategy: InMemoryKey(),
         rawtransaction: composeResponse.rawtransaction,
       ));
+
+      await _utxoAttachRepository.create(
+        UtxoAttach(
+          asset: composeResponse.params.asset,
+          quantity: AssetQuantity(
+            quantity: BigInt.from(quantity),
+            divisible: state.attachQuantityInput.divisible,
+          ),
+          id: UtxoID.fromString("${broadcastResponse.hash}:0"),
+          createdAt: DateTime.now(),
+        ),
+      );
 
       // now the problem reduces to "AttachedAtomicSwapSell" variant
       return AttachedAtomicSwapSell(
