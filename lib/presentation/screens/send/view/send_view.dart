@@ -159,7 +159,7 @@ class _SendViewState extends State<SendView> {
                               children: [
                                 TokenSelectorFormSuccessHandler(
                                     onTokenSelected: (option) {
-                                  _cachedBalances = balancesSet.projected;
+                                  _cachedBalances = balancesSet.confirmed;
                                   context.flow<SendFlowModel>().update(
                                       (model) => model.copyWith(
                                           balance: option.balance));

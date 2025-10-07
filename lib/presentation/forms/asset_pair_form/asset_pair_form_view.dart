@@ -249,28 +249,28 @@ class _AssetPairFormState extends State<AssetPairForm> {
                 ],
               ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 0, 0, 0),
-                  child: Text(
-                    "Include mempool balances",
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ),
-                Switch(
-                  value: widget.state.includeMempool,
-                  onChanged: (value) {
-                    widget.actions.onToggleMempoolClicked();
-                  },
-                ),
-              ],
-            ),
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //   children: [
+            //     Padding(
+            //       padding: const EdgeInsets.fromLTRB(12, 0, 0, 0),
+            //       child: Text(
+            //         "Include mempool balances",
+            //         style: TextStyle(
+            //           fontSize: 12,
+            //           fontWeight: FontWeight.w500,
+            //           color: Colors.grey,
+            //         ),
+            //       ),
+            //     ),
+            //     Switch(
+            //       value: widget.state.includeMempool,
+            //       onChanged: (value) {
+            //         widget.actions.onToggleMempoolClicked();
+            //       },
+            //     ),
+            //   ],
+            // ),
             const SizedBox(
               height: 24,
             ),

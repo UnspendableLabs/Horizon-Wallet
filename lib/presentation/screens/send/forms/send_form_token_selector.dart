@@ -124,28 +124,28 @@ class _SendFormTokenSelectorState extends State<SendFormTokenSelector> {
                       balance: item.balance),
               hintText: "Select Token"),
           SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 0, 0, 0),
-                child: Text(
-                  "Include mempool balances",
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey,
-                  ),
-                ),
-              ),
-              Switch(
-                value: widget.state.includeMempool,
-                onChanged: (value) {
-                  widget.actions.onToggleMempoolClicked();
-                },
-              ),
-            ],
-          ),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //   children: [
+          //     Padding(
+          //       padding: const EdgeInsets.fromLTRB(12, 0, 0, 0),
+          //       child: Text(
+          //         "Include mempool balances",
+          //         style: TextStyle(
+          //           fontSize: 12,
+          //           fontWeight: FontWeight.w500,
+          //           color: Colors.grey,
+          //         ),
+          //       ),
+          //     ),
+          //     Switch(
+          //       value: widget.state.includeMempool,
+          //       onChanged: (value) {
+          //         widget.actions.onToggleMempoolClicked();
+          //       },
+          //     ),
+          //   ],
+          // ),
           const SizedBox(height: 24),
           HorizonButton(
             variant: ButtonVariant.green,
