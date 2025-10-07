@@ -217,6 +217,23 @@ class Wallet extends DataClass implements Insertable<Wallet> {
         publicKey: publicKey ?? this.publicKey,
         chainCodeHex: chainCodeHex ?? this.chainCodeHex,
       );
+  Wallet copyWithCompanion(WalletsCompanion data) {
+    return Wallet(
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      name: data.name.present ? data.name.value : this.name,
+      encryptedPrivKey: data.encryptedPrivKey.present
+          ? data.encryptedPrivKey.value
+          : this.encryptedPrivKey,
+      encryptedMnemonic: data.encryptedMnemonic.present
+          ? data.encryptedMnemonic.value
+          : this.encryptedMnemonic,
+      publicKey: data.publicKey.present ? data.publicKey.value : this.publicKey,
+      chainCodeHex: data.chainCodeHex.present
+          ? data.chainCodeHex.value
+          : this.chainCodeHex,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Wallet(')
@@ -581,6 +598,23 @@ class Account extends DataClass implements Insertable<Account> {
         accountIndex: accountIndex ?? this.accountIndex,
         importFormat: importFormat ?? this.importFormat,
       );
+  Account copyWithCompanion(AccountsCompanion data) {
+    return Account(
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      name: data.name.present ? data.name.value : this.name,
+      walletUuid:
+          data.walletUuid.present ? data.walletUuid.value : this.walletUuid,
+      purpose: data.purpose.present ? data.purpose.value : this.purpose,
+      coinType: data.coinType.present ? data.coinType.value : this.coinType,
+      accountIndex: data.accountIndex.present
+          ? data.accountIndex.value
+          : this.accountIndex,
+      importFormat: data.importFormat.present
+          ? data.importFormat.value
+          : this.importFormat,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Account(')
@@ -899,6 +933,18 @@ class Address extends DataClass implements Insertable<Address> {
             ? encryptedPrivateKey.value
             : this.encryptedPrivateKey,
       );
+  Address copyWithCompanion(AddressesCompanion data) {
+    return Address(
+      accountUuid:
+          data.accountUuid.present ? data.accountUuid.value : this.accountUuid,
+      address: data.address.present ? data.address.value : this.address,
+      index: data.index.present ? data.index.value : this.index,
+      encryptedPrivateKey: data.encryptedPrivateKey.present
+          ? data.encryptedPrivateKey.value
+          : this.encryptedPrivateKey,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Address(')
@@ -1295,6 +1341,24 @@ class Transaction extends DataClass implements Insertable<Transaction> {
             unpackedData.present ? unpackedData.value : this.unpackedData,
         submittedAt: submittedAt ?? this.submittedAt,
       );
+  Transaction copyWithCompanion(TransactionsCompanion data) {
+    return Transaction(
+      hash: data.hash.present ? data.hash.value : this.hash,
+      raw: data.raw.present ? data.raw.value : this.raw,
+      source: data.source.present ? data.source.value : this.source,
+      destination:
+          data.destination.present ? data.destination.value : this.destination,
+      btcAmount: data.btcAmount.present ? data.btcAmount.value : this.btcAmount,
+      fee: data.fee.present ? data.fee.value : this.fee,
+      data: data.data.present ? data.data.value : this.data,
+      unpackedData: data.unpackedData.present
+          ? data.unpackedData.value
+          : this.unpackedData,
+      submittedAt:
+          data.submittedAt.present ? data.submittedAt.value : this.submittedAt,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Transaction(')
@@ -1631,6 +1695,17 @@ class ImportedAddress extends DataClass implements Insertable<ImportedAddress> {
         network: network ?? this.network,
         type_: type_ ?? this.type_,
       );
+  ImportedAddress copyWithCompanion(ImportedAddressesCompanion data) {
+    return ImportedAddress(
+      address: data.address.present ? data.address.value : this.address,
+      encryptedWif: data.encryptedWif.present
+          ? data.encryptedWif.value
+          : this.encryptedWif,
+      network: data.network.present ? data.network.value : this.network,
+      type_: data.type_.present ? data.type_.value : this.type_,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('ImportedAddress(')
@@ -1978,6 +2053,26 @@ class WalletConfig extends DataClass implements Insertable<WalletConfig> {
         seedDerivation: seedDerivation ?? this.seedDerivation,
         addrKindsMask: addrKindsMask ?? this.addrKindsMask,
       );
+  WalletConfig copyWithCompanion(WalletConfigsCompanion data) {
+    return WalletConfig(
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      network: data.network.present ? data.network.value : this.network,
+      basePath: data.basePath.present ? data.basePath.value : this.basePath,
+      accountIndexStart: data.accountIndexStart.present
+          ? data.accountIndexStart.value
+          : this.accountIndexStart,
+      accountIndexEnd: data.accountIndexEnd.present
+          ? data.accountIndexEnd.value
+          : this.accountIndexEnd,
+      seedDerivation: data.seedDerivation.present
+          ? data.seedDerivation.value
+          : this.seedDerivation,
+      addrKindsMask: data.addrKindsMask.present
+          ? data.addrKindsMask.value
+          : this.addrKindsMask,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('WalletConfig(')
@@ -2265,6 +2360,17 @@ class AccountConfiguration extends DataClass
         index: index ?? this.index,
         addressIndex: addressIndex ?? this.addressIndex,
       );
+  AccountConfiguration copyWithCompanion(AccountConfigurationsCompanion data) {
+    return AccountConfiguration(
+      walletUUID:
+          data.walletUUID.present ? data.walletUUID.value : this.walletUUID,
+      index: data.index.present ? data.index.value : this.index,
+      addressIndex: data.addressIndex.present
+          ? data.addressIndex.value
+          : this.addressIndex,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('AccountConfiguration(')
@@ -2363,8 +2469,241 @@ class AccountConfigurationsCompanion
   }
 }
 
+class $UtxoAttachesTable extends UtxoAttaches
+    with TableInfo<$UtxoAttachesTable, UtxoAttach> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $UtxoAttachesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _txidMeta = const VerificationMeta('txid');
+  @override
+  late final GeneratedColumn<String> txid = GeneratedColumn<String>(
+      'txid', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'UNIQUE NOT NULL');
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _utxoTxidMeta =
+      const VerificationMeta('utxoTxid');
+  @override
+  late final GeneratedColumn<String> utxoTxid = GeneratedColumn<String>(
+      'utxo_txid', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [txid, createdAt, utxoTxid];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'utxo_attaches';
+  @override
+  VerificationContext validateIntegrity(Insertable<UtxoAttach> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('txid')) {
+      context.handle(
+          _txidMeta, txid.isAcceptableOrUnknown(data['txid']!, _txidMeta));
+    } else if (isInserting) {
+      context.missing(_txidMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('utxo_txid')) {
+      context.handle(_utxoTxidMeta,
+          utxoTxid.isAcceptableOrUnknown(data['utxo_txid']!, _utxoTxidMeta));
+    } else if (isInserting) {
+      context.missing(_utxoTxidMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {txid};
+  @override
+  UtxoAttach map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return UtxoAttach(
+      txid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}txid'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      utxoTxid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}utxo_txid'])!,
+    );
+  }
+
+  @override
+  $UtxoAttachesTable createAlias(String alias) {
+    return $UtxoAttachesTable(attachedDatabase, alias);
+  }
+}
+
+class UtxoAttach extends DataClass implements Insertable<UtxoAttach> {
+  final String txid;
+  final DateTime createdAt;
+  final String utxoTxid;
+  const UtxoAttach(
+      {required this.txid, required this.createdAt, required this.utxoTxid});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['txid'] = Variable<String>(txid);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['utxo_txid'] = Variable<String>(utxoTxid);
+    return map;
+  }
+
+  UtxoAttachesCompanion toCompanion(bool nullToAbsent) {
+    return UtxoAttachesCompanion(
+      txid: Value(txid),
+      createdAt: Value(createdAt),
+      utxoTxid: Value(utxoTxid),
+    );
+  }
+
+  factory UtxoAttach.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return UtxoAttach(
+      txid: serializer.fromJson<String>(json['txid']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      utxoTxid: serializer.fromJson<String>(json['utxoTxid']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'txid': serializer.toJson<String>(txid),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'utxoTxid': serializer.toJson<String>(utxoTxid),
+    };
+  }
+
+  UtxoAttach copyWith({String? txid, DateTime? createdAt, String? utxoTxid}) =>
+      UtxoAttach(
+        txid: txid ?? this.txid,
+        createdAt: createdAt ?? this.createdAt,
+        utxoTxid: utxoTxid ?? this.utxoTxid,
+      );
+  UtxoAttach copyWithCompanion(UtxoAttachesCompanion data) {
+    return UtxoAttach(
+      txid: data.txid.present ? data.txid.value : this.txid,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      utxoTxid: data.utxoTxid.present ? data.utxoTxid.value : this.utxoTxid,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UtxoAttach(')
+          ..write('txid: $txid, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('utxoTxid: $utxoTxid')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(txid, createdAt, utxoTxid);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is UtxoAttach &&
+          other.txid == this.txid &&
+          other.createdAt == this.createdAt &&
+          other.utxoTxid == this.utxoTxid);
+}
+
+class UtxoAttachesCompanion extends UpdateCompanion<UtxoAttach> {
+  final Value<String> txid;
+  final Value<DateTime> createdAt;
+  final Value<String> utxoTxid;
+  final Value<int> rowid;
+  const UtxoAttachesCompanion({
+    this.txid = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.utxoTxid = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  UtxoAttachesCompanion.insert({
+    required String txid,
+    required DateTime createdAt,
+    required String utxoTxid,
+    this.rowid = const Value.absent(),
+  })  : txid = Value(txid),
+        createdAt = Value(createdAt),
+        utxoTxid = Value(utxoTxid);
+  static Insertable<UtxoAttach> custom({
+    Expression<String>? txid,
+    Expression<DateTime>? createdAt,
+    Expression<String>? utxoTxid,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (txid != null) 'txid': txid,
+      if (createdAt != null) 'created_at': createdAt,
+      if (utxoTxid != null) 'utxo_txid': utxoTxid,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  UtxoAttachesCompanion copyWith(
+      {Value<String>? txid,
+      Value<DateTime>? createdAt,
+      Value<String>? utxoTxid,
+      Value<int>? rowid}) {
+    return UtxoAttachesCompanion(
+      txid: txid ?? this.txid,
+      createdAt: createdAt ?? this.createdAt,
+      utxoTxid: utxoTxid ?? this.utxoTxid,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (txid.present) {
+      map['txid'] = Variable<String>(txid.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (utxoTxid.present) {
+      map['utxo_txid'] = Variable<String>(utxoTxid.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UtxoAttachesCompanion(')
+          ..write('txid: $txid, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('utxoTxid: $utxoTxid, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$DB extends GeneratedDatabase {
   _$DB(QueryExecutor e) : super(e);
+  $DBManager get managers => $DBManager(this);
   late final $WalletsTable wallets = $WalletsTable(this);
   late final $AccountsTable accounts = $AccountsTable(this);
   late final $AddressesTable addresses = $AddressesTable(this);
@@ -2374,6 +2713,7 @@ abstract class _$DB extends GeneratedDatabase {
   late final $WalletConfigsTable walletConfigs = $WalletConfigsTable(this);
   late final $AccountConfigurationsTable accountConfigurations =
       $AccountConfigurationsTable(this);
+  late final $UtxoAttachesTable utxoAttaches = $UtxoAttachesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2385,6 +2725,1434 @@ abstract class _$DB extends GeneratedDatabase {
         transactions,
         importedAddresses,
         walletConfigs,
-        accountConfigurations
+        accountConfigurations,
+        utxoAttaches
       ];
+}
+
+typedef $$WalletsTableCreateCompanionBuilder = WalletsCompanion Function({
+  required String uuid,
+  required String name,
+  required String encryptedPrivKey,
+  Value<String?> encryptedMnemonic,
+  required String publicKey,
+  required String chainCodeHex,
+  Value<int> rowid,
+});
+typedef $$WalletsTableUpdateCompanionBuilder = WalletsCompanion Function({
+  Value<String> uuid,
+  Value<String> name,
+  Value<String> encryptedPrivKey,
+  Value<String?> encryptedMnemonic,
+  Value<String> publicKey,
+  Value<String> chainCodeHex,
+  Value<int> rowid,
+});
+
+class $$WalletsTableFilterComposer extends Composer<_$DB, $WalletsTable> {
+  $$WalletsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get encryptedPrivKey => $composableBuilder(
+      column: $table.encryptedPrivKey,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get encryptedMnemonic => $composableBuilder(
+      column: $table.encryptedMnemonic,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get publicKey => $composableBuilder(
+      column: $table.publicKey, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get chainCodeHex => $composableBuilder(
+      column: $table.chainCodeHex, builder: (column) => ColumnFilters(column));
+}
+
+class $$WalletsTableOrderingComposer extends Composer<_$DB, $WalletsTable> {
+  $$WalletsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get encryptedPrivKey => $composableBuilder(
+      column: $table.encryptedPrivKey,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get encryptedMnemonic => $composableBuilder(
+      column: $table.encryptedMnemonic,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get publicKey => $composableBuilder(
+      column: $table.publicKey, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get chainCodeHex => $composableBuilder(
+      column: $table.chainCodeHex,
+      builder: (column) => ColumnOrderings(column));
+}
+
+class $$WalletsTableAnnotationComposer extends Composer<_$DB, $WalletsTable> {
+  $$WalletsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get uuid =>
+      $composableBuilder(column: $table.uuid, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get encryptedPrivKey => $composableBuilder(
+      column: $table.encryptedPrivKey, builder: (column) => column);
+
+  GeneratedColumn<String> get encryptedMnemonic => $composableBuilder(
+      column: $table.encryptedMnemonic, builder: (column) => column);
+
+  GeneratedColumn<String> get publicKey =>
+      $composableBuilder(column: $table.publicKey, builder: (column) => column);
+
+  GeneratedColumn<String> get chainCodeHex => $composableBuilder(
+      column: $table.chainCodeHex, builder: (column) => column);
+}
+
+class $$WalletsTableTableManager extends RootTableManager<
+    _$DB,
+    $WalletsTable,
+    Wallet,
+    $$WalletsTableFilterComposer,
+    $$WalletsTableOrderingComposer,
+    $$WalletsTableAnnotationComposer,
+    $$WalletsTableCreateCompanionBuilder,
+    $$WalletsTableUpdateCompanionBuilder,
+    (Wallet, BaseReferences<_$DB, $WalletsTable, Wallet>),
+    Wallet,
+    PrefetchHooks Function()> {
+  $$WalletsTableTableManager(_$DB db, $WalletsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WalletsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WalletsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WalletsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> uuid = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<String> encryptedPrivKey = const Value.absent(),
+            Value<String?> encryptedMnemonic = const Value.absent(),
+            Value<String> publicKey = const Value.absent(),
+            Value<String> chainCodeHex = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              WalletsCompanion(
+            uuid: uuid,
+            name: name,
+            encryptedPrivKey: encryptedPrivKey,
+            encryptedMnemonic: encryptedMnemonic,
+            publicKey: publicKey,
+            chainCodeHex: chainCodeHex,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String uuid,
+            required String name,
+            required String encryptedPrivKey,
+            Value<String?> encryptedMnemonic = const Value.absent(),
+            required String publicKey,
+            required String chainCodeHex,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              WalletsCompanion.insert(
+            uuid: uuid,
+            name: name,
+            encryptedPrivKey: encryptedPrivKey,
+            encryptedMnemonic: encryptedMnemonic,
+            publicKey: publicKey,
+            chainCodeHex: chainCodeHex,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$WalletsTableProcessedTableManager = ProcessedTableManager<
+    _$DB,
+    $WalletsTable,
+    Wallet,
+    $$WalletsTableFilterComposer,
+    $$WalletsTableOrderingComposer,
+    $$WalletsTableAnnotationComposer,
+    $$WalletsTableCreateCompanionBuilder,
+    $$WalletsTableUpdateCompanionBuilder,
+    (Wallet, BaseReferences<_$DB, $WalletsTable, Wallet>),
+    Wallet,
+    PrefetchHooks Function()>;
+typedef $$AccountsTableCreateCompanionBuilder = AccountsCompanion Function({
+  required String uuid,
+  required String name,
+  required String walletUuid,
+  required String purpose,
+  required String coinType,
+  required String accountIndex,
+  required String importFormat,
+  Value<int> rowid,
+});
+typedef $$AccountsTableUpdateCompanionBuilder = AccountsCompanion Function({
+  Value<String> uuid,
+  Value<String> name,
+  Value<String> walletUuid,
+  Value<String> purpose,
+  Value<String> coinType,
+  Value<String> accountIndex,
+  Value<String> importFormat,
+  Value<int> rowid,
+});
+
+class $$AccountsTableFilterComposer extends Composer<_$DB, $AccountsTable> {
+  $$AccountsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get walletUuid => $composableBuilder(
+      column: $table.walletUuid, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get purpose => $composableBuilder(
+      column: $table.purpose, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get coinType => $composableBuilder(
+      column: $table.coinType, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get accountIndex => $composableBuilder(
+      column: $table.accountIndex, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get importFormat => $composableBuilder(
+      column: $table.importFormat, builder: (column) => ColumnFilters(column));
+}
+
+class $$AccountsTableOrderingComposer extends Composer<_$DB, $AccountsTable> {
+  $$AccountsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get walletUuid => $composableBuilder(
+      column: $table.walletUuid, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get purpose => $composableBuilder(
+      column: $table.purpose, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get coinType => $composableBuilder(
+      column: $table.coinType, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get accountIndex => $composableBuilder(
+      column: $table.accountIndex,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get importFormat => $composableBuilder(
+      column: $table.importFormat,
+      builder: (column) => ColumnOrderings(column));
+}
+
+class $$AccountsTableAnnotationComposer extends Composer<_$DB, $AccountsTable> {
+  $$AccountsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get uuid =>
+      $composableBuilder(column: $table.uuid, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get walletUuid => $composableBuilder(
+      column: $table.walletUuid, builder: (column) => column);
+
+  GeneratedColumn<String> get purpose =>
+      $composableBuilder(column: $table.purpose, builder: (column) => column);
+
+  GeneratedColumn<String> get coinType =>
+      $composableBuilder(column: $table.coinType, builder: (column) => column);
+
+  GeneratedColumn<String> get accountIndex => $composableBuilder(
+      column: $table.accountIndex, builder: (column) => column);
+
+  GeneratedColumn<String> get importFormat => $composableBuilder(
+      column: $table.importFormat, builder: (column) => column);
+}
+
+class $$AccountsTableTableManager extends RootTableManager<
+    _$DB,
+    $AccountsTable,
+    Account,
+    $$AccountsTableFilterComposer,
+    $$AccountsTableOrderingComposer,
+    $$AccountsTableAnnotationComposer,
+    $$AccountsTableCreateCompanionBuilder,
+    $$AccountsTableUpdateCompanionBuilder,
+    (Account, BaseReferences<_$DB, $AccountsTable, Account>),
+    Account,
+    PrefetchHooks Function()> {
+  $$AccountsTableTableManager(_$DB db, $AccountsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AccountsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AccountsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AccountsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> uuid = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<String> walletUuid = const Value.absent(),
+            Value<String> purpose = const Value.absent(),
+            Value<String> coinType = const Value.absent(),
+            Value<String> accountIndex = const Value.absent(),
+            Value<String> importFormat = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              AccountsCompanion(
+            uuid: uuid,
+            name: name,
+            walletUuid: walletUuid,
+            purpose: purpose,
+            coinType: coinType,
+            accountIndex: accountIndex,
+            importFormat: importFormat,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String uuid,
+            required String name,
+            required String walletUuid,
+            required String purpose,
+            required String coinType,
+            required String accountIndex,
+            required String importFormat,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              AccountsCompanion.insert(
+            uuid: uuid,
+            name: name,
+            walletUuid: walletUuid,
+            purpose: purpose,
+            coinType: coinType,
+            accountIndex: accountIndex,
+            importFormat: importFormat,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$AccountsTableProcessedTableManager = ProcessedTableManager<
+    _$DB,
+    $AccountsTable,
+    Account,
+    $$AccountsTableFilterComposer,
+    $$AccountsTableOrderingComposer,
+    $$AccountsTableAnnotationComposer,
+    $$AccountsTableCreateCompanionBuilder,
+    $$AccountsTableUpdateCompanionBuilder,
+    (Account, BaseReferences<_$DB, $AccountsTable, Account>),
+    Account,
+    PrefetchHooks Function()>;
+typedef $$AddressesTableCreateCompanionBuilder = AddressesCompanion Function({
+  required String accountUuid,
+  required String address,
+  required int index,
+  Value<String?> encryptedPrivateKey,
+  Value<int> rowid,
+});
+typedef $$AddressesTableUpdateCompanionBuilder = AddressesCompanion Function({
+  Value<String> accountUuid,
+  Value<String> address,
+  Value<int> index,
+  Value<String?> encryptedPrivateKey,
+  Value<int> rowid,
+});
+
+class $$AddressesTableFilterComposer extends Composer<_$DB, $AddressesTable> {
+  $$AddressesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get accountUuid => $composableBuilder(
+      column: $table.accountUuid, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get address => $composableBuilder(
+      column: $table.address, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get index => $composableBuilder(
+      column: $table.index, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get encryptedPrivateKey => $composableBuilder(
+      column: $table.encryptedPrivateKey,
+      builder: (column) => ColumnFilters(column));
+}
+
+class $$AddressesTableOrderingComposer extends Composer<_$DB, $AddressesTable> {
+  $$AddressesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get accountUuid => $composableBuilder(
+      column: $table.accountUuid, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get address => $composableBuilder(
+      column: $table.address, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get index => $composableBuilder(
+      column: $table.index, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get encryptedPrivateKey => $composableBuilder(
+      column: $table.encryptedPrivateKey,
+      builder: (column) => ColumnOrderings(column));
+}
+
+class $$AddressesTableAnnotationComposer
+    extends Composer<_$DB, $AddressesTable> {
+  $$AddressesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get accountUuid => $composableBuilder(
+      column: $table.accountUuid, builder: (column) => column);
+
+  GeneratedColumn<String> get address =>
+      $composableBuilder(column: $table.address, builder: (column) => column);
+
+  GeneratedColumn<int> get index =>
+      $composableBuilder(column: $table.index, builder: (column) => column);
+
+  GeneratedColumn<String> get encryptedPrivateKey => $composableBuilder(
+      column: $table.encryptedPrivateKey, builder: (column) => column);
+}
+
+class $$AddressesTableTableManager extends RootTableManager<
+    _$DB,
+    $AddressesTable,
+    Address,
+    $$AddressesTableFilterComposer,
+    $$AddressesTableOrderingComposer,
+    $$AddressesTableAnnotationComposer,
+    $$AddressesTableCreateCompanionBuilder,
+    $$AddressesTableUpdateCompanionBuilder,
+    (Address, BaseReferences<_$DB, $AddressesTable, Address>),
+    Address,
+    PrefetchHooks Function()> {
+  $$AddressesTableTableManager(_$DB db, $AddressesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AddressesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AddressesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AddressesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> accountUuid = const Value.absent(),
+            Value<String> address = const Value.absent(),
+            Value<int> index = const Value.absent(),
+            Value<String?> encryptedPrivateKey = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              AddressesCompanion(
+            accountUuid: accountUuid,
+            address: address,
+            index: index,
+            encryptedPrivateKey: encryptedPrivateKey,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String accountUuid,
+            required String address,
+            required int index,
+            Value<String?> encryptedPrivateKey = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              AddressesCompanion.insert(
+            accountUuid: accountUuid,
+            address: address,
+            index: index,
+            encryptedPrivateKey: encryptedPrivateKey,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$AddressesTableProcessedTableManager = ProcessedTableManager<
+    _$DB,
+    $AddressesTable,
+    Address,
+    $$AddressesTableFilterComposer,
+    $$AddressesTableOrderingComposer,
+    $$AddressesTableAnnotationComposer,
+    $$AddressesTableCreateCompanionBuilder,
+    $$AddressesTableUpdateCompanionBuilder,
+    (Address, BaseReferences<_$DB, $AddressesTable, Address>),
+    Address,
+    PrefetchHooks Function()>;
+typedef $$TransactionsTableCreateCompanionBuilder = TransactionsCompanion
+    Function({
+  required String hash,
+  required String raw,
+  required String source,
+  Value<String?> destination,
+  Value<int?> btcAmount,
+  Value<int?> fee,
+  required String data,
+  Value<String?> unpackedData,
+  required DateTime submittedAt,
+  Value<int> rowid,
+});
+typedef $$TransactionsTableUpdateCompanionBuilder = TransactionsCompanion
+    Function({
+  Value<String> hash,
+  Value<String> raw,
+  Value<String> source,
+  Value<String?> destination,
+  Value<int?> btcAmount,
+  Value<int?> fee,
+  Value<String> data,
+  Value<String?> unpackedData,
+  Value<DateTime> submittedAt,
+  Value<int> rowid,
+});
+
+class $$TransactionsTableFilterComposer
+    extends Composer<_$DB, $TransactionsTable> {
+  $$TransactionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get hash => $composableBuilder(
+      column: $table.hash, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get raw => $composableBuilder(
+      column: $table.raw, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get source => $composableBuilder(
+      column: $table.source, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get destination => $composableBuilder(
+      column: $table.destination, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get btcAmount => $composableBuilder(
+      column: $table.btcAmount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get fee => $composableBuilder(
+      column: $table.fee, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get data => $composableBuilder(
+      column: $table.data, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get unpackedData => $composableBuilder(
+      column: $table.unpackedData, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get submittedAt => $composableBuilder(
+      column: $table.submittedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$TransactionsTableOrderingComposer
+    extends Composer<_$DB, $TransactionsTable> {
+  $$TransactionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get hash => $composableBuilder(
+      column: $table.hash, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get raw => $composableBuilder(
+      column: $table.raw, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get source => $composableBuilder(
+      column: $table.source, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get destination => $composableBuilder(
+      column: $table.destination, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get btcAmount => $composableBuilder(
+      column: $table.btcAmount, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get fee => $composableBuilder(
+      column: $table.fee, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get data => $composableBuilder(
+      column: $table.data, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get unpackedData => $composableBuilder(
+      column: $table.unpackedData,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get submittedAt => $composableBuilder(
+      column: $table.submittedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$TransactionsTableAnnotationComposer
+    extends Composer<_$DB, $TransactionsTable> {
+  $$TransactionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get hash =>
+      $composableBuilder(column: $table.hash, builder: (column) => column);
+
+  GeneratedColumn<String> get raw =>
+      $composableBuilder(column: $table.raw, builder: (column) => column);
+
+  GeneratedColumn<String> get source =>
+      $composableBuilder(column: $table.source, builder: (column) => column);
+
+  GeneratedColumn<String> get destination => $composableBuilder(
+      column: $table.destination, builder: (column) => column);
+
+  GeneratedColumn<int> get btcAmount =>
+      $composableBuilder(column: $table.btcAmount, builder: (column) => column);
+
+  GeneratedColumn<int> get fee =>
+      $composableBuilder(column: $table.fee, builder: (column) => column);
+
+  GeneratedColumn<String> get data =>
+      $composableBuilder(column: $table.data, builder: (column) => column);
+
+  GeneratedColumn<String> get unpackedData => $composableBuilder(
+      column: $table.unpackedData, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get submittedAt => $composableBuilder(
+      column: $table.submittedAt, builder: (column) => column);
+}
+
+class $$TransactionsTableTableManager extends RootTableManager<
+    _$DB,
+    $TransactionsTable,
+    Transaction,
+    $$TransactionsTableFilterComposer,
+    $$TransactionsTableOrderingComposer,
+    $$TransactionsTableAnnotationComposer,
+    $$TransactionsTableCreateCompanionBuilder,
+    $$TransactionsTableUpdateCompanionBuilder,
+    (Transaction, BaseReferences<_$DB, $TransactionsTable, Transaction>),
+    Transaction,
+    PrefetchHooks Function()> {
+  $$TransactionsTableTableManager(_$DB db, $TransactionsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TransactionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TransactionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TransactionsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> hash = const Value.absent(),
+            Value<String> raw = const Value.absent(),
+            Value<String> source = const Value.absent(),
+            Value<String?> destination = const Value.absent(),
+            Value<int?> btcAmount = const Value.absent(),
+            Value<int?> fee = const Value.absent(),
+            Value<String> data = const Value.absent(),
+            Value<String?> unpackedData = const Value.absent(),
+            Value<DateTime> submittedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              TransactionsCompanion(
+            hash: hash,
+            raw: raw,
+            source: source,
+            destination: destination,
+            btcAmount: btcAmount,
+            fee: fee,
+            data: data,
+            unpackedData: unpackedData,
+            submittedAt: submittedAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String hash,
+            required String raw,
+            required String source,
+            Value<String?> destination = const Value.absent(),
+            Value<int?> btcAmount = const Value.absent(),
+            Value<int?> fee = const Value.absent(),
+            required String data,
+            Value<String?> unpackedData = const Value.absent(),
+            required DateTime submittedAt,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              TransactionsCompanion.insert(
+            hash: hash,
+            raw: raw,
+            source: source,
+            destination: destination,
+            btcAmount: btcAmount,
+            fee: fee,
+            data: data,
+            unpackedData: unpackedData,
+            submittedAt: submittedAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$TransactionsTableProcessedTableManager = ProcessedTableManager<
+    _$DB,
+    $TransactionsTable,
+    Transaction,
+    $$TransactionsTableFilterComposer,
+    $$TransactionsTableOrderingComposer,
+    $$TransactionsTableAnnotationComposer,
+    $$TransactionsTableCreateCompanionBuilder,
+    $$TransactionsTableUpdateCompanionBuilder,
+    (Transaction, BaseReferences<_$DB, $TransactionsTable, Transaction>),
+    Transaction,
+    PrefetchHooks Function()>;
+typedef $$ImportedAddressesTableCreateCompanionBuilder
+    = ImportedAddressesCompanion Function({
+  required String address,
+  required String encryptedWif,
+  required String network,
+  required String type_,
+  Value<int> rowid,
+});
+typedef $$ImportedAddressesTableUpdateCompanionBuilder
+    = ImportedAddressesCompanion Function({
+  Value<String> address,
+  Value<String> encryptedWif,
+  Value<String> network,
+  Value<String> type_,
+  Value<int> rowid,
+});
+
+class $$ImportedAddressesTableFilterComposer
+    extends Composer<_$DB, $ImportedAddressesTable> {
+  $$ImportedAddressesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get address => $composableBuilder(
+      column: $table.address, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get encryptedWif => $composableBuilder(
+      column: $table.encryptedWif, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get network => $composableBuilder(
+      column: $table.network, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get type_ => $composableBuilder(
+      column: $table.type_, builder: (column) => ColumnFilters(column));
+}
+
+class $$ImportedAddressesTableOrderingComposer
+    extends Composer<_$DB, $ImportedAddressesTable> {
+  $$ImportedAddressesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get address => $composableBuilder(
+      column: $table.address, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get encryptedWif => $composableBuilder(
+      column: $table.encryptedWif,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get network => $composableBuilder(
+      column: $table.network, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get type_ => $composableBuilder(
+      column: $table.type_, builder: (column) => ColumnOrderings(column));
+}
+
+class $$ImportedAddressesTableAnnotationComposer
+    extends Composer<_$DB, $ImportedAddressesTable> {
+  $$ImportedAddressesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get address =>
+      $composableBuilder(column: $table.address, builder: (column) => column);
+
+  GeneratedColumn<String> get encryptedWif => $composableBuilder(
+      column: $table.encryptedWif, builder: (column) => column);
+
+  GeneratedColumn<String> get network =>
+      $composableBuilder(column: $table.network, builder: (column) => column);
+
+  GeneratedColumn<String> get type_ =>
+      $composableBuilder(column: $table.type_, builder: (column) => column);
+}
+
+class $$ImportedAddressesTableTableManager extends RootTableManager<
+    _$DB,
+    $ImportedAddressesTable,
+    ImportedAddress,
+    $$ImportedAddressesTableFilterComposer,
+    $$ImportedAddressesTableOrderingComposer,
+    $$ImportedAddressesTableAnnotationComposer,
+    $$ImportedAddressesTableCreateCompanionBuilder,
+    $$ImportedAddressesTableUpdateCompanionBuilder,
+    (
+      ImportedAddress,
+      BaseReferences<_$DB, $ImportedAddressesTable, ImportedAddress>
+    ),
+    ImportedAddress,
+    PrefetchHooks Function()> {
+  $$ImportedAddressesTableTableManager(_$DB db, $ImportedAddressesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ImportedAddressesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ImportedAddressesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ImportedAddressesTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> address = const Value.absent(),
+            Value<String> encryptedWif = const Value.absent(),
+            Value<String> network = const Value.absent(),
+            Value<String> type_ = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ImportedAddressesCompanion(
+            address: address,
+            encryptedWif: encryptedWif,
+            network: network,
+            type_: type_,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String address,
+            required String encryptedWif,
+            required String network,
+            required String type_,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ImportedAddressesCompanion.insert(
+            address: address,
+            encryptedWif: encryptedWif,
+            network: network,
+            type_: type_,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$ImportedAddressesTableProcessedTableManager = ProcessedTableManager<
+    _$DB,
+    $ImportedAddressesTable,
+    ImportedAddress,
+    $$ImportedAddressesTableFilterComposer,
+    $$ImportedAddressesTableOrderingComposer,
+    $$ImportedAddressesTableAnnotationComposer,
+    $$ImportedAddressesTableCreateCompanionBuilder,
+    $$ImportedAddressesTableUpdateCompanionBuilder,
+    (
+      ImportedAddress,
+      BaseReferences<_$DB, $ImportedAddressesTable, ImportedAddress>
+    ),
+    ImportedAddress,
+    PrefetchHooks Function()>;
+typedef $$WalletConfigsTableCreateCompanionBuilder = WalletConfigsCompanion
+    Function({
+  required String uuid,
+  required String network,
+  required String basePath,
+  required int accountIndexStart,
+  required int accountIndexEnd,
+  required String seedDerivation,
+  Value<int> addrKindsMask,
+  Value<int> rowid,
+});
+typedef $$WalletConfigsTableUpdateCompanionBuilder = WalletConfigsCompanion
+    Function({
+  Value<String> uuid,
+  Value<String> network,
+  Value<String> basePath,
+  Value<int> accountIndexStart,
+  Value<int> accountIndexEnd,
+  Value<String> seedDerivation,
+  Value<int> addrKindsMask,
+  Value<int> rowid,
+});
+
+class $$WalletConfigsTableFilterComposer
+    extends Composer<_$DB, $WalletConfigsTable> {
+  $$WalletConfigsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get network => $composableBuilder(
+      column: $table.network, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get basePath => $composableBuilder(
+      column: $table.basePath, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get accountIndexStart => $composableBuilder(
+      column: $table.accountIndexStart,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get accountIndexEnd => $composableBuilder(
+      column: $table.accountIndexEnd,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get seedDerivation => $composableBuilder(
+      column: $table.seedDerivation,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get addrKindsMask => $composableBuilder(
+      column: $table.addrKindsMask, builder: (column) => ColumnFilters(column));
+}
+
+class $$WalletConfigsTableOrderingComposer
+    extends Composer<_$DB, $WalletConfigsTable> {
+  $$WalletConfigsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get network => $composableBuilder(
+      column: $table.network, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get basePath => $composableBuilder(
+      column: $table.basePath, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get accountIndexStart => $composableBuilder(
+      column: $table.accountIndexStart,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get accountIndexEnd => $composableBuilder(
+      column: $table.accountIndexEnd,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get seedDerivation => $composableBuilder(
+      column: $table.seedDerivation,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get addrKindsMask => $composableBuilder(
+      column: $table.addrKindsMask,
+      builder: (column) => ColumnOrderings(column));
+}
+
+class $$WalletConfigsTableAnnotationComposer
+    extends Composer<_$DB, $WalletConfigsTable> {
+  $$WalletConfigsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get uuid =>
+      $composableBuilder(column: $table.uuid, builder: (column) => column);
+
+  GeneratedColumn<String> get network =>
+      $composableBuilder(column: $table.network, builder: (column) => column);
+
+  GeneratedColumn<String> get basePath =>
+      $composableBuilder(column: $table.basePath, builder: (column) => column);
+
+  GeneratedColumn<int> get accountIndexStart => $composableBuilder(
+      column: $table.accountIndexStart, builder: (column) => column);
+
+  GeneratedColumn<int> get accountIndexEnd => $composableBuilder(
+      column: $table.accountIndexEnd, builder: (column) => column);
+
+  GeneratedColumn<String> get seedDerivation => $composableBuilder(
+      column: $table.seedDerivation, builder: (column) => column);
+
+  GeneratedColumn<int> get addrKindsMask => $composableBuilder(
+      column: $table.addrKindsMask, builder: (column) => column);
+}
+
+class $$WalletConfigsTableTableManager extends RootTableManager<
+    _$DB,
+    $WalletConfigsTable,
+    WalletConfig,
+    $$WalletConfigsTableFilterComposer,
+    $$WalletConfigsTableOrderingComposer,
+    $$WalletConfigsTableAnnotationComposer,
+    $$WalletConfigsTableCreateCompanionBuilder,
+    $$WalletConfigsTableUpdateCompanionBuilder,
+    (WalletConfig, BaseReferences<_$DB, $WalletConfigsTable, WalletConfig>),
+    WalletConfig,
+    PrefetchHooks Function()> {
+  $$WalletConfigsTableTableManager(_$DB db, $WalletConfigsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WalletConfigsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WalletConfigsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WalletConfigsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> uuid = const Value.absent(),
+            Value<String> network = const Value.absent(),
+            Value<String> basePath = const Value.absent(),
+            Value<int> accountIndexStart = const Value.absent(),
+            Value<int> accountIndexEnd = const Value.absent(),
+            Value<String> seedDerivation = const Value.absent(),
+            Value<int> addrKindsMask = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              WalletConfigsCompanion(
+            uuid: uuid,
+            network: network,
+            basePath: basePath,
+            accountIndexStart: accountIndexStart,
+            accountIndexEnd: accountIndexEnd,
+            seedDerivation: seedDerivation,
+            addrKindsMask: addrKindsMask,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String uuid,
+            required String network,
+            required String basePath,
+            required int accountIndexStart,
+            required int accountIndexEnd,
+            required String seedDerivation,
+            Value<int> addrKindsMask = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              WalletConfigsCompanion.insert(
+            uuid: uuid,
+            network: network,
+            basePath: basePath,
+            accountIndexStart: accountIndexStart,
+            accountIndexEnd: accountIndexEnd,
+            seedDerivation: seedDerivation,
+            addrKindsMask: addrKindsMask,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$WalletConfigsTableProcessedTableManager = ProcessedTableManager<
+    _$DB,
+    $WalletConfigsTable,
+    WalletConfig,
+    $$WalletConfigsTableFilterComposer,
+    $$WalletConfigsTableOrderingComposer,
+    $$WalletConfigsTableAnnotationComposer,
+    $$WalletConfigsTableCreateCompanionBuilder,
+    $$WalletConfigsTableUpdateCompanionBuilder,
+    (WalletConfig, BaseReferences<_$DB, $WalletConfigsTable, WalletConfig>),
+    WalletConfig,
+    PrefetchHooks Function()>;
+typedef $$AccountConfigurationsTableCreateCompanionBuilder
+    = AccountConfigurationsCompanion Function({
+  required String walletUUID,
+  required int index,
+  required int addressIndex,
+  Value<int> rowid,
+});
+typedef $$AccountConfigurationsTableUpdateCompanionBuilder
+    = AccountConfigurationsCompanion Function({
+  Value<String> walletUUID,
+  Value<int> index,
+  Value<int> addressIndex,
+  Value<int> rowid,
+});
+
+class $$AccountConfigurationsTableFilterComposer
+    extends Composer<_$DB, $AccountConfigurationsTable> {
+  $$AccountConfigurationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get walletUUID => $composableBuilder(
+      column: $table.walletUUID, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get index => $composableBuilder(
+      column: $table.index, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get addressIndex => $composableBuilder(
+      column: $table.addressIndex, builder: (column) => ColumnFilters(column));
+}
+
+class $$AccountConfigurationsTableOrderingComposer
+    extends Composer<_$DB, $AccountConfigurationsTable> {
+  $$AccountConfigurationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get walletUUID => $composableBuilder(
+      column: $table.walletUUID, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get index => $composableBuilder(
+      column: $table.index, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get addressIndex => $composableBuilder(
+      column: $table.addressIndex,
+      builder: (column) => ColumnOrderings(column));
+}
+
+class $$AccountConfigurationsTableAnnotationComposer
+    extends Composer<_$DB, $AccountConfigurationsTable> {
+  $$AccountConfigurationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get walletUUID => $composableBuilder(
+      column: $table.walletUUID, builder: (column) => column);
+
+  GeneratedColumn<int> get index =>
+      $composableBuilder(column: $table.index, builder: (column) => column);
+
+  GeneratedColumn<int> get addressIndex => $composableBuilder(
+      column: $table.addressIndex, builder: (column) => column);
+}
+
+class $$AccountConfigurationsTableTableManager extends RootTableManager<
+    _$DB,
+    $AccountConfigurationsTable,
+    AccountConfiguration,
+    $$AccountConfigurationsTableFilterComposer,
+    $$AccountConfigurationsTableOrderingComposer,
+    $$AccountConfigurationsTableAnnotationComposer,
+    $$AccountConfigurationsTableCreateCompanionBuilder,
+    $$AccountConfigurationsTableUpdateCompanionBuilder,
+    (
+      AccountConfiguration,
+      BaseReferences<_$DB, $AccountConfigurationsTable, AccountConfiguration>
+    ),
+    AccountConfiguration,
+    PrefetchHooks Function()> {
+  $$AccountConfigurationsTableTableManager(
+      _$DB db, $AccountConfigurationsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AccountConfigurationsTableFilterComposer(
+                  $db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AccountConfigurationsTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AccountConfigurationsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> walletUUID = const Value.absent(),
+            Value<int> index = const Value.absent(),
+            Value<int> addressIndex = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              AccountConfigurationsCompanion(
+            walletUUID: walletUUID,
+            index: index,
+            addressIndex: addressIndex,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String walletUUID,
+            required int index,
+            required int addressIndex,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              AccountConfigurationsCompanion.insert(
+            walletUUID: walletUUID,
+            index: index,
+            addressIndex: addressIndex,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$AccountConfigurationsTableProcessedTableManager
+    = ProcessedTableManager<
+        _$DB,
+        $AccountConfigurationsTable,
+        AccountConfiguration,
+        $$AccountConfigurationsTableFilterComposer,
+        $$AccountConfigurationsTableOrderingComposer,
+        $$AccountConfigurationsTableAnnotationComposer,
+        $$AccountConfigurationsTableCreateCompanionBuilder,
+        $$AccountConfigurationsTableUpdateCompanionBuilder,
+        (
+          AccountConfiguration,
+          BaseReferences<_$DB, $AccountConfigurationsTable,
+              AccountConfiguration>
+        ),
+        AccountConfiguration,
+        PrefetchHooks Function()>;
+typedef $$UtxoAttachesTableCreateCompanionBuilder = UtxoAttachesCompanion
+    Function({
+  required String txid,
+  required DateTime createdAt,
+  required String utxoTxid,
+  Value<int> rowid,
+});
+typedef $$UtxoAttachesTableUpdateCompanionBuilder = UtxoAttachesCompanion
+    Function({
+  Value<String> txid,
+  Value<DateTime> createdAt,
+  Value<String> utxoTxid,
+  Value<int> rowid,
+});
+
+class $$UtxoAttachesTableFilterComposer
+    extends Composer<_$DB, $UtxoAttachesTable> {
+  $$UtxoAttachesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get txid => $composableBuilder(
+      column: $table.txid, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get utxoTxid => $composableBuilder(
+      column: $table.utxoTxid, builder: (column) => ColumnFilters(column));
+}
+
+class $$UtxoAttachesTableOrderingComposer
+    extends Composer<_$DB, $UtxoAttachesTable> {
+  $$UtxoAttachesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get txid => $composableBuilder(
+      column: $table.txid, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get utxoTxid => $composableBuilder(
+      column: $table.utxoTxid, builder: (column) => ColumnOrderings(column));
+}
+
+class $$UtxoAttachesTableAnnotationComposer
+    extends Composer<_$DB, $UtxoAttachesTable> {
+  $$UtxoAttachesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get txid =>
+      $composableBuilder(column: $table.txid, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get utxoTxid =>
+      $composableBuilder(column: $table.utxoTxid, builder: (column) => column);
+}
+
+class $$UtxoAttachesTableTableManager extends RootTableManager<
+    _$DB,
+    $UtxoAttachesTable,
+    UtxoAttach,
+    $$UtxoAttachesTableFilterComposer,
+    $$UtxoAttachesTableOrderingComposer,
+    $$UtxoAttachesTableAnnotationComposer,
+    $$UtxoAttachesTableCreateCompanionBuilder,
+    $$UtxoAttachesTableUpdateCompanionBuilder,
+    (UtxoAttach, BaseReferences<_$DB, $UtxoAttachesTable, UtxoAttach>),
+    UtxoAttach,
+    PrefetchHooks Function()> {
+  $$UtxoAttachesTableTableManager(_$DB db, $UtxoAttachesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$UtxoAttachesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$UtxoAttachesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$UtxoAttachesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> txid = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<String> utxoTxid = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              UtxoAttachesCompanion(
+            txid: txid,
+            createdAt: createdAt,
+            utxoTxid: utxoTxid,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String txid,
+            required DateTime createdAt,
+            required String utxoTxid,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              UtxoAttachesCompanion.insert(
+            txid: txid,
+            createdAt: createdAt,
+            utxoTxid: utxoTxid,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$UtxoAttachesTableProcessedTableManager = ProcessedTableManager<
+    _$DB,
+    $UtxoAttachesTable,
+    UtxoAttach,
+    $$UtxoAttachesTableFilterComposer,
+    $$UtxoAttachesTableOrderingComposer,
+    $$UtxoAttachesTableAnnotationComposer,
+    $$UtxoAttachesTableCreateCompanionBuilder,
+    $$UtxoAttachesTableUpdateCompanionBuilder,
+    (UtxoAttach, BaseReferences<_$DB, $UtxoAttachesTable, UtxoAttach>),
+    UtxoAttach,
+    PrefetchHooks Function()>;
+
+class $DBManager {
+  final _$DB _db;
+  $DBManager(this._db);
+  $$WalletsTableTableManager get wallets =>
+      $$WalletsTableTableManager(_db, _db.wallets);
+  $$AccountsTableTableManager get accounts =>
+      $$AccountsTableTableManager(_db, _db.accounts);
+  $$AddressesTableTableManager get addresses =>
+      $$AddressesTableTableManager(_db, _db.addresses);
+  $$TransactionsTableTableManager get transactions =>
+      $$TransactionsTableTableManager(_db, _db.transactions);
+  $$ImportedAddressesTableTableManager get importedAddresses =>
+      $$ImportedAddressesTableTableManager(_db, _db.importedAddresses);
+  $$WalletConfigsTableTableManager get walletConfigs =>
+      $$WalletConfigsTableTableManager(_db, _db.walletConfigs);
+  $$AccountConfigurationsTableTableManager get accountConfigurations =>
+      $$AccountConfigurationsTableTableManager(_db, _db.accountConfigurations);
+  $$UtxoAttachesTableTableManager get utxoAttaches =>
+      $$UtxoAttachesTableTableManager(_db, _db.utxoAttaches);
 }
