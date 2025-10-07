@@ -23,11 +23,11 @@ import 'package:horizon/domain/entities/utxo.dart';
 class UtxoAttach {
   final String txid;
   final UtxoID id;
-  final DateTime attachedAt;
+  final DateTime createdAt;
 
   UtxoAttach({
     required this.txid,
     required this.id,
-    required this.attachedAt,
+    required this.createdAt,
   });
 }

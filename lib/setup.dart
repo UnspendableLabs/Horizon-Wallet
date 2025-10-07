@@ -85,6 +85,7 @@ import 'package:horizon/data/sources/repositories/wallet_repository_impl.dart';
 import 'package:horizon/domain/repositories/transaction_repository.dart';
 import 'package:horizon/data/sources/repositories/transaction_repository_impl.dart';
 import 'package:horizon/data/sources/local/dao/transactions_dao.dart';
+import 'package:horizon/data/sources/local/dao/utxo_attaches_dao.dart';
 
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/data/sources/repositories/transaction_local_repository_impl.dart';
@@ -112,6 +113,9 @@ import 'package:horizon/data/sources/repositories/action_repository_impl.dart';
 
 import 'package:horizon/domain/repositories/dispenser_repository.dart';
 import 'package:horizon/data/sources/repositories/dispenser_repository_impl.dart';
+
+import 'package:horizon/domain/repositories/utxo_attach_repository.dart';
+import 'package:horizon/data/sources/repositories/utxo_attach_repository_impl.dart';
 
 import "package:horizon/domain/repositories/fee_estimates_repository.dart";
 import 'package:horizon/data/sources/repositories/fee_estimates_repository_mempool_space_impl.dart';
@@ -456,6 +460,11 @@ void setup() {
       logger: GetIt.I.get<Logger>(),
     ),
   );
+
+  injector.registerSingleton<UtxoAttachRepository>(UtxoAttachRepositoryImpl(
+      dao: UtxoAttachesDao(
+    injector.get<DatabaseManager>().database,
+  )));
 
   injector.registerSingleton<FeeEstimatesRespository>(
       FeeEstimatesRespositoryMempoolSpaceImpl(

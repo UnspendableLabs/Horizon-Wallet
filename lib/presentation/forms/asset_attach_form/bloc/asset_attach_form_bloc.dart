@@ -11,6 +11,7 @@ import 'package:horizon/domain/entities/compose_attach_utxo.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/domain/repositories/utxo_attach_repository.dart';
 import "package:horizon/presentation/forms/base/transaction_form_model_base.dart";
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
@@ -168,6 +169,7 @@ class AssetAttachFormBloc
   final ComposeRepository _composeRepository;
   final SignAndBroadcastTransactionUseCase _signAndBroadcastTransactionUseCase;
   final BitcoinRepository _bitcoinRepository;
+  final UtxoAttachRepository _utxoAttachRepository;
 
   AssetAttachFormBloc({
     required this.httpConfig,
@@ -182,6 +184,7 @@ class AssetAttachFormBloc
     ComposeRepository? composeRepository,
     SignAndBroadcastTransactionUseCase? signAndBroadcastTransactionUseCase,
     BitcoinRepository? bitcoinRepository,
+    UtxoAttachRepository? utxoAttachRepository,
   })  : _composeTransactionUseCase =
             composeTransactionUseCase ?? GetIt.I<ComposeTransactionUseCase>(),
         _composeRepository = composeRepository ?? GetIt.I<ComposeRepository>(),
@@ -189,6 +192,8 @@ class AssetAttachFormBloc
             signAndBroadcastTransactionUseCase ??
                 GetIt.I<SignAndBroadcastTransactionUseCase>(),
         _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>(),
+        _utxoAttachRepository =
+            utxoAttachRepository ?? GetIt.I<UtxoAttachRepository>(),
         super(AssetAttachFormModel(
           address: address,
           feeEstimates: feeEstimates,
