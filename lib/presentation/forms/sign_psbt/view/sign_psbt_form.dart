@@ -1,8 +1,10 @@
 import 'package:formz/formz.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 
 import 'package:horizon/common/format.dart';
+import 'package:horizon/domain/entities/extension_rpc.dart';
 import 'package:horizon/domain/entities/network.dart';
 import 'package:horizon/domain/entities/psbt_type.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
@@ -699,7 +701,7 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                             ),
                             Expanded(
                                 child: Text(
-                                    "A third party has requested that you sign this transaction.  It will not be broadcasted from your wallet, but may be broadcast by the requesting party.  It is recommended that you verify the transaction inputs and outputs.",
+                                    "A third party has requested that you sign this transaction.  It will not be broadcasted from your wallet, but may be broadcasted by the requesting party.  It is recommended that you verify the transaction inputs and outputs.",
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodySmall!
@@ -1790,7 +1792,12 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                     borderRadius: 10,
                     disabled: state.submissionStatus.isInProgressOrSuccess,
                     onPressed: () {
-                      Navigator.of(context).pop();
+                      final cb = switch (widget.psbtType) {
+                        OpaquePsbt() => GetIt.I<RPCCancelCallback>(),
+                        _ => () => Navigator.of(context).pop()
+                      };
+
+                      cb();
                     },
                     child: HorizonUI.TextButtonContent(value: 'Cancel'),
                   ),

@@ -1,4 +1,5 @@
 import 'package:horizon/domain/entities/address_rpc.dart';
+import 'package:flutter/foundation.dart';
 
 class RPCGetAddressesSuccessCallbackArgs {
   final int tabId;
@@ -8,6 +9,8 @@ class RPCGetAddressesSuccessCallbackArgs {
   RPCGetAddressesSuccessCallbackArgs(
       {required this.tabId, required this.requestId, required this.addresses});
 }
+
+typedef RPCCancelCallback = VoidCallback;
 
 typedef RPCGetAddressesSuccessCallback = void Function(
     RPCGetAddressesSuccessCallbackArgs);

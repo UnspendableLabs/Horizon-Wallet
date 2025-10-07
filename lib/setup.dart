@@ -499,6 +499,12 @@ void setup() {
 
   injector.registerSingleton<ActionRepository>(ActionRepositoryImpl());
 
+  injector.registerLazySingleton<RPCCancelCallback>(
+    () => config.isWebExtension
+        ? () => Future.delayed(const Duration(seconds: 0), html.window.close)
+        : () => {},
+  );
+
   injector.registerLazySingleton<RPCGetAddressesSuccessCallback>(
       // () => (args) => GetIt.I<Logger>().debug("""
       //          RPCGetAddressesSuccessCallback called with:
