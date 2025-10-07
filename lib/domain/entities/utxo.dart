@@ -20,16 +20,18 @@ class Utxo {
   final int value;
   final String txid;
   final String address;
+  final bool confirmed;
 
   Utxo(
       {required this.vout,
       this.height,
       required this.value,
       required this.txid,
-      required this.address});
+      required this.address,
+      required this.confirmed});
   @override
   String toString() {
-    return 'Utxo(vout: $vout, height: $height, value: $value, txid: $txid, address: $address)';
+    return 'Utxo(vout: $vout, height: $height, value: $value, txid: $txid, address: $address, confirmed: $confirmed)';
   }
 
   get utoxId => UtxoID(vout: vout, txid: txid);

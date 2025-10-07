@@ -9,7 +9,7 @@ abstract class UtxoRepository {
     HttpConfig httpConfig,
   );
 
-  Future<(List<Utxo>, List<String>)> getUnspentForAddress(
+  Future<(List<Utxo>, List<UtxoID>)> getUnspentForAddress(
       String address, HttpConfig httpConfig,
       {bool excludeCached = false});
 }

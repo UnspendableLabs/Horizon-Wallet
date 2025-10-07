@@ -289,6 +289,7 @@ class AssetAttachFormBloc
       await _utxoAttachRepository.create(
         UtxoAttach(
           asset: composeResponse.params.asset,
+          address: state.address.address,
           quantity: AssetQuantity(
             quantity: BigInt.from(quantity),
             divisible: state.attachQuantityInput.divisible,

@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 class UtxoAttaches extends Table {
   DateTimeColumn get createdAt => dateTime()();
   TextColumn get utxoID => text()();
+  TextColumn get address => text()();
   TextColumn get asset => text()();
   BoolColumn get divisible => boolean()();
   IntColumn get quantity => integer()();

@@ -57,6 +57,7 @@ class AssetDebit {
 }
 
 class AugmentedInput {
+  final bool confirmed;
   final dbtc.Vin vin;
   final String? address;
   final Vout prevOut;
@@ -64,6 +65,7 @@ class AugmentedInput {
   final bool signatureRequired;
 
   const AugmentedInput({
+    required this.confirmed,
     required this.vin,
     required this.prevOut,
     required this.balances,
@@ -266,6 +268,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
               signInputs[address]?.contains(index) ?? false;
 
           return $(TaskEither.right(Option.of(AugmentedInput(
+              confirmed: transaction.status.confirmed,
               address: address,
               vin: vin,
               prevOut: prevout,

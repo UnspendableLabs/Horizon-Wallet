@@ -6,21 +6,26 @@ import 'package:horizon/data/sources/network/counterparty_client_factory.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
+import 'package:horizon/domain/repositories/utxo_attach_repository.dart';
 
 class UtxoRepositoryImpl implements UtxoRepository {
   final CounterpartyClientFactory _counterpartyClientFactory =
       GetIt.I<CounterpartyClientFactory>();
   final EsploraClientFactory _esploraClientFactory;
+  final UtxoAttachRepository _utxoAttachRepository;
   final CacheProvider cacheProvider;
   UtxoRepositoryImpl(
       {CounterpartyClientFactory? counterpartyClientFactory,
+      UtxoAttachRepository? utxoAttachRepository,
       EsploraClientFactory? esploraClientFactory,
       required this.cacheProvider})
       : _esploraClientFactory =
-            esploraClientFactory ?? GetIt.I<EsploraClientFactory>();
+            esploraClientFactory ?? GetIt.I<EsploraClientFactory>(),
+        _utxoAttachRepository =
+            utxoAttachRepository ?? GetIt.I<UtxoAttachRepository>();
 
   @override
-  Future<(List<Utxo>, List<String>)> getUnspentForAddress(
+  Future<(List<Utxo>, List<UtxoID>)> getUnspentForAddress(
       String address, HttpConfig httpConfig,
       {bool excludeCached = false}) async {
     final esploraUtxos = await _esploraClientFactory
@@ -29,6 +34,7 @@ class UtxoRepositoryImpl implements UtxoRepository {
 
     List<Utxo> utxos = esploraUtxos.map((a) {
       return Utxo(
+        confirmed: a.status.confirmed,
         vout: a.vout,
         height: a.status.blockHeight,
         value: a.value,
@@ -37,19 +43,34 @@ class UtxoRepositoryImpl implements UtxoRepository {
       );
     }).toList();
 
-    List<String> cachedTxHashes = [];
+    List<UtxoID> mempoolUTXOSWithAttachedAssets = [];
 
     if (excludeCached) {
-      final allCachedTxHashes = cacheProvider.getValue(address);
-      if (allCachedTxHashes != null && allCachedTxHashes.isNotEmpty) {
-        cachedTxHashes =
-            (allCachedTxHashes as List).map((e) => e.toString()).toList();
-        utxos = utxos.where((utxo) {
-          return !(cachedTxHashes.contains(utxo.txid) && utxo.vout == 0);
-        }).toList();
+      final utxoMap = {
+        for (final utxo in utxos)
+          UtxoID.fromString("${utxo.txid}:${utxo.vout}"): utxo
+      };
+
+      final utxosInMempool = utxos.where((utxo) => !utxo.confirmed).toList();
+
+      for (var utxo in utxosInMempool) {
+        final localAttach = await _utxoAttachRepository.getByID(
+          UtxoID.fromString("${utxo.txid}:${utxo.vout}"),
+        );
+
+        if (localAttach != null) {
+          print(
+              "Excluding mempool UTXO with attached asset: ${utxo.txid}:${utxo.vout}");
+          utxoMap.remove(UtxoID.fromString("${utxo.txid}:${utxo.vout}"));
+          mempoolUTXOSWithAttachedAssets
+              .add(UtxoID.fromString("${utxo.txid}:${utxo.vout}"));
+        }
+
+        utxos = utxoMap.values.toList();
       }
     }
-    return (utxos, cachedTxHashes);
+
+    return (utxos, mempoolUTXOSWithAttachedAssets);
   }
 
   @override
@@ -62,6 +83,7 @@ class UtxoRepositoryImpl implements UtxoRepository {
 
     List<Utxo> utxos = esploraUtxos.map((a) {
       return Utxo(
+        confirmed: a.status.confirmed,
         vout: a.vout,
         height: a.status.blockHeight,
         value: a.value,
@@ -77,7 +99,6 @@ class UtxoRepositoryImpl implements UtxoRepository {
 
       final utxoIds = chunk.map((u) => '${u.txid}:${u.vout}').join(',');
 
-      // Optionally collect results if you need them
       final Response<UtxoWithBalancesResponse> response =
           await _counterpartyClientFactory
               .getClient(httpConfig)
@@ -93,10 +114,27 @@ class UtxoRepositoryImpl implements UtxoRepository {
       });
 
       unattached.addAll(filteredChunk);
-
-      // now i need to collect the utxos w/o balances here
     }
 
-    return unattached;
+    // we also have to exclude any that might be in mempool
+    final unattachedMap = {
+      for (final utxo in unattached) "${utxo.txid}:${utxo.vout}": utxo
+    };
+
+    for (final utxo in unattached) {
+      if (!utxo.confirmed) {
+        final localAttach = await _utxoAttachRepository.getByID(
+          UtxoID.fromString("${utxo.txid}:${utxo.vout}"),
+        );
+
+        if (localAttach != null) {
+          print(
+              "Excluding mempool UTXO with attached asset: ${utxo.txid}:${utxo.vout}");
+          unattachedMap.remove("${utxo.txid}:${utxo.vout}");
+        }
+      }
+    }
+
+    return unattachedMap.values.toList();
   }
 }

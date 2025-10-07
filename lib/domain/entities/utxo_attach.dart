@@ -22,12 +22,14 @@ import 'package:horizon/domain/entities/utxo.dart';
 //    },
 
 class UtxoAttach {
+  final String address;
   final String asset;
   final AssetQuantity quantity;
   final UtxoID id;
   final DateTime createdAt;
 
   UtxoAttach({
+    required this.address,
     required this.asset,
     required this.quantity,
     required this.id,

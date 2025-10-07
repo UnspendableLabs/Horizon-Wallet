@@ -127,7 +127,6 @@ import 'package:horizon/data/sources/network/mempool_space_client_factory.dart';
 
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/usecase/set_mnemonic_usecase.dart';
-import 'package:horizon/presentation/common/usecase/sign_chained_transaction_usecase.dart';
 
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/get_virtual_size_usecase.dart';
@@ -380,6 +379,11 @@ void setup() {
   injector.registerSingleton<ComposeRepository>(ComposeRepositoryImpl());
   injector.registerSingleton<EstimateXcpFeeRepository>(
       EstimateXcpFeeRepositoryImpl());
+
+  injector.registerSingleton<UtxoAttachRepository>(UtxoAttachRepositoryImpl(
+      dao: UtxoAttachesDao(
+    injector.get<DatabaseManager>().database,
+  )));
   injector.registerSingleton<UtxoRepository>(
       UtxoRepositoryImpl(cacheProvider: GetIt.I.get<CacheProvider>()));
   injector.registerSingleton<BalanceRepository>(BalanceRepositoryImpl(
@@ -461,11 +465,6 @@ void setup() {
     ),
   );
 
-  injector.registerSingleton<UtxoAttachRepository>(UtxoAttachRepositoryImpl(
-      dao: UtxoAttachesDao(
-    injector.get<DatabaseManager>().database,
-  )));
-
   injector.registerSingleton<FeeEstimatesRespository>(
       FeeEstimatesRespositoryMempoolSpaceImpl(
           mempoolSpaceClientFactory: GetIt.I.get<MempoolSpaceClientFactory>()));
@@ -499,11 +498,6 @@ void setup() {
       WriteLocalTransactionUseCase(
     transactionRepository: GetIt.I.get<TransactionRepository>(),
     transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),
-  ));
-
-  injector.registerSingleton<SignChainedTransactionUseCase>(
-      SignChainedTransactionUseCase(
-    transactionService: GetIt.I.get<TransactionService>(),
   ));
 
   injector.registerSingleton<ActionRepository>(ActionRepositoryImpl());

@@ -2486,6 +2486,12 @@ class $UtxoAttachesTable extends UtxoAttaches
   late final GeneratedColumn<String> utxoID = GeneratedColumn<String>(
       'utxo_i_d', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _addressMeta =
+      const VerificationMeta('address');
+  @override
+  late final GeneratedColumn<String> address = GeneratedColumn<String>(
+      'address', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _assetMeta = const VerificationMeta('asset');
   @override
   late final GeneratedColumn<String> asset = GeneratedColumn<String>(
@@ -2508,7 +2514,7 @@ class $UtxoAttachesTable extends UtxoAttaches
       type: DriftSqlType.int, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns =>
-      [createdAt, utxoID, asset, divisible, quantity];
+      [createdAt, utxoID, address, asset, divisible, quantity];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -2530,6 +2536,12 @@ class $UtxoAttachesTable extends UtxoAttaches
           utxoID.isAcceptableOrUnknown(data['utxo_i_d']!, _utxoIDMeta));
     } else if (isInserting) {
       context.missing(_utxoIDMeta);
+    }
+    if (data.containsKey('address')) {
+      context.handle(_addressMeta,
+          address.isAcceptableOrUnknown(data['address']!, _addressMeta));
+    } else if (isInserting) {
+      context.missing(_addressMeta);
     }
     if (data.containsKey('asset')) {
       context.handle(
@@ -2562,6 +2574,8 @@ class $UtxoAttachesTable extends UtxoAttaches
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       utxoID: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}utxo_i_d'])!,
+      address: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}address'])!,
       asset: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}asset'])!,
       divisible: attachedDatabase.typeMapping
@@ -2580,12 +2594,14 @@ class $UtxoAttachesTable extends UtxoAttaches
 class UtxoAttach extends DataClass implements Insertable<UtxoAttach> {
   final DateTime createdAt;
   final String utxoID;
+  final String address;
   final String asset;
   final bool divisible;
   final int quantity;
   const UtxoAttach(
       {required this.createdAt,
       required this.utxoID,
+      required this.address,
       required this.asset,
       required this.divisible,
       required this.quantity});
@@ -2594,6 +2610,7 @@ class UtxoAttach extends DataClass implements Insertable<UtxoAttach> {
     final map = <String, Expression>{};
     map['created_at'] = Variable<DateTime>(createdAt);
     map['utxo_i_d'] = Variable<String>(utxoID);
+    map['address'] = Variable<String>(address);
     map['asset'] = Variable<String>(asset);
     map['divisible'] = Variable<bool>(divisible);
     map['quantity'] = Variable<int>(quantity);
@@ -2604,6 +2621,7 @@ class UtxoAttach extends DataClass implements Insertable<UtxoAttach> {
     return UtxoAttachesCompanion(
       createdAt: Value(createdAt),
       utxoID: Value(utxoID),
+      address: Value(address),
       asset: Value(asset),
       divisible: Value(divisible),
       quantity: Value(quantity),
@@ -2616,6 +2634,7 @@ class UtxoAttach extends DataClass implements Insertable<UtxoAttach> {
     return UtxoAttach(
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       utxoID: serializer.fromJson<String>(json['utxoID']),
+      address: serializer.fromJson<String>(json['address']),
       asset: serializer.fromJson<String>(json['asset']),
       divisible: serializer.fromJson<bool>(json['divisible']),
       quantity: serializer.fromJson<int>(json['quantity']),
@@ -2627,6 +2646,7 @@ class UtxoAttach extends DataClass implements Insertable<UtxoAttach> {
     return <String, dynamic>{
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'utxoID': serializer.toJson<String>(utxoID),
+      'address': serializer.toJson<String>(address),
       'asset': serializer.toJson<String>(asset),
       'divisible': serializer.toJson<bool>(divisible),
       'quantity': serializer.toJson<int>(quantity),
@@ -2636,12 +2656,14 @@ class UtxoAttach extends DataClass implements Insertable<UtxoAttach> {
   UtxoAttach copyWith(
           {DateTime? createdAt,
           String? utxoID,
+          String? address,
           String? asset,
           bool? divisible,
           int? quantity}) =>
       UtxoAttach(
         createdAt: createdAt ?? this.createdAt,
         utxoID: utxoID ?? this.utxoID,
+        address: address ?? this.address,
         asset: asset ?? this.asset,
         divisible: divisible ?? this.divisible,
         quantity: quantity ?? this.quantity,
@@ -2650,6 +2672,7 @@ class UtxoAttach extends DataClass implements Insertable<UtxoAttach> {
     return UtxoAttach(
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       utxoID: data.utxoID.present ? data.utxoID.value : this.utxoID,
+      address: data.address.present ? data.address.value : this.address,
       asset: data.asset.present ? data.asset.value : this.asset,
       divisible: data.divisible.present ? data.divisible.value : this.divisible,
       quantity: data.quantity.present ? data.quantity.value : this.quantity,
@@ -2661,6 +2684,7 @@ class UtxoAttach extends DataClass implements Insertable<UtxoAttach> {
     return (StringBuffer('UtxoAttach(')
           ..write('createdAt: $createdAt, ')
           ..write('utxoID: $utxoID, ')
+          ..write('address: $address, ')
           ..write('asset: $asset, ')
           ..write('divisible: $divisible, ')
           ..write('quantity: $quantity')
@@ -2670,13 +2694,14 @@ class UtxoAttach extends DataClass implements Insertable<UtxoAttach> {
 
   @override
   int get hashCode =>
-      Object.hash(createdAt, utxoID, asset, divisible, quantity);
+      Object.hash(createdAt, utxoID, address, asset, divisible, quantity);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is UtxoAttach &&
           other.createdAt == this.createdAt &&
           other.utxoID == this.utxoID &&
+          other.address == this.address &&
           other.asset == this.asset &&
           other.divisible == this.divisible &&
           other.quantity == this.quantity);
@@ -2685,6 +2710,7 @@ class UtxoAttach extends DataClass implements Insertable<UtxoAttach> {
 class UtxoAttachesCompanion extends UpdateCompanion<UtxoAttach> {
   final Value<DateTime> createdAt;
   final Value<String> utxoID;
+  final Value<String> address;
   final Value<String> asset;
   final Value<bool> divisible;
   final Value<int> quantity;
@@ -2692,6 +2718,7 @@ class UtxoAttachesCompanion extends UpdateCompanion<UtxoAttach> {
   const UtxoAttachesCompanion({
     this.createdAt = const Value.absent(),
     this.utxoID = const Value.absent(),
+    this.address = const Value.absent(),
     this.asset = const Value.absent(),
     this.divisible = const Value.absent(),
     this.quantity = const Value.absent(),
@@ -2700,18 +2727,21 @@ class UtxoAttachesCompanion extends UpdateCompanion<UtxoAttach> {
   UtxoAttachesCompanion.insert({
     required DateTime createdAt,
     required String utxoID,
+    required String address,
     required String asset,
     required bool divisible,
     required int quantity,
     this.rowid = const Value.absent(),
   })  : createdAt = Value(createdAt),
         utxoID = Value(utxoID),
+        address = Value(address),
         asset = Value(asset),
         divisible = Value(divisible),
         quantity = Value(quantity);
   static Insertable<UtxoAttach> custom({
     Expression<DateTime>? createdAt,
     Expression<String>? utxoID,
+    Expression<String>? address,
     Expression<String>? asset,
     Expression<bool>? divisible,
     Expression<int>? quantity,
@@ -2720,6 +2750,7 @@ class UtxoAttachesCompanion extends UpdateCompanion<UtxoAttach> {
     return RawValuesInsertable({
       if (createdAt != null) 'created_at': createdAt,
       if (utxoID != null) 'utxo_i_d': utxoID,
+      if (address != null) 'address': address,
       if (asset != null) 'asset': asset,
       if (divisible != null) 'divisible': divisible,
       if (quantity != null) 'quantity': quantity,
@@ -2730,6 +2761,7 @@ class UtxoAttachesCompanion extends UpdateCompanion<UtxoAttach> {
   UtxoAttachesCompanion copyWith(
       {Value<DateTime>? createdAt,
       Value<String>? utxoID,
+      Value<String>? address,
       Value<String>? asset,
       Value<bool>? divisible,
       Value<int>? quantity,
@@ -2737,6 +2769,7 @@ class UtxoAttachesCompanion extends UpdateCompanion<UtxoAttach> {
     return UtxoAttachesCompanion(
       createdAt: createdAt ?? this.createdAt,
       utxoID: utxoID ?? this.utxoID,
+      address: address ?? this.address,
       asset: asset ?? this.asset,
       divisible: divisible ?? this.divisible,
       quantity: quantity ?? this.quantity,
@@ -2752,6 +2785,9 @@ class UtxoAttachesCompanion extends UpdateCompanion<UtxoAttach> {
     }
     if (utxoID.present) {
       map['utxo_i_d'] = Variable<String>(utxoID.value);
+    }
+    if (address.present) {
+      map['address'] = Variable<String>(address.value);
     }
     if (asset.present) {
       map['asset'] = Variable<String>(asset.value);
@@ -2773,6 +2809,7 @@ class UtxoAttachesCompanion extends UpdateCompanion<UtxoAttach> {
     return (StringBuffer('UtxoAttachesCompanion(')
           ..write('createdAt: $createdAt, ')
           ..write('utxoID: $utxoID, ')
+          ..write('address: $address, ')
           ..write('asset: $asset, ')
           ..write('divisible: $divisible, ')
           ..write('quantity: $quantity, ')
@@ -4083,6 +4120,7 @@ typedef $$UtxoAttachesTableCreateCompanionBuilder = UtxoAttachesCompanion
     Function({
   required DateTime createdAt,
   required String utxoID,
+  required String address,
   required String asset,
   required bool divisible,
   required int quantity,
@@ -4092,6 +4130,7 @@ typedef $$UtxoAttachesTableUpdateCompanionBuilder = UtxoAttachesCompanion
     Function({
   Value<DateTime> createdAt,
   Value<String> utxoID,
+  Value<String> address,
   Value<String> asset,
   Value<bool> divisible,
   Value<int> quantity,
@@ -4112,6 +4151,9 @@ class $$UtxoAttachesTableFilterComposer
 
   ColumnFilters<String> get utxoID => $composableBuilder(
       column: $table.utxoID, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get address => $composableBuilder(
+      column: $table.address, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get asset => $composableBuilder(
       column: $table.asset, builder: (column) => ColumnFilters(column));
@@ -4138,6 +4180,9 @@ class $$UtxoAttachesTableOrderingComposer
   ColumnOrderings<String> get utxoID => $composableBuilder(
       column: $table.utxoID, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get address => $composableBuilder(
+      column: $table.address, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get asset => $composableBuilder(
       column: $table.asset, builder: (column) => ColumnOrderings(column));
 
@@ -4162,6 +4207,9 @@ class $$UtxoAttachesTableAnnotationComposer
 
   GeneratedColumn<String> get utxoID =>
       $composableBuilder(column: $table.utxoID, builder: (column) => column);
+
+  GeneratedColumn<String> get address =>
+      $composableBuilder(column: $table.address, builder: (column) => column);
 
   GeneratedColumn<String> get asset =>
       $composableBuilder(column: $table.asset, builder: (column) => column);
@@ -4198,6 +4246,7 @@ class $$UtxoAttachesTableTableManager extends RootTableManager<
           updateCompanionCallback: ({
             Value<DateTime> createdAt = const Value.absent(),
             Value<String> utxoID = const Value.absent(),
+            Value<String> address = const Value.absent(),
             Value<String> asset = const Value.absent(),
             Value<bool> divisible = const Value.absent(),
             Value<int> quantity = const Value.absent(),
@@ -4206,6 +4255,7 @@ class $$UtxoAttachesTableTableManager extends RootTableManager<
               UtxoAttachesCompanion(
             createdAt: createdAt,
             utxoID: utxoID,
+            address: address,
             asset: asset,
             divisible: divisible,
             quantity: quantity,
@@ -4214,6 +4264,7 @@ class $$UtxoAttachesTableTableManager extends RootTableManager<
           createCompanionCallback: ({
             required DateTime createdAt,
             required String utxoID,
+            required String address,
             required String asset,
             required bool divisible,
             required int quantity,
@@ -4222,6 +4273,7 @@ class $$UtxoAttachesTableTableManager extends RootTableManager<
               UtxoAttachesCompanion.insert(
             createdAt: createdAt,
             utxoID: utxoID,
+            address: address,
             asset: asset,
             divisible: divisible,
             quantity: quantity,

@@ -12,6 +12,7 @@ import 'package:horizon/presentation/common/sats_to_usd_display.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_state.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_event.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
 
 // example import
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart'
@@ -1850,14 +1851,31 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
             margin: const EdgeInsets.only(left: 8),
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(
-              color: Colors.green.shade100,
-              borderRadius: BorderRadius.circular(4),
-            ),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: violet)),
             child: Text(
-              "Signing",
+              "signing",
               style: TextStyle(
-                color: Colors.green.shade800,
-                fontSize: 12,
+                color: violet,
+                fontSize: 8,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          )
+        : const SizedBox.shrink();
+
+    final unconfirmed = !input.confirmed
+        ? Container(
+            margin: const EdgeInsets.only(left: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: violet)),
+            child: Text(
+              "unconfirmed",
+              style: TextStyle(
+                color: violet,
+                fontSize: 8,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1898,6 +1916,7 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                 Text(address, style: theme.textTheme.labelSmall),
                 const SizedBox(width: 8),
                 badge,
+                unconfirmed
               ],
             ),
             // Right side: value

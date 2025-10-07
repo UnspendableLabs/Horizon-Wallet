@@ -8,23 +8,12 @@ part 'utxo_attaches_dao.g.dart';
 class UtxoAttachesDao extends DatabaseAccessor<DB> with _$UtxoAttachesDaoMixin {
   UtxoAttachesDao(super.db);
 
-  Future<void> deleteAll() async {
-    await delete(utxoAttaches).go();
-  }
-
   Future<void> insert(UtxoAttach transaction) {
     return into(utxoAttaches).insert(transaction);
   }
 
-  Future<List<UtxoAttach>> getAll() => select(utxoAttaches).get();
-
-  Future<List<UtxoAttach>> getAllAfterDate(
-    DateTime date,
-  ) {
-    return (select(utxoAttaches)
-          ..where((row) {
-            return row.createdAt.isBiggerOrEqualValue(date);
-          }))
-        .get();
+  Future<UtxoAttach?> getByID(String utxoID) {
+    return (select(utxoAttaches)..where((tbl) => tbl.utxoID.equals(utxoID)))
+        .getSingleOrNull();
   }
 }

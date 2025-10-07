@@ -357,6 +357,7 @@ TaskEither<String, Map<String, Utxo>> buildUtxoMapT({
                 vout: index,
                 value: tx.vout[index].value,
                 address: address,
+                confirmed: tx.status.confirmed,
               )
           },
         );
