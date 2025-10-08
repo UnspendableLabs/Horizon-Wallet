@@ -460,10 +460,10 @@ class SwapOrderForm extends StatelessWidget {
 
             commonHeightSizedBox,
             commonHeightSizedBox,
-            ExpirySelector(onChange: (date) {
-              actions.onExpiryChanged(date);
-            }),
-            commonHeightSizedBox,
+            // ExpirySelector(onChange: (date) {
+            //   actions.onExpiryChanged(date);
+            // }),
+            // commonHeightSizedBox,
             commonHeightSizedBox,
             Column(
               children: [
