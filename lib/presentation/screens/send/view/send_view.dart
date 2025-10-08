@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:horizon/domain/usecases/get_all_balances.dart';
 import 'package:horizon/presentation/common/link.dart';
 import 'package:horizon/domain/entities/http_config.dart';
@@ -20,7 +19,6 @@ import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/domain/entities/compose_mpma_send.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
-import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/extensions.dart';
 import 'package:horizon/presentation/forms/asset_balance_form/bloc/asset_balance_form_bloc.dart';
