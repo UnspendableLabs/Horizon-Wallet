@@ -122,6 +122,21 @@ class _ToolsViewState extends State<ToolsView> {
     return ListView(
       children: [
         Tool(
+          name: "create asset",
+          title: "Create Asset",
+          href: "${session.httpConfig.horizonMarket}/create-asset",
+          description: "Create a Counterparty asset.",
+          icon: AppIcons.plusIcon(context: context, width: 24, height: 24),
+        ),
+        Tool(
+          name: "fairmint",
+          title: "Mint Asset",
+          href:
+              "${session.httpConfig.horizonMarket}/fairminters?filter=status%3Aopen",
+          description: "Mint a Counterparty asset",
+          icon: AppIcons.mintIcon(context: context, width: 24, height: 24),
+        ),
+        Tool(
           name: "manage swaps",
           title: 'Atomic Swaps',
           href: "${session.httpConfig.horizonMarket}/listing",
