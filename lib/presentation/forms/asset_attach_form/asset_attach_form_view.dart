@@ -265,6 +265,24 @@ class _AssetAttachFormState extends State<AssetAttachForm> {
                 ],
               ),
             ),
+            if (!widget.state.attachQuantityInput.isPure &&
+                widget.state.attachQuantityInput.isNotValid) ...[
+              const SizedBox(height: 10),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  switch (widget.state.attachQuantityInput.error!) {
+                    AttachQuantityInputError.required =>
+                      "Asset quantity is required",
+                    AttachQuantityInputError.exceedsMax =>
+                      "Quantity exceeds max",
+                    AttachQuantityInputError.isZero =>
+                      "Attach quantity is zero",
+                  },
+                  style: theme.textTheme.bodySmall?.copyWith(color: red1),
+                ),
+              ),
+            ],
             const SizedBox(height: 20),
             TransactionFeeSelection(
               selectedFeeOption: widget.state.feeOptionInput.value,
