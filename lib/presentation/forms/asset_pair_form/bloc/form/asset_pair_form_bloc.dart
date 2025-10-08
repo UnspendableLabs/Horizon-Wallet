@@ -237,7 +237,9 @@ class AssetPairFormModel with FormzMixin {
   }
 
   bool get disabled {
-    return receiveAssetInput.value == null || giveAssetInput.value == null;
+    return receiveAssetInput.value == null ||
+        giveAssetInput.value == null ||
+        giveAssetInput.value!.balance.isNone();
   }
 
   Either<String, SwapType> get swapType {
@@ -258,12 +260,12 @@ class AssetPairFormModel with FormzMixin {
             giveAssetInput.value!.balance, () => "Insufficient balance").map(
           (balance) => AtomicSwapSell(giveBalance: balance),
         ),
-      (_, _) => Either.of(CounterpartyOrder(
-          giveBalance: giveAssetInput.value!.balance.getOrElse(
-            () => throw Exception("Give asset balance is not available"),
-          ),
-          receiveAsset: receiveAssetInput.value!,
-        )),
+      (_, _) => giveAssetInput.value!.balance.fold(
+          () => Either.left("Insufficient balance"),
+          (balance) => Either.of(CounterpartyOrder(
+                giveBalance: balance,
+                receiveAsset: receiveAssetInput.value!,
+              ))),
     };
   }
 

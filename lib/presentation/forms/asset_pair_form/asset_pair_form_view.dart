@@ -91,7 +91,6 @@ class AssetPairForm extends StatefulWidget {
   final Function(SwapType type) onSubmit;
   final AssetPairFormActions actions;
   final AssetPairFormModel state;
-
   const AssetPairForm(
       {required this.onSubmit,
       required this.actions,
@@ -249,28 +248,6 @@ class _AssetPairFormState extends State<AssetPairForm> {
                 ],
               ),
             ),
-            // Row(
-            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            //   children: [
-            //     Padding(
-            //       padding: const EdgeInsets.fromLTRB(12, 0, 0, 0),
-            //       child: Text(
-            //         "Include mempool balances",
-            //         style: TextStyle(
-            //           fontSize: 12,
-            //           fontWeight: FontWeight.w500,
-            //           color: Colors.grey,
-            //         ),
-            //       ),
-            //     ),
-            //     Switch(
-            //       value: widget.state.includeMempool,
-            //       onChanged: (value) {
-            //         widget.actions.onToggleMempoolClicked();
-            //       },
-            //     ),
-            //   ],
-            // ),
             const SizedBox(
               height: 24,
             ),
@@ -280,8 +257,131 @@ class _AssetPairFormState extends State<AssetPairForm> {
                   if (widget.state.disabled) return;
                   widget.actions.onSubmitClicked();
                 },
-                child: TextButtonContent(value: "Swap"),
-                variant: ButtonVariant.green)
+                child: TextButtonContent(value: "Continue"),
+                variant: ButtonVariant.green),
+            const SizedBox(
+              height: 24,
+            ),
+            widget.state.swapType.fold(
+                (_) => SizedBox.shrink(),
+                (swapType) => switch (swapType) {
+                      AtomicSwapSell(giveBalance: var giveBalance) => Row(
+                          children: [
+                            Expanded(
+                              child: HorizonCard(
+                                  backgroundColor: black,
+                                  child: Column(children: [
+                                    Row(
+                                      children: [
+                                        RichText(
+                                            text: TextSpan(
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .labelSmall!
+                                              .copyWith(color: white),
+                                          children: [
+                                            TextSpan(text: giveBalance.asset),
+                                            TextSpan(text: '\u{2192}'),
+                                            TextSpan(text: "BTC")
+                                          ],
+                                        )),
+                                      ],
+                                    ),
+                                    SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .labelSmall!,
+                                              "Create a listing to swap ${giveBalance.asset} for BTC.  The listing will be available on Horizon Market until it is purchased, expires, or is manually delisted."),
+                                        )
+                                      ],
+                                    )
+                                  ])),
+                            ),
+                          ],
+                        ),
+                      AtomicSwapBuy(receiveAsset: var receiveAsset) => Row(
+                          children: [
+                            Expanded(
+                              child: HorizonCard(
+                                  backgroundColor: black,
+                                  child: Column(children: [
+                                    Row(
+                                      children: [
+                                        RichText(
+                                            text: TextSpan(
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .labelSmall!
+                                              .copyWith(color: white),
+                                          children: [
+                                            TextSpan(text: "BTC"),
+                                            TextSpan(text: '\u{2192}'),
+                                            TextSpan(text: receiveAsset.name),
+                                          ],
+                                        )),
+                                      ],
+                                    ),
+                                    SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                            child: Text(
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .labelSmall!,
+                                                "Atomically swap BTC for ${receiveAsset.name}.  Assets will be transferred as soon as the swap transaction is confirmed on the Bitcoin network."))
+                                      ],
+                                    )
+                                  ])),
+                            ),
+                          ],
+                        ),
+                      CounterpartyOrder(
+                        giveBalance: var giveBalance,
+                        receiveAsset: var receiveAsset
+                      ) =>
+                        Row(
+                          children: [
+                            Expanded(
+                              child: HorizonCard(
+                                  backgroundColor: black,
+                                  child: Column(children: [
+                                    Row(
+                                      children: [
+                                        RichText(
+                                            text: TextSpan(
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .labelSmall!
+                                              .copyWith(color: white),
+                                          children: [
+                                            TextSpan(text: giveBalance.asset),
+                                            TextSpan(text: '\u{2192}'),
+                                            TextSpan(text: receiveAsset.name),
+                                          ],
+                                        )),
+                                      ],
+                                    ),
+                                    SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                            child: Text(
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .labelSmall!,
+                                                "Create a Counterparty limit order to buy ${receiveAsset.name} with ${giveBalance.asset}.  Order will remain open until it is fulfilled, expired, or cancelled."))
+                                      ],
+                                    )
+                                  ])),
+                            ),
+                          ],
+                        ),
+                    }),
           ],
         ),
       );
