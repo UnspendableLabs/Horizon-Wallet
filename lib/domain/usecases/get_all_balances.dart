@@ -353,6 +353,7 @@ class GetAllBalancesUseCase
                             confirmed: true,
                             asset: balance.asset,
                             assetLongname: balance.assetInfo.assetLongname,
+                            description: balance.assetInfo.description,
                             utxoId: UtxoID.fromString(entry.utxo!),
                             address: entry.utxoAddress!,
                             quantity: AssetQuantity(
@@ -364,6 +365,7 @@ class GetAllBalancesUseCase
                             confirmed: true,
                             asset: balance.asset,
                             assetLongname: balance.assetInfo.assetLongname,
+                            description: balance.assetInfo.description,
                             address: entry.address!,
                             quantity: AssetQuantity(
                               quantity: BigInt.from(entry.quantity),

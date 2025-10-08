@@ -147,6 +147,7 @@ extension BalanceListSummaryX on List<BalanceV2> {
       );
       out[asset] = AssetBalanceSummary(
         asset: asset,
+        description: description[asset],
         assetLongname: assetLongname[asset],
         balance: qty,
         balances: rowsByAsset[asset]!,

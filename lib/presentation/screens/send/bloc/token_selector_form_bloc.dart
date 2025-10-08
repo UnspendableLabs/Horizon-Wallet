@@ -76,7 +76,7 @@ class TokenSelectorFormModel with FormzMixin {
     return balances
         .map((balance) => TokenSelectorOption(
               name: balance.asset,
-              description: "",
+              description: balance.description,
               balance: Option.of(balance),
             ))
         .toList();
