@@ -371,8 +371,7 @@ class _SettingsViewState extends State<SettingsView> {
                     onChanged: (value) {
                       Option.fromNullable(value)
                           .flatMap(NetworkX.fromString)
-                          .fold(() {
-                      }, (Network network) {
+                          .fold(() {}, (Network network) {
                         context.read<SessionStateCubit>().onNetworkChanged(
                               network,
                             );
@@ -405,7 +404,7 @@ class _SettingsViewState extends State<SettingsView> {
             context.push("/settings/advanced");
           },
         ),
-        const SizedBox(height: 40),
+        commonHeightSizedBox,
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0),
           child: Container(
@@ -459,6 +458,8 @@ class _SettingsViewState extends State<SettingsView> {
             ),
           ),
         ),
+
+        commonHeightSizedBox,
       ],
     );
   }

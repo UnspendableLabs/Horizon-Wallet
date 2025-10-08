@@ -224,6 +224,7 @@ class OnboardingView extends StatelessWidget {
                     ),
                   ),
                   TermsOfService(),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),

@@ -53,35 +53,40 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Warning icon and text group
-          Container(
-            margin: const EdgeInsets.all(0.0),
-            child: Column(
-              children: [
-                Text(
-                  "Horizon Wallet does not store a copy of your password.",
-                  style: mutedWarningStyle,
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  "You will need to reset your account, and then recover your wallet using your seed phrase.",
-                  style: mutedWarningStyle,
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  "If you use multiple accounts, please note that you will need to recreate them after restoring your wallet.",
-                  style: mutedWarningStyle,
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  "Additionally, any private keys that were imported separately will need to be reimported.",
-                  style: mutedWarningStyle,
-                ),
-                const SizedBox(height: 10),
-              ],
-            ),
+          Text(
+            "Horizon Wallet does not store a copy of your password.  You will need to reset your account, and then recover your wallet using your seed phrase.  If you use multiple accounts, please note that you will need to recreate them after restoring your wallet.  Additionally, any private keys that were imported separately will need to be reimported",
+            style: mutedWarningStyle!.copyWith(fontSize: 10),
+            textAlign: TextAlign.left,
           ),
-          const SizedBox(height: 32),
+          // Warning icon and text group
+          // Container(
+          //   margin: const EdgeInsets.all(0.0),
+          //   child: Column(
+          //     children: [
+          //       Text(
+          //         "Horizon Wallet does not store a copy of your password.",
+          //         style: mutedWarningStyle,
+          //       ),
+          //       const SizedBox(height: 10),
+          //       Text(
+          //         "You will need to reset your account, and then recover your wallet using your seed phrase.",
+          //         style: mutedWarningStyle,
+          //       ),
+          //       const SizedBox(height: 10),
+          //       Text(
+          //         "If you use multiple accounts, please note that you will need to recreate them after restoring your wallet.",
+          //         style: mutedWarningStyle,
+          //       ),
+          //       const SizedBox(height: 10),
+          //       Text(
+          //         "Additionally, any private keys that were imported separately will need to be reimported.",
+          //         style: mutedWarningStyle,
+          //       ),
+          //       const SizedBox(height: 10),
+          //     ],
+          //   ),
+          // ),
+          const SizedBox(height: 24),
           // Warning box container
           Container(
             padding: const EdgeInsets.all(0),
@@ -96,7 +101,7 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
                   AppIcons.eyeOpenIcon(context: context),
                 ),
                 Container(
-                  height: 64,
+                  height: 120,
                   margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(18),

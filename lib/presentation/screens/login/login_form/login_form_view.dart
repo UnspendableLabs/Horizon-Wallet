@@ -178,7 +178,8 @@ class _LoginFormState extends State<LoginForm> {
                   },
                 ),
                 const SizedBox(height: 42),
-                TermsOfService()
+                TermsOfService(),
+                const SizedBox(height: 24),
               ]));
     });
   }

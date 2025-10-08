@@ -58,18 +58,17 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
             margin: const EdgeInsets.all(0.0),
             child: Column(
               children: [
-                AppIcons.warningIcon(color: red1, height: 48, width: 48),
-                const SizedBox(height: 8),
-                SizedBox(
-                  width: 170,
-                  child: Text(
+                Row(children: [
+                  AppIcons.warningIcon(color: red1, height: 32, width: 32),
+                  const SizedBox(width: 24),
+                  Text(
                     'Before you continue',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           color: red1,
                         ),
                   ),
-                ),
+                ]),
                 const SizedBox(height: 10),
                 Text(
                   "All wallet data will be permanently deleted. You can only recover your wallet using your seed phrase.",
