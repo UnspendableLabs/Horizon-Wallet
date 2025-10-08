@@ -41,6 +41,8 @@ class SignPsbtForm extends StatefulWidget {
 class _SignPsbtFormState extends State<SignPsbtForm> {
   bool _isExpanded = false;
 
+  TextEditingController passwordController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -1763,21 +1765,32 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                 const Divider(),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-                  child: TextField(
+                  child: HorizonUI.HorizonTextField(
+                    controller: passwordController,
                     onChanged: (password) => context
                         .read<SignPsbtBloc>()
                         .add(PasswordChanged(password)),
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      errorText: state.password.displayError == null
-                          ? null
-                          : 'Password cannot be empty',
-                    ),
                     obscureText: true,
+                    label: 'Password',
+                    errorText: state.password.displayError == null
+                        ? null
+                        : 'Password cannot be empty',
                   ),
                 ),
               ],
             ),
+          if (state.submissionStatus.isFailure) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text(
+                state.error!,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(color: Theme.of(context).colorScheme.error),
+              ),
+            )
+          ],
 
           // Submit Button
           const Divider(),
@@ -1827,12 +1840,6 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
           ),
           const SizedBox(height: 20),
           // Status/Error Message
-          if (state.submissionStatus.isFailure) ...[
-            Text(
-              state.error!,
-              style: const TextStyle(color: Colors.red),
-            ),
-          ]
         ]));
       }),
     );

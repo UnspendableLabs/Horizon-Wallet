@@ -431,7 +431,10 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
                   .getForWalletConfigT(
                       walletConfig: walletConfig,
                       decryptionStrategy: decryptionStrategy,
-                      onError: (_) => "invairant: could not derive seed")
+                      onError: (_) => switch (decryptionStrategy) {
+                            Password() => "Invalid password",
+                            InMemoryKey() => "invariant: could not derive seed"
+                          })
                   .flatMap(
                       (seed) => _addressService.deriveAddressPrivateKeyWIPT(
                             path: Bip32Path(value: value),
