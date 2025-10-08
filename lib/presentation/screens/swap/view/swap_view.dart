@@ -11,6 +11,8 @@ import 'package:horizon/domain/entities/swap_type.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/usecases/get_all_balances.dart';
 import 'package:horizon/extensions.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:horizon/presentation/forms/asset_pair_form/asset_pair_form_view.dart';
 import 'package:horizon/presentation/forms/base/flow/view/flow_step.dart';
@@ -21,6 +23,292 @@ import 'package:horizon/utils/app_icons.dart';
 import "./flows/atomic_swap_buy/atomic_swap_buy_flow.dart";
 import "./flows/atomic_swap_sell/atomic_swap_sell_flow.dart";
 import "./flows/order/order_flow.dart";
+import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class SwapExplainerPopup extends StatefulWidget {
+  const SwapExplainerPopup({super.key});
+
+  @override
+  State<SwapExplainerPopup> createState() => _SwapExplainerPopupState();
+}
+
+class _SwapExplainerPopupState extends State<SwapExplainerPopup> {
+  bool _dontShowAgain = false;
+
+  Future<void> _checkPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    final skip = prefs.getBool('swap_explainer_skip') ?? false;
+    if (skip || !mounted) return;
+    Future.delayed(const Duration(seconds: 2), _showModal);
+  }
+
+  Future<void> _showModal() async {
+    if (!mounted) return;
+    await WoltModalSheet.show<void>(
+      context: context,
+      modalTypeBuilder: (_) => WoltModalType.bottomSheet(),
+      pageListBuilder: (modalContext) {
+        return [
+          WoltModalSheetPage(
+            hasTopBarLayer: false,
+            child: StatefulBuilder(
+              builder: (ctx, setModalState) {
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 32.0),
+                      child: Text(
+                        "Horizon's Unified Trading Interface",
+                        textAlign: TextAlign.center,
+                        style: Theme.of(modalContext)
+                            .textTheme
+                            .titleMedium!
+                            .copyWith(fontSize: 36, height: .95),
+                      ),
+                    ),
+                    Container(
+                      padding: EdgeInsets.fromLTRB(24, 0, 24, 32),
+                      child: Text.rich(
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text:
+                                  "Welcome to Horizon Wallet's unified trading interface.  ",
+                              style: Theme.of(modalContext).textTheme.bodySmall,
+                            ),
+                            TextSpan(
+                              text: "Trade Counterparty assets",
+                              style: Theme.of(modalContext)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                              text: " on Counterparty's Dex, ",
+                              style: Theme.of(modalContext).textTheme.bodySmall,
+                            ),
+                            TextSpan(
+                              text: "Buy available Horizon Market listings ",
+                              style: Theme.of(modalContext)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                              text: "with BTC, or for \$2 ",
+                              style: Theme.of(modalContext).textTheme.bodySmall,
+                            ),
+                            TextSpan(
+                              text: "list an asset for sale",
+                              style: Theme.of(modalContext)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                              text: " on Horizon Market.",
+                              style: Theme.of(modalContext).textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                        textAlign: TextAlign.left,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Row(
+                        children: [
+                          Checkbox(
+                            value: _dontShowAgain,
+                            onChanged: (val) {
+                              setModalState(() {
+                                _dontShowAgain = val ?? false;
+                              });
+                            },
+                          ),
+                          SizedBox(width: 4),
+                          Text("Don't show this message again",
+                              style:
+                                  Theme.of(modalContext).textTheme.labelSmall),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 8),
+                      child: HorizonButton(
+                        variant: ButtonVariant.black,
+                        onPressed: () async {
+                          if (_dontShowAgain) {
+                            final prefs = await SharedPreferences.getInstance();
+                            await prefs.setBool('swap_explainer_skip', true);
+                          }
+                          if (Navigator.of(modalContext).canPop()) {
+                            Navigator.of(modalContext).pop(); // close modal
+                          }
+                        },
+                        child: TextButtonContent(value: "Got it"),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ];
+      },
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPreference();
+  }
+
+  @override
+  Widget build(BuildContext context) => const SizedBox.shrink();
+}
+
+// class _SwapExplainerPopupState extends State<SwapExplainerPopup> {
+//   bool _dontShowAgain = false;
+//
+//   Future<void> _checkPreference() async {
+//     final prefs = await SharedPreferences.getInstance();
+//     final skip = prefs.getBool('swap_explainer_skip') ?? false;
+//     // if (skip) {
+//     //   return;
+//     // }
+//     Future.delayed(Duration(seconds: 2), _showModal);
+//   }
+//
+//   _setDontShowAgain(bool value) {
+//     setState(() {
+//       _dontShowAgain = value;
+//     });
+//   }
+//
+//   Future<void> _showModal() async {
+//     if (!mounted) return;
+//     await WoltModalSheet.show<void>(
+//       context: context,
+//       modalTypeBuilder: (_) => WoltModalType.bottomSheet(),
+//       pageListBuilder: (modalContext) {
+//         return [
+//           WoltModalSheetPage(
+//             hasTopBarLayer: false,
+//             child: Builder(builder: (context) {
+//               return Column(
+//                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                 children: [
+//                   Padding(
+//                     padding: const EdgeInsets.symmetric(
+//                         horizontal: 16.0, vertical: 32.0),
+//                     child: Text(
+//                       textAlign: TextAlign.center,
+//                       "Horizon's Unified Trading Interface",
+//                       style: Theme.of(context)
+//                           .textTheme
+//                           .titleMedium!
+//                           .copyWith(fontSize: 36, height: .95),
+//                     ),
+//                   ),
+//                   Padding(
+//                     padding: const EdgeInsets.symmetric(
+//                         horizontal: 16, vertical: 16),
+//                     child: Text.rich(
+//                       textAlign: TextAlign.center,
+//                       TextSpan(
+//                         children: [
+//                           TextSpan(
+//                             text:
+//                                 "Welcome to Horizon Wallet's unified trading interface.  ",
+//                             style: Theme.of(context).textTheme.bodySmall,
+//                           ),
+//                           TextSpan(
+//                             text: "Trade Counterparty assets",
+//                             style: Theme.of(context)
+//                                 .textTheme
+//                                 .bodySmall
+//                                 ?.copyWith(fontWeight: FontWeight.bold),
+//                           ),
+//                           TextSpan(
+//                             text: " on Counterparty's Dex, ",
+//                             style: Theme.of(context).textTheme.bodySmall,
+//                           ),
+//                           TextSpan(
+//                             text: "Buy available Horizon Market listings ",
+//                             style: Theme.of(context)
+//                                 .textTheme
+//                                 .bodySmall
+//                                 ?.copyWith(fontWeight: FontWeight.bold),
+//                           ),
+//                           TextSpan(
+//                             text: "with BTC, or for \$2 ",
+//                             style: Theme.of(context).textTheme.bodySmall,
+//                           ),
+//                           TextSpan(
+//                             text: "list an asset for sale",
+//                             style: Theme.of(context)
+//                                 .textTheme
+//                                 .bodySmall
+//                                 ?.copyWith(fontWeight: FontWeight.bold),
+//                           ),
+//                           TextSpan(
+//                             text: " on Horizon Market.",
+//                             style: Theme.of(context).textTheme.bodySmall,
+//                           ),
+//                         ],
+//                       ),
+//                     ),
+//                   ),
+//                   Padding(
+//                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
+//                     child: Checkbox(
+//                       value: _dontShowAgain,
+//                       onChanged: (val) {
+//                         _setDontShowAgain(val ?? false);
+//                       },
+//                     ),
+//                   ),
+//                   Padding(
+//                     padding: const EdgeInsets.symmetric(
+//                         horizontal: 16.0, vertical: 32.0),
+//                     child: HorizonButton(
+//                       variant: ButtonVariant.black,
+//                       onPressed: () async {
+//                         if (_dontShowAgain) {
+//                           final prefs = await SharedPreferences.getInstance();
+//                           await prefs.setBool('swap_explainer_skip', true);
+//                         }
+//                       },
+//                       child: TextButtonContent(value: "Got it"),
+//                     ),
+//                   ),
+//                 ],
+//               );
+//             }),
+//           ),
+//         ];
+//       },
+//     );
+//   }
+//
+//   @override
+//   void initState() {
+//     super.initState();
+//
+//     _checkPreference();
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return SizedBox.shrink();
+//   }
+// }
 
 class SwapFlowController extends FlowController<SwapFlowModel> {
   SwapFlowController({required SwapFlowModel initialState})
@@ -86,16 +374,22 @@ class _SwapFlowViewState extends State<SwapFlowView> {
                         onFailure: (error) => Text(error.toString()),
                         onReplete: (data) => AssetPairFormProvider(
                             balancesSet: data,
-                            child: (actions, state) => AssetPairForm(
-                                onSubmit: (swapType) {
-                                  context
-                                      .flow<SwapFlowModel>()
-                                      .update((model) => model.copyWith(
-                                            swapType: Option.of(swapType),
-                                          ));
-                                },
-                                actions: actions,
-                                state: state)));
+                            child: (actions, state) => Column(
+                                  children: [
+                                    SwapExplainerPopup(),
+                                    AssetPairForm(
+                                        onSubmit: (swapType) {
+                                          context
+                                              .flow<SwapFlowModel>()
+                                              .update((model) => model.copyWith(
+                                                    swapType:
+                                                        Option.of(swapType),
+                                                  ));
+                                        },
+                                        actions: actions,
+                                        state: state),
+                                  ],
+                                )));
                   }),
               leading: IconButton(
                 onPressed: () {
