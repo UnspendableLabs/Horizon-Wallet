@@ -7,6 +7,7 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/data/sources/network/horizon_explorer_client.dart';
+import 'package:horizon/presentation/common/gradient_avatar.dart';
 
 class AppIcons {
   static final AppIcons _instance = AppIcons._internal();
@@ -1043,10 +1044,11 @@ class AppIcons {
           );
         }
 
-        return xcpIcon(
-          width: width,
-          height: height,
-          fit: fit,
+        return GradientAvatar(
+          input: assetName,
+          radius: (width != null && height != null)
+              ? (width < height ? width / 2 : height / 2)
+              : (width ?? height ?? 40) / 2,
         );
       },
     );
