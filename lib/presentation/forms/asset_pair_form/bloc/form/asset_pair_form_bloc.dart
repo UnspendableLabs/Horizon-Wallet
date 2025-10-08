@@ -130,10 +130,6 @@ class AssetPairFormModel with FormzMixin {
       name: "XCP",
       description: "XCP",
     ),
-    "pepecash": const AssetSearchResult(
-      name: "PEPECASH",
-      description: "",
-    ),
   };
 
   final bool includeMempool;
