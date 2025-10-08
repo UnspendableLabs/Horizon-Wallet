@@ -598,8 +598,8 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
         super(SwapOrderFormModel(
             expiry: none(),
             giveAssetBalance: giveAssetBalance,
-            amountInput: const AmountInput.dirty(value: "0"),
-            priceInput: const PriceInput.dirty(value: "0"),
+            amountInput: const AmountInput.dirty(value: ""),
+            priceInput: const PriceInput.dirty(value: ""),
             amountType: AmountType.give,
             priceType: PriceType.get,
             giveAsset: giveAsset,
