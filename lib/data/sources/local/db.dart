@@ -235,46 +235,11 @@ class DB extends _$DB {
   ''');
 
               m.createTable(schema.accountConfigurations);
+              m.createTable(schema.utxoAttaches);
             }));
 
-        // if (ENV == "dev") {
-        //   final wrongForeignKeys =
-        //       await customSelect('PRAGMA foreign_key_check').get();
-        //   assert(wrongForeignKeys.isEmpty,
-        //       '${wrongForeignKeys.map((e) => e.data)}');
-        // }
-        //
         await customStatement('PRAGMA foreign_keys = ON;');
       },
     );
   }
-
-  // Method to reset the database
-  Future<void> resetDatabase() async {
-    await close(); // Close the existing database connection
-    // Reinitialize the database connection
-    // Optionally, you can re-run the onCreate methods if needed
-    markTablesUpdated(allTables);
-  }
-
-  // Future<void> deleteDatabase() async {
-  //   await close(); // Ensure the database is closed before deleting
-  //
-  //   // JavaScript code to delete IndexedDB
-  //   js.context.callMethod('eval', [
-  //     """
-  //     var DBDeleteRequest = window.indexedDB.deleteDatabase('horizon_db');
-  //
-  //     DBDeleteRequest.onerror = function(event) {
-  //       console.log('Error deleting database.');
-  //     };
-  //
-  //     DBDeleteRequest.onsuccess = function(event) {
-  //       console.log('Database deleted successfully');
-  //     };
-  //   """
-  //   ]);
-  //
-  //   print('Database deletion initiated');
-  // }
 }

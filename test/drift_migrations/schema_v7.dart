@@ -341,6 +341,53 @@ class AccountConfigurations extends Table with TableInfo {
   }
 }
 
+class UtxoAttaches extends Table with TableInfo {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  UtxoAttaches(this.attachedDatabase, [this._alias]);
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  late final GeneratedColumn<String> utxoID = GeneratedColumn<String>(
+      'utxo_i_d', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  late final GeneratedColumn<String> address = GeneratedColumn<String>(
+      'address', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  late final GeneratedColumn<String> asset = GeneratedColumn<String>(
+      'asset', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  late final GeneratedColumn<bool> divisible = GeneratedColumn<bool>(
+      'divisible', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("divisible" IN (0, 1))'));
+  late final GeneratedColumn<int> quantity = GeneratedColumn<int>(
+      'quantity', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [createdAt, utxoID, address, asset, divisible, quantity];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'utxo_attaches';
+  @override
+  Set<GeneratedColumn> get $primaryKey => {utxoID};
+  @override
+  Never map(Map<String, dynamic> data, {String? tablePrefix}) {
+    throw UnsupportedError('TableInfo.map in schema verification code');
+  }
+
+  @override
+  UtxoAttaches createAlias(String alias) {
+    return UtxoAttaches(attachedDatabase, alias);
+  }
+}
+
 class DatabaseAtV7 extends GeneratedDatabase {
   DatabaseAtV7(QueryExecutor e) : super(e);
   late final Wallets wallets = Wallets(this);
@@ -351,6 +398,7 @@ class DatabaseAtV7 extends GeneratedDatabase {
   late final WalletConfigs walletConfigs = WalletConfigs(this);
   late final AccountConfigurations accountConfigurations =
       AccountConfigurations(this);
+  late final UtxoAttaches utxoAttaches = UtxoAttaches(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -362,7 +410,8 @@ class DatabaseAtV7 extends GeneratedDatabase {
         transactions,
         importedAddresses,
         walletConfigs,
-        accountConfigurations
+        accountConfigurations,
+        utxoAttaches
       ];
   @override
   int get schemaVersion => 7;

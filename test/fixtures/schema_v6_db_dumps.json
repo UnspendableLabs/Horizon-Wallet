@@ -1,0 +1,536 @@
+{
+  "cases": [
+    {
+      "format": "Horizon",
+      "mnemonic": "core degree fringe neck urban bulk idea describe pattern wool vacant help",
+      "db": {
+        "wallets": [
+          {
+            "uuid": "6ba17f9e-6255-45d6-89a2-1c4cc47bae78",
+            "name": "Wallet 1",
+            "encrypted_priv_key": "A2::v=19::m=65536,t=6,p=4::D8i+WyqUT0Ajk2NN uGzj9w==::tWHcOhEP+HvGtdzK0eHoXA==IrVvsyRlwb Sp0GtZU+3YwYZd7/0RvHHBA6eKcDqROQP2FSI1DDumCO KtpzibUS+iH+Slh4Y+66hR/7/FFeDGHlN3TveuvlYMzJ o5eFotrvg=",
+            "encrypted_mnemonic": "A2::v=19::m=65536,t=6,p=4::TGYJvJ6mOhQyOlB9 3Pj9ww==::bq+jfB2+fMXW7YlwvP6W/g==aCisIKwRd5 tOyI18vh1qbERsY/3x6nyuYv+KN/V4w9PIuPqwm9tsYn qZWoih7tdiDNWSDmTPiUrd7tOgYHNwds6T0ApnjtjmvY ZU7XscHiM=",
+            "public_key": "xpub661MyMwAqRbcFEJ6pqVndKvbYSePQWa5FeS5cwc 7uvUncRUswKwnFmoYtTTGvThFVg2smGniAtdr3i6qL6k KX67UsnXh3BA6gZn2CdxXtdw",
+            "chain_code_hex": "4507b76754b267dc58b6d6d438278226db63a7d7ff6 d66d60ca753bc21d73c44"
+          }
+        ],
+        "accounts": [
+          {
+            "uuid": "f01de8cc-2fe9-4523-b1ad-f5571bace079",
+            "name": "ACCOUNT 1",
+            "wallet_uuid": "6ba17f9e-6255-45d6-89a2-1c4cc47bae78",
+            "purpose": "84'",
+            "coin_type": "0'",
+            "account_index": "0'",
+            "import_format": "Horizon"
+          },
+          {
+            "uuid": "4aca87a3-4de0-44a6-a977-b3b13c932189",
+            "name": "Account 2",
+            "wallet_uuid": "6ba17f9e-6255-45d6-89a2-1c4cc47bae78",
+            "purpose": "84'",
+            "coin_type": "0'",
+            "account_index": "1'",
+            "import_format": "Horizon"
+          },
+          {
+            "uuid": "485da0f5-4607-4f2d-b37c-7b8166d33b1f",
+            "name": "Account 3",
+            "wallet_uuid": "6ba17f9e-6255-45d6-89a2-1c4cc47bae78",
+            "purpose": "84'",
+            "coin_type": "0'",
+            "account_index": "2'",
+            "import_format": "Horizon"
+          }
+        ],
+        "addresses": [
+          {
+            "account_uuid": "f01de8cc-2fe9-4523-b1ad-f5571bace079",
+            "address": "bc1qjhwllv4td3ucx6mp5s504f32zv6557n2srtya6",
+            "index": 0,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "4aca87a3-4de0-44a6-a977-b3b13c932189",
+            "address": "bc1q5ft08mz0e70n5fmvfecpmn5cjdyl8f0ct8fcah",
+            "index": 0,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "485da0f5-4607-4f2d-b37c-7b8166d33b1f",
+            "address": "bc1qdkhku4a46vwpf2zmuxtrp7lyswfc6vulgu3mkx",
+            "index": 0,
+            "encrypted_private_key": null
+          }
+        ],
+        "transactions": [],
+        "imported_addresses": [
+          {
+            "address": "bc1q3f6992amsytpu8kq5ljsk0wqv4sazyjd3g335q",
+            "name": "manually-imported-1",
+            "encrypted_wif": "A2::v=19::m=65536,t=6,p=4::7vpchijpAV8h1ML6 yymAPA==::ddrsrt6tzrtjCp/Fh6w3QQ==shHTsoxDUk Lc3/B97CRQXoHc5HlALBKINLsK2Vavrc5wGf8AIYgrdP FBxA3LCYoysBHICpmi+1Ag2XoQLCynfg=="
+          },
+          {
+            "address": "bc1qs7yenuag674uft3ppmuhpzm7ltyzqn8xyknu3c",
+            "name": "manual-2-legacy",
+            "encrypted_wif": "A2::v=19::m=65536,t=6,p=4::WcK8AfQI/UtUgE0p 2giIhA==::4Xs8r39rGjzUkOj/7bP92w==45TZirTtzY ypDWlaj5sw0ju1WcmLyE/g8KyjqO8pmplpcJID1sdx8Y ScJNCt8tZzUsHdKr1tbAbc8tXs3Y8Leg=="
+          }
+        ]
+      }
+    },
+    {
+      "format": "Counterwallet",
+      "mnemonic": "voice flame certainly anyone former raw limit king rhythm tumble crystal earth",
+      "db": {
+        "wallets": [
+          {
+            "uuid": "c92da43f-324d-4b55-b5c1-76f07521901f",
+            "name": "Wallet 1",
+            "encrypted_priv_key": "A2::v=19::m=65536,t=6,p=4::dgKkMZmGBJFF1Eok3oq1zA==::kLhayUnjLXxVDa2d+gTHYA==ddrgTXCXO3HDu1cD Z05aaJHr4YL4X6DdKprHZ9ZeoXDoLkNtxlarMujFRPBDt1Mn445OzGy/tCB++lGQUImCsQ9MF2+X33PjnD030W2/J1U=",
+            "encrypted_mnemonic": "A2::v=19::m=65536,t=6,p=4::t4/4QmVwQWukx/GglsUvlQ==::PvhJulh+haAZp4+yUgegjg==TajRjsSgER/9op9e ku3ayFmwWTvfvJwGCN7tlteOivDMJVYSihtKhvSwddb6d/HJBeHY7YggBFWsBVRZbYepp48Dv5hvIcx2cAyB8zMCI9I=",
+            "public_key": "xpub661MyMwAqRbcH6BMFZUonQyDzC8qfawJv4WWKRSriAXxVYPHgpNvC8ppbwQWkPm5zf7iFcniwUji7SYgHB6f4aDYy k51YkwdACWgygji6ff",
+            "chain_code_hex": "ffdb993d4d3a775f2a0d0ed453a889f38077f94bb011c85f6af2230aac9e3f06"
+          }
+        ],
+        "accounts": [
+          {
+            "uuid": "d7554d04-2c7d-4d8d-b2c1-d950ce011c3a",
+            "name": "ACCOUNT 1",
+            "wallet_uuid": "c92da43f-324d-4b55-b5c1-76f07521901f",
+            "purpose": "0'",
+            "coin_type": "0",
+            "account_index": "0'",
+            "import_format": "Counterwallet"
+          }
+        ],
+        "addresses": [
+          {
+            "account_uuid": "d7554d04-2c7d-4d8d-b2c1-d950ce011c3a",
+            "address": "bc1qn8f324j40n5x4d6led6xs0hm5x779q27dfc7a3",
+            "index": 0,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "d7554d04-2c7d-4d8d-b2c1-d950ce011c3a",
+            "address": "bc1q8dgyqdnyr6kf3ctawy5ljl73r86h95aqywu99t",
+            "index": 1,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "d7554d04-2c7d-4d8d-b2c1-d950ce011c3a",
+            "address": "bc1qsh57e8axj5v5w378mzjacvsg80xe7agxysj5th",
+            "index": 2,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "d7554d04-2c7d-4d8d-b2c1-d950ce011c3a",
+            "address": "bc1q64ycvmkdsn26uzwdnhnmp9j3wwz57nqepqqjf3",
+            "index": 3,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "d7554d04-2c7d-4d8d-b2c1-d950ce011c3a",
+            "address": "bc1qp2nafvy88y38pvkxhzwkqrlm2nj0znmfrap7wn",
+            "index": 4,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "d7554d04-2c7d-4d8d-b2c1-d950ce011c3a",
+            "address": "bc1q0xcyct02486rxztf6txk7584we2m44l49vpeq9",
+            "index": 5,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "d7554d04-2c7d-4d8d-b2c1-d950ce011c3a",
+            "address": "bc1q3wklshmagq2tzyd35929d7hecfrlwtmjype220",
+            "index": 6,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "d7554d04-2c7d-4d8d-b2c1-d950ce011c3a",
+            "address": "bc1qycflvz3hvffkdpgu3892es0w748qcgta6e4xjm",
+            "index": 7,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "d7554d04-2c7d-4d8d-b2c1-d950ce011c3a",
+            "address": "bc1qxe6v9m4ekyuxljh9cl86yarjutxjw02k4ldwpw",
+            "index": 8,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "d7554d04-2c7d-4d8d-b2c1-d950ce011c3a",
+            "address": "bc1qfec424jsfhawu4cw7353p6qu48yc4692l98pzc",
+            "index": 9,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "d7554d04-2c7d-4d8d-b2c1-d950ce011c3a",
+            "address": "1F2MFgLaQNLCTFCMWhffEG43GtxPxu6KWM",
+            "index": 0,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "d7554d04-2c7d-4d8d-b2c1-d950ce011c3a",
+            "address": "16Qd1F7qYLJfvTpBueEZ3yMYhwrsanPjSN",
+            "index": 1,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "d7554d04-2c7d-4d8d-b2c1-d950ce011c3a",
+            "address": "1DD56rrRcL4yzmEVMhFEQWKepwVLJScrVA",
+            "index": 2,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "d7554d04-2c7d-4d8d-b2c1-d950ce011c3a",
+            "address": "1LSm1Ua55s1iSrfWRnDQaDUk73ELrwRCW3",
+            "index": 3,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "d7554d04-2c7d-4d8d-b2c1-d950ce011c3a",
+            "address": "1yLp1TxZEnV2jEeWgzkYbmJMYPivnLv2G",
+            "index": 4,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "d7554d04-2c7d-4d8d-b2c1-d950ce011c3a",
+            "address": "1C6Rxak7aJLq96AbbhvzCgNitnartkr5Hd",
+            "index": 5,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "d7554d04-2c7d-4d8d-b2c1-d950ce011c3a",
+            "address": "1DjZLKvkxBQnJ7fHd5sutsSa2GFdAZrsPT",
+            "index": 6,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "d7554d04-2c7d-4d8d-b2c1-d950ce011c3a",
+            "address": "14ULbDDbC8pcLqc2H78hZDJrpi4xRjcBe8",
+            "index": 7,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "d7554d04-2c7d-4d8d-b2c1-d950ce011c3a",
+            "address": "15xwN63aSuMpNYTpCi9j9wYw6cwBjqCH7F",
+            "index": 8,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "d7554d04-2c7d-4d8d-b2c1-d950ce011c3a",
+            "address": "189mUW7GJf9AKjENViooKT6vMg2qRdQHT3",
+            "index": 9,
+            "encrypted_private_key": null
+          }
+        ],
+        "transactions": [],
+        "imported_addresses": [
+          {
+            "address": "bc1qs7yenuag674uft3ppmuhpzm7ltyzqn8xyknu3c",
+            "name": "imported-1-segwit",
+            "encrypted_wif": "A2::v=19::m=65536,t=6,p=4::3BaND/LeuHU+5qZR9L3sDQ==::EhnnwGbN+605ECOM5GTrYg==i0gd+R3gWLFiYqLe wGMx4B1qlwKYCoMYyyVNeCit/UCM7AZmEIrMdoZ2oHfavvjDOaSqLOvTclGY7JRAUn+kMw=="
+          },
+          {
+            "address": "1DMf4cGySvreGR6vurjhT5AXhMYjRWJhT4",
+            "name": "imported-2-legacy",
+            "encrypted_wif": "A2::v=19::m=65536,t=6,p=4::k4RZd2/xIu1nfkMMF4+Iow==::QLSj+w4iwFaS8GDkrwt71w==YHyvdkR+celXsGrq Ija99iV3fLEYs/0gnXfSGdUqkC8glMVFs/kToM7BsF82pkj7FUwyA/gsXuTXOlz+cx+6JA=="
+          }
+        ]
+      }
+    },
+    {
+      "format": "Freewallet",
+      "mnemonic": "crash suffer render miss endorse plastic success choice cable check normal gadget",
+
+      "db": {
+        "wallets": [
+          {
+            "uuid": "f3b6ae17-36c3-4295-8f97-25458599a412",
+            "name": "Wallet 1",
+            "encrypted_priv_key": "A2::v=19::m=65536,t=6,p=4::mqDhecZKISxySFi5 46fd0A==::F6ANs4nMQAxxMstV2Q8MvQ==xPDpwNJGzC Vf7iHIzR6b2y7SkHNNTeR/elwOlxV95m8oat6Phc75I/ nk6XFfcbUlh57AWBQf1tM2LrBjfW8HixWyWc9/M31EAY /ACYLlntA=",
+            "encrypted_mnemonic": "A2::v=19::m=65536,t=6,p=4::tUS9dRDGs2o5rLlg 3E9Y5Q==::c6/dQ7ZpOv1RnXLTLIlxSg==uFz1wAQaIg NZx3mEU3PUO6ipl0bVs9uCalJPe/DUH3k56z4O/sy7Bj srKQCWwbQPECE9PmVhjQved2UxQ467cQlG1Vb27PVxFy P7ALPN6SQO5jkunKQqoemScT5cEseh",
+            "public_key": "xpub661MyMwAqRbcEgaBKdDWsThjnNei5Z4sCinWVXo oj2v1jEnPbhPPWzuBfVHC25pCpnXvv98B38vYna3VJQJ ce5HCgDiZCVHAvrcruSrt7BR",
+            "chain_code_hex": "0e181793aa21dc8ecbb96f68737b5c9c7a8f12878aa 239f064d3374ac7642b48"
+          }
+        ],
+        "accounts": [
+          {
+            "uuid": "7243bbee-ec7f-4f0a-92a1-ff6daba65032",
+            "name": "ACCOUNT 1",
+            "wallet_uuid": "f3b6ae17-36c3-4295-8f97-25458599a412",
+            "purpose": "32",
+            "coin_type": "0",
+            "account_index": "0'",
+            "import_format": "Freewallet"
+          },
+          {
+            "uuid": "4f53e11f-4984-4f07-ac62-036ebefa9036",
+            "name": "Account 2",
+            "wallet_uuid": "f3b6ae17-36c3-4295-8f97-25458599a412",
+            "purpose": "32",
+            "coin_type": "0",
+            "account_index": "1'",
+            "import_format": "Freewallet"
+          }
+        ],
+        "addresses": [
+          {
+            "account_uuid": "7243bbee-ec7f-4f0a-92a1-ff6daba65032",
+            "address": "bc1qnhqye8y0tad8newu6hhhyusveh9gm8gu80t9uh",
+            "index": 0,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "7243bbee-ec7f-4f0a-92a1-ff6daba65032",
+            "address": "bc1qwawz93lamp5td6cm54v70qnw73w79m6ckuqdhn",
+            "index": 1,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "7243bbee-ec7f-4f0a-92a1-ff6daba65032",
+            "address": "bc1q5dlqm3m4qnw0ysuzaj0a4lms32njt2r0u28uj2",
+            "index": 2,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "7243bbee-ec7f-4f0a-92a1-ff6daba65032",
+            "address": "bc1qk7kzw3prdvg7nq25eqmklt3w3yq9w9n04a8res",
+            "index": 3,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "7243bbee-ec7f-4f0a-92a1-ff6daba65032",
+            "address": "bc1qazdazsglza6mm32v8ntevfvj24x7admh2vwvsk",
+            "index": 4,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "7243bbee-ec7f-4f0a-92a1-ff6daba65032",
+            "address": "bc1qvd43qd6ygwmcff5e99kzg3qfqk6g5aefvzqh52",
+            "index": 5,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "7243bbee-ec7f-4f0a-92a1-ff6daba65032",
+            "address": "bc1qvyzty4zuz5rxaffs9wjpr5qklnzly3sdnry22f",
+            "index": 6,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "7243bbee-ec7f-4f0a-92a1-ff6daba65032",
+            "address": "bc1q0wf7nx0rh4dv47wrdxzvpq85xn3cqrxgm2na5f",
+            "index": 7,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "7243bbee-ec7f-4f0a-92a1-ff6daba65032",
+            "address": "bc1q5l6tk3sak0x9hvntw984hlpansl36apkdxv2lf",
+            "index": 8,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "7243bbee-ec7f-4f0a-92a1-ff6daba65032",
+            "address": "bc1qenqetjtjt2xvp9wdmrg38dw76jard0xlyfqj9p",
+            "index": 9,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "7243bbee-ec7f-4f0a-92a1-ff6daba65032",
+            "address": "1FP7TJfEnPYfg2jPvB89sPcPYH4pkV8xgA",
+            "index": 0,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "7243bbee-ec7f-4f0a-92a1-ff6daba65032",
+            "address": "1Bt7nYKBrwwuBJq4nMFNXsWoN4DFqpTq2r",
+            "index": 1,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "7243bbee-ec7f-4f0a-92a1-ff6daba65032",
+            "address": "1FuU9eDVbyzirdcEGzziLpeySA9UQdH5sR",
+            "index": 2,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "7243bbee-ec7f-4f0a-92a1-ff6daba65032",
+            "address": "1HkAtXqoJP2N3z4BBcTrukWC1hPDtuAKRe",
+            "index": 3,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "7243bbee-ec7f-4f0a-92a1-ff6daba65032",
+            "address": "1NCvRtUE3SjWCLVPDboowwHrcca7yU3fGQ",
+            "index": 4,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "7243bbee-ec7f-4f0a-92a1-ff6daba65032",
+            "address": "1A4g9tCTdAzQGrdwuXjG1RHXdn4Uwe51ki",
+            "index": 5,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "7243bbee-ec7f-4f0a-92a1-ff6daba65032",
+            "address": "19qzAw7gWokf692e43kjFLrhKRWpvzYF8d",
+            "index": 6,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "7243bbee-ec7f-4f0a-92a1-ff6daba65032",
+            "address": "1CGRJjhJf8RmEmoWuz64ATnsaMPiqRFVda",
+            "index": 7,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "7243bbee-ec7f-4f0a-92a1-ff6daba65032",
+            "address": "1GK52HJapkQsiZt4CR9jT4ZMJdehGkJmtR",
+            "index": 8,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "7243bbee-ec7f-4f0a-92a1-ff6daba65032",
+            "address": "1KfekfR1hWVBCa8y7Wa8TEK94CUp4ftkdz",
+            "index": 9,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "4f53e11f-4984-4f07-ac62-036ebefa9036",
+            "address": "bc1qu34z049mg9fz3ewr2uhuxxdksn94zjf7mvgqyw",
+            "index": 0,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "4f53e11f-4984-4f07-ac62-036ebefa9036",
+            "address": "bc1qffxnclyy5y9uxsv75s7ydrmujvj5r7c3yurj8m",
+            "index": 1,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "4f53e11f-4984-4f07-ac62-036ebefa9036",
+            "address": "bc1qrzuzkg0kk3vtzssjkq24gex7uvjxaeu8qknh47",
+            "index": 2,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "4f53e11f-4984-4f07-ac62-036ebefa9036",
+            "address": "bc1qckae7a0ep3jnwzmrtgya4943lqax7v5nuvtp7a",
+            "index": 3,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "4f53e11f-4984-4f07-ac62-036ebefa9036",
+            "address": "bc1qpxqmcc945w8kgghmg47g7njqrlzsk3ssxnevpc",
+            "index": 4,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "4f53e11f-4984-4f07-ac62-036ebefa9036",
+            "address": "bc1qefsdjh8022l0z6y3dgrgq3x3rweq3a5kjk2h49",
+            "index": 5,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "4f53e11f-4984-4f07-ac62-036ebefa9036",
+            "address": "bc1ql7u98twmwwjhqcfqzyvhq4l89z5zmvxd6ukfmh",
+            "index": 6,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "4f53e11f-4984-4f07-ac62-036ebefa9036",
+            "address": "bc1q5e8yeseevzmyme4jsaarx5d9f7sp4mkwecw39z",
+            "index": 7,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "4f53e11f-4984-4f07-ac62-036ebefa9036",
+            "address": "bc1q28qhh4etyzlw8rtue6lamdfdjkr5lvu9352nk5",
+            "index": 8,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "4f53e11f-4984-4f07-ac62-036ebefa9036",
+            "address": "bc1qkred6j8htgguc8jctc6dad3cw7468eqkpy9cfm",
+            "index": 9,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "4f53e11f-4984-4f07-ac62-036ebefa9036",
+            "address": "1MpkEZJpHoyJtjGKkAr6uJDjrEC47r76Yd",
+            "index": 0,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "4f53e11f-4984-4f07-ac62-036ebefa9036",
+            "address": "17msXfd9eN5PSFaHKXQGuU881Ji1R4FLvn",
+            "index": 1,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "4f53e11f-4984-4f07-ac62-036ebefa9036",
+            "address": "13FhqraLzgpbBXu4KWfA4ARTLyRpMu6y24",
+            "index": 2,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "4f53e11f-4984-4f07-ac62-036ebefa9036",
+            "address": "1K2Wt4MSVC9uLokkfP5kWU3Mhz9yM3rNYL",
+            "index": 3,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "4f53e11f-4984-4f07-ac62-036ebefa9036",
+            "address": "1sGVw2FsdJJLnPRqHe8ot7fyJ4x2Uzhap",
+            "index": 4,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "4f53e11f-4984-4f07-ac62-036ebefa9036",
+            "address": "1KT5WwbsKe5vxLMxH8Sc6a9SfJ2WpPhELu",
+            "index": 5,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "4f53e11f-4984-4f07-ac62-036ebefa9036",
+            "address": "1QK88Azh7RwAEk3KbaYVgugrn4KmNGPQNH",
+            "index": 6,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "4f53e11f-4984-4f07-ac62-036ebefa9036",
+            "address": "1GALyDMnDR19dQJ5BkA5g5QaJp98ogPzmY",
+            "index": 7,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "4f53e11f-4984-4f07-ac62-036ebefa9036",
+            "address": "18THX2TCioCSSf3oSYwkmcYKBCHfruEomT",
+            "index": 8,
+            "encrypted_private_key": null
+          },
+          {
+            "account_uuid": "4f53e11f-4984-4f07-ac62-036ebefa9036",
+            "address": "1H8csH1sq65TTnxLXupK9yirufpQWmF1We",
+            "index": 9,
+            "encrypted_private_key": null
+          }
+        ],
+        "transactions": [],
+        "imported_addresses": [
+          {
+            "address": "bc1qs7yenuag674uft3ppmuhpzm7ltyzqn8xyknu3c",
+            "name": "manual-1-segwit",
+            "encrypted_wif": "A2::v=19::m=65536,t=6,p=4::0GeQzQ+G9Q/mW2ko d6iRNQ==::78wtPIgnaWWfMB2pE628nw==2Ox+NFSIGM 7irLR98HrDATbA7U6IX+swlrFduoXf01GD7KAfpsLkOn F1+P4eq2cpZlbe/ahOCQkudqKKO1gKcA=="
+          },
+          {
+            "address": "1DMf4cGySvreGR6vurjhT5AXhMYjRWJhT4",
+            "name": "manual-2-legacy",
+            "encrypted_wif": "A2::v=19::m=65536,t=6,p=4::69fjmg6l2ilxinoM zW3EmA==::F4gubySPdnwpvjjnhRmUTw==UZikQQbkgS 4sEERNMT8wSwiBjUYv/Fh2nvlYrYyr15rbY+eNb75Gx6 I0m6cd6vF8Al9x2GmgrFewkj+j4TSdtw=="
+          }
+        ]
+      }
+    }
+  ]
+}

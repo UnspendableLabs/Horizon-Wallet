@@ -1,3 +1,4 @@
+// dart format width=80
 import 'package:drift/internal/versioned_schema.dart' as i0;
 import 'package:drift/drift.dart' as i1;
 import 'package:drift/drift.dart'; // ignore_for_file: type=lint,unused_import
@@ -737,6 +738,7 @@ final class Schema7 extends i0.VersionedSchema {
     importedAddresses,
     walletConfigs,
     accountConfigurations,
+    utxoAttaches,
   ];
   late final Shape4 wallets = Shape4(
       source: i0.VersionedTable(
@@ -869,6 +871,25 @@ final class Schema7 extends i0.VersionedSchema {
         attachedDatabase: database,
       ),
       alias: null);
+  late final Shape12 utxoAttaches = Shape12(
+      source: i0.VersionedTable(
+        entityName: 'utxo_attaches',
+        withoutRowId: false,
+        isStrict: false,
+        tableConstraints: [
+          'PRIMARY KEY(utxo_i_d)',
+        ],
+        columns: [
+          _column_41,
+          _column_42,
+          _column_43,
+          _column_44,
+          _column_45,
+          _column_46,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
 }
 
 class Shape9 extends i0.VersionedTable {
@@ -925,7 +946,7 @@ i1.GeneratedColumn<String> _column_37(String aliasedName) =>
         type: i1.DriftSqlType.string);
 i1.GeneratedColumn<int> _column_38(String aliasedName) =>
     i1.GeneratedColumn<int>('addr_kinds_mask', aliasedName, false,
-        type: i1.DriftSqlType.int, defaultValue: const Constant(0));
+        type: i1.DriftSqlType.int, defaultValue: const CustomExpression('0'));
 
 class Shape11 extends i0.VersionedTable {
   Shape11({required super.source, required super.alias}) : super.aliased();
@@ -942,6 +963,43 @@ i1.GeneratedColumn<String> _column_39(String aliasedName) =>
         type: i1.DriftSqlType.string);
 i1.GeneratedColumn<int> _column_40(String aliasedName) =>
     i1.GeneratedColumn<int>('address_index', aliasedName, false,
+        type: i1.DriftSqlType.int);
+
+class Shape12 extends i0.VersionedTable {
+  Shape12({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<DateTime> get createdAt =>
+      columnsByName['created_at']! as i1.GeneratedColumn<DateTime>;
+  i1.GeneratedColumn<String> get utxoID =>
+      columnsByName['utxo_i_d']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get address =>
+      columnsByName['address']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get asset =>
+      columnsByName['asset']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<bool> get divisible =>
+      columnsByName['divisible']! as i1.GeneratedColumn<bool>;
+  i1.GeneratedColumn<int> get quantity =>
+      columnsByName['quantity']! as i1.GeneratedColumn<int>;
+}
+
+i1.GeneratedColumn<DateTime> _column_41(String aliasedName) =>
+    i1.GeneratedColumn<DateTime>('created_at', aliasedName, false,
+        type: i1.DriftSqlType.dateTime);
+i1.GeneratedColumn<String> _column_42(String aliasedName) =>
+    i1.GeneratedColumn<String>('utxo_i_d', aliasedName, false,
+        type: i1.DriftSqlType.string);
+i1.GeneratedColumn<String> _column_43(String aliasedName) =>
+    i1.GeneratedColumn<String>('address', aliasedName, false,
+        type: i1.DriftSqlType.string);
+i1.GeneratedColumn<String> _column_44(String aliasedName) =>
+    i1.GeneratedColumn<String>('asset', aliasedName, false,
+        type: i1.DriftSqlType.string);
+i1.GeneratedColumn<bool> _column_45(String aliasedName) =>
+    i1.GeneratedColumn<bool>('divisible', aliasedName, false,
+        type: i1.DriftSqlType.bool,
+        defaultConstraints: i1.GeneratedColumn.constraintIsAlways(
+            'CHECK ("divisible" IN (0, 1))'));
+i1.GeneratedColumn<int> _column_46(String aliasedName) =>
+    i1.GeneratedColumn<int>('quantity', aliasedName, false,
         type: i1.DriftSqlType.int);
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
