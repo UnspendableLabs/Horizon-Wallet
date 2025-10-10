@@ -44,10 +44,8 @@ class Testnet4 extends HttpConfig {
           network: Network.testnet4,
           counterparty: "https://testnet4.counterparty.io:44000/v2/",
           esplora: "https://testnet4.counterparty.io:43000",
-          // esplora: "https://mempool.space/testnet4/api",
           btcExplorer: "https://mempool.space/testnet4",
-          horizonMarket:
-              "https://horizon-market-testnet.vercel.app", // TODO: link to testnet
+          horizonMarket: "https://horizon-market-testnet.vercel.app",
           horizonMarketApi: "https://horizon-market-testnet.vercel.app/api",
           mempoolSpaceApi: "https://mempool.space/testnet4/api/v1",
         );
@@ -60,8 +58,7 @@ class Signet extends HttpConfig {
           counterparty: "https://signet.counterparty.io:34000/v2/",
           esplora: "https://signet.counterparty.io:33000",
           btcExplorer: "https://mempool.space/signet",
-          horizonMarket:
-              "https://horizon-market-signet.vercel.app", // TODO: link to testnet
+          horizonMarket: "https://horizon-market-signet.vercel.app",
           horizonMarketApi: "https://horizon-market-signet.vercel.app/api",
           mempoolSpaceApi: "https://mempool.space/signet/api/v1",
         );

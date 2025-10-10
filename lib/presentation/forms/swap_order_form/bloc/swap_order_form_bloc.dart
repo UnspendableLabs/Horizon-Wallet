@@ -304,7 +304,6 @@ class SwapOrderFormModel with FormzMixin {
     return Price.fromNormalized(pair: pair, quotePerBaseNormalized: d);
   }
 
-  // TODO: maybe just rip this out.
   GiveQuantityInput get giveQuantityInput {
     final userBalance = giveAssetBalance.quantity;
 

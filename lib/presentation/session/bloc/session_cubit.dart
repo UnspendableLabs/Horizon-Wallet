@@ -6,11 +6,8 @@ import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/account_v2.dart';
 import 'package:horizon/domain/entities/address_index_set.dart';
 import 'package:horizon/domain/entities/wallet_config.dart';
-// import 'package:horizon/domain/entities/wallet.dart';
-// import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/account_v2_repository.dart';
 import 'package:horizon/domain/repositories/address_v2_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/mnemonic_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
@@ -26,19 +23,11 @@ import 'package:horizon/extensions.dart';
 
 import './session_state.dart';
 
-// class Testnet4 extends Options {}
-//
-// class Custom extends Options `
-//   final String esplora;
-//   Custom({required this.esplora});
-// }
-
 HttpConfig httpConfigForNetwork(Network network) {
   return switch (network) {
     Network.mainnet => Mainnet(),
     Network.testnet4 => Testnet4(),
     Network.signet => Signet(),
-    // Network.custom => const Custom(esplora: 'http://localhost:3000'),
   };
 }
 
@@ -67,7 +56,6 @@ class SessionStateCubit extends Cubit<SessionState> {
   final EncryptionService encryptionService;
   final SecureKVService kvService;
   final MnemonicRepository _mnemonicRepository;
-  final AddressRepositoryDeprecated _addressRepositoryDeprecated;
   final WalletRepositoryDeprecated _walletRepositoryDeprecated;
 
   SessionStateCubit({
@@ -80,7 +68,6 @@ class SessionStateCubit extends Cubit<SessionState> {
     WalletConfigRepository? walletConfigRepository,
     AccountV2Repository? accountV2Repository,
     AddressV2Repository? addressV2Repository,
-    AddressRepositoryDeprecated? addressRepositoryDeprecated,
     WalletRepositoryDeprecated? walletRepositoryDeprecated,
     required this.analyticsService,
     required this.inMemoryKeyRepository,
@@ -98,8 +85,6 @@ class SessionStateCubit extends Cubit<SessionState> {
             walletConfigRepository ?? GetIt.I<WalletConfigRepository>(),
         _addressV2Repository =
             addressV2Repository ?? GetIt.I<AddressV2Repository>(),
-        _addressRepositoryDeprecated = addressRepositoryDeprecated ??
-            GetIt.I<AddressRepositoryDeprecated>(),
         super(const SessionState.initial());
 
   Future<GetSessionStateResponse> _getSessionState() async {
@@ -172,12 +157,6 @@ class SessionStateCubit extends Cubit<SessionState> {
     try {
       final sessionState = await _getSessionState();
 
-      final sesssinStateStr = switch (sessionState) {
-        NoWallet() => "NoWallet",
-        LoggedOut() => "LoggedOut",
-        LoggedIn(decryptionKey: _) => "LoggedIn",
-      };
-
       switch (sessionState) {
         case NoWallet():
           emit(const SessionState.onboarding(Onboarding.initial()));
@@ -189,11 +168,8 @@ class SessionStateCubit extends Cubit<SessionState> {
           WalletConfig walletConfig =
               await _walletConfigRepository.getCurrent();
 
-          // TODO: we may need to handle to restore something here
-          // analyticsService.trackAnonymousEvent('wallet_opened',
-          //     properties: {'distinct_id': wallet.uuid});
-
-          // okay, we have to do some work to reconcile imported addresses here
+          analyticsService.trackAnonymousEvent('wallet_opened',
+              properties: {'distinct_id': walletConfig.uuid});
 
           List<AccountV2> accounts =
               await _accountV2Repository.getByWalletConfig(
@@ -203,13 +179,11 @@ class SessionStateCubit extends Cubit<SessionState> {
           String? currentAccountHash =
               cacheProvider.getString("current-account-hash");
 
-          // TODO: save selected account index
           AccountV2 currentAccount = accounts.firstWhereOrNull(
                 (account) => account.hash == currentAccountHash,
               ) ??
               accounts.first;
 
-          // TODO: the arg here doesn't matter
           AddressIndexSet addressIndexSet =
               await _addressV2Repository.getByAccount(currentAccount);
 
@@ -227,18 +201,6 @@ class SessionStateCubit extends Cubit<SessionState> {
       emit(SessionState.error(error.toString()));
     }
   }
-
-  // void initialized() {
-  //   final state_ = state.when(
-  //       initial: () => state,
-  //       loading: () => state,
-  //       error: (_) => state,
-  //       loggedOut: () => state,
-  //       onboarding: (_) => state,
-  //       success: (stateInner) => SessionState.success(stateInner.copyWith()));
-  //
-  //   emit(state_);
-  // }
 
   void onNetworkChanged(Network network, [VoidCallback? cb]) async {
     WalletConfig current = await _walletConfigRepository.getCurrent();
@@ -258,7 +220,6 @@ class SessionStateCubit extends Cubit<SessionState> {
     String? currentAccountHash =
         cacheProvider.getString("current-account-hash");
 
-    // TODO: save selected account index
     AccountV2 currentAccount = accounts.firstWhereOrNull(
           (account) => account.hash == currentAccountHash,
         ) ??
@@ -267,7 +228,6 @@ class SessionStateCubit extends Cubit<SessionState> {
     AddressIndexSet addressIndexSet =
         await _addressV2Repository.getByAccount(currentAccount);
 
-    // TODO: need to think through imported addresses
     SessionStateSuccess success = state.successOrThrow();
 
     emit(SessionState.success(success.copyWith(
