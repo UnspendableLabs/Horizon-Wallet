@@ -49,7 +49,7 @@ enum BtcPriceInputError {
   required,
   isNaN,
   isNegative,
-  isDust,
+  isLessThanDust,
   isTooSmallBecauseOfRoyalty
 }
 
@@ -80,7 +80,7 @@ class BtcPriceInput extends FormzInput<String, BtcPriceInputError> {
 
     BtcPriceInputError? dustError = asSats.fold(
       () => null,
-      (sats) => sats <= dust ? BtcPriceInputError.isDust : null,
+      (sats) => sats < dust ? BtcPriceInputError.isLessThanDust : null,
     );
 
     if (dustError != null) {

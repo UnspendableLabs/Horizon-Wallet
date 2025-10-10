@@ -356,7 +356,8 @@ class _CreatePsbtFormState extends State<CreatePsbtForm> {
                         style:
                             theme.textTheme.labelSmall?.copyWith(height: 1.2),
                       )),
-              BtcPriceInputError.isDust => Text("price < dust ($dust sats)",
+              BtcPriceInputError.isLessThanDust => Text(
+                  "price < dust ($dust sats)",
                   style: theme.textTheme.labelSmall?.copyWith(height: 1.2)),
               BtcPriceInputError.isTooSmallBecauseOfRoyalty => Text(
                   "Min price with royalty = ${widget.state.minPrice} sats",
