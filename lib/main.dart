@@ -163,10 +163,6 @@ class BottomTabNavigation extends StatelessWidget {
               color: iconColor(currentIndex == 1),
               size: 24,
             ),
-            // AppIcons.swapIcon(
-            //          context: context,
-            //          color: iconColor(currentIndex == 1),
-            //        ),
             label: 'Activity',
           ),
           tab(
@@ -251,48 +247,6 @@ class BottomNavItem extends StatelessWidget {
   }
 }
 
-// class ScaffoldWithBottomNavigation extends StatelessWidget {
-//   final Widget child;
-//   final int currentIndex;
-//
-//   const ScaffoldWithBottomNavigation({
-//     super.key,
-//     required this.child,
-//     required this.currentIndex,
-//   });
-//
-//   static const tabs = [
-//     '/dashboard',
-//     '/settings',
-//   ];
-//
-//   void _onTabTapped(BuildContext context, int index) {
-//     context.go(tabs[index]);
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-//       body: child,
-//       bottomNavigationBar: BottomNavigationBar(
-//         currentIndex: currentIndex,
-//         onTap: (index) => _onTabTapped(context, index),
-//         items: const [
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.home),
-//             label: 'Dashboard',
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.settings),
-//             label: 'Settings',
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
 class AppRouter {
   static GoRouter router = GoRouter(
       navigatorKey: _rootNavigatorKey,
@@ -364,7 +318,7 @@ class AppRouter {
               cacheKey: SettingsKeys.inactivityTimeout.toString(),
               defaultValue: 5,
               builder: (context, _inactivityTimeout, _) {
-                // for some reason value change obserer is busted
+                //  HACK: for some reason value change obserer is busted
                 final inactivityTimeout = Settings.getValue<int>(
                         SettingsKeys.inactivityTimeout.toString(),
                         defaultValue: 5) ??
@@ -425,7 +379,6 @@ class AppRouter {
 
                   return BlocProvider(
                       create: (_) => SignPsbtBloc(
-                            // TODO: audit this
                             psbtType: OpaquePsbt(),
                             addresses: session.addressIndexSet.list,
                             httpConfig: session.httpConfig,
@@ -473,13 +426,6 @@ class AppRouter {
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                      // Text(
-                                      //   'Requested by horizon.market',
-                                      //   style: TextStyle(
-                                      //     fontSize: 14,
-                                      //     color: Colors.grey,
-                                      //   ),
-                                      // ),
                                     ],
                                   ),
                                 ),
@@ -561,13 +507,6 @@ class AppRouter {
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    // Text(
-                                    //   'Requested by horizon.market',
-                                    //   style: TextStyle(
-                                    //     fontSize: 14,
-                                    //     color: Colors.grey,
-                                    //   ),
-                                    // ),
                                   ],
                                 ),
                               ),
@@ -630,13 +569,6 @@ class AppRouter {
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                      // Text(
-                                      //   'Requested by horizon.market',
-                                      //   style: TextStyle(
-                                      //     fontSize: 14,
-                                      //     color: Colors.grey,
-                                      //   ),
-                                      // ),
                                     ],
                                   ),
                                 ),
@@ -670,7 +602,6 @@ class AppRouter {
             StatefulShellRoute.indexedStack(
                 builder: (BuildContext context, GoRouterState state,
                     StatefulNavigationShell nav) {
-                  // Session gating for the tabbed area (like your original shell guarded it)
                   return context.watch<SessionStateCubit>().state.maybeWhen(
                         success: (sessionState) {
                           return AppShell(
@@ -907,20 +838,7 @@ class AppRouter {
         final session = context.read<SessionStateCubit>();
 
         final actionParam = state.uri.queryParameters['action'];
-        // // print("actionParam: $actionParam");
 
-        // final actionParam =
-        //     "signMessage:ext,1423373097,bb542e03-af4e-44ca-b026-44b8a8afeac9,97122496-7d18-11f0-9fc7-2f9733e534f2,tb1q4zepxe42rkhq00l72tzk73seuqw9ydckgynzv5";
-
-        //
-        //
-        //
-        // print("actionParam: $actionParam");
-
-        // final actionParam = "getAddresses:ext,0,1";
-        // final actionParam =
-        //     "signPsbt:ext,1423373097,ddc38fce-13e4-4d70-ba1d-0f5162c54835,70736274ff01009a020000000200000000000000000000000000000000000000000000000000000000000000000000000000ffffffff1e8728d1ea12bfa4bed9fea098e6a06a1f3422bfc5c71afceb94d650b2e829f10000000000ffffffff020000000000000000160014a8b21366aa1dae07bffe52c56f4619e01c523716e803000000000000160014a8b21366aa1dae07bffe52c56f4619e01c5237160000000000010304020000000001011f2202000000000000160014a8b21366aa1dae07bffe52c56f4619e01c52371601030483000000000000,eyJ0YjFxNHplcHhlNDJya2hxMDBsNzJ0ems3M3NldXF3OXlkY2tneW56djUiOlsxXX0=,WzEzMSwxLDJd";
-        // //
         final ActionRepository actionRepository =
             GetIt.instance<ActionRepository>();
         if (actionParam != null) {
@@ -940,8 +858,6 @@ class AppRouter {
               );
             },
             loading: () {
-              // TODO: maybe we change this to peak?
-
               final action = actionRepository.peek();
 
               final actionPath = action.fold(
@@ -983,9 +899,6 @@ class AppRouter {
               }
 
               return null;
-              // if (data.redirect) {
-              //   return "/";
-              // }
             },
             // if the session state is not yet loaded, show a loading screen
             orElse: () => null);
@@ -1472,8 +1385,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // if showWarning, just display a one off toast here?
-
     return MultiBlocProvider(
       providers: [
         BlocProvider<VersionCubit>(
@@ -1489,10 +1400,6 @@ class MyApp extends StatelessWidget {
               encryptionService: GetIt.I<EncryptionService>(),
               inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
               cacheProvider: GetIt.I<CacheProvider>(),
-              // walletRepository: GetIt.I<WalletRepository>(),
-              // accountRepository: GetIt.I<AccountRepository>(),
-              // addressRepository: GetIt.I<AddressRepository>(),
-              // importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
               analyticsService: GetIt.I<AnalyticsService>())
             ..initialize(),
         ),
