@@ -651,7 +651,7 @@ class AppRouter {
                                     GetIt.I<RPCSignMessageSuccessCallback>();
 
                                 callback(RPCSignMessageSuccessCallbackArgs(
-                                  address: "",
+                                  address: action.address,
                                   tabId: action.tabId,
                                   requestId: action.requestId,
                                   signature: signature,
