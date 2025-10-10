@@ -43,18 +43,17 @@ class _SeedPhraseFlowState extends State<SeedPhraseFlow> {
             margin: const EdgeInsets.all(18),
             child: Column(
               children: [
-                AppIcons.warningIcon(color: red1, height: 48, width: 48),
-                const SizedBox(height: 8),
-                SizedBox(
-                  width: 170,
-                  child: Text(
+                Row(children: [
+                  AppIcons.warningIcon(color: red1, height: 32, width: 32),
+                  const SizedBox(width: 24),
+                  Text(
                     'Before you continue',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           color: red1,
                         ),
                   ),
-                ),
+                ]),
                 const SizedBox(height: 8),
                 Text(
                   'Please write down your seed phrase and store it in a secure location. It is the only way to recover your wallet.',
