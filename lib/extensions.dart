@@ -21,3 +21,16 @@ extension TaskEitherMinimumDuration<L, R> on TaskEither<L, R> {
     ]).map((results) => results[0] as R);
   }
 }
+
+extension Tap<L, R> on TaskEither<L, R> {
+  TaskEither<L, R> tap(void Function(R) f) {
+    return map((a) {
+      try {
+        f(a);
+      } catch (e) {
+        // no op
+      }
+      return a;
+    });
+  }
+}
