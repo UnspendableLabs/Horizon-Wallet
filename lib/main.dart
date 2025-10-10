@@ -363,7 +363,13 @@ class AppRouter {
             return ValueChangeObserver(
               cacheKey: SettingsKeys.inactivityTimeout.toString(),
               defaultValue: 5,
-              builder: (context, inactivityTimeout, _) {
+              builder: (context, _inactivityTimeout, _) {
+                // for some reason value change obserer is busted
+                final inactivityTimeout = Settings.getValue<int>(
+                        SettingsKeys.inactivityTimeout.toString(),
+                        defaultValue: 5) ??
+                    5;
+
                 return BlocProvider(
                   key: Key("inactivity-timeout:$inactivityTimeout"),
                   create: (_) {
