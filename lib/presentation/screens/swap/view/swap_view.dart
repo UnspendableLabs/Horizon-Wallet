@@ -40,7 +40,7 @@ class _SwapExplainerPopupState extends State<SwapExplainerPopup> {
     final prefs = await SharedPreferences.getInstance();
     final skip = prefs.getBool('swap_explainer_skip') ?? false;
     if (skip || !mounted) return;
-    Future.delayed(const Duration(seconds: 2), _showModal);
+    Future.delayed(const Duration(milliseconds: 100), _showModal);
   }
 
   Future<void> _showModal() async {
