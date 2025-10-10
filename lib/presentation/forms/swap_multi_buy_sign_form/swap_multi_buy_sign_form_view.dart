@@ -278,7 +278,7 @@ class SwapMultiBuySignForm extends StatefulWidget {
 }
 
 class _SwapMultiBuySignFormState extends State<SwapMultiBuySignForm> {
-  _renderProperty(label, value) {
+  Padding _renderProperty(label, value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Column(
@@ -295,7 +295,7 @@ class _SwapMultiBuySignFormState extends State<SwapMultiBuySignForm> {
     );
   }
 
-  _renderPropertyWidget(label, widget) {
+  Padding _renderPropertyWidget(label, widget) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Column(

@@ -1,15 +1,12 @@
-import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:formz/formz.dart';
 import 'package:horizon/domain/entities/psbt_type.dart';
 import 'package:horizon/presentation/common/transactions/transaction_fee_selection.dart';
-import 'package:horizon/presentation/forms/swap_order_form/bloc/swap_order_form_bloc.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
 import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
 import 'package:horizon/utils/app_icons.dart';
-import 'package:http/http.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
@@ -62,7 +59,7 @@ class OrderFlowSignProvider extends StatelessWidget {
     required this.child,
     FeeEstimatesRespository? feeEstimatesRepository,
   }) : _feeEstimatesRepository =
-            feeEstimatesRepository ?? GetIt.I<FeeEstimatesRespository>() {}
+            feeEstimatesRepository ?? GetIt.I<FeeEstimatesRespository>();
 
   @override
   Widget build(BuildContext context) {
@@ -240,7 +237,7 @@ class _OrderFlowSignViewState extends State<OrderFlowSignView> {
     );
   }
 
-  _renderPropertyWidget(label, widget) {
+  Padding _renderPropertyWidget(label, widget) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Column(
@@ -255,7 +252,7 @@ class _OrderFlowSignViewState extends State<OrderFlowSignView> {
     );
   }
 
-  _renderProperty(label, value) {
+  Padding _renderProperty(label, value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Column(

@@ -2,7 +2,6 @@ import "package:equatable/equatable.dart";
 import 'dart:async';
 import 'package:get_it/get_it.dart';
 import 'package:fpdart/fpdart.dart';
-import "package:horizon/domain/entities/cursor.dart";
 import 'package:horizon/domain/entities/remote_data.dart';
 import "package:horizon/domain/entities/activity_feed_item.dart";
 import "package:horizon/domain/entities/bitcoin_tx.dart";
@@ -11,7 +10,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
-import 'package:horizon/js/bip39.dart';
 
 abstract class BTCActivityEvent extends Equatable {
   const BTCActivityEvent();

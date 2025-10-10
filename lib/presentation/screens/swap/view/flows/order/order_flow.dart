@@ -16,8 +16,6 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:horizon/utils/app_icons.dart';
-import 'package:horizon/domain/entities/multi_address_balance.dart';
-import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/presentation/forms/base/flow/view/flow_step.dart';
 import 'package:flow_builder/flow_builder.dart';
 import 'package:horizon/domain/entities/address_v2.dart';

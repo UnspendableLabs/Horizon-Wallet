@@ -8,7 +8,6 @@ import 'package:go_router/go_router.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
-import 'package:horizon/presentation/shell/app_shell.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:fpdart/fpdart.dart' show Option;

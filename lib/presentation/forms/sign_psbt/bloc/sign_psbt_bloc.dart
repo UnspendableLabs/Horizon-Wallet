@@ -8,13 +8,11 @@ import "package:get_it/get_it.dart";
 import 'package:horizon/common/format.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:collection/collection.dart';
-import 'package:decimal/decimal.dart';
 import 'package:horizon/domain/entities/psbt_type.dart';
 
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/failure.dart';
 import 'package:horizon/domain/entities/balance_v2.dart';
-import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
@@ -115,7 +113,7 @@ class AugmentedOutput {
     required this.vout,
   });
 
-  get address => vout.scriptPubKey.address;
+  String? get address => vout.scriptPubKey.address;
 
   int get value => (vout.value * 10e7).toInt();
 
@@ -342,14 +340,15 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
         augmentedOutputs: augmentedOutputs,
         isFormDataLoaded: true,
       ));
-    } catch (e, callstack) {
+    } catch (e) {
       emit(state.copyWith(
         isFormDataLoaded: true,
       ));
     }
   }
 
-  _handlePasswordChanged(PasswordChanged event, Emitter<SignPsbtState> emit) {
+  void _handlePasswordChanged(
+      PasswordChanged event, Emitter<SignPsbtState> emit) {
     final password = PasswordInput.dirty(event.password);
 
     emit(state.copyWith(
@@ -359,7 +358,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
     ));
   }
 
-  _handleSignPsbtSubmitted(
+  Future<void> _handleSignPsbtSubmitted(
       SignPsbtSubmitted event, Emitter<SignPsbtState> emit) async {
     final task = TaskEither<String, String>.Do(($) async {
       final inputPrivateKeyMap = await $(buildInputPrivateKeyMap(

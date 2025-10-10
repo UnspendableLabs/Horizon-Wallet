@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/balance_v2.dart';
 
-import 'package:rational/rational.dart';
 import 'package:decimal/decimal.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/asset_quantity.dart';
-import 'package:horizon/presentation/common/expiry_selector.dart';
 import 'package:horizon/utils/app_icons.dart';
-import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:get_it/get_it.dart';
 import 'package:fpdart/fpdart.dart' hide Order, State;
 import 'package:horizon/domain/repositories/order_repository.dart';
@@ -365,7 +361,7 @@ class SwapOrderForm extends StatelessWidget {
     required this.state,
   });
 
-  _gradQtyProperty(label, value, theme) {
+  Padding _gradQtyProperty(label, value, theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Column(

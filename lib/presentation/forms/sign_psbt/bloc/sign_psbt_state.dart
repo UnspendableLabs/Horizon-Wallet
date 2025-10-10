@@ -1,5 +1,4 @@
 import "package:decimal/decimal.dart";
-import "package:flutter/material.dart";
 import "package:formz/formz.dart";
 import "package:horizon/domain/entities/asset_quantity.dart";
 import 'package:horizon/domain/entities/psbt_type.dart';

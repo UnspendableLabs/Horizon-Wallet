@@ -3,10 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:horizon/domain/entities/balance_v2.dart';
-import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:equatable/equatable.dart';
 import 'package:horizon/domain/usecases/get_all_balances.dart';
-import 'package:horizon/presentation/common/transactions/token_name_field.dart';
 
 class TokenSelectorOption extends Equatable {
   final String name;

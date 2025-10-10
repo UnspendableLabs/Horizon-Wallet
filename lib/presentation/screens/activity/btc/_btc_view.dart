@@ -5,16 +5,10 @@ import 'package:horizon/domain/repositories/transaction_repository.dart';
 import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/common/tx_hash_display.dart';
-import 'package:horizon/presentation/screens/dashboard/view/balances_display.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/common/uuid.dart';
-import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/domain/entities/activity_feed_item.dart';
-import 'package:horizon/presentation/common/no_data.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
-import 'package:horizon/common/format.dart';
-import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/screens/transactions/rbf/view/rbf_page.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
@@ -65,7 +59,7 @@ class XCPTitle extends StatelessWidget {
                         e.toString();
                       },
                     )),
-            builder: (context, state, _refresh) {
+            builder: (context, state, refresh) {
               return state.fold3(
                 onNone: () => Text("-",
                     style: const TextStyle(

@@ -129,7 +129,7 @@ class _TransactionFeeSelectionState extends State<TransactionFeeSelection> {
                     return null;
                   },
                   onChanged: (value) {
-                    if (value != null && value.isNotEmpty) {
+                    if (value.isNotEmpty) {
                       final fee = num.tryParse(value) ?? 0;
                       widget.onFeeOptionSelected(Custom(fee));
                     }

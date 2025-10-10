@@ -6,7 +6,6 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/domain/repositories/asset_search_repository.dart';
 import 'package:horizon/domain/repositories/atomic_swap_repository.dart';
-import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/entities/asset_search_result.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:fpdart/fpdart.dart';
@@ -400,14 +399,14 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
     }
   }
 
-  _handleReceiveAssetInputClicked(
+  void _handleReceiveAssetInputClicked(
       ReceiveAssetInputClicked event, Emitter<AssetPairFormModel> emit) {
     emit(state.copyWith(
         submissionStatus: FormzSubmissionStatus.initial,
         receiveAssetModalVisible: Option.of(!state.receiveAssetModalVisible)));
   }
 
-  _handleSearchInputChanged(
+  Future<void> _handleSearchInputChanged(
       SearchInputChanged event, Emitter<AssetPairFormModel> emit) async {
     if (event.value.isEmpty) {
       emit(state.copyWith(
@@ -465,7 +464,7 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
     );
   }
 
-  _handleReceiveAssetSelected(
+  void _handleReceiveAssetSelected(
     ReceiveAssetSelected event,
     Emitter<AssetPairFormModel> emit,
   ) {
@@ -477,7 +476,7 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
     emit(next);
   }
 
-  _handleInvertClicked(
+  void _handleInvertClicked(
     InvertClicked event,
     Emitter<AssetPairFormModel> emit,
   ) {
@@ -501,7 +500,7 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
     ));
   }
 
-  _handleSubmitClicked(
+  void _handleSubmitClicked(
     SubmitClicked event,
     Emitter<AssetPairFormModel> emit,
   ) {

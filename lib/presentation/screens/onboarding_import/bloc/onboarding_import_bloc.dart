@@ -125,7 +125,6 @@ class OnboardingImportBloc
               WalletType.bip32 => SeedDerivation.mnemonicJSToHex,
             });
 
-
         await _settingsRepository.setWalletConfigID(walletConfig.uuid);
 
         // await accountV2Repository.insert(AccountV2(uuid: uuid.v4(), index: 0));

@@ -128,7 +128,7 @@ class AssetAttachFormModel
             attachedAtomicSwapSell ?? this.attachedAtomicSwapSell);
   }
 
-  get submitDisabled => isNotValid || submissionStatus.isInProgress;
+  bool get submitDisabled => isNotValid || submissionStatus.isInProgress;
 }
 
 sealed class AssetAttachFormEvent extends Equatable {
@@ -227,7 +227,7 @@ class AssetAttachFormBloc
             divisible: state.assetDivisibility)));
   }
 
-  _handleFeeOptionChanged(
+  void _handleFeeOptionChanged(
     FeeOptionChanged event,
     Emitter<AssetAttachFormModel> emit,
   ) {
@@ -238,7 +238,7 @@ class AssetAttachFormBloc
     emit(newState);
   }
 
-  _handleMaxQuantityClicked(
+  void _handleMaxQuantityClicked(
     MaxQuantityClicked event,
     Emitter<AssetAttachFormModel> emit,
   ) {
@@ -253,7 +253,7 @@ class AssetAttachFormBloc
     emit(newState);
   }
 
-  _handleSubmitClicked(
+  Future<void> _handleSubmitClicked(
     SubmitClicked event,
     Emitter<AssetAttachFormModel> emit,
   ) async {

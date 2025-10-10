@@ -119,7 +119,7 @@ class SettingsAdvancedBloc
     on<EnableP2PKHChanged>(_handleEnableP2PKHChanged);
   }
 
-  _handleEnableP2PKHChanged(EnableP2PKHChanged event, emit) {
+  void _handleEnableP2PKHChanged(EnableP2PKHChanged event, emit) {
     final base =
         state.walletConfigChange.getOrElse(() => state.initialWalletConfig);
 
@@ -153,7 +153,8 @@ class SettingsAdvancedBloc
     ));
   }
 
-  _handleImportFormatChanged(ImportFormatChanged event, emit) async {
+  Future<void> _handleImportFormatChanged(
+      ImportFormatChanged event, emit) async {
     Option<ImportFormat> importFormatChange = state.inferredImportFormat
         .flatMap((inferredImportFormat) =>
             inferredImportFormat == event.importFormat
@@ -202,7 +203,7 @@ class SettingsAdvancedBloc
     ));
   }
 
-  _handleSaveChangesClicked(
+  Future<void> _handleSaveChangesClicked(
       SaveChangesClicked event, Emitter<SettingsAdvancedState> emit) async {
     emit(state.copyWith(status: FormzSubmissionStatus.inProgress));
 
@@ -225,10 +226,8 @@ class SettingsAdvancedBloc
         ));
 
         if (event.onSuccess != null) {
-
           event.onSuccess!(newWallet);
-        } else {
-        }
+        } else {}
       },
     ).run();
   }

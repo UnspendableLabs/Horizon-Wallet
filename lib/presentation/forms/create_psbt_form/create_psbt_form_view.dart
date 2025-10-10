@@ -261,7 +261,7 @@ class _CreatePsbtFormState extends State<CreatePsbtForm> {
     super.dispose();
   }
 
-  _buildFromCard(BuildContext context, HttpConfig httpConfig) {
+  HorizonCard _buildFromCard(BuildContext context, HttpConfig httpConfig) {
     final theme = Theme.of(context);
     return HorizonCard(
       child: Column(
@@ -302,7 +302,7 @@ class _CreatePsbtFormState extends State<CreatePsbtForm> {
     );
   }
 
-  _buildToCard(BuildContext context, HttpConfig httpConfig) {
+  HorizonCard _buildToCard(BuildContext context, HttpConfig httpConfig) {
     final theme = Theme.of(context);
     return HorizonCard(
       backgroundColor: theme.scaffoldBackgroundColor,

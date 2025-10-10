@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fpdart/fpdart.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/repositories/royalties_repository.dart';
@@ -49,7 +48,7 @@ class SwapPresignFormProvider extends StatelessWidget {
             assetName: assetName,
             httpConfig: httpConfig,
             onError: (_, __) => "Error fetching royalties"),
-        builder: (context, state, _refresh) => state.fold3(
+        builder: (context, state, refresh) => state.fold3(
             onNone: () => const Center(child: CircularProgressIndicator()),
             onFailure: (error) => Center(
                   child: Text(
@@ -102,7 +101,7 @@ class SwapPresignForm extends StatelessWidget {
     required this.actions,
   });
 
-  _gradQtyProperty(label, value, theme) {
+  Padding _gradQtyProperty(label, value, theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Column(
@@ -120,7 +119,7 @@ class SwapPresignForm extends StatelessWidget {
     );
   }
 
-  _regularProperty(label, value, theme) {
+  Padding _regularProperty(label, value, theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Column(

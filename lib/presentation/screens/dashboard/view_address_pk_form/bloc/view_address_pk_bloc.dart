@@ -75,7 +75,7 @@ class ViewAddressPkFormBloc
     });
   }
 
-  _getPrivateKeyWifForAddress(
+  Future<String> _getPrivateKeyWifForAddress(
       Account account, Address address, String password) async {
     final wallet = await walletRepository.getWallet(account.walletUuid);
     if (wallet == null) {
@@ -111,7 +111,7 @@ class ViewAddressPkFormBloc
     return privateKeyWif;
   }
 
-  _getPrivateKeyWifForImportedAddress(
+  Future<String> _getPrivateKeyWifForImportedAddress(
       ImportedAddress importedAddress, String password) async {
     String decryptedPrivateKeyWif;
 

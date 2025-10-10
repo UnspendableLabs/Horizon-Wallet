@@ -3,8 +3,6 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/http_config.dart';
-import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
-import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/atomic_swap_repository.dart';
 import 'package:formz/formz.dart';
@@ -215,7 +213,7 @@ class AssetBalanceFormBloc
     add(AssetBalanceFormRequested(addresses: addresses));
   }
 
-  _handleAssetBalanceFormRequested(
+  Future<void> _handleAssetBalanceFormRequested(
     AssetBalanceFormRequested event,
     Emitter<AssetBalanceFormModel> emit,
   ) async {
@@ -247,7 +245,7 @@ class AssetBalanceFormBloc
     emit(nextState);
   }
 
-  _handleAssetBalanceSelected(
+  void _handleAssetBalanceSelected(
     AssetBalanceSelected event,
     Emitter<AssetBalanceFormModel> emit,
   ) {
@@ -265,7 +263,7 @@ class AssetBalanceFormBloc
     ));
   }
 
-  _handleSubmitClicked(
+  void _handleSubmitClicked(
     SubmitClicked event,
     Emitter<AssetBalanceFormModel> emit,
   ) {

@@ -1,6 +1,4 @@
-import 'package:decimal/decimal.dart';
 import 'package:fpdart/fpdart.dart' show Option;
-import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
 import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,7 +23,7 @@ class SwapPresignFormModel with FormzMixin {
   @override
   get inputs => [];
 
-  get transactionCount {
+  int get transactionCount {
     return atomicSwaps.length;
   }
 
@@ -98,7 +96,7 @@ class SwapPresignFormBloc
     on<SubmitClicked>(_handleSubmitClicked);
   }
 
-  _handleSubmitClicked(
+  void _handleSubmitClicked(
     SubmitClicked event,
     Emitter<SwapPresignFormModel> emit,
   ) {

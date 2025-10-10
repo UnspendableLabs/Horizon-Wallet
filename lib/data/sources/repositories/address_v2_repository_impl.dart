@@ -118,7 +118,7 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
               .deriveAddressT(
                   addressKinds: walletConfig.supportedKinds,
                   path:
-                      "${walletConfig.basePath.get(walletConfig.network)}$index'/0/${addressIndex}",
+                      "${walletConfig.basePath.get(walletConfig.network)}$index'/0/$addressIndex",
                   seed: seed,
                   network: walletConfig.network)
               .map((map) => map.values.toList()));

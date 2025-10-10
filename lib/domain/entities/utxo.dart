@@ -34,5 +34,5 @@ class Utxo {
     return 'Utxo(vout: $vout, height: $height, value: $value, txid: $txid, address: $address, confirmed: $confirmed)';
   }
 
-  get utoxId => UtxoID(vout: vout, txid: txid);
+  UtxoID get utoxId => UtxoID(vout: vout, txid: txid);
 }

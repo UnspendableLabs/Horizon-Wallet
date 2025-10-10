@@ -61,7 +61,7 @@ class SignBloc<TComposeResponse extends ComposeResponse>
     on<PasswordPromptSubmitted>(_handlePasswordPromptSubmitted);
   }
 
-  _handlePasswordPromptSubmitted(
+  Future<void> _handlePasswordPromptSubmitted(
       PasswordPromptSubmitted event, Emitter emit) async {
     if (event.password.isEmpty) {
       emit(state.copyWith(
@@ -109,12 +109,13 @@ class SignBloc<TComposeResponse extends ComposeResponse>
     }
   }
 
-  _handlePasswordPromptCancelClicked(
+  Future<void> _handlePasswordPromptCancelClicked(
       PasswordPromptCancelClicked event, Emitter emit) async {
     emit(state.copyWith(showPasswordModal: false));
   }
 
-  _handleSignAndSubmitClicked(SignAndSubmitClicked event, Emitter emit) async {
+  Future<void> _handleSignAndSubmitClicked(
+      SignAndSubmitClicked event, Emitter emit) async {
     emit(state.copyWith(
         formModel: state.formModel
             .copyWith(status: FormzSubmissionStatus.inProgress)));

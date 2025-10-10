@@ -1,6 +1,4 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:horizon/common/constants.dart';
-import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/seed.dart';
 import 'package:horizon/domain/entities/network.dart';

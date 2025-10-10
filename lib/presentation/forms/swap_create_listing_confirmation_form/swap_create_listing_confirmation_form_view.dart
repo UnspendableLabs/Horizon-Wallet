@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/psbt_type.dart';
-import 'package:horizon/presentation/common/collapsable_view.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
@@ -250,7 +249,7 @@ class SwapCreateListingConfirmationForm extends StatefulWidget {
 
 class _SwapCreateListingConfirmationFormState
     extends State<SwapCreateListingConfirmationForm> {
-  _renderProperty(label, value) {
+  Padding _renderProperty(label, value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Column(
@@ -267,7 +266,7 @@ class _SwapCreateListingConfirmationFormState
     );
   }
 
-  _renderPropertyWidget(label, widget) {
+  Padding _renderPropertyWidget(label, widget) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Column(
@@ -382,31 +381,6 @@ class _SwapCreateListingConfirmationFormState
                       },
                       feeEstimates: widget.state.feeEstimates,
                     ),
-                    // CollapsableWidget(
-                    //   title: "Fee Details",
-                    //   child: Column(
-                    //     crossAxisAlignment: CrossAxisAlignment.start,
-                    //     children: [
-                    //       _renderPropertyWidget(
-                    //           "wip: fee psbt",
-                    //           switch (widget.state.onChainPayment) {
-                    //             Loading() => const Center(
-                    //                 child: CircularProgressIndicator()),
-                    //             Success(value: var onChainPayment) => Text(
-                    //                 onChainPayment.psbt,
-                    //                 style: theme.textTheme.bodySmall,
-                    //               ),
-                    //             Failure(error: var error) => Text(
-                    //                 error.toString(),
-                    //                 style: theme.textTheme.bodySmall?.copyWith(
-                    //                   color: customTheme?.errorColor,
-                    //                 ),
-                    //               ),
-                    //             _ => const SizedBox.shrink(),
-                    //           }),
-                    //     ],
-                    //   ),
-                    // ),
                     commonHeightSizedBox,
                     commonHeightSizedBox,
                     HorizonButton(

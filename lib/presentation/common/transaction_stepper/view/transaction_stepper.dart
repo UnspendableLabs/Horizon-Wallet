@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:fpdart/fpdart.dart' hide State;
 import 'package:horizon/domain/entities/address_v2.dart';
-import 'package:horizon/domain/entities/decryption_strategy.dart';
-import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/repositories/wallet_config_repository.dart';
 import 'package:horizon/domain/services/seed_service.dart';
-import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/usecases/validate_password.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
@@ -19,7 +15,6 @@ import 'package:horizon/presentation/common/transaction_stepper/view/steps/trans
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_form_page.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/utils/app_icons.dart';
-import 'package:horizon/domain/services/encryption_service.dart';
 
 class FormStepContent<T> {
   final String title;

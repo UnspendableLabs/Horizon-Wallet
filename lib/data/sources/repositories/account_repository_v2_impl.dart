@@ -96,7 +96,6 @@ class AccountV2RepositoryImpl implements AccountV2Repository {
                       key: key,
                       onError: (_, __) => "invariant: failed to decrypt WIF"))
                   .flatMap((wif) {
-
                 return _importedAddressService.getAddressFromWIFT<String>(
                     wif: wif,
                     // TODO: obviously format needs to be dynamic

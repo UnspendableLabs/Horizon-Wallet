@@ -7,16 +7,13 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 class InAppBrowserController extends ChromeSafariBrowser {
   BuildContext? context;
   @override
-  void onOpened() {
-  }
+  void onOpened() {}
 
   @override
-  void onCompletedInitialLoad(didLoadSuccessfully) {
-  }
+  void onCompletedInitialLoad(didLoadSuccessfully) {}
 
   @override
-  void onClosed() {
-  }
+  void onClosed() {}
 }
 
 class InAppBrowserView extends StatefulWidget {
@@ -90,7 +87,6 @@ class _EmbeddedBrowserViewState extends State<EmbeddedBrowserView> {
               final method = message['method'];
               final id = message['id'];
 
-
               if (method == 'getAddresses') {
                 final addresses = await _showGetAddressesDialog(context);
 
@@ -141,7 +137,6 @@ class _EmbeddedBrowserViewState extends State<EmbeddedBrowserView> {
   }
 
   Future<void> _postMessage(Map<String, dynamic> message) async {
-
     final jsonString = jsonEncode(message);
     await webViewController?.evaluateJavascript(source: '''
       window.postMessage($jsonString, window.location.origin);

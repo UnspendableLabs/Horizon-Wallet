@@ -1,7 +1,6 @@
 import 'package:formz/formz.dart';
 import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
-import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
 import 'package:equatable/equatable.dart';
@@ -262,7 +261,7 @@ class SwapSliderFormBloc
     add(SwapSliderFormInitialized());
   }
 
-  _handleRowClicked(
+  void _handleRowClicked(
     RowClicked event,
     Emitter<SwapSliderFormModel> emit,
   ) {
@@ -298,7 +297,7 @@ class SwapSliderFormBloc
         selectedSwapsInput: selectedSwapsInput));
   }
 
-  _handleInitialized(
+  Future<void> _handleInitialized(
     SwapSliderFormInitialized event,
     Emitter<SwapSliderFormModel> emit,
   ) async {
@@ -333,7 +332,7 @@ class SwapSliderFormBloc
     );
   }
 
-  _handleSliderDragged(
+  void _handleSliderDragged(
     SliderDragged event,
     Emitter<SwapSliderFormModel> emit,
   ) {
@@ -359,7 +358,7 @@ class SwapSliderFormBloc
         selectedSwapsInput: selectedSwapsInput));
   }
 
-  _handleSubmitClicked(
+  void _handleSubmitClicked(
     SubmitClicked event,
     Emitter<SwapSliderFormModel> emit,
   ) {

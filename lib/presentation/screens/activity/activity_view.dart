@@ -2,20 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:timeago_flutter/timeago_flutter.dart';
 import 'package:horizon/utils/app_icons.dart';
-import 'package:go_router/go_router.dart';
-import 'package:horizon/presentation/screens/dashboard/view/activity_feed.dart';
-import 'package:fpdart/fpdart.dart' hide State;
 
-import 'package:horizon/domain/entities/activity_feed_item.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/domain/entities/http_config.dart';
-import 'package:horizon/domain/entities/bitcoin_tx.dart';
-import 'package:horizon/domain/entities/remote_data.dart';
 
-import 'package:horizon/domain/repositories/bitcoin_repository.dart';
-import "package:get_it/get_it.dart";
 import 'package:horizon/presentation/common/filter_bar.dart';
-import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/domain/entities/address_index_set.dart';
 import 'package:horizon/domain/entities/address_v2.dart';

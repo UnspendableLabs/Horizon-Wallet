@@ -1,11 +1,6 @@
 import 'package:horizon/common/constants.dart';
 import 'package:decimal/decimal.dart';
-import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:rational/rational.dart';
-import 'package:equatable/equatable.dart';
-import "package:fpdart/fpdart.dart" hide Order;
-
-import 'package:decimal/decimal.dart';
 import 'package:equatable/equatable.dart';
 import "package:fpdart/fpdart.dart" hide Order;
 

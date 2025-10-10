@@ -13,7 +13,6 @@ import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/common/sats_to_usd_display.dart';
-import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:formz/formz.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/services/mempool_price_service.dart';

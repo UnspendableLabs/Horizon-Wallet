@@ -2,8 +2,6 @@ import 'dart:js_interop';
 import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
-import 'package:horizon/common/constants.dart';
-import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/seed.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';

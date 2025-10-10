@@ -8,7 +8,6 @@ import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:formz/formz.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
-import 'package:horizon/presentation/common/collapsable_view.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
@@ -259,7 +258,7 @@ class SendReviewForm extends StatefulWidget {
 class _SendReviewFormState extends State<SendReviewForm> {
   final appIcons = AppIcons();
 
-  _regularProperty(context, label, value, {Widget? widget}) {
+  Padding _regularProperty(context, label, value, {Widget? widget}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Column(
@@ -284,7 +283,7 @@ class _SendReviewFormState extends State<SendReviewForm> {
     );
   }
 
-  _renderSendEntry(
+  HorizonCard _renderSendEntry(
       HttpConfig httpConfig, SendEntryFormModel send, String sourceAddress) {
     return HorizonCard(
         backgroundColor:

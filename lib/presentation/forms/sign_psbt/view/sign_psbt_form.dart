@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 
-import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/extension_rpc.dart';
 import 'package:horizon/domain/entities/network.dart';
 import 'package:horizon/domain/entities/psbt_type.dart';
@@ -12,7 +11,6 @@ import 'package:horizon/presentation/common/sats_to_usd_display.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_state.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_event.dart';
-import 'package:horizon/presentation/common/redesign_colors.dart';
 
 // example import
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart'
@@ -2037,7 +2035,7 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
             ),
             Row(
               children: [
-                Text("${btcValue} sat",
+                Text("$btcValue sat",
                     style: Theme.of(context).textTheme.labelSmall),
               ],
             )

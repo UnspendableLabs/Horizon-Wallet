@@ -1,21 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
-import 'package:fpdart/fpdart.dart' show TaskEither;
-import 'package:get_it/get_it.dart';
-import 'package:horizon/domain/entities/address_v2.dart';
-import 'package:horizon/domain/entities/balance_v2.dart';
-import 'package:horizon/domain/entities/http_config.dart';
-import 'package:horizon/domain/entities/multi_address_balance.dart';
-import 'package:horizon/domain/entities/remote_data.dart';
-import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/usecases/get_all_balances.dart';
 import 'package:horizon/presentation/common/asset_balance_list_item.dart';
-import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/send/bloc/token_selector_form_bloc.dart';
-import 'package:horizon/presentation/session/bloc/session_cubit.dart';
-import 'package:horizon/presentation/session/bloc/session_state.dart';
 
 class TokenSelectorFormActions {
   final Function(TokenSelectorOption value) onTokenSelected;

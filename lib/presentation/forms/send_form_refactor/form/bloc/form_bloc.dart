@@ -49,7 +49,7 @@ class SendAssetFormBloc extends Bloc<FormEvent, FormModel> {
     on<FormSubmitted>(_handleFormSubmitted);
   }
 
-  _handleAddressBalanceInputChanged(
+  void _handleAddressBalanceInputChanged(
     AddressBalanceInputChanged event,
     Emitter<FormModel> emit,
   ) {
@@ -69,7 +69,7 @@ class SendAssetFormBloc extends Bloc<FormEvent, FormModel> {
     emit(newState);
   }
 
-  _handleDestinationInputChanged(
+  void _handleDestinationInputChanged(
     DestinationInputChanged event,
     Emitter<FormModel> emit,
   ) {
@@ -80,7 +80,7 @@ class SendAssetFormBloc extends Bloc<FormEvent, FormModel> {
     emit(newState);
   }
 
-  _handleQuantityInputChanged(
+  void _handleQuantityInputChanged(
     QuantityInputChanged event,
     Emitter<FormModel> emit,
   ) {
@@ -92,7 +92,7 @@ class SendAssetFormBloc extends Bloc<FormEvent, FormModel> {
     emit(newState);
   }
 
-  _handleFeeOptionChanged(
+  void _handleFeeOptionChanged(
     FeeOptionChanged event,
     Emitter<FormModel> emit,
   ) {
@@ -103,7 +103,7 @@ class SendAssetFormBloc extends Bloc<FormEvent, FormModel> {
     emit(newState);
   }
 
-  _handleFormSubmitted(
+  Future<void> _handleFormSubmitted(
     FormSubmitted event,
     Emitter<FormModel> emit,
   ) async {

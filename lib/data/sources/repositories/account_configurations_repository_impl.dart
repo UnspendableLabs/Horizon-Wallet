@@ -2,7 +2,6 @@ import "package:horizon/domain/repositories/account_configurations_repository.da
 import "package:horizon/data/sources/local/dao/account_configurations_dao.dart";
 import "package:horizon/data/sources/local/db.dart" as local;
 import "package:horizon/domain/entities/account_configuration.dart" as entity;
-import 'package:get_it/get_it.dart';
 
 class AccountConfigurationsRepositoryImpl
     implements AccountConfigurationsRepository {

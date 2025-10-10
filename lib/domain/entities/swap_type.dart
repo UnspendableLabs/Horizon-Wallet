@@ -1,5 +1,4 @@
 import 'package:horizon/domain/entities/balance_v2.dart';
-import 'package:horizon/domain/entities/multi_address_balance.dart';
 import "package:horizon/presentation/forms/asset_pair_form/bloc/form/asset_pair_form_bloc.dart";
 
 sealed class SwapType {}

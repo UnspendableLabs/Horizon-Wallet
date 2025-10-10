@@ -69,7 +69,7 @@ class SendReviewFormBloc
     on<CloseSignModalClicked>(_handleCloseSignModal);
   }
 
-  _handleCloseSignModal(
+  void _handleCloseSignModal(
     CloseSignModalClicked event,
     Emitter<SendReviewFormModel> emit,
   ) {
@@ -78,7 +78,7 @@ class SendReviewFormBloc
     ));
   }
 
-  _handleSignAndSubmit(
+  Future<void> _handleSignAndSubmit(
       SignAndSubmitClicked event, Emitter<SendReviewFormModel> emit) async {
     emit(state.copyWith(
       showSignTransactionModal: const Some(true),

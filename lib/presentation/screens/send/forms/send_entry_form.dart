@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fpdart/fpdart.dart' as fp;
 import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/balance_v2.dart';
-import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/presentation/common/asset_balance_list_item.dart';
-import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/transactions/gradient_quantity_input.dart';
 import 'package:horizon/presentation/common/transactions/token_name_field.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/send/bloc/send_entry_form_bloc.dart';
-import 'package:horizon/utils/app_icons.dart';
 
 class SendEntryFormActions {
   final Function(String value) onDestinationChanged;

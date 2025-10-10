@@ -146,9 +146,7 @@ class WalletConfigRepositoryImpl implements WalletConfigRepository {
     await _walletConfigsDao.create(local.WalletConfig(
         addrKindsMask: flagsForKinds(
             basePath.defaultKinds()), // we just fallback to defaults specifi
-        seedDerivation: seedDerivation != null
-            ? seedDerivation.name
-            : SeedDerivation.bip39MnemonicToSeed.name,
+        seedDerivation: seedDerivation.name,
         uuid: uuid.v4(),
         network: network.name,
         basePath: basePath.serialize(),

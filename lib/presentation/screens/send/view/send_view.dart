@@ -142,7 +142,7 @@ class _SendViewState extends State<SendView> {
                           addresses: session.addressIndexSet.list
                               .map((e) => e.address)
                               .toList())),
-                  builder: (context, state, __refetch) {
+                  builder: (context, state, refetch) {
                     return state.fold3(
                         onNone: () =>
                             Center(child: CircularProgressIndicator()),

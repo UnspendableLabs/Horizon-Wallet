@@ -47,7 +47,7 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
     on<WarningAcceptedChanged>(_handleWarningAcceptedChanged);
   }
 
-  _handlePasswordChanged(
+  void _handlePasswordChanged(
       PasswordChanged event, Emitter<GetAddressesState> emit) {
     final password = PasswordInput.dirty(event.password);
 

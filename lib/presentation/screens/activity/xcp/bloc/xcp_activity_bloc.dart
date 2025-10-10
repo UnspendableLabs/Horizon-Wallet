@@ -1,4 +1,3 @@
-import 'package:chrome_extension/tts.dart';
 import "package:equatable/equatable.dart";
 import 'dart:async';
 import 'package:get_it/get_it.dart';

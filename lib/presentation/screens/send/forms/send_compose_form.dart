@@ -6,7 +6,6 @@ import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
-import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/repositories/fee_estimates_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';

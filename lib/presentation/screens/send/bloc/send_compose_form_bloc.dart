@@ -12,7 +12,6 @@ import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/entities/http_config.dart';
-import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';

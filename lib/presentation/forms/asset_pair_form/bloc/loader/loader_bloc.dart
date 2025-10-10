@@ -1,8 +1,6 @@
 import 'package:get_it/get_it.dart';
 import "package:horizon/presentation/forms/base/base_form_bloc.dart";
 import 'package:horizon/domain/entities/multi_address_balance.dart';
-import 'package:horizon/domain/entities/asset_info.dart';
-import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 
 import 'package:horizon/domain/entities/address_v2.dart';

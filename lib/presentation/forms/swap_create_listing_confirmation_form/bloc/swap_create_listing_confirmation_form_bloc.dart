@@ -86,7 +86,7 @@ class SwapCreateListingFormModel
     );
   }
 
-  get submitDisabled => isNotValid || submissionStatus.isInProgress;
+  bool get submitDisabled => isNotValid || submissionStatus.isInProgress;
 
   String get rateString {
     return [
@@ -219,7 +219,7 @@ class SwapCreateListingFormBloc
     add(const OnChainPaymentRequested());
   }
 
-  _handleFeeOptionChanged(
+  void _handleFeeOptionChanged(
     FeeOptionChanged event,
     Emitter<SwapCreateListingFormModel> emit,
   ) {
@@ -232,7 +232,7 @@ class SwapCreateListingFormBloc
     add(const OnChainPaymentRequested());
   }
 
-  _handleFeeOptionChangedCallback(
+  Future<void> _handleFeeOptionChangedCallback(
     OnChainPaymentRequested event,
     Emitter<SwapCreateListingFormModel> emit,
   ) async {
@@ -270,11 +270,10 @@ class SwapCreateListingFormBloc
     );
   }
 
-  _handleSubmitClicked(
+  Future<void> _handleSubmitClicked(
     SubmitClicked event,
     Emitter<SwapCreateListingFormModel> emit,
   ) async {
-
     emit(state.copyWith(
         submissionStatus: FormzSubmissionStatus.inProgress,
         showSignPsbtModal: const Option.of(true)));

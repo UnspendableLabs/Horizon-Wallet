@@ -1,16 +1,9 @@
-import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/domain/usecases/get_all_balances.dart';
 
-import "./bloc/loader/loader_bloc.dart";
 import 'package:formz/formz.dart';
-import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/swap_type.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
-
-import 'package:horizon/domain/entities/address_v2.dart';
-import 'package:horizon/domain/entities/http_config.dart';
-import 'package:horizon/domain/entities/multi_address_balance.dart';
 
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';

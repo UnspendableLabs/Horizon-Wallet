@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 // import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/account_v2.dart';
-import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/address_index_set.dart';
 import 'package:horizon/domain/entities/wallet_config.dart';
 // import 'package:horizon/domain/entities/wallet.dart';
@@ -179,7 +178,6 @@ class SessionStateCubit extends Cubit<SessionState> {
         LoggedIn(decryptionKey: _) => "LoggedIn",
       };
 
-
       switch (sessionState) {
         case NoWallet():
           emit(const SessionState.onboarding(Onboarding.initial()));
@@ -201,7 +199,6 @@ class SessionStateCubit extends Cubit<SessionState> {
               await _accountV2Repository.getByWalletConfig(
             walletConfigID: walletConfig.uuid,
           );
-
 
           String? currentAccountHash =
               cacheProvider.getString("current-account-hash");

@@ -360,7 +360,7 @@ class SwapMultiBuySignFormBloc
     ));
   }
 
-  _handleSubmitClicked(
+  Future<void> _handleSubmitClicked(
     SubmitClicked event,
     Emitter<SwapMultiBuySignFormModel> emit,
   ) async {
@@ -410,8 +410,7 @@ class SwapMultiBuySignFormBloc
             ),
           ));
 
-      for (var utxo in utxosWithTransactions) {
-      }
+      for (var utxo in utxosWithTransactions) {}
 
       String? detachData;
 

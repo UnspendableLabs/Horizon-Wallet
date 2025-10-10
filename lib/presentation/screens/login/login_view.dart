@@ -6,7 +6,6 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
-import 'package:horizon/presentation/common/theme_toggle.dart';
 
 import "./login_form/login_form_view.dart";
 import "./login_form/login_form_bloc.dart";

@@ -55,7 +55,7 @@ class SignMessageBloc extends Bloc<SignMessageEvent, SignMessageState> {
     on<SignMessageSubmitted>(_handleSignMessageSubmitted);
   }
 
-  _handlePasswordChanged(
+  void _handlePasswordChanged(
       PasswordChanged event, Emitter<SignMessageState> emit) {
     final password = PasswordInput.dirty(event.password);
 
@@ -66,7 +66,7 @@ class SignMessageBloc extends Bloc<SignMessageEvent, SignMessageState> {
     ));
   }
 
-  _handleSignMessageSubmitted(
+  Future<void> _handleSignMessageSubmitted(
       SignMessageSubmitted event, Emitter<SignMessageState> emit) async {
     final decryptionStrategy =
         passwordRequired ? Password(state.password.value) : InMemoryKey();

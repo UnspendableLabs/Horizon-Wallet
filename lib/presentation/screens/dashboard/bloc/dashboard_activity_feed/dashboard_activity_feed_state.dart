@@ -53,7 +53,8 @@ class DashboardActivityFeedStateReloadingOk extends DashboardActivityFeedState {
 
   const DashboardActivityFeedStateReloadingOk({required this.transactions});
 
-  copyWith({List<ActivityFeedItem>? transactions}) {
+  DashboardActivityFeedStateReloadingOk copyWith(
+      {List<ActivityFeedItem>? transactions}) {
     return DashboardActivityFeedStateReloadingOk(
         transactions: transactions ?? this.transactions);
   }
@@ -67,7 +68,7 @@ class DashboardActivityFeedStateReloadingError
   final String error;
   const DashboardActivityFeedStateReloadingError({required this.error});
 
-  copyWith({String? error}) {
+  DashboardActivityFeedStateReloadingError copyWith({String? error}) {
     return DashboardActivityFeedStateReloadingError(error: error ?? this.error);
   }
 

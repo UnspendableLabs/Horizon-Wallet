@@ -79,7 +79,7 @@ extension BalancesSetProjection on BalancesSet {
 
     final Set<String> ownedAddresses = {};
 
-    void _seed(BalanceV2 b) {
+    void seed(BalanceV2 b) {
       final key = (b is UtxoBalance)
           ? _kUtxo(b.asset, b.utxoId)
           : _kAddr(b.asset, b.address);
@@ -106,29 +106,29 @@ extension BalancesSetProjection on BalancesSet {
       final key = (b is UtxoBalance)
           ? _kUtxo(b.asset, b.utxoId)
           : _kAddr(b.asset, b.address);
-      _seed(b);
+      seed(b);
       confirmedRowKeys.add(key);
     }
 
     // ===== deltas =====
     final Map<_Key, BigInt> deltas = {};
-    void _addDelta(_Key key, BigInt dq) {
+    void addDelta(_Key key, BigInt dq) {
       if (dq == BigInt.zero) return;
       deltas.update(key, (v) => v + dq, ifAbsent: () => dq);
     }
 
     // helpers
-    bool _divisibleFor(String asset, {bool? fallback}) =>
+    bool divisibleFor(String asset, {bool? fallback}) =>
         assetDivisibility[asset] ?? fallback ?? true;
 
-    BigInt _rawFromNormalized(String normalized, bool divisible) {
+    BigInt rawFromNormalized(String normalized, bool divisible) {
       final d = Decimal.parse(normalized);
       if (!divisible) return BigInt.from(d.toBigInt().toInt());
       final scaled = d * TenToTheEigth.decimal; // 10^8
       return BigInt.parse(scaled.round().toString());
     }
 
-    BigInt _chooseRaw({
+    BigInt chooseRaw({
       BigInt? raw,
       String? normalized,
       required String asset,
@@ -136,11 +136,11 @@ extension BalancesSetProjection on BalancesSet {
     }) {
       if (raw != null) return raw;
       if (normalized == null) return BigInt.zero;
-      final div = explicitDivisible ?? _divisibleFor(asset);
-      return _rawFromNormalized(normalized, div);
+      final div = explicitDivisible ?? divisibleFor(asset);
+      return rawFromNormalized(normalized, div);
     }
 
-    BigInt _effectiveQty(_Key key) {
+    BigInt effectiveQty(_Key key) {
       final base = state[key]?.quantity ?? BigInt.zero;
       final d = deltas[key] ?? BigInt.zero;
       return base + d;
@@ -149,21 +149,21 @@ extension BalancesSetProjection on BalancesSet {
     // ===== CREDIT / DEBIT (addr <-> addr sends only) =====
     for (final e in _mempoolData.credits) {
       final p = e.params;
-      final dq = _chooseRaw(
+      final dq = chooseRaw(
         raw: BigInt.from(p.quantity),
         normalized: p.quantityNormalized,
         asset: p.asset,
       );
-      _addDelta(_kAddr(p.asset, p.address), dq);
+      addDelta(_kAddr(p.asset, p.address), dq);
     }
     for (final e in _mempoolData.debits) {
       final p = e.params;
-      final dq = _chooseRaw(
+      final dq = chooseRaw(
         raw: BigInt.from(p.quantity),
         normalized: p.quantityNormalized,
         asset: p.asset,
       );
-      _addDelta(_kAddr(p.asset, p.address!), -dq);
+      addDelta(_kAddr(p.asset, p.address!), -dq);
     }
 
     // ===== ATTACH (credit UTXO only; DEBIT covers the address) =====
@@ -171,7 +171,7 @@ extension BalancesSetProjection on BalancesSet {
       final p = e.params;
       final divisible = p.assetInfo.divisible;
       assetDivisibility[p.asset] = divisible;
-      final dq = _chooseRaw(
+      final dq = chooseRaw(
         raw: BigInt.from(p.quantity),
         normalized: p.quantityNormalized,
         asset: p.asset,
@@ -184,13 +184,13 @@ extension BalancesSetProjection on BalancesSet {
       // we don’t have destination_address in your typedef, but your samples show it equals source
       utxoAddressLabel[_utxoIdStrFromKey(utxoKey)] = p.source;
 
-      _addDelta(utxoKey, dq);
+      addDelta(utxoKey, dq);
     }
 
     for (final e in _mempoolData.detaches) {
       final p = e.params;
 
-      final dqReq = _chooseRaw(
+      final dqReq = chooseRaw(
         normalized: p.quantityNormalized, // DETACH has normalized
         asset: p.asset,
       );
@@ -202,15 +202,15 @@ extension BalancesSetProjection on BalancesSet {
       final dq = dqReq <= available ? dqReq : available;
       if (dq == BigInt.zero) continue;
 
-      _addDelta(utxoKey, -dq);
-      _addDelta(_kAddr(p.asset, p.destination), dq);
+      addDelta(utxoKey, -dq);
+      addDelta(_kAddr(p.asset, p.destination), dq);
     }
 
 // ===== UTXO_MOVE (receiver-only): credit destination UTXO, unconfirmed =====
     for (final e in _mempoolData.moves) {
       final p = e.params;
 
-      final dq = _chooseRaw(
+      final dq = chooseRaw(
         normalized: p.quantityNormalized,
         asset: p.asset, // uses known divisibility or defaults to divisible=true
       );
@@ -223,9 +223,9 @@ extension BalancesSetProjection on BalancesSet {
       final utxoKeySource = _kUtxo(p.asset, utxoIdSource);
 
       if (state.containsKey(utxoKeySource)) {
-        _addDelta(utxoKeySource, -dq); // apply-deltas will create this new row
+        addDelta(utxoKeySource, -dq); // apply-deltas will create this new row
       } else {
-        _addDelta(utxoKey, dq); // apply-deltas will create this new row
+        addDelta(utxoKey, dq); // apply-deltas will create this new row
       }
     }
 

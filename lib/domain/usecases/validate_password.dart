@@ -1,6 +1,5 @@
 import "package:fpdart/fpdart.dart";
 import "package:get_it/get_it.dart";
-import "package:horizon/domain/entities/address_v2.dart";
 import "package:horizon/domain/entities/decryption_strategy.dart";
 import "package:horizon/domain/repositories/wallet_config_repository.dart";
 import "package:horizon/domain/services/encryption_service.dart";

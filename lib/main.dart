@@ -699,12 +699,6 @@ class AppRouter {
                           key: Key(
                               "portfolio:${sessionState.walletConfig.uuid}"),
                           body: PortfolioView(),
-                          // bottomNavigationBar: BottomTabNavigation(
-                          //   key: Key("dashboard"),
-                          //   currentIndex: 0,
-                          // ),
-
-                          // CHAT GPT I NEED HELP WITH A SANE WAY / FLEXIBLE WAY OF ADDING BOTTOM TABS
                         );
                       },
                     )
@@ -723,10 +717,6 @@ class AppRouter {
                                 key: Key(sessionState.walletConfig.uuid),
                                 initialAddress:
                                     sessionState.addressIndexSet.list.first),
-                            // bottomNavigationBar: BottomTabNavigation(
-                            //   key: Key("manage"),
-                            //   currentIndex: 1,
-                            // ),
                           );
                         })
                   ]),
@@ -743,10 +733,6 @@ class AppRouter {
                           body: ToolsView(
                             key: Key("tools:${sessionState.walletConfig.uuid}"),
                           ),
-                          // bottomNavigationBar: BottomTabNavigation(
-                          //   key: Key("tools"),
-                          //   currentIndex: 2,
-                          // ),
                         );
                       },
                     )
@@ -756,10 +742,6 @@ class AppRouter {
                       path: "/settings",
                       builder: (context, state) => Scaffold(
                         body: SettingsView(),
-                        // bottomNavigationBar: const BottomTabNavigation(
-                        //   key: Key("settings"),
-                        //   currentIndex: 3,
-                        // ),
                       ),
                     ),
                   ])

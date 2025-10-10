@@ -88,7 +88,7 @@ class LoginFormBloc extends Bloc<FormEvent, FormState> {
     on<FormSubmitted>(_onFormSubmitted);
   }
 
-  _onPasswordChanged(PasswordChanged event, Emitter<FormState> emit) {
+  void _onPasswordChanged(PasswordChanged event, Emitter<FormState> emit) {
     emit(
       state.copyWith(
         status: FormzSubmissionStatus.initial,
@@ -97,7 +97,8 @@ class LoginFormBloc extends Bloc<FormEvent, FormState> {
     );
   }
 
-  _onFormSubmitted(FormSubmitted event, Emitter<FormState> emit) async {
+  Future<void> _onFormSubmitted(
+      FormSubmitted event, Emitter<FormState> emit) async {
     emit(
       state.copyWith(
         status: FormzSubmissionStatus.inProgress,

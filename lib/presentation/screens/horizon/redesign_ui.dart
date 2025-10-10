@@ -8,22 +8,9 @@ import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
-import 'package:flutter/material.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
-import 'package:flutter/material.dart';
-import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:auto_size_text_field/auto_size_text_field.dart';
-
-/// -----------------------------
-/// Generic icon-triggered selector
-/// -----------------------------
-
-/// --------------------------------------
-/// Example: filter button for your options
-/// --------------------------------------
-import 'package:flutter/material.dart';
-import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 /// Simple icon-triggered selector (no search).
 class HorizonIconSelect<T> extends StatelessWidget {

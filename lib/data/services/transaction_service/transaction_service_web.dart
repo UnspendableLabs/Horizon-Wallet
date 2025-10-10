@@ -1,7 +1,6 @@
 import 'dart:js_interop';
 import 'dart:typed_data';
 
-import 'package:simple_rc4/simple_rc4.dart';
 import 'package:collection/collection.dart';
 import 'package:convert/convert.dart';
 import 'dart:convert';
@@ -22,8 +21,8 @@ import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
 import 'package:horizon/js/bitcoinjs_message.dart' as bitcoinMessage;
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'dart:math';
-import 'package:pointycastle/pointycastle.dart'; // StreamCipher, KeyParameter
-import 'package:convert/convert.dart' as convert; // hex.decode/encode
+// StreamCipher, KeyParameter
+// hex.decode/encode
 
 extension ListToJSArray<T extends JSAny?> on List<T> {
   JSArray<T> toJSArray() {
@@ -257,7 +256,6 @@ class TransactionServiceWeb implements TransactionService {
             Uint8List.fromList(hex.decode(encryptedDetachData.toDart)).toJS)
       ].toJS);
 
-
       psbt.addOutput(bitcoinjs.TxOutput.make(
         script: opReturnScript,
         value: 0,
@@ -303,8 +301,6 @@ class TransactionServiceWeb implements TransactionService {
 
       final totalRequired = totalOutputValue + BigInt.from(estimatedFee);
 
-
-
       if (totalInputValue >= totalRequired) {
         break;
       }
@@ -347,7 +343,6 @@ class TransactionServiceWeb implements TransactionService {
         value: change.toInt(),
       ));
     }
-
 
     return MakeBuyPsbtReturn(
       psbtHex: psbt.toHex(),

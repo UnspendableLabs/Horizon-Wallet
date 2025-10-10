@@ -93,7 +93,7 @@ class _FeeSelectionV2State extends State<FeeSelectionV2> {
 
     return DropdownButtonFormField<String>(
       key: const Key("fee_dropdown"),
-      value: widget.value.toInputValue(),
+      initialValue: widget.value.toInputValue(),
       decoration: InputDecoration(
         fillColor: fillColor,
         filled: true,

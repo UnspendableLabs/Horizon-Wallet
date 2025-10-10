@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter/rendering.dart';
 import 'package:formz/formz.dart';
 import 'package:get_it/get_it.dart';
 import 'package:fpdart/fpdart.dart';
@@ -162,7 +161,7 @@ class CreatePsbtFormModel with FormzMixin {
         signedPsbt: signedPsbt ?? this.signedPsbt,
       );
 
-  get submitDisabled => isNotValid || submissionStatus.isInProgress;
+  bool get submitDisabled => isNotValid || submissionStatus.isInProgress;
 
   Vout get vout => utxoTransaction.vout[utxoID.vout];
 

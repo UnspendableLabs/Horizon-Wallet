@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:horizon/domain/entities/balance_v2.dart';
-import 'package:horizon/domain/entities/multi_address_balance.dart';
 
 abstract class SendEntryFormEvent {
   const SendEntryFormEvent();
@@ -58,19 +57,19 @@ class SendEntryFormBloc extends Bloc<SendEntryFormEvent, SendEntryFormModel> {
     on<MaxAmountSelected>(_onMaxAmountSelected);
   }
 
-  _onAddressBalanceInputChanged(
+  void _onAddressBalanceInputChanged(
       AddressBalanceInputChanged event, Emitter<SendEntryFormModel> emit) {
     emit(state.copyWith(
         balanceSelectorInput: BalanceSelectorInput.dirty(value: event.value)));
   }
 
-  _onDestinationInputChanged(
+  void _onDestinationInputChanged(
       DestinationInputChanged event, Emitter<SendEntryFormModel> emit) {
     emit(state.copyWith(
         destinationInput: DestinationInput.dirty(value: event.value)));
   }
 
-  _onQuantityInputChanged(
+  void _onQuantityInputChanged(
       QuantityInputChanged event, Emitter<SendEntryFormModel> emit) {
     emit(state.copyWith(
         quantityInput: QuantityInput.dirty(
@@ -79,7 +78,7 @@ class SendEntryFormBloc extends Bloc<SendEntryFormEvent, SendEntryFormModel> {
             divisible: state.assetIsDivisible)));
   }
 
-  _onMaxAmountSelected(
+  void _onMaxAmountSelected(
       MaxAmountSelected event, Emitter<SendEntryFormModel> emit) {
     emit(state.copyWith(
         quantityInput: QuantityInput.dirty(
@@ -88,7 +87,7 @@ class SendEntryFormBloc extends Bloc<SendEntryFormEvent, SendEntryFormModel> {
             divisible: state.assetIsDivisible)));
   }
 
-  _onMemoInputChanged(
+  void _onMemoInputChanged(
       MemoInputChanged event, Emitter<SendEntryFormModel> emit) {
     emit(state.copyWith(memoInput: MemoInput.dirty(value: event.value)));
   }
@@ -214,10 +213,10 @@ class SendEntryFormModel with FormzMixin {
     );
   }
 
-  get assetIsDivisible =>
+  bool get assetIsDivisible =>
       balanceSelectorInput.value?.balance.total.divisible ?? false;
 
-  get assetQuantityNormalized =>
+  String get assetQuantityNormalized =>
       balanceSelectorInput.value?.balance.total.normalized() ?? "";
 
   int get assetBalance =>

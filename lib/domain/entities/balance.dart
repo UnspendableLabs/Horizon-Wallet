@@ -1,6 +1,4 @@
 import 'package:horizon/domain/entities/asset_info.dart';
-import 'package:horizon/domain/entities/asset_quantity.dart';
-import 'package:horizon/domain/entities/utxo.dart';
 
 class Balance {
   final String? address;

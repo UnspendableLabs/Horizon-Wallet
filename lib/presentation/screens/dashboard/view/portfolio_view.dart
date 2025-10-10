@@ -40,7 +40,7 @@ class _PortfolioViewState extends State<PortfolioView>
     with TickerProviderStateMixin {
   // late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
-  bool _isSearching = false;
+  final bool _isSearching = false;
   String _searchQuery = '';
   BalanceFilter _currentFilter = BalanceFilter.all;
 

@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:flow_builder/flow_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,7 +11,6 @@ import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/usecases/get_all_balances.dart';
 import 'package:horizon/extensions.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
-import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:horizon/presentation/forms/asset_pair_form/asset_pair_form_view.dart';
 import 'package:horizon/presentation/forms/base/flow/view/flow_step.dart';
@@ -367,7 +365,7 @@ class _SwapFlowViewState extends State<SwapFlowView> {
                           addresses: session.addressIndexSet.list
                               .map((e) => e.address)
                               .toList())),
-                  builder: (context, state, __refetch) {
+                  builder: (context, state, refetch) {
                     return state.fold3(
                         onNone: () =>
                             Center(child: CircularProgressIndicator()),

@@ -1,4 +1,3 @@
-import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
@@ -83,7 +82,7 @@ class SendFormBalanceSuccessHandler extends StatelessWidget {
       listener: (context, state) {
         if (state.submissionStatus.isSuccess &&
             state.balanceInput.value?.entry.address != null) {
-          onSuccess(state.balanceInput.value!.entry.address!);
+          onSuccess(state.balanceInput.value!.entry.address);
         }
       },
       child: const SizedBox.shrink(),
