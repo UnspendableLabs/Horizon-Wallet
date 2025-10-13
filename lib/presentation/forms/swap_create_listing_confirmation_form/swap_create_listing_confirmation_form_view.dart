@@ -251,7 +251,7 @@ class _SwapCreateListingConfirmationFormState
     extends State<SwapCreateListingConfirmationForm> {
   Padding _renderProperty(label, value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -268,7 +268,7 @@ class _SwapCreateListingConfirmationFormState
 
   Padding _renderPropertyWidget(label, widget) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -365,10 +365,6 @@ class _SwapCreateListingConfirmationFormState
                                   )),
                             ],
                           )),
-                    const SizedBox(
-                      height: 14,
-                    ),
-                    commonHeightSizedBox,
                     const Divider(
                       height: 20,
                       color: transparentWhite8,
