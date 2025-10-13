@@ -14,12 +14,6 @@ class ConfigImpl implements Config {
   }
 
   @override
-  bool get disableNativeOrders {
-    return const bool.fromEnvironment('HORIZON_DISABLE_NATIVE_ORDERS',
-        defaultValue: true); // TODO: should be changed to false
-  }
-
-  @override
   bool get isDatabaseViewerEnabled {
     return const bool.fromEnvironment('HORIZON_ENABLE_DB_VIEWER',
         defaultValue: false);
