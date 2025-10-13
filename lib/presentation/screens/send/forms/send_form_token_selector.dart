@@ -96,7 +96,7 @@ class _SendFormTokenSelectorState extends State<SendFormTokenSelector> {
               items: widget.state.balances
                   .map((item) => DropdownMenuItem(
                         value: item,
-                        child: AssetBalanceListItemWithOptionalBalance(
+                        child: AssetBalanceListItemWithOptionalBalanceSummary(
                             asset: item.name,
                             description: item.description,
                             balance: item.balance),
@@ -107,7 +107,7 @@ class _SendFormTokenSelectorState extends State<SendFormTokenSelector> {
               },
               selectedValue: widget.state.tokenSelectorInput.value,
               selectedItemBuilder: (TokenSelectorOption item) =>
-                  AssetBalanceListItemWithOptionalBalance(
+                  AssetBalanceListItemWithOptionalBalanceSummary(
                       asset: item.name,
                       description: item.description,
                       balance: item.balance),

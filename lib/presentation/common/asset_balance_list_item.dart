@@ -6,11 +6,11 @@ import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class AssetBalanceListItemWithOptionalBalance extends StatelessWidget {
+class AssetBalanceListItemWithOptionalBalanceSummary extends StatelessWidget {
   final String asset;
   final String? description;
   final Option<AssetBalanceSummary> balance;
-  const AssetBalanceListItemWithOptionalBalance(
+  const AssetBalanceListItemWithOptionalBalanceSummary(
       {super.key,
       required this.asset,
       required this.description,
@@ -48,6 +48,58 @@ class AssetBalanceListItemWithOptionalBalance extends StatelessWidget {
                           ),
                     ),
                     Text(balance.balance.total.normalized(),
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ))
+                  ],
+                ))
+      ],
+    );
+  }
+}
+
+class AssetBalanceListItemWithOptionalBalance extends StatelessWidget {
+  final String asset;
+  final String? description;
+  final Option<BalanceV2> balance;
+  const AssetBalanceListItemWithOptionalBalance(
+      {super.key,
+      required this.asset,
+      required this.description,
+      required this.balance});
+
+  @override
+  Widget build(BuildContext context) {
+    final appIcons = AppIcons();
+    final session = context.watch<SessionStateCubit>().state.successOrThrow();
+    return Row(
+      children: [
+        appIcons.assetIcon(
+          httpConfig: session.httpConfig,
+          context: context,
+          assetName: asset,
+          description: description,
+          width: 34,
+          height: 34,
+        ),
+        const SizedBox(width: 8),
+        balance.fold(
+            () => Text(
+                  asset,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontSize: 14,
+                      ),
+                ),
+            (balance) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      asset,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontSize: 14,
+                          ),
+                    ),
+                    Text(balance.quantity.normalized(),
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
                               fontWeight: FontWeight.w500,
                             ))

@@ -57,28 +57,29 @@ class SendFlowConfirmationStep {
 
 class SendFlowModel extends Equatable {
   final Option<AssetBalanceSummary> balance; // step1
-  final Option<String> address; // step2
+  final Option<BalanceV2> selectedBalance; // step2
   final Option<SendFlowComposeStep> composeStep; // step3
   final Option<SendFlowConfirmationStep> confirmationStep; // step4
 
   const SendFlowModel({
     required this.balance,
-    required this.address,
+    required this.selectedBalance,
     required this.composeStep,
     required this.confirmationStep,
   });
 
   @override
-  List<Object?> get props => [balance, address, composeStep, confirmationStep];
+  List<Object?> get props =>
+      [balance, selectedBalance, composeStep, confirmationStep];
 
   SendFlowModel copyWith(
           {Option<AssetBalanceSummary>? balance,
-          Option<String>? address,
+          Option<BalanceV2>? selectedBalance,
           Option<SendFlowComposeStep>? composeStep,
           Option<SendFlowConfirmationStep>? confirmationStep}) =>
       SendFlowModel(
           balance: balance ?? this.balance,
-          address: address ?? this.address,
+          selectedBalance: selectedBalance ?? this.selectedBalance,
           composeStep: composeStep ?? this.composeStep,
           confirmationStep: confirmationStep ?? this.confirmationStep);
 }
@@ -109,7 +110,7 @@ class _SendViewState extends State<SendView> {
     _controller = SendFlowController(
         initialState: const SendFlowModel(
             balance: Option.none(),
-            address: Option.none(),
+            selectedBalance: Option.none(),
             composeStep: Option.none(),
             confirmationStep: Option.none()));
   }
@@ -158,6 +159,7 @@ class _SendViewState extends State<SendView> {
                                 TokenSelectorFormSuccessHandler(
                                     onTokenSelected: (option) {
                                   _cachedBalances = balancesSet.confirmed;
+
                                   context.flow<SendFlowModel>().update(
                                       (model) => model.copyWith(
                                           balance: option.balance));
@@ -214,10 +216,10 @@ class _SendViewState extends State<SendView> {
                       children: [
                         Builder(
                           builder: (context) => SendFormBalanceSuccessHandler(
-                              onSuccess: (address) {
+                              onSuccess: (balance) {
                             context.flow<SendFlowModel>().update((model) {
                               return model.copyWith(
-                                  address: Option.of(address));
+                                  selectedBalance: Option.of(balance));
                             });
                           }),
                         ),
@@ -239,15 +241,15 @@ class _SendViewState extends State<SendView> {
                   ),
                 ),
               )),
-          model.address.map((address) => MaterialPage(
+          model.selectedBalance.map((selectedBalance) => MaterialPage(
                 child: FlowStep(
                   title: "Recipient & Quantity",
                   widthFactor: .6,
                   leading: Builder(builder: (context) {
                     return IconButton(
                         onPressed: () {
-                          context.flow<SendFlowModel>().update((model) =>
-                              model.copyWith(address: const Option.none()));
+                          context.flow<SendFlowModel>().update((model) => model
+                              .copyWith(selectedBalance: const Option.none()));
                         },
                         icon: AppIcons.backArrowIcon(
                           context: context,
@@ -271,7 +273,7 @@ class _SendViewState extends State<SendView> {
                       SendEntryFormModel(
                           destinationInput: const DestinationInput.pure(),
                           balanceSelectorInput: BalanceSelectorInput.dirty(
-                              value: model.balance.getOrThrow()),
+                              value: selectedBalance),
                           quantityInput: QuantityInput.pure(
                             // TODO: audit
                             maxQuantity: model.balance
@@ -287,9 +289,8 @@ class _SendViewState extends State<SendView> {
                           ),
                           memoInput: const MemoInput.pure())
                     ],
-                    balances: [], // TODO: update,
-                    sourceAddress: model.address
-                        .getOrElse(() => throw Exception("Invalid address")),
+                    assetBalanceSummary: model.balance.getOrThrow(),
+                    sourceAddress: selectedBalance.address,
                     child: (actions, state) => Builder(builder: (context) {
                       return Column(
                         children: [
@@ -367,7 +368,9 @@ class _SendViewState extends State<SendView> {
                                     onClose: () {
                                       actions.onCloseSignModalClicked();
                                     },
-                                    address: model.address.getOrThrow()),
+                                    address: model.selectedBalance
+                                        .getOrThrow()
+                                        .address),
 
                                 // SendReviewFormSuccessHandler(
                                 //   onSuccess: (confirmationStep) {

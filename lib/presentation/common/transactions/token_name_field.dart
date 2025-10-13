@@ -8,7 +8,6 @@ import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 
 class TokenNameField extends StatelessWidget {
-  final AssetBalanceSummary? balance;
   final BalanceV2? selectedBalanceEntry;
   final bool loading;
   final Widget? suffixIcon;
@@ -16,7 +15,6 @@ class TokenNameField extends StatelessWidget {
 
   const TokenNameField({
     super.key,
-    required this.balance,
     this.selectedBalanceEntry,
     required this.loading,
     this.suffixIcon,
@@ -26,9 +24,10 @@ class TokenNameField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appIcons = AppIcons();
-    final tokenName = balance == null
+    final tokenName = selectedBalanceEntry == null
         ? ''
-        : displayAssetName(balance!.asset, balance!.assetLongname);
+        : displayAssetName(
+            selectedBalanceEntry!.asset, selectedBalanceEntry!.assetLongname);
     final theme = Theme.of(context);
     final customTheme = theme.extension<CustomThemeExtension>()!;
 
@@ -49,15 +48,15 @@ class TokenNameField extends StatelessWidget {
               child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              balance == null
+              selectedBalanceEntry == null
                   ? const SizedBox.shrink()
                   : appIcons.assetIcon(
                       httpConfig: session.httpConfig,
-                      assetName: balance!.asset,
+                      assetName: selectedBalanceEntry!.asset,
                       context: context,
                       width: 34,
                       height: 34,
-                      description: balance!.description),
+                      description: selectedBalanceEntry!.description),
               const SizedBox(width: 8),
               Expanded(
                 child: Column(

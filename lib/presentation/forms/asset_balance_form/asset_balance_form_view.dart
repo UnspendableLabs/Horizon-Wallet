@@ -73,7 +73,7 @@ class AssetBalanceFormProvider extends StatelessWidget {
 }
 
 class SendFormBalanceSuccessHandler extends StatelessWidget {
-  final Function(String) onSuccess;
+  final Function(BalanceV2) onSuccess;
   const SendFormBalanceSuccessHandler({super.key, required this.onSuccess});
 
   @override
@@ -82,7 +82,7 @@ class SendFormBalanceSuccessHandler extends StatelessWidget {
       listener: (context, state) {
         if (state.submissionStatus.isSuccess &&
             state.balanceInput.value?.entry.address != null) {
-          onSuccess(state.balanceInput.value!.entry.address);
+          onSuccess(state.balanceInput.value!.entry);
         }
       },
       child: const SizedBox.shrink(),

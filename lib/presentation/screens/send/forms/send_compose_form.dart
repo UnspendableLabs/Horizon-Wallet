@@ -21,7 +21,7 @@ import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
 
 class SendComposeFormProvider extends StatelessWidget {
-  final List<AssetBalanceSummary> balances;
+  final AssetBalanceSummary assetBalanceSummary;
   final List<SendEntryFormModel> initialEntries;
   final FeeEstimatesRespository _feeEstimatesRepository;
   final String sourceAddress;
@@ -31,7 +31,7 @@ class SendComposeFormProvider extends StatelessWidget {
 
   SendComposeFormProvider({
     super.key,
-    required this.balances,
+    required this.assetBalanceSummary,
     required this.initialEntries,
     required this.sourceAddress,
     required this.child,
@@ -54,7 +54,7 @@ class SendComposeFormProvider extends StatelessWidget {
         onSuccess: (feeEstimates) {
           return BlocProvider(
             create: (context) => SendComposeFormBloc(
-              initialBalances: balances,
+              assetBalanceSummary: assetBalanceSummary,
               initialEntries: initialEntries,
               feeEstimates: feeEstimates,
               sourceAddress: sourceAddress,
@@ -177,7 +177,7 @@ class _SendComposeFormState extends State<SendComposeForm> {
                 commonHeightSizedBox,
               ],
               SendEntryFormProvider(
-                balances: widget.state.balances,
+                balances: widget.state.assetBalanceSummary.balances,
                 initialBalance: entry.value.balanceSelectorInput.value,
                 onFormChanged: (form) {
                   widget.actions.onEntryFormChanged(index, form);
@@ -185,7 +185,7 @@ class _SendComposeFormState extends State<SendComposeForm> {
                 child: (actions, state) => SendEntryForm(
                   state: state,
                   actions: actions,
-                  balances: widget.state.balances,
+                  balances: widget.state.assetBalanceSummary.balances,
                 ),
               ),
               if (index != widget.state.sendEntries.length - 1)

@@ -1,18 +1,23 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fpdart/fpdart.dart' as fp;
 import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/presentation/common/asset_balance_list_item.dart';
+import 'package:horizon/presentation/common/link.dart';
 import 'package:horizon/presentation/common/transactions/gradient_quantity_input.dart';
 import 'package:horizon/presentation/common/transactions/token_name_field.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/send/bloc/send_entry_form_bloc.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SendEntryFormActions {
   final Function(String value) onDestinationChanged;
   final Function(String value) onQuantityChanged;
-  final Function(AssetBalanceSummary value) onBalanceSelected;
+  final Function(BalanceV2 value) onBalanceSelected;
   final Function(String value) onMemoChanged;
   final Function() onMaxAmountSelected;
   const SendEntryFormActions(
@@ -24,8 +29,8 @@ class SendEntryFormActions {
 }
 
 class SendEntryFormProvider extends StatelessWidget {
-  final List<AssetBalanceSummary> balances;
-  final AssetBalanceSummary? initialBalance;
+  final List<BalanceV2> balances;
+  final BalanceV2? initialBalance;
   final Function(SendEntryFormModel) onFormChanged;
   final Widget Function(SendEntryFormActions actions, SendEntryFormModel state)
       child;
@@ -87,7 +92,7 @@ class SendEntryFormProvider extends StatelessWidget {
 class SendEntryForm extends StatefulWidget {
   final SendEntryFormModel state;
   final SendEntryFormActions actions;
-  final List<AssetBalanceSummary> balances;
+  final List<BalanceV2> balances;
   const SendEntryForm(
       {super.key,
       required this.state,
@@ -120,6 +125,7 @@ class _SendEntryFormState extends State<SendEntryForm> {
 
   @override
   Widget build(BuildContext context) {
+    final session = context.watch<SessionStateCubit>().state.successOrThrow();
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
     return Column(
@@ -140,36 +146,9 @@ class _SendEntryFormState extends State<SendEntryForm> {
               _ => null
             };
           },
-          // suffixIcon: SizedBox(
-          //   height: 32,
-          //   width: 86,
-          //   child: HorizonButton(
-          //     borderRadius: 12,
-          //     variant: ButtonVariant.purple,
-          //     onPressed: () {
-          //       Clipboard.getData(Clipboard.kTextPlain).then((value) {
-          //         if (value?.text != null && value!.text!.trim().isNotEmpty) {
-          //           _destinationController.text = value.text!;
-          //           widget.actions
-          //               .onDestinationChanged(_destinationController.text);
-          //         }
-          //       });
-          //     },
-          //     icon: AppIcons.pasteIcon(
-          //       context: context,
-          //       width: 24,
-          //       height: 24,
-          //     ),
-          //     child: TextButtonContent(
-          //         value: "Paste",
-          //         style: theme.textTheme.labelMedium!.copyWith(
-          //           fontWeight: FontWeight.w500,
-          //         )),
-          //   ),
-          // ),
         ),
         commonHeightSizedBox,
-        HorizonRedesignDropdown<AssetBalanceSummary>(
+        HorizonRedesignDropdown<BalanceV2>(
             itemPadding: const EdgeInsets.all(12),
             selectorPadding: widget.state.balanceSelectorInput.value == null
                 ? const EdgeInsets.symmetric(horizontal: 12, vertical: 6)
@@ -189,42 +168,61 @@ class _SendEntryFormState extends State<SendEntryForm> {
               }
             },
             selectedValue: widget.state.balanceSelectorInput.value,
-            selectedItemBuilder: (AssetBalanceSummary item) => TokenNameField(
+            selectedItemBuilder: (BalanceV2 item) => TokenNameField(
                   loading: false,
                   decoration: const BoxDecoration(),
-                  balance: widget.state.balanceSelectorInput.value,
-                  selectedBalanceEntry:
-                      widget.state.balanceSelectorInput.value?.balances.first,
-                  // suffixIcon: GestureDetector(
-                  //   onTap: () {
-                  //     _quantityController.text = quantityRemoveTrailingZeros(
-                  //       widget.state.assetQuantityNormalized,
-                  //     );
-                  //     widget.actions.onMaxAmountSelected();
-                  //   },
-                  //   child: Container(
-                  //     height: 24,
-                  //     padding: const EdgeInsets.symmetric(horizontal: 8),
-                  //     decoration: BoxDecoration(
-                  //       color: isDarkMode
-                  //           ? transparentYellow8
-                  //           : transparentPurple33,
-                  //       borderRadius: BorderRadius.circular(8),
-                  //     ),
-                  //     child: Center(
-                  //       child: Text(
-                  //         'Max',
-                  //         style: TextStyle(
-                  //           fontSize: 9,
-                  //           fontWeight: FontWeight.w400,
-                  //           color: isDarkMode ? yellow1 : duskGradient2,
-                  //         ),
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
+                  selectedBalanceEntry: widget.state.balanceSelectorInput.value,
                 ),
             hintText: "Select Token"),
+
+        if (!widget.state.balanceSelectorInput.isPure &&
+            widget.state.balanceSelectorInput.error ==
+                BalanceInputError.isRequired) ...[
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.center,
+            child: Text(
+              'Balance is required',
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: const Color(0xFFFF6A6A)),
+            ),
+          ),
+        ],
+
+        if (!widget.state.balanceSelectorInput.isPure &&
+            widget.state.balanceSelectorInput.error ==
+                BalanceInputError.isUtxoBalance) ...[
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                style: theme.textTheme.bodySmall,
+                children: [
+                  const TextSpan(
+                      text: "This is a UTXO attached balance. It must be "),
+                  TextSpan(
+                    text: "detached",
+                    style: theme.textTheme.bodySmall!.copyWith(
+                      decoration: TextDecoration.underline,
+                    ),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () async {
+                        final url =
+                            "${session.httpConfig.horizonMarket}/tools/detach?utxo=${(widget.state.balanceSelectorInput.value! as UtxoBalance).utxoId.toString()}";
+                        if (await canLaunchUrl(Uri.parse(url))) {
+                          await launchUrl(Uri.parse(url));
+                        }
+                      },
+                  ),
+                  const TextSpan(text: " before it can be sent."),
+                ],
+              ),
+            ),
+          )
+        ],
+
         // i need to put the max button on top of the graident quantity input upper right
         // space between dropdown and input
         commonHeightSizedBox,
@@ -295,28 +293,6 @@ class _SendEntryFormState extends State<SendEntryForm> {
               ),
           ],
         ),
-
-        // GradientQuantityInputV2(
-        //   assetIsDivisible: widget.state.assetIsDivisible,
-        //   assetQuantityNormalized: widget.state.assetQuantityNormalized,
-        //   controller: _quantityController,
-        //   showMaxButton: false,
-        //   enabled: widget.state.balanceSelectorInput.isValid,
-        //   onChanged: (value) {
-        //     widget.actions.onQuantityChanged(value);
-        //   },
-        //   validator: (value) {
-        //     if (widget.state.quantityInput.isPure) {
-        //       return null;
-        //     }
-        //     return switch (widget.state.quantityInput.error) {
-        //       SendEntryFormInputError.quantityRequired => 'Value is required',
-        //       SendEntryFormInputError.quantityExceedsMax => 'Value exceeds max',
-        //       SendEntryFormInputError.quantityIsZero => 'Value is zero',
-        //       _ => null
-        //     };
-        //   },
-        // ),
         commonHeightSizedBox,
       ],
     );

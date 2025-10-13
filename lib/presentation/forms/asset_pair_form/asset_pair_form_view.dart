@@ -159,7 +159,7 @@ class _AssetPairFormState extends State<AssetPairForm> {
                               .map((item) => DropdownMenuItem(
                                   value: item,
                                   child:
-                                      AssetBalanceListItemWithOptionalBalance(
+                                      AssetBalanceListItemWithOptionalBalanceSummary(
                                           asset: item.name,
                                           description: item.description,
                                           balance: item.balance)))
@@ -169,7 +169,7 @@ class _AssetPairFormState extends State<AssetPairForm> {
                           },
                           selectedValue: widget.state.giveAssetInput.value,
                           selectedItemBuilder: (AssetPairFormOption item) =>
-                              AssetBalanceListItemWithOptionalBalance(
+                              AssetBalanceListItemWithOptionalBalanceSummary(
                                   asset: item.name,
                                   description: item.description,
                                   balance: item.balance),
@@ -186,7 +186,7 @@ class _AssetPairFormState extends State<AssetPairForm> {
                               selectedValue:
                                   widget.state.receiveAssetInput.value,
                               selectedItemBuilder: (AssetPairFormOption item) =>
-                                  AssetBalanceListItemWithOptionalBalance(
+                                  AssetBalanceListItemWithOptionalBalanceSummary(
                                       asset: item.name,
                                       description: item.description,
                                       balance: item.balance),

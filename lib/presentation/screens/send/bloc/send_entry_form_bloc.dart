@@ -9,7 +9,7 @@ abstract class SendEntryFormEvent {
 }
 
 class AddressBalanceInputChanged extends SendEntryFormEvent {
-  final AssetBalanceSummary value;
+  final BalanceV2 value;
   const AddressBalanceInputChanged(this.value);
 }
 
@@ -34,7 +34,7 @@ class MaxAmountSelected extends SendEntryFormEvent {
 
 class SendEntryFormBloc extends Bloc<SendEntryFormEvent, SendEntryFormModel> {
   SendEntryFormBloc(
-      {AssetBalanceSummary? initialBalance,
+      {BalanceV2? initialBalance,
       required String initialQuantity,
       required String initialDestination,
       required String initialMemo})
@@ -45,9 +45,8 @@ class SendEntryFormBloc extends Bloc<SendEntryFormEvent, SendEntryFormModel> {
           destinationInput: DestinationInput.dirty(value: initialDestination),
           quantityInput: QuantityInput.dirty(
               value: initialQuantity,
-              maxQuantity:
-                  initialBalance?.balance.total.quantity ?? BigInt.zero,
-              divisible: initialBalance?.balance.total.divisible ?? false),
+              maxQuantity: initialBalance?.quantity.quantity ?? BigInt.zero,
+              divisible: initialBalance?.quantity.divisible ?? false),
           memoInput: MemoInput.dirty(value: initialMemo),
         )) {
     on<AddressBalanceInputChanged>(_onAddressBalanceInputChanged);
@@ -157,19 +156,21 @@ class QuantityInput extends FormzInput<String, SendEntryFormInputError> {
   }
 }
 
-class BalanceSelectorInput
-    extends FormzInput<AssetBalanceSummary?, SendEntryFormInputError> {
-  const BalanceSelectorInput.dirty({required AssetBalanceSummary value})
+enum BalanceInputError { isRequired, isUtxoBalance }
+
+class BalanceSelectorInput extends FormzInput<BalanceV2?, BalanceInputError> {
+  const BalanceSelectorInput.dirty({required BalanceV2 value})
       : super.dirty(value);
 
   const BalanceSelectorInput.pure() : super.pure(null);
 
   @override
-  SendEntryFormInputError? validator(AssetBalanceSummary? value) {
-    if (value == null) {
-      return SendEntryFormInputError.balanceRequired;
-    }
-    return null;
+  BalanceInputError? validator(BalanceV2? value) {
+    return switch (value) {
+      UtxoBalance() => BalanceInputError.isUtxoBalance,
+      AddressBalance() => null,
+      null => BalanceInputError.isRequired,
+    };
   }
 }
 
@@ -214,13 +215,14 @@ class SendEntryFormModel with FormzMixin {
   }
 
   bool get assetIsDivisible =>
-      balanceSelectorInput.value?.balance.total.divisible ?? false;
+      balanceSelectorInput.value?.quantity.divisible ?? false;
 
   String get assetQuantityNormalized =>
-      balanceSelectorInput.value?.balance.total.normalized() ?? "";
+      balanceSelectorInput.value?.quantity.normalized() ?? "";
 
+  // TODO: don't use int unnecessarily
   int get assetBalance =>
-      balanceSelectorInput.value?.balance.total.quantity.toInt() ?? 0;
+      balanceSelectorInput.value?.quantity.quantity.toInt() ?? 0;
 
   @override
   String toString() {

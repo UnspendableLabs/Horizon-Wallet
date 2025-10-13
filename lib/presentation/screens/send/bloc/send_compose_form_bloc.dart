@@ -79,7 +79,7 @@ class ComposeSendSingle extends ComposeSendUnion {
 
 class SendComposeFormModel extends TransactionFormModelBase {
   final List<SendEntryFormModel> sendEntries;
-  final List<AssetBalanceSummary> balances;
+  final AssetBalanceSummary assetBalanceSummary;
   final String sourceAddress;
 
   @override
@@ -92,7 +92,7 @@ class SendComposeFormModel extends TransactionFormModelBase {
     required this.sourceAddress,
     super.error,
     required this.sendEntries,
-    required this.balances,
+    required this.assetBalanceSummary,
     this.composeResponse,
   });
 
@@ -104,7 +104,7 @@ class SendComposeFormModel extends TransactionFormModelBase {
 
   SendComposeFormModel copyWith({
     List<SendEntryFormModel>? sendEntries,
-    List<AssetBalanceSummary>? balances,
+    AssetBalanceSummary? assetBalanceSummary,
     FeeEstimates? feeEstimates,
     FeeOptionInput? feeOptionInput,
     FormzSubmissionStatus? submissionStatus,
@@ -114,7 +114,7 @@ class SendComposeFormModel extends TransactionFormModelBase {
   }) {
     return SendComposeFormModel(
       sendEntries: sendEntries ?? this.sendEntries,
-      balances: balances ?? this.balances,
+      assetBalanceSummary: assetBalanceSummary ?? this.assetBalanceSummary,
       feeEstimates: feeEstimates ?? this.feeEstimates,
       feeOptionInput: feeOptionInput ?? this.feeOptionInput,
       submissionStatus: submissionStatus ?? this.submissionStatus,
@@ -152,8 +152,7 @@ class SendComposeFormModel extends TransactionFormModelBase {
       if (!entry.isValid) {
         return left("Invalid entry");
       }
-      final isDivisible =
-          entry.balanceSelectorInput.value!.balance.total.divisible;
+      final isDivisible = entry.balanceSelectorInput.value!.quantity.divisible;
       final quantityNormalized = Decimal.parse(entry.quantityInput.value);
       final quantity = isDivisible
           ? quantityNormalized * Decimal.fromInt(100000000)
@@ -178,7 +177,7 @@ class SendComposeFormBloc
 
   SendComposeFormBloc({
     required List<SendEntryFormModel> initialEntries,
-    required List<AssetBalanceSummary> initialBalances,
+    required AssetBalanceSummary assetBalanceSummary,
     required FeeEstimates feeEstimates,
     required String sourceAddress,
     required this.httpConfig,
@@ -188,7 +187,7 @@ class SendComposeFormBloc
         _transactionService =
             transactionService ?? GetIt.I<TransactionService>(),
         super(sendComposeFormModel(
-            initialEntries, initialBalances, feeEstimates, sourceAddress)) {
+            initialEntries, assetBalanceSummary, feeEstimates, sourceAddress)) {
     on<AddEntry>(_onAddEntry);
     on<RemoveEntry>(_onRemoveEntry);
     on<FeeOptionChanged>(_onFeeOptionChanged);
@@ -203,12 +202,12 @@ class SendComposeFormBloc
 
   static SendComposeFormModel sendComposeFormModel(
       List<SendEntryFormModel> initialEntries,
-      List<AssetBalanceSummary> initialBalances,
+      AssetBalanceSummary assetBalanceSummary,
       FeeEstimates feeEstimates,
       String sourceAddress) {
     return SendComposeFormModel(
       sendEntries: initialEntries,
-      balances: initialBalances,
+      assetBalanceSummary: assetBalanceSummary,
       feeEstimates: feeEstimates,
       feeOptionInput: FeeOptionInput.pure(),
       submissionStatus: FormzSubmissionStatus.initial,
