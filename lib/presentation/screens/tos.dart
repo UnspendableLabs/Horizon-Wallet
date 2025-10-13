@@ -33,10 +33,20 @@ class TermsOfService extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Effective Date: September 17, 2025',
+                  'Effective Date: October 13, 2025',
                   style: TextStyle(
                       color: isDarkTheme ? Colors.grey : Colors.grey[600]),
                 ),
+                const SizedBox(height: 8),
+                Text(
+                  'This policy applies to the legacy web wallet and not to the browser extension.',
+                  style: TextStyle(
+                    color: fontColor,
+                    fontStyle: FontStyle.italic,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 8),
                 const SizedBox(height: 24),
                 _buildNumberedList([
                   _buildSection(

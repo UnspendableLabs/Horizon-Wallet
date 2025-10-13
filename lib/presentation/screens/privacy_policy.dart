@@ -31,10 +31,20 @@ class PrivacyPolicy extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Last Updated: December 25, 2024',
+                  'Last Updated: October 13, 2025',
                   style: TextStyle(
                       color: isDarkTheme ? Colors.grey : Colors.grey[600]),
                 ),
+                const SizedBox(height: 8),
+                Text(
+                  'This policy applies to the legacy web wallet and not to the browser extension.',
+                  style: TextStyle(
+                    color: fontColor,
+                    fontStyle: FontStyle.italic,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 8),
                 const SizedBox(height: 16),
                 Text(
                   'Horizon Wallet, a product of Unspendable Labs Inc., a Delaware Corporation ("we", "our", "us"), is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our service. Please read this privacy policy carefully. If you do not agree with the terms of this privacy policy, please do not access the service.',
