@@ -3,41 +3,49 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class TermsOfService extends StatelessWidget {
-  final String prefixText;
-  final String linkText;
-  final String url;
-
-  const TermsOfService({
-    super.key,
-    this.prefixText = "By proceeding, I agree to Horizon Wallet's ",
-    this.linkText = "Terms of Service",
-    this.url = "https://horizon.market/terms",
-  });
-
-  void _launchURL() async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
-  }
+  const TermsOfService({super.key});
 
   @override
   Widget build(BuildContext context) {
+    void _launchURL(String path) async {
+      final uri = Uri.parse("https://horizon.market/$path");
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    }
+
     return RichText(
+      textAlign: TextAlign.center,
       text: TextSpan(
+        style: const TextStyle(height: 1.75),
         children: [
-          TextSpan(
-            text: prefixText,
-            style: const TextStyle(color: Colors.grey, fontSize: 10),
+          const TextSpan(
+            text: "By proceeding, I agree to Horizon Wallet's\n",
+            style: TextStyle(color: Colors.grey, fontSize: 10),
           ),
           TextSpan(
-            text: linkText,
+            text: "Terms of Service",
             style: const TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w500,
               color: Colors.white,
             ),
-            recognizer: TapGestureRecognizer()..onTap = _launchURL,
+            recognizer: TapGestureRecognizer()
+              ..onTap = () => _launchURL("wallet-terms"),
+          ),
+          const TextSpan(
+            text: " and ",
+            style: TextStyle(color: Colors.grey, fontSize: 10),
+          ),
+          TextSpan(
+            text: "Privacy Policy",
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+              color: Colors.white,
+            ),
+            recognizer: TapGestureRecognizer()
+              ..onTap = () => _launchURL("wallet-privacy"),
           ),
         ],
       ),
