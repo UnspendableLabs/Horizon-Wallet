@@ -1,3 +1,4 @@
+import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/asset_quantity.dart';
@@ -85,7 +86,6 @@ class SendReviewSignHandler extends StatelessWidget {
 
           final send = state.sendEntries.first;
 
-          // todo add extension to SendReviewFormModel to get psbt type
           final psbtType =
               send.balanceSelectorInput.value?.asset.toLowerCase() != "btc"
                   ? XCPSendPsbt(
@@ -99,8 +99,8 @@ class SendReviewSignHandler extends StatelessWidget {
                   : BtcSendPsbt(
                       toAddress: send.destinationInput.value,
                       sats: BigInt.parse(
-                          (double.parse(send.quantityInput.value) *
-                                  TenToTheEigth.value)
+                          (Decimal.parse(send.quantityInput.value) *
+                                  TenToTheEigth.decimal)
                               .toString()));
 
           if (state.showSignTransactionModal) {
@@ -174,77 +174,16 @@ class SendReviewSignHandler extends StatelessWidget {
                               },
                             )),
                       ),
-                      // WoltModalSheetPage(
-                      //     trailingNavBarWidget: TextButton(
-                      //       onPressed: () {
-                      //         Navigator.of(context).pop();
-                      //       },
-                      //       child: AppIcons.closeIcon(
-                      //         context: context,
-                      //         width: 24,
-                      //         height: 24,
-                      //       ),
-                      //     ),
-                      //     hasTopBarLayer: false,
-                      //     // pageTitle: Text("Sign PSBT",
-                      //     //     style: Theme.of(context).textTheme.headlineSmall),
-                      //     child: state.current.psbtWithArgs.fold(
-                      //       () => const SizedBox.shrink(),
-                      //       (psbtWithArgs) => BlocProvider(
-                      //           create: (context) => SignPsbtBloc(
-                      //                 httpConfig: session.httpConfig,
-                      //                 addresses: session.addresses,
-                      //                 passwordRequired: settings
-                      //                     .requirePasswordForCryptoOperations,
-                      //                 unsignedPsbt: psbtWithArgs.psbtHex,
-                      //                 signInputs: {
-                      //                   address: psbtWithArgs.inputsToSign
-                      //                 },
-                      //                 sighashTypes: [
-                      //                   0x01 // SIGHASH_ALL
-                      //                 ],
-                      //               ),
-                      //           child: SignPsbtForm(
-                      //             key: Key(psbtWithArgs.psbtHex),
-                      //             passwordRequired: settings
-                      //                 .requirePasswordForCryptoOperations,
-                      //             onSuccess: (signedPsbtHex) {
-                      //               onSuccess(signedPsbtHex);
-                      //               Navigator.of(context).pop("signed");
-                      //             },
-                      //           )),
-                      //     ))
                     ]);
 
             if (result != "signed") {
               onClose();
             }
-
-            // show wolt modal but only if it's not already displayed
           }
         },
         child: const SizedBox.shrink());
   }
 }
-
-// class SendReviewFormSuccessHandler extends StatelessWidget {
-//   final Function(SendFlowConfirmationStep) onSuccess;
-//   const SendReviewFormSuccessHandler({super.key, required this.onSuccess});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return BlocListener<SendReviewFormBloc, SendReviewFormModel>(
-//       listener: (context, state) {
-//         if (state.submissionStatus.isSuccess) {
-//           onSuccess(SendFlowConfirmationStep(
-//             psbtHex: state.signedTxHex,
-//           ));
-//         }
-//       },
-//       child: const SizedBox.shrink(),
-//     );
-//   }
-// }
 
 class SendReviewForm extends StatefulWidget {
   final SendReviewFormModel state;
@@ -388,18 +327,6 @@ class _SendReviewFormState extends State<SendReviewForm> {
           thickness: 1,
         ),
         commonHeightSizedBox,
-        // CollapsableWidget(
-        //     title: "Fee Details",
-        //     child: Column(
-        //       children: [
-        //         _buildLabelValueRow("Fee", "${response.btcFee} sats"),
-        //         _buildLabelValueRow("Virtual Size",
-        //             "${response.signedTxEstimatedSize.virtualSize} vbytes"),
-        //         _buildLabelValueRow("Adjusted Virtual Size",
-        //             "${response.signedTxEstimatedSize.adjustedVirtualSize} vbytes"),
-        //       ],
-        //     )),
-        // commonHeightSizedBox,
         HorizonButton(
             child: TextButtonContent(value: "Sign and Submit"),
             isLoading: widget.state.submissionStatus.isInProgress,
