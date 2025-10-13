@@ -7,10 +7,6 @@ final _process = ProcessRunner(printOutputDefault: true);
 void main(List<String> args) async {
   final browser =
       Platform.environment['TARGET_BROWSER']?.toLowerCase() ?? "chromium";
-  final network = Platform.environment['HORIZON_NETWORK'] ?? 'mainnet';
-  final apiBase = Platform.environment['HORIZON_COUNTERPARTY_API_BASE'];
-  final apiUsername = Platform.environment['HORIZON_COUNTERPARTY_API_USERNAME'];
-  final apiPassword = Platform.environment['HORIZON_COUNTERPARTY_API_PASSWORD'];
   final analyticsEnabled =
       Platform.environment['HORIZON_ANALYTICS_ENABLED'] ?? 'false';
 
@@ -32,7 +28,7 @@ void main(List<String> args) async {
 
   final originalIndexHtml = await buildIndexHtml();
   final originalManifest = await buildManifest(browser);
-  await buildFlutter(network, analyticsEnabled, posthogApiKey, posthogApiHost,
+  await buildFlutter(analyticsEnabled, posthogApiKey, posthogApiHost,
       isSentryEnabled, sentryDsn, sentrySampleRate);
 
   // reset index.html
@@ -40,7 +36,6 @@ void main(List<String> args) async {
 }
 
 Future<void> buildFlutter(
-    String network,
     String analyticsEnabled,
     String posthogApiKey,
     String posthogApiHost,
@@ -57,7 +52,6 @@ Future<void> buildFlutter(
     '--dart-define=FLUTTER_WEB_USE_SKIA=false',
     '--release',
     '--dart-define=HORIZON_IS_EXTENSION=true',
-    '--dart-define=HORIZON_NETWORK=$network',
     '--dart-define=HORIZON_ANALYTICS_ENABLED=$analyticsEnabled',
     '--dart-define=HORIZON_POSTHOG_API_KEY=$posthogApiKey',
     '--dart-define=HORIZON_POSTHOG_API_HOST=$posthogApiHost',
