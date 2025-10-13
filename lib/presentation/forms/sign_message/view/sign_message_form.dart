@@ -7,6 +7,7 @@ import 'package:horizon/presentation/forms/sign_message/bloc/sign_message_event.
 
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart'
     as HorizonUI;
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 
 class SignMessageForm extends StatefulWidget {
   final bool passwordRequired;
@@ -21,6 +22,8 @@ class SignMessageForm extends StatefulWidget {
 }
 
 class _SignMessageFormState extends State<SignMessageForm> {
+  TextEditingController passwordController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -61,17 +64,16 @@ class _SignMessageFormState extends State<SignMessageForm> {
                     children: [
                       Padding(
                         padding: const EdgeInsets.fromLTRB(0, 16, 0, 16),
-                        child: TextField(
+                        child: HorizonTextField(
+                          controller: passwordController,
                           onChanged: (password) => context
                               .read<SignMessageBloc>()
                               .add(PasswordChanged(password)),
-                          decoration: InputDecoration(
-                            labelText: 'Password',
-                            errorText: state.password.displayError == null
-                                ? null
-                                : 'Password cannot be empty',
-                          ),
+                          hintText: 'Password',
                           obscureText: true,
+                          errorText: state.password.displayError != null
+                              ? 'Password cannot be empty'
+                              : null,
                         ),
                       ),
                       const Divider(),

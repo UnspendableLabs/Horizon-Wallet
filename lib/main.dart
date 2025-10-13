@@ -397,22 +397,6 @@ class AppRouter {
                           children: [
                             Row(
                               children: [
-                                Container(
-                                  width: 48,
-                                  height: 48,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Center(
-                                    child: AppIcons.shieldIcon(
-                                      context: context,
-                                      width: 32,
-                                      height: 32,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                ),
                                 const SizedBox(width: 16),
                                 const Expanded(
                                   child: Column(
@@ -479,22 +463,6 @@ class AppRouter {
                         children: [
                           Row(
                             children: [
-                              Container(
-                                width: 48,
-                                height: 48,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Center(
-                                  child: AppIcons.shieldIcon(
-                                    context: context,
-                                    width: 32,
-                                    height: 32,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ),
                               const SizedBox(width: 16),
                               const Expanded(
                                 child: Column(
@@ -540,22 +508,6 @@ class AppRouter {
                           children: [
                             Row(
                               children: [
-                                Container(
-                                  width: 48,
-                                  height: 48,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Center(
-                                    child: AppIcons.shieldIcon(
-                                      context: context,
-                                      width: 32,
-                                      height: 32,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                ),
                                 const SizedBox(width: 16),
                                 const Expanded(
                                   child: Column(

@@ -37,7 +37,7 @@ class ActionHandlerShell extends StatelessWidget {
           maxWidth:
               MediaQuery.of(context).size.width > 500 ? 500 : double.infinity,
         ),
-        child: child,
+        child: SingleChildScrollView(child: child),
       ),
     ));
   }
