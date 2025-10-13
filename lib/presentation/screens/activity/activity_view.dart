@@ -350,6 +350,7 @@ class _ActivityViewState extends State<ActivityView> {
             // ---- BTC ----
             SliverToBoxAdapter(
               child: BTCActivityProvider(
+                key: Key('btc-activity-provider-${_selectedAddress.address}'),
                 onLastUpdatedAtChange: _handleLastUpdatedAtChange,
                 httpConfig: session.httpConfig,
                 address: _selectedAddress,
@@ -368,6 +369,7 @@ class _ActivityViewState extends State<ActivityView> {
             // ---- XCP ----
             SliverToBoxAdapter(
               child: XCPActivityProvider(
+                key: Key('xcp-activity-provider-${_selectedAddress.address}'),
                 onLastUpdatedAtChange: _handleLastUpdatedAtChange,
                 httpConfig: session.httpConfig,
                 address: _selectedAddress,
