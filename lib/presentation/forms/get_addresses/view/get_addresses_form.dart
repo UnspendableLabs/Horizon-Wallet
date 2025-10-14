@@ -78,38 +78,26 @@ class GetAddressesForm extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 // Mode Selection
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Radio<AddressSelectionMode>(
-                          activeColor: green2,
-                          value: AddressSelectionMode.byAccount,
-                          groupValue: state.addressSelectionMode,
-                          onChanged: (mode) {
-                            context.read<GetAddressesBloc>().add(
-                                AddressSelectionModeChanged(
-                                    AddressSelectionMode.byAccount));
-                          },
-                        ),
-                        const Text('All Addresses in Account'),
-                      ],
+                HorizonUI.HorizonRedesignDropdown<AddressSelectionMode>(
+                  selectedValue: state.addressSelectionMode,
+                  onChanged: (mode) {
+                    if (mode != null) {
+                      context
+                          .read<GetAddressesBloc>()
+                          .add(AddressSelectionModeChanged(mode));
+                    }
+                  },
+                  items: const [
+                    DropdownMenuItem(
+                      value: AddressSelectionMode.byAccount,
+                      child: Text('All Addresses in Account'),
                     ),
-                    Row(children: [
-                      Radio<AddressSelectionMode>(
-                        activeColor: green2,
-                        value: AddressSelectionMode.importedAddresses,
-                        groupValue: state.addressSelectionMode,
-                        onChanged: (mode) {
-                          context.read<GetAddressesBloc>().add(
-                              AddressSelectionModeChanged(
-                                  AddressSelectionMode.importedAddresses));
-                        },
-                      ),
-                      const Text('Imported Addresses'),
-                    ])
+                    DropdownMenuItem(
+                      value: AddressSelectionMode.importedAddresses,
+                      child: Text('Imported Addresses'),
+                    ),
                   ],
+                  hintText: 'Select Address Mode',
                 ),
 
                 const SizedBox(height: 20),
@@ -168,26 +156,12 @@ class GetAddressesForm extends StatelessWidget {
                 ],
 
                 const SizedBox(height: 20),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Checkbox(
-                      value: state.warningAccepted,
-                      onChanged: (value) {
-                        context
-                            .read<GetAddressesBloc>()
-                            .add(WarningAcceptedChanged(value ?? false));
-                      },
-                      activeColor: green2,
-                      checkColor: Colors.white,
-                      side: const BorderSide(color: green2, width: 2),
-                    ),
-                    const Expanded(
-                      child: SelectableText(
-                        'If you use this address in a wallet that does not support Counterparty there is a very high risk of losing your UTXO-attached asset. Please confirm that you understand the risks.',
+                SelectableText(
+                  'If you use this address in a wallet that does not support Counterparty there is a very high risk of losing your UTXO-attached asset. Please confirm that you understand the risks.',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: transparentWhite66,
                       ),
-                    ),
-                  ],
+                  textAlign: TextAlign.start,
                 ),
                 if (passwordRequired) ...[
                   const SizedBox(height: 24),
@@ -219,7 +193,6 @@ class GetAddressesForm extends StatelessWidget {
                       child: HorizonUI.HorizonButton(
                         disabled:
                             state.submissionStatus.isInProgressOrSuccess ||
-                                !state.warningAccepted ||
                                 (state.password.value.isEmpty &&
                                     passwordRequired) ||
                                 (state.addressSelectionMode ==
