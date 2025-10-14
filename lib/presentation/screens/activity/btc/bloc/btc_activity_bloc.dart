@@ -184,7 +184,7 @@ class BtcActivityBloc extends Bloc<BTCActivityEvent, BtcActivityState> {
       final mempoolTask = _bitcoinRepository.getMempoolTransactionsT(
           addresses: [address],
           httpConfig: httpConfig,
-          onError: (_) => "error fetching mempol tx");
+          onError: (_) => "error fetching mempool tx");
 
       final confirmedTask =
           _bitcoinRepository.getConfirmedTransactionsPaginatedT(
