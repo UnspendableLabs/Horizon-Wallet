@@ -67,7 +67,7 @@ class BtcPriceInput extends FormzInput<String, BtcPriceInputError> {
     }
 
     BtcPriceInputError? royaltyError = asSats.fold(() => null, (sats) {
-      if (sats < minPrice) {
+      if (minPrice > dust && sats < minPrice) {
         return BtcPriceInputError.isTooSmallBecauseOfRoyalty;
       }
       return null;
