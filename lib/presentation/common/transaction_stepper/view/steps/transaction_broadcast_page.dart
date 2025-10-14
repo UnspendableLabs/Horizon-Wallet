@@ -26,6 +26,7 @@ class TransactionBroadcastPage extends StatelessWidget {
         txHex: data.txHash,
         txHash: data.txHex,
         loading: false,
+        onClose: () => Navigator.of(context).pop(),
       ),
       error: (error) => TransactionError(
         errorMessage: error,
