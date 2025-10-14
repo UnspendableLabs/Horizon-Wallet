@@ -143,7 +143,7 @@ class GetAddressesForm extends StatelessWidget {
 
                 const SizedBox(height: 20),
                 SelectableText(
-                  'If you use this address in a wallet that does not support Counterparty there is a very high risk of losing your UTXO-attached asset. Please confirm that you understand the risks.',
+                  'If you use this address in a wallet that does not support Counterparty there is a very high risk of losing your UTXO-attached asset. By proceeding to connect you confirm that you understand this risk.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: transparentWhite66,
                       ),

@@ -60,10 +60,7 @@ class RPCGetAddressesAction extends RPCAction {
   @override
   CallerType get caller => CallerType.extension;
   RPCGetAddressesAction(
-      super.tabId, super.requestId, super.origin, super.title, super.favicon) {
-    print(
-        'RPCGetAddressesAction created - Origin: $origin, Title: $title, Favicon: $favicon');
-  }
+      super.tabId, super.requestId, super.origin, super.title, super.favicon);
 }
 
 class RPCSignPsbtAction extends RPCAction {
