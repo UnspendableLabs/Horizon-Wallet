@@ -46,12 +46,52 @@ function getOriginFromPort(port) {
   return port.sender?.origin || port.sender?.url;
 }
 
+async function getTabMetadata(tabId) {
+  try {
+    const tab = await chrome.tabs.get(tabId);
+    
+    let faviconUrl = tab.favIconUrl || '';
+    
+    if (!faviconUrl && tab.url) {
+      try {
+        const url = new URL(tab.url);
+        const faviconPaths = [
+          '/favicon.svg',
+          '/favicon.png', 
+          '/favicon.ico',
+          '/apple-touch-icon.png'
+        ];
+        
+        faviconUrl = `${url.protocol}//${url.hostname}${faviconPaths[0]}`;
+      } catch (e) {
+        console.warn('Could not construct favicon URL:', e);
+      }
+    }
+    
+    if (!faviconUrl && tab.url) {
+      console.log('No favicon found for:', tab.url);
+    }
+    
+    return {
+      title: tab.title || '',
+      favicon: faviconUrl,
+    };
+  } catch (error) {
+    console.warn('Failed to get tab metadata:', error);
+    return {
+      title: '',
+      favicon: '',
+    };
+  }
+}
+
 async function rpcGetAddresses(requestId, port) {
   const origin = getOriginFromPort(port);
   const tabId = getTabIdFromPort(port);
+  const metadata = await getTabMetadata(tabId);
 
   const window = await popup({
-    url: `/index.html#?action=getAddresses:ext,${tabId},${requestId}`,
+    url: `/index.html#?action=getAddresses:ext,${tabId},${requestId},${encodeURIComponent(origin)},${encodeURIComponent(metadata.title)},${encodeURIComponent(metadata.favicon)}`,
   });
 
   listenForPopupClose({
@@ -67,15 +107,16 @@ async function rpcGetAddresses(requestId, port) {
 async function rpcSignPsbt(requestId, port, hex, signInputs, sighashTypes) {
   const origin = getOriginFromPort(port);
   const tabId = getTabIdFromPort(port);
+  const metadata = await getTabMetadata(tabId);
   const encodedSignInputs = btoa(JSON.stringify(signInputs));
   let action;
 
   // sighashTypes could be undefined
   if (sighashTypes === undefined) {
-    action = `signPsbt:ext,${tabId},${requestId},${hex},${encodedSignInputs}`;
+    action = `signPsbt:ext,${tabId},${requestId},${encodeURIComponent(origin)},${encodeURIComponent(metadata.title)},${encodeURIComponent(metadata.favicon)},${hex},${encodedSignInputs}`;
   } else {
     const encodedSighashTypes = btoa(JSON.stringify(sighashTypes));
-    action = `signPsbt:ext,${tabId},${requestId},${hex},${encodedSignInputs},${encodedSighashTypes}`;
+    action = `signPsbt:ext,${tabId},${requestId},${encodeURIComponent(origin)},${encodeURIComponent(metadata.title)},${encodeURIComponent(metadata.favicon)},${hex},${encodedSignInputs},${encodedSighashTypes}`;
   }
 
   const window = await popup({
@@ -95,8 +136,9 @@ async function rpcSignPsbt(requestId, port, hex, signInputs, sighashTypes) {
 async function rpcSignMessage(requestId, port, message, address) {
   const origin = getOriginFromPort(port);
   const tabId = getTabIdFromPort(port);
+  const metadata = await getTabMetadata(tabId);
   const window = await popup({
-    url: `/index.html#?action=signMessage:ext,${tabId},${requestId},${message},${address}`,
+    url: `/index.html#?action=signMessage:ext,${tabId},${requestId},${encodeURIComponent(origin)},${encodeURIComponent(metadata.title)},${encodeURIComponent(metadata.favicon)},${message},${address}`,
   });
   listenForPopupClose({
     id: window?.id,

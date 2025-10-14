@@ -251,7 +251,7 @@ class _ImportAddressFormState extends State<_ImportAddressForm> {
                         const SizedBox(height: 8),
                         SelectableText(
                           textAlign: TextAlign.center,
-                          'If you use this address in a non-Counterparty wallet, you risk losing your UTXO-attached asset. Please confirm you understand the risk.',
+                          'If you use this address in a non-Counterparty wallet, you risk losing your UTXO-attached asset. By proceeding to connect you confirm that you understand this risk.',
                           style: Theme.of(context).textTheme.titleSmall,
                         ),
                         const SizedBox(height: 10),

@@ -50,7 +50,6 @@ class GetAddressesState with FormzMixin {
   final String? error;
   final AddressSelectionMode addressSelectionMode;
   final List<AddressV2>? importedAddresses;
-  final bool warningAccepted;
 
   GetAddressesState({
     this.password = const PasswordInput.pure(),
@@ -61,7 +60,6 @@ class GetAddressesState with FormzMixin {
     this.error,
     this.addressSelectionMode = AddressSelectionMode.byAccount,
     this.importedAddresses,
-    this.warningAccepted = false,
   });
 
   @override
@@ -76,7 +74,6 @@ class GetAddressesState with FormzMixin {
     String? error,
     AddressSelectionMode? addressSelectionMode,
     List<AddressV2>? importedAddresses,
-    bool? warningAccepted,
   }) {
     return GetAddressesState(
       password: password ?? this.password,
@@ -87,7 +84,6 @@ class GetAddressesState with FormzMixin {
       error: error ?? this.error,
       addressSelectionMode: addressSelectionMode ?? this.addressSelectionMode,
       importedAddresses: importedAddresses ?? this.importedAddresses,
-      warningAccepted: warningAccepted ?? this.warningAccepted,
     );
   }
 }
