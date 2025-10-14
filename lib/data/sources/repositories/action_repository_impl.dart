@@ -56,35 +56,77 @@ class ActionRepositoryImpl implements ActionRepository {
       ["fairmint:ext", String fairminterTxHash, String numLots] =>
         FairmintAction(fairminterTxHash, CallerType.extension,
             numLots: int.tryParse(numLots)),
-      ["getAddresses:ext", String tabId, String requestId] =>
-        RPCGetAddressesAction(int.tryParse(tabId)!, requestId),
+      [
+        "getAddresses:ext",
+        String tabId,
+        String requestId,
+        String origin,
+        String title,
+        String favicon
+      ] =>
+        RPCGetAddressesAction(
+            int.tryParse(tabId)!,
+            requestId,
+            Uri.decodeComponent(origin),
+            Uri.decodeComponent(title),
+            Uri.decodeComponent(favicon)),
       [
         "signPsbt:ext",
         String tabId,
         String requestId,
+        String origin,
+        String title,
+        String favicon,
         String psbt,
         String signInputs,
         String sighashTypes,
       ] =>
-        RPCSignPsbtAction(int.tryParse(tabId)!, requestId, psbt,
-            _parseSignInputs(signInputs), _parseSighashTypes(sighashTypes)),
+        RPCSignPsbtAction(
+            int.tryParse(tabId)!,
+            requestId,
+            Uri.decodeComponent(origin),
+            Uri.decodeComponent(title),
+            Uri.decodeComponent(favicon),
+            psbt,
+            _parseSignInputs(signInputs),
+            _parseSighashTypes(sighashTypes)),
       [
         "signPsbt:ext",
         String tabId,
         String requestId,
+        String origin,
+        String title,
+        String favicon,
         String psbt,
         String signInputs,
       ] =>
-        RPCSignPsbtAction(int.tryParse(tabId)!, requestId, psbt,
-            _parseSignInputs(signInputs), null),
+        RPCSignPsbtAction(
+            int.tryParse(tabId)!,
+            requestId,
+            Uri.decodeComponent(origin),
+            Uri.decodeComponent(title),
+            Uri.decodeComponent(favicon),
+            psbt,
+            _parseSignInputs(signInputs),
+            null),
       [
         "signMessage:ext",
         String tabId,
         String requestId,
+        String origin,
+        String title,
+        String favicon,
         String message,
         String address,
       ] =>
-        RPCSignMessageAction(int.tryParse(tabId)!, requestId, message, address),
+        RPCSignMessageAction(
+            int.tryParse(tabId)!,
+            requestId,
+            Uri.decodeComponent(origin),
+            Uri.decodeComponent(title),
+            Uri.decodeComponent(favicon),
+            message,
+            address),
       _ => throw Exception()
     };
   }

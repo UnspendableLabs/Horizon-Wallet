@@ -30,6 +30,7 @@ import 'package:horizon/domain/services/database_manager_service.dart';
 import 'package:horizon/presentation/common/dialog_helper.dart';
 
 import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/dapp_info_widget.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_bloc.dart';
 import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_view.dart';
@@ -395,25 +396,11 @@ class AppRouter {
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                const SizedBox(width: 16),
-                                const Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'SIGN PSBT',
-                                        style: TextStyle(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                            DAppInfoWidget(
+                              title: 'SIGN PSBT',
+                              dappUrl: action.origin,
+                              dappTitle: action.title,
+                              dappFavicon: action.favicon,
                             ),
                             const SizedBox(height: 24),
                             SignPsbtForm(
@@ -461,24 +448,11 @@ class AppRouter {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              const SizedBox(width: 16),
-                              const Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'SIGN MESSAGE',
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
+                          DAppInfoWidget(
+                            title: 'SIGN MESSAGE',
+                            dappUrl: action.origin,
+                            dappTitle: action.title,
+                            dappFavicon: action.favicon,
                           ),
                           Expanded(
                             child: Center(
@@ -506,25 +480,11 @@ class AppRouter {
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                const SizedBox(width: 16),
-                                const Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'SIGN MESSAGE',
-                                        style: TextStyle(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                            DAppInfoWidget(
+                              title: 'SIGN MESSAGE',
+                              dappUrl: action.origin,
+                              dappTitle: action.title,
+                              dappFavicon: action.favicon,
                             ),
                             SignMessageForm(
                               key: Key(action.message),

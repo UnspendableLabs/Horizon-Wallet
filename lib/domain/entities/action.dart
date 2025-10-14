@@ -48,7 +48,10 @@ class OpenOrderAction extends Action {
 abstract class RPCAction extends Action {
   final int tabId;
   final String requestId;
-  RPCAction(this.tabId, this.requestId);
+  final String? origin;
+  final String? title;
+  final String? favicon;
+  RPCAction(this.tabId, this.requestId, this.origin, this.title, this.favicon);
 }
 
 class RPCGetAddressesAction extends RPCAction {
@@ -56,7 +59,11 @@ class RPCGetAddressesAction extends RPCAction {
   String get action => 'getAddresses';
   @override
   CallerType get caller => CallerType.extension;
-  RPCGetAddressesAction(super.tabId, super.requestId);
+  RPCGetAddressesAction(
+      super.tabId, super.requestId, super.origin, super.title, super.favicon) {
+    print(
+        'RPCGetAddressesAction created - Origin: $origin, Title: $title, Favicon: $favicon');
+  }
 }
 
 class RPCSignPsbtAction extends RPCAction {
@@ -67,8 +74,8 @@ class RPCSignPsbtAction extends RPCAction {
   final String psbt;
   final Map<String, List<int>> signInputs;
   final List<int>? sighashTypes;
-  RPCSignPsbtAction(super.tabId, super.requestId, this.psbt, this.signInputs,
-      this.sighashTypes);
+  RPCSignPsbtAction(super.tabId, super.requestId, super.origin, super.title,
+      super.favicon, this.psbt, this.signInputs, this.sighashTypes);
 }
 
 class RPCSignMessageAction extends RPCAction {
@@ -78,6 +85,6 @@ class RPCSignMessageAction extends RPCAction {
   CallerType get caller => CallerType.extension;
   final String message;
   final String address;
-  RPCSignMessageAction(
-      super.tabId, super.requestId, this.message, this.address);
+  RPCSignMessageAction(super.tabId, super.requestId, super.origin, super.title,
+      super.favicon, this.message, this.address);
 }

@@ -147,6 +147,9 @@ class GetAddressesPage extends StatelessWidget {
                   accounts: session.accounts
                       .where((account) => account.isBip32)
                       .toList(),
+                  dappUrl: action.origin,
+                  dappTitle: action.title,
+                  dappFavicon: action.favicon,
                   onCancel: () {
                     if (GetIt.I<Config>().isWebExtension) {
                       web.window.close();
