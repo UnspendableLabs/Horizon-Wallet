@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:horizon/domain/entities/psbt_type.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/royalty_by_asset.dart';
 import 'package:horizon/domain/entities/utxo.dart';
+import 'package:horizon/domain/repositories/atomic_swap_repository.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
 import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
@@ -26,6 +28,74 @@ import 'package:horizon/common/format.dart';
 import './bloc/create_psbt_form_bloc.dart';
 
 // just putting this here for now
+class CustomButton extends StatelessWidget {
+  final String label;
+  final VoidCallback? onPressed;
+  final bool isDarkMode = true;
+  final bool disabled;
+  final String? tooltip;
+
+  const CustomButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.disabled = false,
+    this.tooltip,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final Color backgroundColor = isDarkMode
+        ? const Color.fromARGB(19, 151, 112, 39)
+        : transparentPurple33;
+    final Color textColor = isDarkMode ? yellow1 : duskGradient2;
+
+    Widget button = MouseRegion(
+      cursor: disabled ? SystemMouseCursors.basic : SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: disabled ? null : onPressed,
+        child: Opacity(
+          opacity: disabled ? 0.5 : 1.0,
+          child: Container(
+            height: 24,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Center(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w400,
+                      color: textColor,
+                    ),
+                  ),
+                ),
+                if (tooltip != null && tooltip!.isNotEmpty) ...[
+                  SizedBox(width: 4),
+                  Tooltip(
+                    message: tooltip!,
+                    child: Icon(
+                      Icons.help,
+                      size: 14,
+                      color: textColor,
+                    ),
+                  ),
+                ]
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    return button;
+  }
+}
 
 class CreatePsbtFormActions {
   final Function(String value) onBtcValueChanged;
@@ -33,31 +103,38 @@ class CreatePsbtFormActions {
   final VoidCallback onSubmitClicked;
   final VoidCallback onCloseSignPsbtModalClicked;
   final Function(String signedPsbtHex) onSignatureCompleted;
+  final Function(RelativePriceValue value) onRelativePriceChanged;
 
   const CreatePsbtFormActions(
       {required this.onBtcValueChanged,
       required this.onSubmitClicked,
       required this.onCloseSignPsbtModalClicked,
       required this.onSignatureCompleted,
-      required this.onExpiryDateSelected});
+      required this.onExpiryDateSelected,
+      required this.onRelativePriceChanged});
 }
 
 class CreatePsbtFormProvider extends StatelessWidget {
+  final String asset;
   final fp.Option<RoyaltyByAsset> assetRoyalty;
   final AddressV2 address;
   final UtxoID utxoID;
   final BitcoinTx utxoTransaction;
+  final AssetQuantity utxoQuantity;
 
   final Widget Function(
       CreatePsbtFormActions actions, CreatePsbtFormModel state) child;
 
-  const CreatePsbtFormProvider({
+  CreatePsbtFormProvider({
     super.key,
+    required this.asset,
     required this.assetRoyalty,
     required this.utxoID,
     required this.address,
     required this.child,
     required this.utxoTransaction,
+    required this.utxoQuantity,
+    AtomicSwapRepository? atomicSwapRepository,
   });
 
   @override
@@ -65,6 +142,8 @@ class CreatePsbtFormProvider extends StatelessWidget {
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
     return BlocProvider(
         create: (context) => CreatePsbtFormBloc(
+              asset: asset,
+              utxoQuantity: utxoQuantity,
               utxoTransaction: utxoTransaction,
               assetRoyalty: assetRoyalty,
               address: address,
@@ -73,7 +152,11 @@ class CreatePsbtFormProvider extends StatelessWidget {
             ),
         child: BlocBuilder<CreatePsbtFormBloc, CreatePsbtFormModel>(
             builder: (context, state) => child(
-                CreatePsbtFormActions(onBtcValueChanged: (value) {
+                CreatePsbtFormActions(
+                    onRelativePriceChanged: (relativePriceValue) {
+                  context.read<CreatePsbtFormBloc>().add(
+                      RelativePriceButtonClicked(value: relativePriceValue));
+                }, onBtcValueChanged: (value) {
                   context
                       .read<CreatePsbtFormBloc>()
                       .add(BtcPriceInputChanged(value: value));
@@ -310,6 +393,51 @@ class _CreatePsbtFormState extends State<CreatePsbtForm> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              CustomButton(
+                label: "Floor",
+                tooltip: widget.state.relativePriceButtonTooltip,
+                disabled: widget.state.relativePriceButtonsDisabled,
+                onPressed: () {
+                  widget.actions.onRelativePriceChanged(
+                    RelativePriceValue.floor,
+                  );
+                },
+              ),
+              const SizedBox(width: 4),
+              CustomButton(
+                disabled: widget.state.relativePriceButtonsDisabled,
+                label: "+5%",
+                onPressed: () {
+                  widget.actions.onRelativePriceChanged(
+                    RelativePriceValue.plus5,
+                  );
+                },
+              ),
+              const SizedBox(width: 4),
+              CustomButton(
+                disabled: widget.state.relativePriceButtonsDisabled,
+                label: "+10%",
+                onPressed: () {
+                  widget.actions.onRelativePriceChanged(
+                    RelativePriceValue.plus10,
+                  );
+                },
+              ),
+              const SizedBox(width: 4),
+              CustomButton(
+                label: "+15%",
+                disabled: widget.state.relativePriceButtonsDisabled,
+                onPressed: () {
+                  widget.actions.onRelativePriceChanged(
+                    RelativePriceValue.plus15,
+                  );
+                },
+              ),
+            ],
+          ),
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -343,27 +471,30 @@ class _CreatePsbtFormState extends State<CreatePsbtForm> {
               ),
             ],
           ),
-          const SizedBox(
-            height: 20,
-          ),
-          if (!widget.state.btcPriceInput.isPure)
-            switch (widget.state.btcPriceInput.error) {
-              null => SatsToUsdDisplay(
-                  sats: widget.state.btcPriceInput.asSats
-                      .getOrElse(() => BigInt.zero),
-                  child: (usdValue) => Text(
-                        '${usdValue.toStringAsFixed(2)} USD',
-                        style:
-                            theme.textTheme.labelSmall?.copyWith(height: 1.2),
-                      )),
-              BtcPriceInputError.isLessThanDust => Text(
-                  "price < dust ($dust sats)",
-                  style: theme.textTheme.labelSmall?.copyWith(height: 1.2)),
-              BtcPriceInputError.isTooSmallBecauseOfRoyalty => Text(
-                  "Min price with royalty = ${widget.state.minPrice} sats",
-                  style: theme.textTheme.labelSmall?.copyWith(height: 1.2)),
-              _ => const Text("")
-            }
+
+          // const SizedBox(
+          //   height: 20,
+          // ),
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            if (!widget.state.btcPriceInput.isPure)
+              switch (widget.state.btcPriceInput.error) {
+                null => SatsToUsdDisplay(
+                    sats: widget.state.btcPriceInput.asSats
+                        .getOrElse(() => BigInt.zero),
+                    child: (usdValue) => Text(
+                          '${usdValue.toStringAsFixed(2)} USD',
+                          style:
+                              theme.textTheme.labelSmall?.copyWith(height: 1.2),
+                        )),
+                BtcPriceInputError.isLessThanDust => Text(
+                    "price < dust ($dust sats)",
+                    style: theme.textTheme.labelSmall?.copyWith(height: 1.2)),
+                BtcPriceInputError.isTooSmallBecauseOfRoyalty => Text(
+                    "Min price with royalty = ${widget.state.minPrice} sats",
+                    style: theme.textTheme.labelSmall?.copyWith(height: 1.2)),
+                _ => const Text("")
+              },
+          ]),
         ],
       ),
     );
@@ -439,7 +570,7 @@ class _CreatePsbtFormState extends State<CreatePsbtForm> {
                     }
                   },
                   child: TextButtonContent(value: "Create listing")),
-            )
+            ),
           ],
         ),
       ),
