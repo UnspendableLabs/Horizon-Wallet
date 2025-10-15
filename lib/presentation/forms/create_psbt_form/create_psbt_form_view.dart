@@ -104,6 +104,7 @@ class CreatePsbtFormActions {
   final VoidCallback onCloseSignPsbtModalClicked;
   final Function(String signedPsbtHex) onSignatureCompleted;
   final Function(RelativePriceValue value) onRelativePriceChanged;
+  final VoidCallback onBtcPriceUnitToggle;
 
   const CreatePsbtFormActions(
       {required this.onBtcValueChanged,
@@ -111,7 +112,8 @@ class CreatePsbtFormActions {
       required this.onCloseSignPsbtModalClicked,
       required this.onSignatureCompleted,
       required this.onExpiryDateSelected,
-      required this.onRelativePriceChanged});
+      required this.onRelativePriceChanged,
+      required this.onBtcPriceUnitToggle});
 }
 
 class CreatePsbtFormProvider extends StatelessWidget {
@@ -174,6 +176,10 @@ class CreatePsbtFormProvider extends StatelessWidget {
                   context
                       .read<CreatePsbtFormBloc>()
                       .add(const CloseSignPsbtModalClicked());
+                }, onBtcPriceUnitToggle: () {
+                  context
+                      .read<CreatePsbtFormBloc>()
+                      .add(const BtcPriceUnitToggle());
                 }),
                 state)));
   }
@@ -452,22 +458,44 @@ class _CreatePsbtFormState extends State<CreatePsbtForm> {
                       onChanged: (value) {
                         widget.actions.onBtcValueChanged(value);
                       })),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  appIcons.assetIcon(
-                      httpConfig: httpConfig,
-                      assetName: "BTC",
-                      context: context,
-                      width: 24,
-                      height: 24),
-                  const SizedBox(width: 8),
-                  Text("BTC",
-                      style: theme.textTheme.titleMedium!.copyWith(
-                        fontSize: 12,
-                      )),
-                ],
+              MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: Material(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(8),
+                  child: InkWell(
+                    onTap: () {
+                      widget.actions.onBtcPriceUnitToggle();
+                    },
+                    hoverColor: transparentPurple8,
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          appIcons.assetIcon(
+                              httpConfig: httpConfig,
+                              assetName: "BTC",
+                              context: context,
+                              width: 24,
+                              height: 24),
+                          const SizedBox(width: 8),
+                          Text(
+                              widget.state.btcPriceInput.unit ==
+                                      BtcPriceUnit.sats
+                                  ? "sats"
+                                  : "BTC",
+                              style: theme.textTheme.titleMedium!.copyWith(
+                                fontSize: 12,
+                              )),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
@@ -521,7 +549,7 @@ class _CreatePsbtFormState extends State<CreatePsbtForm> {
                         child: _buildFromCard(context, session.httpConfig)),
                     commonHeightSizedBox,
                     SizedBox(
-                        height: 132,
+                        height: 134,
                         child: _buildToCard(context, session.httpConfig)),
                   ],
                 ),
