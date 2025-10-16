@@ -49,38 +49,38 @@ function getOriginFromPort(port) {
 async function getTabMetadata(tabId) {
   try {
     const tab = await chrome.tabs.get(tabId);
-    
-    let faviconUrl = tab.favIconUrl || '';
-    
+
+    let faviconUrl = tab.favIconUrl || "";
+
     if (!faviconUrl && tab.url) {
       try {
         const url = new URL(tab.url);
         const faviconPaths = [
-          '/favicon.svg',
-          '/favicon.png', 
-          '/favicon.ico',
-          '/apple-touch-icon.png'
+          "/favicon.svg",
+          "/favicon.png",
+          "/favicon.ico",
+          "/apple-touch-icon.png",
         ];
-        
+
         faviconUrl = `${url.protocol}//${url.hostname}${faviconPaths[0]}`;
       } catch (e) {
-        console.warn('Could not construct favicon URL:', e);
+        console.warn("Could not construct favicon URL:", e);
       }
     }
-    
+
     if (!faviconUrl && tab.url) {
-      console.log('No favicon found for:', tab.url);
+      console.log("No favicon found for:", tab.url);
     }
-    
+
     return {
-      title: tab.title || '',
+      title: tab.title || "",
       favicon: faviconUrl,
     };
   } catch (error) {
-    console.warn('Failed to get tab metadata:', error);
+    console.warn("Failed to get tab metadata:", error);
     return {
-      title: '',
-      favicon: '',
+      title: "",
+      favicon: "",
     };
   }
 }
@@ -91,7 +91,7 @@ async function rpcGetAddresses(requestId, port) {
   const metadata = await getTabMetadata(tabId);
 
   const window = await popup({
-    url: `/index.html#?action=getAddresses:ext,${tabId},${requestId},${encodeURIComponent(origin)},${encodeURIComponent(metadata.title)},${encodeURIComponent(metadata.favicon)}`,
+    url: `/index.html#?action=getAddresses,${tabId},${requestId},${encodeURIComponent(origin)},${encodeURIComponent(metadata.title)},${encodeURIComponent(metadata.favicon)}`,
   });
 
   listenForPopupClose({
@@ -113,10 +113,10 @@ async function rpcSignPsbt(requestId, port, hex, signInputs, sighashTypes) {
 
   // sighashTypes could be undefined
   if (sighashTypes === undefined) {
-    action = `signPsbt:ext,${tabId},${requestId},${encodeURIComponent(origin)},${encodeURIComponent(metadata.title)},${encodeURIComponent(metadata.favicon)},${hex},${encodedSignInputs}`;
+    action = `signPsbt,${tabId},${requestId},${encodeURIComponent(origin)},${encodeURIComponent(metadata.title)},${encodeURIComponent(metadata.favicon)},${hex},${encodedSignInputs}`;
   } else {
     const encodedSighashTypes = btoa(JSON.stringify(sighashTypes));
-    action = `signPsbt:ext,${tabId},${requestId},${encodeURIComponent(origin)},${encodeURIComponent(metadata.title)},${encodeURIComponent(metadata.favicon)},${hex},${encodedSignInputs},${encodedSighashTypes}`;
+    action = `signPsbt,${tabId},${requestId},${encodeURIComponent(origin)},${encodeURIComponent(metadata.title)},${encodeURIComponent(metadata.favicon)},${hex},${encodedSignInputs},${encodedSighashTypes}`;
   }
 
   const window = await popup({
@@ -138,7 +138,7 @@ async function rpcSignMessage(requestId, port, message, address) {
   const tabId = getTabIdFromPort(port);
   const metadata = await getTabMetadata(tabId);
   const window = await popup({
-    url: `/index.html#?action=signMessage:ext,${tabId},${requestId},${encodeURIComponent(origin)},${encodeURIComponent(metadata.title)},${encodeURIComponent(metadata.favicon)},${message},${address}`,
+    url: `/index.html#?action=signMessage,${tabId},${requestId},${encodeURIComponent(origin)},${encodeURIComponent(metadata.title)},${encodeURIComponent(metadata.favicon)},${message},${address}`,
   });
   listenForPopupClose({
     id: window?.id,
@@ -147,22 +147,6 @@ async function rpcSignMessage(requestId, port, message, address) {
       id: requestId,
       error: "User rejected `signMessage` request",
     },
-  });
-}
-
-async function rpcDispense(address) {
-  await popup({ url: `/index.html#?action=dispense:ext,${address}` });
-}
-
-async function rpcOpenOrder(giveAsset, giveQuantity, getAsset, getQuantity) {
-  await popup({
-    url: `/index.html#?action=openOrder:ext,${giveAsset},${giveQuantity},${getAsset},${getQuantity}`,
-  });
-}
-
-async function rpcFairmint(fairminterTxHash) {
-  await popup({
-    url: `/index.html#?action=fairmint:ext,${fairminterTxHash}`,
   });
 }
 
@@ -191,20 +175,6 @@ async function rpcMessageHandler(message, port) {
         port,
         message["params"]["message"],
         message["params"]["address"],
-      );
-      break;
-    case "fairmint":
-      await rpcFairmint(message["params"]["fairminterTxHash"]);
-      break;
-    case "dispense":
-      await rpcDispense(message["params"]["address"]);
-      break;
-    case "openOrder":
-      await rpcOpenOrder(
-        message["params"]["give_asset"],
-        message["params"]["give_quantity"],
-        message["params"]["get_asset"],
-        message["params"]["get_quantity"],
       );
       break;
     default:

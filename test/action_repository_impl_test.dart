@@ -10,145 +10,13 @@ void main() {
     actionRepository = ActionRepositoryImpl();
   });
 
-  group(DispenseAction, () {
-    test('should decode a valid dispense action', () {
-      // Arrange
-      const encodedString = 'dispense,0x123abc';
-
-      // Act
-      final result = actionRepository.fromString(encodedString);
-
-      // Assert
-      expect(result.isRight(), true);
-      result.match(
-        (l) => fail('Expected Right but got Left: $l'),
-        (r) {
-          expect(r, isA<DispenseAction>());
-          final action = r as DispenseAction;
-          expect(action.address, '0x123abc');
-          expect(action.caller, CallerType.app);
-        },
-      );
-    });
-
-    test('should decode a valid dispense action (uri encoded)', () {
-      // Arrange
-      const encodedString = 'dispense%2C0x123abc';
-
-      // Act
-      final result = actionRepository.fromString(encodedString);
-
-      // Assert
-      expect(result.isRight(), true);
-      result.match(
-        (l) => fail('Expected Right but got Left: $l'),
-        (r) {
-          expect(r, isA<DispenseAction>());
-          final action = r as DispenseAction;
-          expect(action.address, '0x123abc');
-          expect(action.caller, CallerType.app);
-        },
-      );
-    });
-    test('should decode a valid dispense action from extension', () {
-      // Arrange
-      const encodedString = 'dispense:ext,0x123abc';
-
-      // Act
-      final result = actionRepository.fromString(encodedString);
-
-      // Assert
-      expect(result.isRight(), true);
-      result.match(
-        (l) => fail('Expected Right but got Left: $l'),
-        (r) {
-          expect(r, isA<DispenseAction>());
-          final action = r as DispenseAction;
-          expect(action.address, '0x123abc');
-          expect(action.caller, CallerType.extension);
-        },
-      );
-    });
-
-    test('should return an error for an invalid action type', () {
-      // Arrange
-      const encodedString = 'invalidaction,0x123abc';
-
-      // Act
-      final result = actionRepository.fromString(encodedString);
-
-      // Assert
-      expect(result.isLeft(), true);
-      result.match(
-        (l) => expect(l, 'Failed to parse action'),
-        (r) => fail('Expected Left but got Right: $r'),
-      );
-    });
-
-    test('should return an error for a missing parameter', () {
-      // Arrange
-      const encodedString = 'dispense'; // Missing the address
-
-      // Act
-      final result = actionRepository.fromString(encodedString);
-
-      // Assert
-      expect(result.isLeft(), true);
-      result.match(
-        (l) => expect(l, 'Failed to parse action'),
-        (r) => fail('Expected Left but got Right: $r'),
-      );
-    });
-  });
-  group(FairmintAction, () {
-    test('should decode a valid fairmint action', () {
-      // Arrange
-      const encodedString = 'fairmint,0x123abc';
-
-      // Act
-      final result = actionRepository.fromString(encodedString);
-
-      // Assert
-      expect(result.isRight(), true);
-      result.match(
-        (l) => fail('Expected Right but got Left: $l'),
-        (r) {
-          expect(r, isA<FairmintAction>());
-          final action = r as FairmintAction;
-          expect(action.fairminterTxHash, '0x123abc');
-
-          expect(action.caller, CallerType.app);
-        },
-      );
-    });
-
-    test('should decode a valid fairmint action from extension', () {
-      // Arrange
-      const encodedString = 'fairmint:ext,0x123abc';
-
-      // Act
-      final result = actionRepository.fromString(encodedString);
-
-      // Assert
-      expect(result.isRight(), true);
-      result.match(
-        (l) => fail('Expected Right but got Left: $l'),
-        (r) {
-          expect(r, isA<FairmintAction>());
-          final action = r as FairmintAction;
-          expect(action.fairminterTxHash, '0x123abc');
-          expect(action.caller, CallerType.extension);
-        },
-      );
-    });
-  });
   group(RPCGetAddressesAction, () {
     test(
         'should decode a valid RPCGetAddressesAction action with origin, title, and favicon',
         () {
       // Arrange
       const encodedString =
-          'getAddresses:ext,1,def,https%3A%2F%2Fexample.com,Example%20Site,https%3A%2F%2Fexample.com%2Ffavicon.ico';
+          'getAddresses,1,def,https%3A%2F%2Fexample.com,Example%20Site,https%3A%2F%2Fexample.com%2Ffavicon.ico';
 
       // Act
       final result = actionRepository.fromString(encodedString);
@@ -172,8 +40,7 @@ void main() {
     test('should decode RPCGetAddressesAction with empty title and favicon',
         () {
       // Arrange
-      const encodedString =
-          'getAddresses:ext,1,def,https%3A%2F%2Fexample.com,,';
+      const encodedString = 'getAddresses,1,def,https%3A%2F%2Fexample.com,,';
 
       // Act
       final result = actionRepository.fromString(encodedString);
@@ -201,7 +68,7 @@ void main() {
         () {
       // Arrange
       const encodedString =
-          'signPsbt:ext,1,def,https%3A%2F%2Fexample.com,Example%20Site,https%3A%2F%2Fexample.com%2Ffavicon.ico,psbt-hex,eyIxQTJiM0M0RDVFNkY3RzhIOUkwSiI6WzAsMSwzXX0=';
+          'signPsbt,1,def,https%3A%2F%2Fexample.com,Example%20Site,https%3A%2F%2Fexample.com%2Ffavicon.ico,psbt-hex,eyIxQTJiM0M0RDVFNkY3RzhIOUkwSiI6WzAsMSwzXX0=';
 
       // Act
       final result = actionRepository.fromString(encodedString);
@@ -231,7 +98,7 @@ void main() {
         () {
       // Arrange
       const encodedString =
-          'signPsbt:ext,1,def,https%3A%2F%2Fexample.com,Example%20Site,https%3A%2F%2Fexample.com%2Ffavicon.ico,psbt-hex,eyIxQTJiM0M0RDVFNkY3RzhIOUkwSiI6WzAsMSwzXX0=,WzEsMl0=';
+          'signPsbt,1,def,https%3A%2F%2Fexample.com,Example%20Site,https%3A%2F%2Fexample.com%2Ffavicon.ico,psbt-hex,eyIxQTJiM0M0RDVFNkY3RzhIOUkwSiI6WzAsMSwzXX0=,WzEsMl0=';
 
       // Act
       final result = actionRepository.fromString(encodedString);
@@ -260,7 +127,7 @@ void main() {
     test('should decode RPCSignPsbtAction with empty title and favicon', () {
       // Arrange
       const encodedString =
-          'signPsbt:ext,1,def,https%3A%2F%2Fexample.com,,,psbt-hex,eyIxQTJiM0M0RDVFNkY3RzhIOUkwSiI6WzAsMSwzXX0=';
+          'signPsbt,1,def,https%3A%2F%2Fexample.com,,,psbt-hex,eyIxQTJiM0M0RDVFNkY3RzhIOUkwSiI6WzAsMSwzXX0=';
 
       // Act
       final result = actionRepository.fromString(encodedString);
@@ -289,7 +156,7 @@ void main() {
         () {
       // Arrange
       const encodedString =
-          'signMessage:ext,1,def,https%3A%2F%2Fexample.com,Example%20Site,https%3A%2F%2Fexample.com%2Ffavicon.ico,Hello%20World,1A2b3C4D5E6F7G8H9I0J';
+          'signMessage,1,def,https%3A%2F%2Fexample.com,Example%20Site,https%3A%2F%2Fexample.com%2Ffavicon.ico,Hello%20World,1A2b3C4D5E6F7G8H9I0J';
 
       // Act
       final result = actionRepository.fromString(encodedString);
@@ -315,7 +182,7 @@ void main() {
     test('should decode RPCSignMessageAction with empty title and favicon', () {
       // Arrange
       const encodedString =
-          'signMessage:ext,1,def,https%3A%2F%2Fexample.com,,,Hello%20World,1A2b3C4D5E6F7G8H9I0J';
+          'signMessage,1,def,https%3A%2F%2Fexample.com,,,Hello%20World,1A2b3C4D5E6F7G8H9I0J';
 
       // Act
       final result = actionRepository.fromString(encodedString);

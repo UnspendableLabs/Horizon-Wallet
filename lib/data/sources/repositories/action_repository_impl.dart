@@ -18,46 +18,7 @@ class ActionRepositoryImpl implements ActionRepository {
 
     return switch (arr) {
       [
-        "open_order",
-        String giveAsset,
-        String giveQuantity,
-        String getAsset,
-        String getQuantity,
-      ] =>
-        OpenOrderAction(
-            giveQuantity: int.tryParse(giveQuantity)!,
-            giveAsset: giveAsset,
-            getQuantity: int.tryParse(getQuantity)!,
-            getAsset: getAsset,
-            caller: CallerType.app),
-      [
-        "openOrder:ext",
-        String giveAsset,
-        String giveQuantity,
-        String getAsset,
-        String getQuantity,
-      ] =>
-        OpenOrderAction(
-            giveQuantity: int.tryParse(giveQuantity)!,
-            giveAsset: giveAsset,
-            getQuantity: int.tryParse(getQuantity)!,
-            getAsset: getAsset,
-            caller: CallerType.extension),
-      ["dispense", String address] => DispenseAction(address, CallerType.app),
-      ["dispense:ext", String address] =>
-        DispenseAction(address, CallerType.extension),
-      ["fairmint", String fairminterTxHash] =>
-        FairmintAction(fairminterTxHash, CallerType.app),
-      ["fairmint", String fairminterTxHash, String numLots] => FairmintAction(
-          fairminterTxHash, CallerType.app,
-          numLots: int.tryParse(numLots)),
-      ["fairmint:ext", String fairminterTxHash] =>
-        FairmintAction(fairminterTxHash, CallerType.extension),
-      ["fairmint:ext", String fairminterTxHash, String numLots] =>
-        FairmintAction(fairminterTxHash, CallerType.extension,
-            numLots: int.tryParse(numLots)),
-      [
-        "getAddresses:ext",
+        "getAddresses",
         String tabId,
         String requestId,
         String origin,
@@ -71,7 +32,7 @@ class ActionRepositoryImpl implements ActionRepository {
             Uri.decodeComponent(title),
             Uri.decodeComponent(favicon)),
       [
-        "signPsbt:ext",
+        "signPsbt",
         String tabId,
         String requestId,
         String origin,
@@ -91,7 +52,7 @@ class ActionRepositoryImpl implements ActionRepository {
             _parseSignInputs(signInputs),
             _parseSighashTypes(sighashTypes)),
       [
-        "signPsbt:ext",
+        "signPsbt",
         String tabId,
         String requestId,
         String origin,
@@ -110,7 +71,7 @@ class ActionRepositoryImpl implements ActionRepository {
             _parseSignInputs(signInputs),
             null),
       [
-        "signMessage:ext",
+        "signMessage",
         String tabId,
         String requestId,
         String origin,
