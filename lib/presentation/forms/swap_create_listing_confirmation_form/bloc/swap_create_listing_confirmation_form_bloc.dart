@@ -86,7 +86,14 @@ class SwapCreateListingFormModel
     );
   }
 
-  bool get submitDisabled => isNotValid || submissionStatus.isInProgress;
+  bool get submitDisabled =>
+      isNotValid ||
+      submissionStatus.isInProgress ||
+      onChainPayment.fold3(
+        onNone: () => true,
+        onFailure: (_) => true,
+        onReplete: (_) => false,
+      );
 
   String get rateString {
     return [
@@ -259,8 +266,7 @@ class SwapCreateListingFormBloc
     result.fold(
       (l) {
         emit(state.copyWith(
-          onChainPayment: Failure(l),
-        ));
+            error: l, onChainPayment: Failure<OnChainPayment>(l)));
       },
       (r) {
         emit(state.copyWith(

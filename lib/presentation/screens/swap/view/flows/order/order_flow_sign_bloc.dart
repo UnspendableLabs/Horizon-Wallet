@@ -208,16 +208,20 @@ class OrderComposeFormBloc
 
     final result = await task.run();
 
-    result.fold(
-      (error) => emit(state.copyWith(
-        error: Option.of(error),
-        signatureStatus: FormzSubmissionStatus.initial,
-      )),
-      (composeResponse) => emit(state.copyWith(
+    final next = result.fold(
+      (error) {
+        return state.copyWith(
+          error: Option.of(error),
+          signatureStatus: FormzSubmissionStatus.initial,
+        );
+      },
+      (composeResponse) => state.copyWith(
         signatureStatus: FormzSubmissionStatus.inProgress,
         showSignPsbtModal: true,
         composeResponse: Option.of(composeResponse),
-      )),
+      ),
     );
+
+    emit(next);
   }
 }

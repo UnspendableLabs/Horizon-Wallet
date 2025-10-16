@@ -291,6 +291,9 @@ class _AssetAttachFormState extends State<AssetAttachForm> {
               },
               feeEstimates: widget.state.feeEstimates,
             ),
+            if (widget.state.error != null)
+              Text(widget.state.error!,
+                  style: theme.textTheme.bodySmall?.copyWith(color: red1)),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 14),
               child: widget.state.submissionStatus.isSuccess
