@@ -377,9 +377,22 @@ class _SwapCreateListingConfirmationFormState
                       },
                       feeEstimates: widget.state.feeEstimates,
                     ),
-                    commonHeightSizedBox,
+                    switch (widget.state.onChainPayment) {
+                      Failure(error: var error) => Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            "Insufficent funds",
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: customTheme?.errorColor ?? Colors.red,
+                            ),
+                          ),
+                        ),
+                      _ => SizedBox.shrink(),
+                    },
                     commonHeightSizedBox,
                     HorizonButton(
+                        disabled: widget.state.submitDisabled,
                         onPressed: () {
                           widget.actions.onSubmitClicked();
                         },
