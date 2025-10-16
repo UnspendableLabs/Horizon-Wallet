@@ -512,6 +512,16 @@ class _SwapMultiBuySignFormState extends State<SwapMultiBuySignForm> {
                     //     ],
                     //   ),
                     // ),
+                    widget.state.error.fold(
+                        () => SizedBox.shrink(),
+                        // hack: if we fail we just show insufficent funds
+                        (error) => Text(
+                              textAlign: TextAlign.center,
+                              "Insufficient funds.",
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: customTheme?.errorColor,
+                              ),
+                            )),
                     commonHeightSizedBox,
                     HorizonButton(
                         disabled:
