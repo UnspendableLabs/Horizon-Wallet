@@ -68,7 +68,8 @@ void main() {
         () {
       // Arrange
       const encodedString =
-          'signPsbt,1,def,https%3A%2F%2Fexample.com,Example%20Site,https%3A%2F%2Fexample.com%2Ffavicon.ico,psbt-hex,eyIxQTJiM0M0RDVFNkY3RzhIOUkwSiI6WzAsMSwzXX0=';
+          //                               signInputs                                    sighashTypes=null      txInfo=null
+          'signPsbt,1,def,https%3A%2F%2Fexample.com,Example%20Site,https%3A%2F%2Fexample.com%2Ffavicon.ico,psbt-hex,eyIxQTJiM0M0RDVFNkY3RzhIOUkwSiI6WzAsMSwzXX0=,bnVsbA==,bnVsbA==';
 
       // Act
       final result = actionRepository.fromString(encodedString);
@@ -89,6 +90,7 @@ void main() {
           expect(action.signInputs, {
             "1A2b3C4D5E6F7G8H9I0J": [0, 1, 3]
           });
+          expect(action.sighashTypes, isNull);
         },
       );
     });
@@ -98,7 +100,8 @@ void main() {
         () {
       // Arrange
       const encodedString =
-          'signPsbt,1,def,https%3A%2F%2Fexample.com,Example%20Site,https%3A%2F%2Fexample.com%2Ffavicon.ico,psbt-hex,eyIxQTJiM0M0RDVFNkY3RzhIOUkwSiI6WzAsMSwzXX0=,WzEsMl0=';
+          //                               signInputs                                    sighashTypes=[1,2]  txInfo=null
+          'signPsbt,1,def,https%3A%2F%2Fexample.com,Example%20Site,https%3A%2F%2Fexample.com%2Ffavicon.ico,psbt-hex,eyIxQTJiM0M0RDVFNkY3RzhIOUkwSiI6WzAsMSwzXX0=,WzEsMl0=,bnVsbA==';
 
       // Act
       final result = actionRepository.fromString(encodedString);
@@ -127,7 +130,8 @@ void main() {
     test('should decode RPCSignPsbtAction with empty title and favicon', () {
       // Arrange
       const encodedString =
-          'signPsbt,1,def,https%3A%2F%2Fexample.com,,,psbt-hex,eyIxQTJiM0M0RDVFNkY3RzhIOUkwSiI6WzAsMSwzXX0=';
+          //                               signInputs                                    sighashTypes=null txInfo=null
+          'signPsbt,1,def,https%3A%2F%2Fexample.com,,,psbt-hex,eyIxQTJiM0M0RDVFNkY3RzhIOUkwSiI6WzAsMSwzXX0=,bnVsbA==,bnVsbA==';
 
       // Act
       final result = actionRepository.fromString(encodedString);
@@ -145,6 +149,7 @@ void main() {
           expect(action.title, '');
           expect(action.favicon, '');
           expect(action.psbt, 'psbt-hex');
+          expect(action.sighashTypes, isNull);
         },
       );
     });

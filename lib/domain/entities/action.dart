@@ -1,3 +1,5 @@
+import 'package:horizon/domain/entities/psbt_type.dart';
+
 abstract class Action {
   String get action;
 }
@@ -25,8 +27,17 @@ class RPCSignPsbtAction extends RPCAction {
   final String psbt;
   final Map<String, List<int>> signInputs;
   final List<int>? sighashTypes;
-  RPCSignPsbtAction(super.tabId, super.requestId, super.origin, super.title,
-      super.favicon, this.psbt, this.signInputs, this.sighashTypes);
+  final PsbtType psbtType;
+  RPCSignPsbtAction(
+      super.tabId,
+      super.requestId,
+      super.origin,
+      super.title,
+      super.favicon,
+      this.psbt,
+      this.signInputs,
+      this.sighashTypes,
+      this.psbtType);
 }
 
 class RPCSignMessageAction extends RPCAction {

@@ -380,7 +380,7 @@ class AppRouter {
 
                   return BlocProvider(
                       create: (_) => SignPsbtBloc(
-                            psbtType: OpaquePsbt(),
+                            psbtType: action.psbtType,
                             addresses: session.addressIndexSet.list,
                             httpConfig: session.httpConfig,
                             passwordRequired: GetIt.I<SettingsRepository>()
@@ -404,7 +404,7 @@ class AppRouter {
                             ),
                             const SizedBox(height: 24),
                             SignPsbtForm(
-                              psbtType: OpaquePsbt(),
+                              psbtType: action.psbtType,
                               key: Key(action.psbt),
                               passwordRequired: GetIt.I<SettingsRepository>()
                                   .requirePasswordForCryptoOperations,

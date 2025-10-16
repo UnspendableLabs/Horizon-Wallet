@@ -1,5 +1,23 @@
 const CONTENT_SCRIPT_PORT = "horizon-wallet-content-script";
 
+function safeBtoaJson(value) {
+  // Convert Dates to ISO strings; drop undefined
+  const replacer = (_, v) => (v instanceof Date ? v.toISOString() : v);
+  const json = JSON.stringify(value, replacer);
+  // Encode UTF-8 safely before btoa
+  return btoa(unescape(encodeURIComponent(json)));
+}
+
+function encodeTransactionInfo(transactionInfo) {
+  if (!transactionInfo) return undefined;
+  try {
+    return safeBtoaJson(transactionInfo);
+  } catch (e) {
+    console.warn("Failed to encode transactionInfo:", e);
+    return undefined;
+  }
+}
+
 function listenForPopupClose(args) {
   chrome.windows.onRemoved.addListener((winId) => {
     if (winId !== args.id || args.tabId == null) return;
@@ -104,20 +122,41 @@ async function rpcGetAddresses(requestId, port) {
   });
 }
 
-async function rpcSignPsbt(requestId, port, hex, signInputs, sighashTypes) {
+async function rpcSignPsbt(
+  requestId,
+  port,
+  hex,
+  signInputs,
+  sighashTypes,
+  transactionInfo,
+) {
   const origin = getOriginFromPort(port);
   const tabId = getTabIdFromPort(port);
   const metadata = await getTabMetadata(tabId);
-  const encodedSignInputs = btoa(JSON.stringify(signInputs));
-  let action;
 
-  // sighashTypes could be undefined
-  if (sighashTypes === undefined) {
-    action = `signPsbt,${tabId},${requestId},${encodeURIComponent(origin)},${encodeURIComponent(metadata.title)},${encodeURIComponent(metadata.favicon)},${hex},${encodedSignInputs}`;
-  } else {
-    const encodedSighashTypes = btoa(JSON.stringify(sighashTypes));
-    action = `signPsbt,${tabId},${requestId},${encodeURIComponent(origin)},${encodeURIComponent(metadata.title)},${encodeURIComponent(metadata.favicon)},${hex},${encodedSignInputs},${encodedSighashTypes}`;
-  }
+  // Encode required/optional payloads
+  const encodedSignInputs = safeBtoaJson(signInputs);
+  const encodedSighashTypes =
+    sighashTypes === undefined ? undefined : safeBtoaJson(sighashTypes);
+  const encodedTxInfo = encodeTransactionInfo(transactionInfo);
+
+  // Build param list in a backward-compatible order:
+  // signPsbt,tabId,requestId,origin,title,favicon,hex,signInputs[,sighashTypes][,transactionInfo]
+  const params = [
+    "signPsbt",
+    tabId,
+    requestId,
+    encodeURIComponent(origin ?? ""),
+    encodeURIComponent(metadata.title ?? ""),
+    encodeURIComponent(metadata.favicon ?? ""),
+    hex, // already hex-safe for URLs
+    encodedSignInputs,
+  ];
+
+  if (encodedSighashTypes !== undefined) params.push(encodedSighashTypes);
+  if (encodedTxInfo !== undefined) params.push(encodedTxInfo);
+
+  const action = params.join(",");
 
   const window = await popup({
     url: `/index.html#?action=${action}`,
@@ -167,6 +206,7 @@ async function rpcMessageHandler(message, port) {
         message["params"]["hex"],
         message["params"]["signInputs"],
         message["params"]["sighashTypes"],
+        message["params"]["transactionInfo"],
       );
       break;
     case "signMessage":
