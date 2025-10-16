@@ -219,6 +219,12 @@ class _OrderFlowSignViewState extends State<OrderFlowSignView> {
           },
           feeEstimates: widget.state.feeEstimates,
         ),
+        widget.state.error.fold(
+            () => const SizedBox.shrink(),
+            (error) => Text(
+                  error,
+                  style: theme.textTheme.bodyMedium?.copyWith(color: red1),
+                )),
         commonHeightSizedBox,
         HorizonButton(
             disabled: widget.state.signatureStatus.isInProgressOrSuccess,
@@ -227,12 +233,6 @@ class _OrderFlowSignViewState extends State<OrderFlowSignView> {
             },
             child: TextButtonContent(value: "Sign and Submit")),
         commonHeightSizedBox,
-        widget.state.error.fold(
-            () => const SizedBox.shrink(),
-            (error) => Text(
-                  error,
-                  style: theme.textTheme.bodyMedium?.copyWith(color: red1),
-                ))
       ],
     );
   }
