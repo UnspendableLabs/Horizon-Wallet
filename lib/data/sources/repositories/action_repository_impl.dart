@@ -8,16 +8,16 @@ import "package:fpdart/fpdart.dart";
 // DETACH
 // parsing action string: signPsbt,1423381683,a806e4cb-8fa1-45ae-84ac-effa1a36c8f0,https://horizon.market,Horizon Market | Trade Bitcoin NFTs & Counterparty Tokens,https://horizon.market/icon0.ico?ca04633c4c0c2f74,70736274ff01004802000000011a0c8c8d1fb07eecb8e024517e0b53830d73580e075c50367b7d187bb13eebfd0000000000ffffffff0100000000000000000c6a0ac152adfb537dd25c6839000000000001011f2202000000000000160014ac2f1826c10fd1461de8e95fe17913ddecb2000c010304010000000000,eyJiYzFxNHNoM3Nma3BwbGc1djgwZ2E5MDd6N2dubWhrdHlxcXZlN3k1bjIiOlswXX0=,WzEzMSwxLDJd,eyJ0eXBlIjoiZGV0YWNoIiwiaW5mbyI6eyJ0eF9oYXNoIjoiZmRlYjNlYjE3YjE4N2Q3YjM2NTA1YzA3MGU1ODczMGQ4MzUzMGI3ZTUxMjRlMGI4ZWM3ZWIwMWY4ZDhjMGMxYSIsImFzc2V0IjoiIiwicXVhbnRpdHkiOjB9fQ==
 
+//
 // // Specific transaction info types
 // export type DetachTransactionInfo = {
 //   tx_hash: string;
-//   asset: string;
-//   quantity: number;
 // };
 //
 // export type AttachTransactionInfo = {
 //   asset: string;
 //   quantity: number;
+//   asset_divisibility: boolean;
 // };
 //
 // export type IssuanceTransactionInfo = {
@@ -50,6 +50,7 @@ import "package:fpdart/fpdart.dart";
 // export type FairmintTransactionInfo = {
 //   asset: string;
 //   quantity: number;
+//   asset_divisibility: boolean;
 // };
 //
 // export type SwapBuyTransactionInfo = {
@@ -60,6 +61,7 @@ import "package:fpdart/fpdart.dart";
 //   fee: number;
 //   royalty: number;
 //   issuer_address?: string;
+//   asset_divisibility: boolean | null;
 // };
 //
 // export type SwapCreateTransactionInfo = {
@@ -70,6 +72,7 @@ import "package:fpdart/fpdart.dart";
 //   utxo_id: string;
 //   utxo_value: number;
 //   seller_address: string;
+//   asset_divisibility?: boolean;
 // };
 //
 // export type SwapCreateFeeTransactionInfo = {
@@ -83,6 +86,7 @@ import "package:fpdart/fpdart.dart";
 //     quantity: number | null;
 //     price: number;
 //     utxo_id: string;
+//     asset_divisibility: boolean | null;
 //   }>;
 //   fee: number;
 //   royalty: number;
@@ -96,6 +100,17 @@ import "package:fpdart/fpdart.dart";
 //   price?: string | number;
 //   xcp_price?: string | number | null;
 //   created_at?: string | number | Date;
+//   asset_divisibility?: boolean | null;
+// };
+//
+// export type OrderCreateTransactionInfo = {
+//   get_asset: string;
+//   give_asset: string;
+//   get_quantity: string;
+//   give_quantity: string;
+//   expiration: number;
+//   get_asset_divisibility: boolean | null;
+//   give_asset_divisibility: boolean | null;
 // };
 //
 // // Tool-specific transaction info types
@@ -103,6 +118,7 @@ import "package:fpdart/fpdart.dart";
 //   destination: string;
 //   asset: string;
 //   quantity: number;
+//   asset_divisibility: boolean;
 // };
 //
 // export type MpmaTransactionInfo = {
@@ -110,6 +126,7 @@ import "package:fpdart/fpdart.dart";
 //     destination: string;
 //     asset: string;
 //     quantitie: number;
+//     asset_divisibility: boolean;
 //   }>;
 // };
 //
@@ -128,12 +145,14 @@ import "package:fpdart/fpdart.dart";
 //   asset: string;
 //   dividend_asset: string;
 //   quantity_per_unit: number;
+//   asset_divisibility: boolean;
 // };
 //
 // export type DestroyTransactionInfo = {
 //   asset: string;
 //   quantity: number;
 //   tag: string;
+//   asset_divisibility: boolean;
 // };
 //
 // export type LockQuantityTransactionInfo = {
@@ -141,6 +160,7 @@ import "package:fpdart/fpdart.dart";
 //   quantity: number;
 //   lock: boolean;
 //   divisible: boolean;
+//   asset_divisibility: boolean;
 // };
 //
 // export type LockDescriptionTransactionInfo = {
@@ -148,6 +168,7 @@ import "package:fpdart/fpdart.dart";
 //   quantity: number;
 //   description: string;
 //   divisible: boolean;
+//   asset_divisibility: boolean;
 // };
 //
 // export type ChangeDescriptionTransactionInfo = {
@@ -155,6 +176,7 @@ import "package:fpdart/fpdart.dart";
 //   description: string;
 //   quantity: number;
 //   divisible: boolean;
+//   asset_divisibility: boolean;
 // };
 //
 // export type ChangeOwnershipTransactionInfo = {
@@ -162,6 +184,7 @@ import "package:fpdart/fpdart.dart";
 //   transfer_destination: string;
 //   quantity: number;
 //   divisible: boolean;
+//   asset_divisibility: boolean;
 // };
 //
 // export type ResetTransactionInfo = {
@@ -169,12 +192,14 @@ import "package:fpdart/fpdart.dart";
 //   quantity: number;
 //   divisible: boolean;
 //   reset: boolean;
+//   asset_divisibility: boolean;
 // };
 //
 // export type IssueMoreTransactionInfo = {
 //   asset: string;
 //   quantity: number;
 //   divisible: boolean;
+//   asset_divisibility: boolean;
 // };
 //
 // // Discriminated union for all transaction types
@@ -189,6 +214,7 @@ import "package:fpdart/fpdart.dart";
 //   | { type: "swap-create-fee"; info: SwapCreateFeeTransactionInfo }
 //   | { type: "swap-multi-buy"; info: SwapMultiBuyTransactionInfo }
 //   | { type: "cancel-order"; info: CancelOrderTransactionInfo }
+//   | { type: "order-create"; info: OrderCreateTransactionInfo }
 //   | { type: "send"; info: SendTransactionInfo }
 //   | { type: "mpma"; info: MpmaTransactionInfo }
 //   | { type: "sweep"; info: SweepTransactionInfo }
@@ -201,7 +227,6 @@ import "package:fpdart/fpdart.dart";
 //   | { type: "change-ownership"; info: ChangeOwnershipTransactionInfo }
 //   | { type: "reset"; info: ResetTransactionInfo }
 //   | { type: "issue-more"; info: IssueMoreTransactionInfo };
-//
 
 const Set<String> originWhitelist = {
   "https://horizon.market",
@@ -313,6 +338,26 @@ PsbtType _derivePsbtType({
   if (type is! String || info is! Map<String, dynamic>) return OpaquePsbt();
 
   switch (type) {
+    case "order-create":
+      final giveAsset = _asString(info["give_asset"]);
+      final giveQuantityInt = _asInt(info["give_quantity"]);
+      final giveAssetDivisibility = _asBool(info["give_asset_divisibility"]);
+      final getAsset = _asString(info["get_asset"]);
+      final getQuantityInt = _asInt(info["get_quantity"]);
+      final getAssetDivisibility = _asBool(info["get_asset_divisibility"]);
+
+      return OrderPsbt(
+        giveAsset: giveAsset ?? "-",
+        giveQuantity: AssetQuantity(
+          divisible: giveAssetDivisibility,
+          quantity: BigInt.from(giveQuantityInt ?? 0),
+        ),
+        getAsset: getAsset ?? "-",
+        getQuantity: AssetQuantity(
+          divisible: getAssetDivisibility,
+          quantity: BigInt.from(getQuantityInt ?? 0),
+        ),
+      );
     case "attach":
       final asset = _asString(info["asset"]);
       final quantityInt = _asInt(info["quantity"]);

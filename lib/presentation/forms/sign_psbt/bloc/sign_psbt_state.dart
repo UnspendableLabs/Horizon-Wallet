@@ -175,12 +175,16 @@ class SignPsbtState with FormzMixin {
         giveQuantity: var giveQuantity,
         getQuantity: var getQuantity,
       ) =>
-        OrderSummaryViewModel(
-            networkFee: networkFee,
-            giveAsset: giveAsset,
-            getAsset: getAsset,
-            giveQuantity: giveQuantity,
-            getQuantity: getQuantity),
+        KeyValueSummaryViewModel(
+          networkFee: networkFee,
+          entries: [
+            MapEntry("type", "order"),
+            MapEntry("give_asset", giveAsset),
+            MapEntry("get_asset", getAsset),
+            MapEntry("give_quantity", giveQuantity.normalizedPretty()),
+            MapEntry("get_quantity", getQuantity.normalizedPretty()),
+          ],
+        ),
       OpaquePsbt() => OpaquePsbtSummaryViewModel(
           networkFee: networkFee,
         ),
