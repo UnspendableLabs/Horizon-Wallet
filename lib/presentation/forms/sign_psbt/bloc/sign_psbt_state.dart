@@ -131,6 +131,13 @@ class SignPsbtState with FormzMixin {
 
   PsbtSummaryViewModel get psbtSummaryViewModel {
     return switch (psbtType) {
+      Destroy(asset: var asset, quantity: var quantity, tag: var tag) =>
+        KeyValueSummaryViewModel(networkFee: networkFee, entries: [
+          MapEntry("type", "destroy"),
+          MapEntry("asset", asset),
+          MapEntry("quantity", quantity.normalizedPretty()),
+          MapEntry("tag", tag),
+        ]),
       UtxoMove(destination: var destination) =>
         KeyValueSummaryViewModel(networkFee: networkFee, entries: [
           MapEntry("type", "sweep"),

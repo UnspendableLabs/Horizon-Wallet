@@ -107,3 +107,15 @@ class UtxoMove extends TrustedPsbt {
     required this.destination,
   });
 }
+
+class Destroy extends TrustedPsbt {
+  final String asset;
+  final AssetQuantity quantity;
+  final String tag;
+
+  Destroy({
+    required this.asset,
+    required this.quantity,
+    required this.tag,
+  });
+}

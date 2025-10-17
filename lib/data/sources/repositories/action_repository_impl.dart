@@ -340,6 +340,19 @@ PsbtType _derivePsbtType({
   if (type is! String || info is! Map<String, dynamic>) return OpaquePsbt();
 
   switch (type) {
+    case "destroy":
+      final asset = _asString(info["asset"]);
+      final quantityInt = _asInt(info["quantity"]);
+      final assetDivisibility = _asBool(info["asset_divisibility"]);
+      final tag = _asString(info["tag"]);
+      return Destroy(
+        asset: asset ?? "-",
+        quantity: AssetQuantity(
+          divisible: assetDivisibility,
+          quantity: BigInt.from(quantityInt ?? 0),
+        ),
+        tag: tag ?? "",
+      );
     case "move":
       final destination = _asString(info["destination"]);
       return UtxoMove(destination: destination ?? "-");
