@@ -157,3 +157,20 @@ class LockDescription extends TrustedPsbt {
     required this.description,
   });
 }
+// export type ChangeDescriptionTransactionInfo = {
+//   asset: string;
+//   description: string;
+//   quantity: number;
+//   divisible: boolean;
+//   asset_divisibility: boolean;
+// };
+
+class ChangeDescription extends TrustedPsbt {
+  final String asset;
+  final String description;
+
+  ChangeDescription({
+    required this.asset,
+    required this.description,
+  });
+}
