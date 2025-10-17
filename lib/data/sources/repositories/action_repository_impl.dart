@@ -340,6 +340,14 @@ PsbtType _derivePsbtType({
   if (type is! String || info is! Map<String, dynamic>) return OpaquePsbt();
 
   switch (type) {
+    case "change-ownership":
+      final asset = _asString(info["asset"]);
+      final transferDestination = _asString(info["transfer_destination"]);
+
+      return ChangeOwnership(
+        asset: asset ?? "-",
+        transferDestination: transferDestination ?? "-",
+      );
     case "change-description":
       final asset = _asString(info["asset"]);
       final description = _asString(info["description"]);

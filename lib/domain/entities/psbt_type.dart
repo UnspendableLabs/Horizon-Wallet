@@ -174,3 +174,21 @@ class ChangeDescription extends TrustedPsbt {
     required this.description,
   });
 }
+
+// export type ChangeOwnershipTransactionInfo = {
+//   asset: string;
+//   transfer_destination: string;
+//   quantity: number;
+//   divisible: boolean;
+//   asset_divisibility: boolean;
+// };
+
+class ChangeOwnership extends TrustedPsbt {
+  final String asset;
+  final String transferDestination;
+
+  ChangeOwnership({
+    required this.asset,
+    required this.transferDestination,
+  });
+}
