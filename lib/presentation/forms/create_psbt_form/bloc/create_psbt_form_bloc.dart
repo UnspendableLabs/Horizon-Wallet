@@ -510,9 +510,8 @@ class CreatePsbtFormBloc
       )));
     } else {
       emit(state.copyWith(
-          btcPriceInput: BtcPriceInput.dirty(
+          btcPriceInput: BtcPriceInput.pure(
         minPrice: state.minPrice,
-        value: "0",
         unit: newUnit,
       )));
     }

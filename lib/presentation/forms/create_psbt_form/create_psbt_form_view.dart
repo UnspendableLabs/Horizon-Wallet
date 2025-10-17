@@ -449,9 +449,10 @@ class _CreatePsbtFormState extends State<CreatePsbtForm> {
             children: [
               Expanded(
                   child: QuantityInputV2(
-                      placeholder: "0.00",
+                      placeholder: "0",
                       style: const TextStyle(fontSize: 35),
-                      divisible: true,
+                      divisible:
+                          widget.state.btcPriceInput.unit == BtcPriceUnit.btc,
                       value: widget.state.btcPriceInput.value,
                       // controller:
                       //     _btcController, // chat helpo me with a stateful controller hre,
@@ -461,7 +462,7 @@ class _CreatePsbtFormState extends State<CreatePsbtForm> {
               MouseRegion(
                 cursor: SystemMouseCursors.click,
                 child: Material(
-                  color: Colors.transparent,
+                  color: transparentPurple8,
                   borderRadius: BorderRadius.circular(8),
                   child: InkWell(
                     onTap: () {
@@ -491,6 +492,13 @@ class _CreatePsbtFormState extends State<CreatePsbtForm> {
                               style: theme.textTheme.titleMedium!.copyWith(
                                 fontSize: 12,
                               )),
+                          const SizedBox(width: 8),
+                          AppIcons.transferIcon(
+                            context: context,
+                            width: 16,
+                            height: 16,
+                            color: transparentWhite66,
+                          ),
                         ],
                       ),
                     ),
