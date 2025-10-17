@@ -1,4 +1,6 @@
 import "dart:convert";
+import 'package:decimal/decimal.dart';
+import "package:horizon/common/constants.dart";
 import "package:horizon/domain/entities/asset_quantity.dart";
 import "package:horizon/domain/entities/psbt_type.dart";
 import "package:horizon/domain/repositories/action_repository.dart";
@@ -338,6 +340,9 @@ PsbtType _derivePsbtType({
   if (type is! String || info is! Map<String, dynamic>) return OpaquePsbt();
 
   switch (type) {
+    case "sweep":
+      final destination = _asString(info["destination"]);
+      return Sweep(destination: destination ?? "-");
     case "order-create":
       final giveAsset = _asString(info["give_asset"]);
       final giveQuantityInt = _asInt(info["give_quantity"]);
@@ -356,6 +361,29 @@ PsbtType _derivePsbtType({
         getQuantity: AssetQuantity(
           divisible: getAssetDivisibility,
           quantity: BigInt.from(getQuantityInt ?? 0),
+        ),
+      );
+    case "cancel-order":
+      final asset = _asString(info["asset"]);
+      final quantity = _asInt(info["quantity"]);
+      final assetDivisibility = _asBool(info["asset_divisibility"]);
+      final xcpPrice = Decimal.parse(info["xcp_price"]);
+
+      final Price price = Price(
+        pair: MarketPair(
+          quoteDivisible: true,
+          baseDivisible: assetDivisibility,
+        ),
+        numer: (xcpPrice * TenToTheEigth.decimal).toBigInt(),
+        denom: BigInt.from(quantity ?? 1),
+      );
+
+      return CancelOrder(
+        xcpPrice: price,
+        asset: asset ?? "-",
+        quantity: AssetQuantity(
+          divisible: assetDivisibility,
+          quantity: BigInt.from(quantity ?? 0),
         ),
       );
     case "attach":

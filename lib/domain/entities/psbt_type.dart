@@ -79,3 +79,23 @@ class OrderPsbt extends TrustedPsbt {
     required this.getQuantity,
   });
 }
+
+class CancelOrder extends TrustedPsbt {
+  final String asset;
+  final AssetQuantity quantity;
+  final Price xcpPrice;
+
+  CancelOrder({
+    required this.asset,
+    required this.quantity,
+    required this.xcpPrice,
+  });
+}
+
+class Sweep extends TrustedPsbt {
+  final String destination;
+
+  Sweep({
+    required this.destination,
+  });
+}

@@ -131,6 +131,11 @@ class SignPsbtState with FormzMixin {
 
   PsbtSummaryViewModel get psbtSummaryViewModel {
     return switch (psbtType) {
+      Sweep(destination: var destination) =>
+        KeyValueSummaryViewModel(networkFee: networkFee, entries: [
+          MapEntry("type", "sweep"),
+          MapEntry("destination", destination),
+        ]),
       AttachPsbt(asset: var asset, quantity: var quantity) =>
         KeyValueSummaryViewModel(networkFee: networkFee, entries: [
           MapEntry("type", "detach"),
@@ -169,6 +174,20 @@ class SignPsbtState with FormzMixin {
             toAddress: toAddress,
             quantity: quantity,
             assetName: asset),
+      CancelOrder(
+        asset: var asset,
+        quantity: var quantity,
+        xcpPrice: var price,
+      ) =>
+        KeyValueSummaryViewModel(
+          networkFee: networkFee,
+          entries: [
+            MapEntry("type", "cancel order"),
+            MapEntry("asset", asset),
+            MapEntry("quantity", quantity.normalizedPretty()),
+            MapEntry("price", "${price.normalized()} $asset / XCP "),
+          ],
+        ),
       OrderPsbt(
         giveAsset: var giveAsset,
         getAsset: var getAsset,
