@@ -99,3 +99,11 @@ class Sweep extends TrustedPsbt {
     required this.destination,
   });
 }
+
+class UtxoMove extends TrustedPsbt {
+  final String destination;
+
+  UtxoMove({
+    required this.destination,
+  });
+}

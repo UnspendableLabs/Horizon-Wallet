@@ -340,6 +340,9 @@ PsbtType _derivePsbtType({
   if (type is! String || info is! Map<String, dynamic>) return OpaquePsbt();
 
   switch (type) {
+    case "move":
+      final destination = _asString(info["destination"]);
+      return UtxoMove(destination: destination ?? "-");
     case "sweep":
       final destination = _asString(info["destination"]);
       return Sweep(destination: destination ?? "-");
