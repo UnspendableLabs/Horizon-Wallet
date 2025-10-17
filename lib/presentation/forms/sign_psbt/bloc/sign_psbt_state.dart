@@ -131,6 +131,15 @@ class SignPsbtState with FormzMixin {
 
   PsbtSummaryViewModel get psbtSummaryViewModel {
     return switch (psbtType) {
+      Issuance(
+        asset: var asset,
+        quantity: var quantity,
+      ) =>
+        KeyValueSummaryViewModel(networkFee: networkFee, entries: [
+          MapEntry("type", "issuance"),
+          MapEntry("asset", asset ?? "-"),
+          MapEntry("quantity", quantity?.normalizedPretty() ?? "-"),
+        ]),
       IssueMore(
         asset: var asset,
         quantity: var quantity,

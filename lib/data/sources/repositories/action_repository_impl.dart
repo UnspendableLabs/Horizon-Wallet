@@ -340,6 +340,17 @@ PsbtType _derivePsbtType({
   if (type is! String || info is! Map<String, dynamic>) return OpaquePsbt();
 
   switch (type) {
+    case "issuance":
+      final asset = _asString(info["asset"]);
+      final quantityInt = _asInt(info["quantity"]);
+      final divisible = _asBool(info["divisible"]);
+
+      return Issuance(
+          asset: asset ?? "-",
+          quantity: AssetQuantity(
+            divisible: divisible,
+            quantity: BigInt.from(quantityInt ?? 0),
+          ));
     case "issue-more":
       final asset = _asString(info["asset"]);
       final quantityInt = _asInt(info["quantity"]);
@@ -497,6 +508,7 @@ PsbtType _derivePsbtType({
         return XCPSendPsbt(
           toAddress: destination,
           asset: asset,
+          // TODO: don't rely on DiviisibilityUnknown here
           quantity: DivisibilityUnknown(raw: BigInt.from(quantityInt)),
         );
       }

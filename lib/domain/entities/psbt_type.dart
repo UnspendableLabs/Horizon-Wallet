@@ -228,3 +228,19 @@ class IssueMore extends TrustedPsbt {
     required this.quantity,
   });
 }
+// export type IssuanceTransactionInfo = {
+
+//   asset?: string;
+//   quantity?: number;
+//   divisible?: boolean;
+// };
+
+class Issuance extends TrustedPsbt {
+  final String? asset;
+  final AssetQuantity? quantity;
+
+  Issuance({
+    this.asset,
+    this.quantity,
+  });
+}
