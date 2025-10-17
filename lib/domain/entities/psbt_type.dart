@@ -139,3 +139,21 @@ class LockQuantity extends TrustedPsbt {
     required this.lock,
   });
 }
+
+//
+// export type LockDescriptionTransactionInfo = {
+//   asset: string;
+//   quantity: number;
+//   description: string;
+//   divisible: boolean;
+//   asset_divisibility: boolean;
+// };
+class LockDescription extends TrustedPsbt {
+  final String asset;
+  final String description;
+
+  LockDescription({
+    required this.asset,
+    required this.description,
+  });
+}

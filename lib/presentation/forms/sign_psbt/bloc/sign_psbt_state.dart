@@ -131,9 +131,18 @@ class SignPsbtState with FormzMixin {
 
   PsbtSummaryViewModel get psbtSummaryViewModel {
     return switch (psbtType) {
-      LockQuantity(asset: var asset, quantity: var quantity, lock: var lock) =>
+      LockDescription(asset: var asset, description: var description) =>
         KeyValueSummaryViewModel(networkFee: networkFee, entries: [
-          MapEntry("type", lock.toString()),
+          MapEntry("type", "lock description"),
+          MapEntry("asset", asset),
+          MapEntry("description", description),
+        ]),
+      LockQuantity(
+        asset: var asset,
+        quantity: var quantity,
+      ) =>
+        KeyValueSummaryViewModel(networkFee: networkFee, entries: [
+          MapEntry("type", "lock quantity"),
           MapEntry("asset", asset),
           MapEntry("quantity", quantity.normalizedPretty()),
         ]),
