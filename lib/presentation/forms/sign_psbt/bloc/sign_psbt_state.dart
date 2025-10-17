@@ -131,6 +131,13 @@ class SignPsbtState with FormzMixin {
 
   PsbtSummaryViewModel get psbtSummaryViewModel {
     return switch (psbtType) {
+      Reset(
+        asset: var asset,
+      ) =>
+        KeyValueSummaryViewModel(networkFee: networkFee, entries: [
+          MapEntry("type", "reset"),
+          MapEntry("asset", asset),
+        ]),
       ChangeOwnership(
         asset: var asset,
         transferDestination: var transferDestination,

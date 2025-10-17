@@ -340,6 +340,19 @@ PsbtType _derivePsbtType({
   if (type is! String || info is! Map<String, dynamic>) return OpaquePsbt();
 
   switch (type) {
+    case "reset":
+      final asset = _asString(info["asset"]);
+      final reset = _asBool(info["reset"]);
+      final quantityInt = _asInt(info["quantity"]);
+      final divisible = _asBool(info["divisible"]);
+
+      return Reset(
+          asset: asset ?? "-",
+          reset: reset,
+          quantity: AssetQuantity(
+            divisible: divisible,
+            quantity: BigInt.from(quantityInt ?? 0),
+          ));
     case "change-ownership":
       final asset = _asString(info["asset"]);
       final transferDestination = _asString(info["transfer_destination"]);

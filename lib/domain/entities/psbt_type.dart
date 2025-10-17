@@ -192,3 +192,23 @@ class ChangeOwnership extends TrustedPsbt {
     required this.transferDestination,
   });
 }
+
+// export type ResetTransactionInfo = {
+//   asset: string;
+//   quantity: number;
+//   divisible: boolean;
+//   reset: boolean;
+//   asset_divisibility: boolean;
+// };
+
+class Reset extends TrustedPsbt {
+  final String asset;
+  final AssetQuantity quantity;
+  final bool reset;
+
+  Reset({
+    required this.asset,
+    required this.quantity,
+    required this.reset,
+  });
+}
