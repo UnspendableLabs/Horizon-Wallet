@@ -1,3 +1,4 @@
+import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/asset_quantity.dart';
 
 sealed class PsbtType {}
@@ -12,15 +13,41 @@ class BtcSendPsbt extends TrustedPsbt {
   BtcSendPsbt({required this.toAddress, required this.sats});
 }
 
+sealed class XCPSendQuantity {}
+
+class DivisibilityKnown extends XCPSendQuantity {
+  AssetQuantity quantity;
+  DivisibilityKnown({required this.quantity});
+}
+
+class DivisibilityUnknown extends XCPSendQuantity {
+  BigInt raw;
+  DivisibilityUnknown({required this.raw});
+}
+
 class XCPSendPsbt extends TrustedPsbt {
   String asset;
-  AssetQuantity quantity;
+  XCPSendQuantity quantity;
   String toAddress;
 
   XCPSendPsbt({
     required this.asset,
     required this.quantity,
     required this.toAddress,
+  });
+}
+
+class DetachPsbt extends TrustedPsbt {
+  DetachPsbt();
+}
+
+class AttachPsbt extends TrustedPsbt {
+  final String asset;
+  final AssetQuantity quantity;
+
+  AttachPsbt({
+    required this.asset,
+    required this.quantity,
   });
 }
 

@@ -55,7 +55,7 @@ class BtcSendSummaryViewModel extends PsbtSummaryViewModel {
 class XCPSendSummaryViewModel extends PsbtSummaryViewModel {
   final String assetName;
   final String toAddress;
-  final AssetQuantity quantity;
+  final XCPSendQuantity quantity;
   final AssetQuantity networkFee;
   XCPSendSummaryViewModel({
     required this.assetName,
@@ -85,6 +85,16 @@ class OpaquePsbtSummaryViewModel extends PsbtSummaryViewModel {
   final AssetQuantity networkFee;
   OpaquePsbtSummaryViewModel({
     required this.networkFee,
+  });
+}
+
+class KeyValueSummaryViewModel extends PsbtSummaryViewModel {
+  final List<MapEntry<String, String>> entries;
+
+  final AssetQuantity networkFee;
+  KeyValueSummaryViewModel({
+    required this.networkFee,
+    required this.entries,
   });
 }
 
@@ -121,6 +131,16 @@ class SignPsbtState with FormzMixin {
 
   PsbtSummaryViewModel get psbtSummaryViewModel {
     return switch (psbtType) {
+      AttachPsbt(asset: var asset, quantity: var quantity) =>
+        KeyValueSummaryViewModel(networkFee: networkFee, entries: [
+          MapEntry("type", "detach"),
+          MapEntry("asset", asset),
+          MapEntry("quantity", quantity.normalizedPretty()),
+        ]),
+      DetachPsbt() =>
+        KeyValueSummaryViewModel(networkFee: networkFee, entries: [
+          MapEntry("type", "detach"),
+        ]),
       AtomicSwapListingFee() => AtomicSwapListingFeeSummaryViewModel(
           // service fee is the value of the first output
           serviceFee: augmentedOutputs?.first.vout.value != null

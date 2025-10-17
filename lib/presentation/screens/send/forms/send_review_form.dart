@@ -91,10 +91,11 @@ class SendReviewSignHandler extends StatelessWidget {
                   ? XCPSendPsbt(
                       toAddress: send.destinationInput.value,
                       asset: send.balanceSelectorInput.value!.asset,
-                      quantity: AssetQuantity.fromNormalizedString(
+                      quantity: DivisibilityKnown(
+                          quantity: AssetQuantity.fromNormalizedString(
                         input: send.quantityInput.value,
                         divisible: send.assetIsDivisible,
-                      ),
+                      )),
                     )
                   : BtcSendPsbt(
                       toAddress: send.destinationInput.value,
