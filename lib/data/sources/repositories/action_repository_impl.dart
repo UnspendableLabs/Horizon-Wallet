@@ -340,6 +340,17 @@ PsbtType _derivePsbtType({
   if (type is! String || info is! Map<String, dynamic>) return OpaquePsbt();
 
   switch (type) {
+    case "issue-more":
+      final asset = _asString(info["asset"]);
+      final quantityInt = _asInt(info["quantity"]);
+      final divisible = _asBool(info["divisible"]);
+
+      return IssueMore(
+          asset: asset ?? "-",
+          quantity: AssetQuantity(
+            divisible: divisible,
+            quantity: BigInt.from(quantityInt ?? 0),
+          ));
     case "reset":
       final asset = _asString(info["asset"]);
       final reset = _asBool(info["reset"]);

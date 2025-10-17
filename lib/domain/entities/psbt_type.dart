@@ -212,3 +212,19 @@ class Reset extends TrustedPsbt {
     required this.reset,
   });
 }
+// export type IssueMoreTransactionInfo = {
+//   asset: string;
+//   quantity: number;
+//   divisible: boolean;
+//   asset_divisibility: boolean;
+// };
+
+class IssueMore extends TrustedPsbt {
+  final String asset;
+  final AssetQuantity quantity;
+
+  IssueMore({
+    required this.asset,
+    required this.quantity,
+  });
+}
