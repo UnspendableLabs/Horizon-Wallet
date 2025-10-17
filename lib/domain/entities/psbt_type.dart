@@ -119,3 +119,23 @@ class Destroy extends TrustedPsbt {
     required this.tag,
   });
 }
+
+// export type LockQuantityTransactionInfo = {
+//   asset: string;
+//   quantity: number;
+//   lock: boolean;
+//   divisible: boolean;
+//   asset_divisibility: boolean;
+// };
+
+class LockQuantity extends TrustedPsbt {
+  final String asset;
+  final AssetQuantity quantity;
+  final bool lock;
+
+  LockQuantity({
+    required this.asset,
+    required this.quantity,
+    required this.lock,
+  });
+}
