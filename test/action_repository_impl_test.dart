@@ -327,7 +327,6 @@ void main() {
 
       final result = actionRepository.fromString(encodedString);
 
-      print(result);
       // Assert
       expect(result.isRight(), true);
       result.match(
@@ -401,6 +400,29 @@ void main() {
         expect(r, isA<RPCSignPsbtAction>());
         final action = r as RPCSignPsbtAction;
         expect(action.psbtType, isA<AttachPsbt>());
+      });
+    });
+
+    test("issuance", () {
+      const encodedString =
+          "signPsbt,1423382259,3d8d324a-641f-4d4c-882a-aa172220952e,https://horizon.market,Horizon Market | Trade Bitcoin NFTs & Counterparty Tokens,https://horizon.market/icon0.ico?ca04633c4c0c2f74,70736274ff01007d0200000001b9c712c5cb58b0cd56430616ba576ad4c4802e1c1cf5636d9048d49e3f55f5580200000000ffffffff028002000000000000225120a38d861b993e69bdd50975f7ad467844ff401b61d415713a1ee0b8efb30af4af3845010000000000160014ac2f1826c10fd1461de8e95fe17913ddecb2000c000000000001011fb54a010000000000160014ac2f1826c10fd1461de8e95fe17913ddecb2000c01030401000000000000,eyJiYzFxNHNoM3Nma3BwbGc1djgwZ2E5MDd6N2dubWhrdHlxcXZlN3k1bjIiOlswXX0=,WzEzMSwxLDJd,eyJ0eXBlIjoiaXNzdWFuY2UiLCJpbmZvIjp7ImFzc2V0IjoiQTQ5OTI5MDg4NzczMTI4MTM5ODYiLCJxdWFudGl0eSI6NTAxMjM0MDAwMCwiZGl2aXNpYmxlIjp0cnVlfX0=";
+
+      final result = actionRepository.fromString(encodedString);
+
+      // Assert
+      expect(result.isRight(), true);
+      result.match((l) => fail('Expected Right but got Left: $l'), (r) {
+        expect(r, isA<RPCSignPsbtAction>());
+        final action = r as RPCSignPsbtAction;
+
+        expect(action.psbtType, isA<Issuance>());
+
+        expect((action.psbtType as Issuance).asset, 'A4992908877312813986');
+
+        expect((action.psbtType as Issuance).quantity!.divisible, true);
+
+        expect((action.psbtType as Issuance).quantity!.quantity,
+            BigInt.from(5012340000));
       });
     });
   });
