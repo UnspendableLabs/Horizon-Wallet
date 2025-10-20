@@ -241,6 +241,7 @@ class _InfoRow extends StatelessWidget {
   const _InfoRow(
       {required this.label,
       required this.value,
+      this.tooltip,
       this.valueStyle,
       this.monospace = false,
       this.copyable = false,

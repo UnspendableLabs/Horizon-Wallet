@@ -2187,10 +2187,9 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                     borderRadius: 10,
                     disabled: state.submissionStatus.isInProgressOrSuccess,
                     onPressed: () {
-                      final cb = switch (widget.psbtType) {
-                        OpaquePsbt() => GetIt.I<RPCCancelCallback>(),
-                        _ => () => Navigator.of(context).pop()
-                      };
+                      final cb = widget.psbtType.rpc
+                          ? GetIt.I<RPCCancelCallback>()
+                          : () => Navigator.of(context).pop();
 
                       cb();
                     },

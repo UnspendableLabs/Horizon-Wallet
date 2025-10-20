@@ -1,10 +1,17 @@
 import 'package:horizon/domain/entities/asset_quantity.dart';
 
-sealed class PsbtType {}
+sealed class PsbtType {
+  final bool rpc;
+  PsbtType({this.rpc = false});
+}
 
-class OpaquePsbt extends PsbtType {}
+class OpaquePsbt extends PsbtType {
+  OpaquePsbt({super.rpc});
+}
 
-sealed class TrustedPsbt extends PsbtType {}
+sealed class TrustedPsbt extends PsbtType {
+  TrustedPsbt({super.rpc});
+}
 
 class BtcSendPsbt extends TrustedPsbt {
   BigInt sats;
@@ -18,6 +25,7 @@ class XCPSendPsbt extends TrustedPsbt {
   String toAddress;
 
   XCPSendPsbt({
+    super.rpc,
     required this.asset,
     required this.quantity,
     required this.toAddress,
@@ -25,7 +33,7 @@ class XCPSendPsbt extends TrustedPsbt {
 }
 
 class DetachPsbt extends TrustedPsbt {
-  DetachPsbt();
+  DetachPsbt({super.rpc});
 }
 
 class AttachPsbt extends TrustedPsbt {
@@ -33,6 +41,7 @@ class AttachPsbt extends TrustedPsbt {
   final AssetQuantity quantity;
 
   AttachPsbt({
+    super.rpc,
     required this.asset,
     required this.quantity,
   });
@@ -42,15 +51,18 @@ class AtomicSwapBuyPsbt extends TrustedPsbt {
   AssetQuantity? royalty;
 
   AtomicSwapBuyPsbt({
+    super.rpc,
     required this.royalty,
   });
 }
 
 class AtomicSwapSellPsbt extends TrustedPsbt {
-  AtomicSwapSellPsbt();
+  AtomicSwapSellPsbt({super.rpc});
 }
 
-class AtomicSwapListingFee extends TrustedPsbt {}
+class AtomicSwapListingFee extends TrustedPsbt {
+  AtomicSwapListingFee({super.rpc});
+}
 
 class OrderPsbt extends TrustedPsbt {
   final String giveAsset;
@@ -60,6 +72,7 @@ class OrderPsbt extends TrustedPsbt {
   final AssetQuantity getQuantity;
 
   OrderPsbt({
+    super.rpc,
     required this.giveAsset,
     required this.getAsset,
     required this.giveQuantity,
@@ -73,6 +86,7 @@ class CancelOrder extends TrustedPsbt {
   final Price xcpPrice;
 
   CancelOrder({
+    super.rpc,
     required this.asset,
     required this.quantity,
     required this.xcpPrice,
@@ -83,6 +97,7 @@ class Sweep extends TrustedPsbt {
   final String destination;
 
   Sweep({
+    super.rpc,
     required this.destination,
   });
 }
@@ -91,6 +106,7 @@ class UtxoMove extends TrustedPsbt {
   final String destination;
 
   UtxoMove({
+    super.rpc,
     required this.destination,
   });
 }
@@ -101,6 +117,7 @@ class Destroy extends TrustedPsbt {
   final String tag;
 
   Destroy({
+    super.rpc,
     required this.asset,
     required this.quantity,
     required this.tag,
@@ -121,6 +138,7 @@ class LockQuantity extends TrustedPsbt {
   final bool lock;
 
   LockQuantity({
+    super.rpc,
     required this.asset,
     required this.quantity,
     required this.lock,
@@ -140,6 +158,7 @@ class LockDescription extends TrustedPsbt {
   final String description;
 
   LockDescription({
+    super.rpc,
     required this.asset,
     required this.description,
   });
@@ -157,6 +176,7 @@ class ChangeDescription extends TrustedPsbt {
   final String description;
 
   ChangeDescription({
+    super.rpc,
     required this.asset,
     required this.description,
   });
@@ -175,6 +195,7 @@ class ChangeOwnership extends TrustedPsbt {
   final String transferDestination;
 
   ChangeOwnership({
+    super.rpc,
     required this.asset,
     required this.transferDestination,
   });
@@ -194,6 +215,7 @@ class Reset extends TrustedPsbt {
   final bool reset;
 
   Reset({
+    super.rpc,
     required this.asset,
     required this.quantity,
     required this.reset,
@@ -211,6 +233,7 @@ class IssueMore extends TrustedPsbt {
   final AssetQuantity quantity;
 
   IssueMore({
+    super.rpc,
     required this.asset,
     required this.quantity,
   });
@@ -227,6 +250,7 @@ class Issuance extends TrustedPsbt {
   final AssetQuantity? quantity;
 
   Issuance({
+    super.rpc,
     this.asset,
     this.quantity,
   });
@@ -273,6 +297,7 @@ class Fairminter extends TrustedPsbt {
   final int? softCapDeadlineBlock;
 
   Fairminter({
+    super.rpc,
     this.issuanceType,
     this.asset,
     this.quantity,
@@ -297,6 +322,7 @@ class Mpma extends TrustedPsbt {
   final List<XCPSendPsbt> sends;
 
   Mpma({
+    super.rpc,
     required this.sends,
   });
 }

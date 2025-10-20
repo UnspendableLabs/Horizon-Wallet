@@ -328,15 +328,17 @@ PsbtType _derivePsbtType({
   required String? origin,
   required Map<String, dynamic>? txInfo,
 }) {
-  if (txInfo == null) return OpaquePsbt();
-  if (origin == null || !originWhitelist.contains(origin)) return OpaquePsbt();
+  if (txInfo == null) return OpaquePsbt(rpc: true);
+  if (origin == null || !originWhitelist.contains(origin)) {
+    return OpaquePsbt(rpc: true);
+  }
 
   final type = txInfo["type"];
   final info = txInfo["info"];
 
-  if (type is! String || info is! Map<String, dynamic>) return OpaquePsbt();
-
-  print("Deriving PsbtType for type='$type', info=$info");
+  if (type is! String || info is! Map<String, dynamic>) {
+    return OpaquePsbt(rpc: true);
+  }
 
   switch (type) {
     case "fairminter":
@@ -366,6 +368,7 @@ PsbtType _derivePsbtType({
       final softCapDeadlineBlock = _asInt(info["soft_cap_deadline_block"]);
 
       return Fairminter(
+        rpc: true,
         issuanceType: issuanceType,
         asset: asset,
         quantity: quantityInt != null
@@ -406,6 +409,7 @@ PsbtType _derivePsbtType({
       final divisible = _asBool(info["divisible"]);
 
       return Issuance(
+          rpc: true,
           asset: asset ?? "-",
           quantity: AssetQuantity(
             divisible: divisible,
@@ -417,6 +421,7 @@ PsbtType _derivePsbtType({
       final divisible = _asBool(info["divisible"]);
 
       return IssueMore(
+          rpc: true,
           asset: asset ?? "-",
           quantity: AssetQuantity(
             divisible: divisible,
@@ -429,6 +434,7 @@ PsbtType _derivePsbtType({
       final divisible = _asBool(info["divisible"]);
 
       return Reset(
+          rpc: true,
           asset: asset ?? "-",
           reset: reset,
           quantity: AssetQuantity(
@@ -440,6 +446,7 @@ PsbtType _derivePsbtType({
       final transferDestination = _asString(info["transfer_destination"]);
 
       return ChangeOwnership(
+        rpc: true,
         asset: asset ?? "-",
         transferDestination: transferDestination ?? "-",
       );
@@ -448,6 +455,7 @@ PsbtType _derivePsbtType({
       final description = _asString(info["description"]);
 
       return ChangeDescription(
+        rpc: true,
         asset: asset ?? "-",
         description: description ?? "",
       );
@@ -456,6 +464,7 @@ PsbtType _derivePsbtType({
       final description = _asString(info["description"]);
 
       return LockDescription(
+        rpc: true,
         asset: asset ?? "-",
         description: description ?? "",
       );
@@ -466,6 +475,7 @@ PsbtType _derivePsbtType({
       final assetDivisibility = _asBool(info["asset_divisibility"]);
 
       return LockQuantity(
+        rpc: true,
         asset: asset ?? "-",
         quantity: AssetQuantity(
           divisible: assetDivisibility,
@@ -480,6 +490,7 @@ PsbtType _derivePsbtType({
       final assetDivisibility = _asBool(info["asset_divisibility"]);
       final tag = _asString(info["tag"]);
       return Destroy(
+        rpc: true,
         asset: asset ?? "-",
         quantity: AssetQuantity(
           divisible: assetDivisibility,
@@ -489,10 +500,10 @@ PsbtType _derivePsbtType({
       );
     case "move":
       final destination = _asString(info["destination"]);
-      return UtxoMove(destination: destination ?? "-");
+      return UtxoMove(rpc: true, destination: destination ?? "-");
     case "sweep":
       final destination = _asString(info["destination"]);
-      return Sweep(destination: destination ?? "-");
+      return Sweep(rpc: true, destination: destination ?? "-");
     case "order-create":
       final giveAsset = _asString(info["give_asset"]);
       final giveQuantityInt = _asInt(info["give_quantity"]);
@@ -502,6 +513,7 @@ PsbtType _derivePsbtType({
       final getAssetDivisibility = _asBool(info["get_asset_divisibility"]);
 
       return OrderPsbt(
+        rpc: true,
         giveAsset: giveAsset ?? "-",
         giveQuantity: AssetQuantity(
           divisible: giveAssetDivisibility,
@@ -529,6 +541,7 @@ PsbtType _derivePsbtType({
       );
 
       return CancelOrder(
+        rpc: true,
         xcpPrice: price,
         asset: asset ?? "-",
         quantity: AssetQuantity(
@@ -541,13 +554,16 @@ PsbtType _derivePsbtType({
       final quantityInt = _asInt(info["quantity"]);
       final assetDivisibility = _asBool(info["asset_divisibility"]);
       return AttachPsbt(
+          rpc: true,
           asset: asset ?? "-",
           quantity: AssetQuantity(
             divisible: assetDivisibility,
             quantity: BigInt.from(quantityInt ?? 0),
           ));
     case "detach":
-      return DetachPsbt();
+      return DetachPsbt(
+        rpc: true,
+      );
     case "send":
       final asset = _asString(info["asset"]);
       final quantityInt = _asInt(info["quantity"]);
@@ -556,7 +572,7 @@ PsbtType _derivePsbtType({
       final destination = _asString(info["destination"]);
 
       if (asset == null || quantityInt == null || destination == null) {
-        return OpaquePsbt();
+        return OpaquePsbt(rpc: true);
       }
 
       if (asset.toLowerCase() == "btc") {
@@ -567,6 +583,7 @@ PsbtType _derivePsbtType({
         );
       } else {
         return XCPSendPsbt(
+          rpc: true,
           toAddress: destination,
           asset: asset,
           quantity: AssetQuantity(
@@ -587,33 +604,34 @@ PsbtType _derivePsbtType({
         final destination = _asString(info["destination"]);
 
         sends.add(XCPSendPsbt(
+          rpc: true,
           toAddress: destination ?? "-",
           asset: asset ?? "-",
           quantity: AssetQuantity(
               quantity: BigInt.from(quantityInt ?? 0), divisible: divisibility),
         ));
       }
-      return Mpma(sends: sends);
+      return Mpma(rpc: true, sends: sends);
 
     case "swap-buy":
       final royaltyInt = _asInt(info["royalty"]);
       final royalty = royaltyInt == null
           ? null
           : AssetQuantity(divisible: true, quantity: BigInt.from(royaltyInt));
-      return AtomicSwapBuyPsbt(royalty: royalty);
+      return AtomicSwapBuyPsbt(rpc: true, royalty: royalty);
     case "swap-multi-buy":
       final royaltyInt = _asInt(info["royalty"]);
       final royalty = royaltyInt == null
           ? null
           : AssetQuantity(divisible: true, quantity: BigInt.from(royaltyInt));
-      return AtomicSwapBuyPsbt(royalty: royalty);
+      return AtomicSwapBuyPsbt(rpc: true, royalty: royalty);
     case "swap-create-fee":
-      return AtomicSwapListingFee();
+      return AtomicSwapListingFee(rpc: true);
     case "swap-create":
-      return AtomicSwapSellPsbt();
+      return AtomicSwapSellPsbt(rpc: true);
 
     default:
-      return OpaquePsbt();
+      return OpaquePsbt(rpc: true);
   }
 }
 
@@ -647,8 +665,6 @@ class ActionRepositoryImpl implements ActionRepository {
   Action _parse(String str) {
     // IMPORTANT: split first (no global decode)
     final parts = str.split(',');
-
-    print(str);
 
     if (parts.isEmpty) throw Exception('Empty action string');
 
@@ -717,145 +733,6 @@ class ActionRepositoryImpl implements ActionRepository {
     }
   }
 
-  // Action _parse(String str) {
-  //   print("parsing action string: $str");
-  //
-  //   // 1) Split first — DO NOT decode the whole string.
-  //   final parts = str.split(',');
-  //
-  //   print("Parsing action, parts.length=${parts.length}");
-  //   // Quick guard so we can see what came in:
-  //   if (parts.isEmpty) throw Exception('Empty action string');
-  //
-  //   switch (parts[0]) {
-  //     case 'getAddresses':
-  //       if (parts.length != 6) {
-  //         throw Exception('getAddresses expects 6 fields, got ${parts.length}');
-  //       }
-  //       final tabId = int.parse(parts[1]);
-  //       final requestId = parts[2];
-  //       final origin = Uri.decodeComponent(parts[3]);
-  //       final title = Uri.decodeComponent(parts[4]);
-  //       final favicon = Uri.decodeComponent(parts[5]);
-  //
-  //       return RPCGetAddressesAction(tabId, requestId, origin, title, favicon);
-  //
-  //     case 'signPsbt':
-  //       if (parts.length != 11) {
-  //         throw Exception('signPsbt expects 11 fields, got ${parts.length}');
-  //       }
-  //       final tabId = parts[1];
-  //       final requestId = parts[2];
-  //       final origin = parts[3]; // decode inside builder
-  //       final title = parts[4];
-  //       final favicon = parts[5];
-  //       final psbt = parts[6]; // raw hex, do NOT decode
-  //       final signInputs = parts[7]; // base64, do NOT decode here
-  //       final sighashTypes = parts[8]; // base64, do NOT decode here
-  //       final txInfo = parts[9]; // base64, do NOT decode here
-  //       // NOTE: parts[10]?? In your example there are 11 fields (index 0..10).
-  //       // If your format includes exactly 11, adjust indices accordingly:
-  //       final txInfoB64 = parts[10];
-  //
-  //       return _buildSignPsbtAction(
-  //         tabId: tabId,
-  //         requestId: requestId,
-  //         origin: origin,
-  //         title: title,
-  //         favicon: favicon,
-  //         psbt: psbt,
-  //         signInputsB64: signInputs,
-  //         sighashTypesB64: sighashTypes,
-  //         txInfoB64: txInfoB64,
-  //       );
-  //
-  //     case 'signMessage':
-  //       if (parts.length != 8) {
-  //         throw Exception('signMessage expects 8 fields, got ${parts.length}');
-  //       }
-  //       final tabId = int.parse(parts[1]);
-  //       final requestId = parts[2];
-  //       final origin = Uri.decodeComponent(parts[3]);
-  //       final title = Uri.decodeComponent(parts[4]);
-  //       final favicon = Uri.decodeComponent(parts[5]);
-  //       final message =
-  //           parts[6]; // plain text (already URL-encoded in link if needed)
-  //       final address = parts[7];
-  //
-  //       return RPCSignMessageAction(
-  //           tabId, requestId, origin, title, favicon, message, address);
-  //
-  //     default:
-  //       throw Exception('Unknown action: ${parts[0]}');
-  //   }
-  // }
-
-  // Action _parse(String str) {
-  //   print("parsing action string: $str");
-  //   final arr = str.split(',').toList();
-  //
-  //   print("Parsing action: $arr");
-  //
-  //   return switch (arr) {
-  //     [
-  //       "getAddresses",
-  //       String tabId,
-  //       String requestId,
-  //       String origin,
-  //       String title,
-  //       String favicon
-  //     ] =>
-  //       RPCGetAddressesAction(
-  //           int.tryParse(tabId)!,
-  //           requestId,
-  //           Uri.decodeComponent(origin),
-  //           Uri.decodeComponent(title),
-  //           Uri.decodeComponent(favicon)),
-  //     [
-  //       "signPsbt",
-  //       String tabId,
-  //       String requestId,
-  //       String origin,
-  //       String title,
-  //       String favicon,
-  //       String psbt,
-  //       String signInputs,
-  //       String sighashTypes,
-  //       String txInfo
-  //     ] =>
-  //       _buildSignPsbtAction(
-  //         tabId: tabId,
-  //         requestId: requestId,
-  //         origin: origin,
-  //         title: title,
-  //         favicon: favicon,
-  //         psbt: psbt,
-  //         signInputsB64: signInputs,
-  //         sighashTypesB64: sighashTypes,
-  //         txInfoB64: txInfo,
-  //       ),
-  //     [
-  //       "signMessage",
-  //       String tabId,
-  //       String requestId,
-  //       String origin,
-  //       String title,
-  //       String favicon,
-  //       String message,
-  //       String address,
-  //     ] =>
-  //       RPCSignMessageAction(
-  //           int.tryParse(tabId)!,
-  //           requestId,
-  //           Uri.decodeComponent(origin),
-  //           Uri.decodeComponent(title),
-  //           Uri.decodeComponent(favicon),
-  //           message,
-  //           address),
-  //     _ => throw Exception()
-  //   };
-  // }
-
   @override
   void enqueue(Action action) {
     _currentAction = action; // Store the single action
@@ -871,36 +748,5 @@ class ActionRepositoryImpl implements ActionRepository {
     final action = _currentAction;
     _currentAction = null; // Clear the action after dequeuing
     return Option.fromNullable(action);
-  }
-
-  List<int>? _parseSighashTypes(String sighashTypesStr) {
-    try {
-      final value = json.decode(utf8.decode(base64.decode(sighashTypesStr)));
-      if (value is List) {
-        return value.cast<int>();
-      } else {
-        return null;
-      }
-    } catch (e) {
-      return null;
-    }
-  }
-
-  Map<String, List<int>> _parseSignInputs(String signInputsStr) {
-    try {
-      final str = utf8.decode(base64.decode(signInputsStr));
-      final jsonMap = json.decode(str) as Map<String, dynamic>;
-
-      // Convert to Map<String, List<int>>
-      return jsonMap.map((key, value) {
-        if (value is List) {
-          return MapEntry(key, value.cast<int>());
-        } else {
-          throw const FormatException("Invalid signInputs format");
-        }
-      });
-    } catch (e) {
-      throw FormatException("Failed to parse signInputs: $e");
-    }
   }
 }
