@@ -379,5 +379,29 @@ void main() {
         expect(action.psbtType, isA<DetachPsbt>());
       });
     });
+
+//     test("create order", () {
+//       const encodedString =
+//           "signPsbt,1423382259,b28098d2-b2b8-47be-8645-3ce188567afe,https://horizon.market,Horizon Market | Trade Bitcoin NFTs & Counterparty Tokens,https://horizon.market/icon0.ico?ca04633c4c0c2f74,70736274ff0100900200000001b9c712c5cb58b0cd56430616ba576ad4c4802e1c1cf5636d9048d49e3f55f5580200000000ffffffff020000000000000000356a339c2bfe0203de3f5c449ebf3b431ebec68126d2dd8015f152f930fe9bbcc087ac650440d16f4bcf5f81e96464959b8455add2d35947010000000000160014ac2f1826c10fd1461de8e95fe17913ddecb2000c000000000001011fb54a010000000000160014ac2f1826c10fd1461de8e95fe17913ddecb2000c01030401000000000000,eyJiYzFxNHNoM3Nma3BwbGc1djgwZ2E5MDd6N2dubWhrdHlxcXZlN3k1bjIiOlswXX0=,WzEzMSwxLDJd,eyJ0eXBlIjoib3JkZXItY3JlYXRlIiwiaW5mbyI6eyJnZXRfYXNzZXQiOiJYQ1AiLCJnaXZlX2Fzc2V0IjoiQTc4NjM2MzY2Mzg1MTI3NTg5NDgiLCJnZXRfcXVhbnRpdHkiOiIxMCIsImdpdmVfcXVhbnRpdHkiOiIxIiwiZXhwaXJhdGlvbiI6NDMyMCwiZ2V0X2Fzc2V0X2RpdmlzaWJpbGl0eSI6dHJ1ZSwiZ2l2ZV9hc3NldF9kaXZpc2liaWxpdHkiOnRydWV9fQ==";
+// //
+// // txInfo: {type: order-create, info: {get_asset: XCP, give_asset: A7863636638512758948, get_quantity: 10, give_quantity: 1, expiration: 4320, get_asset_divisibility: true, give_asset_divisibility: true}}
+// //
+//
+//     });
+
+    test("attach", () {
+      const encodedString =
+          "signPsbt,1423382259,71e85795-032e-45f8-915f-b844ff203f5f,https://horizon.market,Horizon Market | Trade Bitcoin NFTs & Counterparty Tokens,https://horizon.market/icon0.ico?ca04633c4c0c2f74,70736274ff0100a50200000001b9c712c5cb58b0cd56430616ba576ad4c4802e1c1cf5636d9048d49e3f55f5580200000000ffffffff032202000000000000160014ac2f1826c10fd1461de8e95fe17913ddecb2000c00000000000000002b6a299c2bfe0203de3f5c2bb2a93ca92cc4351310e1e5b5213684cc08c7af84bcb69e573070e15f4065a5fdce44010000000000160014ac2f1826c10fd1461de8e95fe17913ddecb2000c000000000001011fb54a010000000000160014ac2f1826c10fd1461de8e95fe17913ddecb2000c0103040100000000000000,eyJiYzFxNHNoM3Nma3BwbGc1djgwZ2E5MDd6N2dubWhrdHlxcXZlN3k1bjIiOlswXX0=,WzEzMSwxLDJd,eyJ0eXBlIjoiYXR0YWNoIiwiaW5mbyI6eyJhc3NldCI6IkE3ODYzNjM2NjM4NTEyNzU4OTQ4IiwicXVhbnRpdHkiOjM5OTk5OTAwMDAsImFzc2V0X2RpdmlzaWJpbGl0eSI6dHJ1ZX19";
+
+      final result = actionRepository.fromString(encodedString);
+
+      // Assert
+      expect(result.isRight(), true);
+      result.match((l) => fail('Expected Right but got Left: $l'), (r) {
+        expect(r, isA<RPCSignPsbtAction>());
+        final action = r as RPCSignPsbtAction;
+        expect(action.psbtType, isA<AttachPsbt>());
+      });
+    });
   });
 }

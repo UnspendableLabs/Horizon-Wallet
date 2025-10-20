@@ -275,7 +275,7 @@ class SignPsbtState with FormzMixin {
         ]),
       AttachPsbt(asset: var asset, quantity: var quantity) =>
         KeyValueSummaryViewModel(networkFee: networkFee, entries: [
-          MapEntry("type", "detach"),
+          MapEntry("type", "attach"),
           MapEntry("asset", asset),
           MapEntry("quantity", quantity.normalizedPretty()),
         ]),
