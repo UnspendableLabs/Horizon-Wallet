@@ -52,6 +52,15 @@ class BtcSendSummaryViewModel extends PsbtSummaryViewModel {
   });
 }
 
+class MpmaSendSummaryViewModel extends PsbtSummaryViewModel {
+  final AssetQuantity networkFee;
+  final List<XCPSendSummaryViewModel> sends;
+  MpmaSendSummaryViewModel({
+    required this.networkFee,
+    required this.sends,
+  });
+}
+
 class XCPSendSummaryViewModel extends PsbtSummaryViewModel {
   final String assetName;
   final String toAddress;
@@ -150,6 +159,17 @@ class SignPsbtState with FormzMixin {
 //   final int? softCapDeadlineBlock;
   PsbtSummaryViewModel get psbtSummaryViewModel {
     return switch (psbtType) {
+      Mpma(sends: var sends) => MpmaSendSummaryViewModel(
+          networkFee: networkFee,
+          sends: sends
+              .map((e) => XCPSendSummaryViewModel(
+                    assetName: e.asset,
+                    toAddress: e.toAddress,
+                    quantity: e.quantity,
+                    networkFee: networkFee,
+                  ))
+              .toList(),
+        ),
       Fairminter(
         asset: var asset,
         quantity: var quantity,

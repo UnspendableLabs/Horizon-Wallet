@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:horizon/domain/entities/asset_quantity.dart';
 import "package:horizon/common/constants.dart";
 import 'package:test/test.dart';
@@ -611,6 +613,29 @@ void main() {
         expect((action.psbtType as IssueMore).quantity.quantity,
             BigInt.from(1000000000));
         expect((action.psbtType as IssueMore).quantity.divisible, true);
+      });
+    });
+    test("mpma", () {
+      const encodedString =
+          "signPsbt,1423382443,d70a5a68-ab77-48a2-a5b7-5c7148becd1b,https://horizon-market-testnet.vercel.app,Horizon Market | Trade Bitcoin NFTs & Counterparty Tokens,https://horizon-market-testnet.vercel.app/icon0.ico?ca04633c4c0c2f74,70736274ff01009e0200000001501af54362af72cb13a0c970244fce2e443f92197015a7c0bfb30c44ba2e529b0100000000ffffffff020000000000000000436a4145266484fc6612f8d94e5db559034577e00599ad90613a2948c7c88f32ed129967195a7ab1f7a864b6ce0c08537cce4bf3ef583f65a70bcf9ea36da4a261c4472fabc6030000000000160014a8b21366aa1dae07bffe52c56f4619e01c523716000000000001011fefcd030000000000160014a8b21366aa1dae07bffe52c56f4619e01c52371601030401000000000000,eyJ0YjFxNHplcHhlNDJya2hxMDBsNzJ0ems3M3NldXF3OXlkY2tneW56djUiOlswXX0=,WzEzMSwxLDJd,eyJ0eXBlIjoibXBtYSIsImluZm8iOnsic2VuZHMiOlt7ImRlc3RpbmF0aW9uIjoidGIxcWM0dno5dHp0ZTNyY2c4dXJna3Z3MHRxbjJrYTk0M3FubHFodXE3IiwiYXNzZXQiOiJYQ1AiLCJxdWFudGl0aWUiOjEwMDAwMDAsImFzc2V0X2RpdmlzaWJpbGl0eSI6dHJ1ZX0seyJkZXN0aW5hdGlvbiI6InRiMXFjNHZ6OXR6dGUzcmNnOHVyZ2t2dzB0cW4ya2E5NDNxbmxxaHVxNyIsImFzc2V0IjoiQTcwOTYzNDg1NTY3Mjg0ODA3NzIiLCJxdWFudGl0aWUiOjEsImFzc2V0X2RpdmlzaWJpbGl0eSI6ZmFsc2V9XX19";
+
+      final result = actionRepository.fromString(encodedString);
+      expect(result.isRight(), true);
+      result.match((l) => fail('Expected Right but got Left: $l'), (r) {
+        expect(r, isA<RPCSignPsbtAction>());
+        final action = r as RPCSignPsbtAction;
+
+        expect(action.psbtType, isA<Mpma>());
+        expect((action.psbtType as Mpma).sends.length, 2);
+        expect((action.psbtType as Mpma).sends[0].asset, 'XCP');
+        expect((action.psbtType as Mpma).sends[0].quantity.quantity,
+            BigInt.from(1000000));
+        expect((action.psbtType as Mpma).sends[0].quantity.divisible, true);
+        expect(
+            (action.psbtType as Mpma).sends[1].asset, 'A7096348556728480772');
+        expect((action.psbtType as Mpma).sends[1].quantity.quantity,
+            BigInt.from(1));
+        expect((action.psbtType as Mpma).sends[1].quantity.divisible, false);
       });
     });
   });

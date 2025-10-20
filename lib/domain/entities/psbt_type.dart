@@ -293,3 +293,11 @@ class Fairminter extends TrustedPsbt {
     this.softCapDeadlineBlock,
   });
 }
+
+class Mpma extends TrustedPsbt {
+  final List<XCPSendPsbt> sends;
+
+  Mpma({
+    required this.sends,
+  });
+}

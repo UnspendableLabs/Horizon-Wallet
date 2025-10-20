@@ -237,6 +237,8 @@ const signPsbtAction =
 
 const Set<String> originWhitelist = {
   "https://horizon.market",
+  "https://testnet4.horizon.market",
+  "https://signet.horizon.market",
   "https://horizon-market-testnet.vercel.app",
   "https://horizon-market-signet.vercel.app"
 };
@@ -572,6 +574,27 @@ PsbtType _derivePsbtType({
               quantity: BigInt.from(quantityInt), divisible: divisibility),
         );
       }
+
+    // Deriving PsbtType for type='mpma', info={sends: [{destination: tb1qc4vz9tzte3rcg8urgkvw0tqn2ka943qnlqhuq7, asset: XCP, quantitie: 1000000, asset_divisibility: true}, {destination: tb1qc4vz9tzte3rcg8urgkvw0tqn2ka943qnlqhuq7, asset: A2977114591417842298, quantitie: 100, asset_divisibility: false}]}
+    case "mpma":
+      final sends_ = info["sends"];
+      final List<XCPSendPsbt> sends = [];
+      for (var info in sends_) {
+        final asset = _asString(info["asset"]);
+        final quantityInt = _asInt(info[
+            "quantitie"]); // this is intentionally mispelled for some reason
+        final divisibility = _asBool(info["asset_divisibility"]);
+
+        final destination = _asString(info["destination"]);
+
+        sends.add(XCPSendPsbt(
+          toAddress: destination ?? "-",
+          asset: asset ?? "-",
+          quantity: AssetQuantity(
+              quantity: BigInt.from(quantityInt ?? 0), divisible: divisibility),
+        ));
+      }
+      return Mpma(sends: sends);
 
     case "swap-buy":
       final royaltyInt = _asInt(info["royalty"]);

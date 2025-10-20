@@ -312,6 +312,118 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                               ))),
                     ],
                   ),
+                MpmaSendSummaryViewModel(sends: var sends) => Column(children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(24.0, 0, 0, 4.0),
+                          child: Text(
+                            "You're sending",
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelMedium!
+                                .copyWith(color: Colors.grey),
+                          ),
+                        ),
+                      ],
+                    ),
+                    ...sends.map(
+                      (send) => SizedBox(
+                          width: double.infinity,
+                          child: Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                              child: HorizonUI.HorizonCard(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 16),
+                                child: Column(children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        "To",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelSmall!
+                                            .copyWith(color: Colors.grey),
+                                      ),
+                                      Text(
+                                        " ${_shortenAddress(send.toAddress)}",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelSmall!
+                                            .copyWith(color: Colors.white),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(
+                                    height: 12,
+                                  ),
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          appIcons.assetIcon(
+                                            httpConfig: session.httpConfig,
+                                            context: context,
+                                            assetName: send.assetName,
+                                            description:
+                                                "", // TODO: add desc to summary.
+                                            width: 34,
+                                            height: 34,
+                                          ),
+                                        ],
+                                      ),
+                                      Expanded(
+                                        child: Padding(
+                                          padding: const EdgeInsets.fromLTRB(
+                                              8, 0, 0, 0),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                "Quantity",
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .labelSmall!
+                                                    .copyWith(
+                                                        color: Colors.white),
+                                              ),
+                                              Text(
+                                                send.assetName,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .labelSmall!
+                                                    .copyWith(
+                                                        color: Colors.grey),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              send.quantity.normalizedPretty(),
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .labelSmall!
+                                                  .copyWith(
+                                                      color: Colors.white),
+                                            ),
+                                          ])
+                                    ],
+                                  )
+                                ]),
+                              ))),
+                    )
+                  ]),
                 XCPSendSummaryViewModel(
                   toAddress: var toAddress,
                   quantity: var quantity,
@@ -1095,6 +1207,125 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                                   ],
                                 ),
                               )
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Text("Network Fee",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall!),
+                                  Spacer(),
+                                  Text("${networkFee.quantity.toString()} sat",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall!
+                                          .copyWith(color: Colors.white)),
+                                ],
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  SatsToUsdDisplay(
+                                      sats: networkFee.quantity,
+                                      child: (usdValue) => Text(
+                                            '\$${usdValue.toStringAsFixed(2)}',
+                                            style: theme.textTheme.labelSmall
+                                                ?.copyWith(
+                                                    fontSize: 10,
+                                                    color: Colors.grey),
+                                          )),
+                                ],
+                              )
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
+                          child: Row(
+                            children: [
+                              Text("Change",
+                                  style:
+                                      Theme.of(context).textTheme.labelSmall!),
+                              Spacer(),
+                              Text("${state.change.quantity.toString()} sat",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall!
+                                      .copyWith(color: Colors.green)),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(8, 12, 8, 2),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Text("Total",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall!
+                                          .copyWith(color: Colors.white)),
+                                  Spacer(),
+                                  Text(state.net.quantity.toString(),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall!
+                                          .copyWith(color: Colors.white)),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(right: 8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              SatsToUsdDisplay(
+                                  sats: state.net.quantity,
+                                  child: (usdValue) => Text(
+                                        '\$${usdValue.toStringAsFixed(2)}',
+                                        style: theme.textTheme.labelSmall
+                                            ?.copyWith(
+                                                fontSize: 10,
+                                                color: Colors.grey),
+                                      )),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                  MpmaSendSummaryViewModel(
+                    networkFee: var networkFee,
+                    sends: var sends
+                  ) =>
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 6.0, horizontal: 8.0),
+                          child: Row(
+                            children: [
+                              Text(
+                                  "Inputs ( ${state.augmentedInputs != null ? state.augmentedInputs!.length : 0} )",
+                                  style:
+                                      Theme.of(context).textTheme.labelSmall!),
+                              SizedBox(width: 8),
+                              Spacer(),
+                              Text(
+                                  "${state.totalInputs.quantity.toString()} sat",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall!
+                                      .copyWith(color: Colors.white)),
                             ],
                           ),
                         ),
