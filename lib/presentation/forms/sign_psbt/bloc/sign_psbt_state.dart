@@ -239,11 +239,14 @@ class SignPsbtState with FormzMixin {
           MapEntry("asset", asset),
           MapEntry("description", description),
         ]),
-      LockDescription(asset: var asset, description: var description) =>
+      LockDescription(
+        asset: var asset,
+        // description: var description descriptin is always "LOCK"
+      ) =>
         KeyValueSummaryViewModel(networkFee: networkFee, entries: [
           MapEntry("type", "lock description"),
           MapEntry("asset", asset),
-          MapEntry("description", description),
+          // MapEntry("description", description),
         ]),
       LockQuantity(
         asset: var asset,

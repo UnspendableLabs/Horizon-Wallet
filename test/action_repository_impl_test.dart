@@ -539,5 +539,22 @@ void main() {
         expect((action.psbtType as LockQuantity).asset, 'A1722096681705981079');
       });
     });
+
+    test("lock description", () {});
+    const encodedString =
+        "signPsbt,1423382443,63dd99ad-b6cd-468e-9509-3d3d111c9345,https://horizon-market-testnet.vercel.app,Horizon Market | Trade Bitcoin NFTs & Counterparty Tokens,https://horizon-market-testnet.vercel.app/icon0.ico?ca04633c4c0c2f74,70736274ff01007a0200000001501af54362af72cb13a0c970244fce2e443f92197015a7c0bfb30c44ba2e529b0100000000ffffffff0200000000000000001f6a1d45266484fc6612f8ccc947d55931086cb79278297b168bd1eb279499c313c8030000000000160014a8b21366aa1dae07bffe52c56f4619e01c523716000000000001011fefcd030000000000160014a8b21366aa1dae07bffe52c56f4619e01c52371601030401000000000000,eyJ0YjFxNHplcHhlNDJya2hxMDBsNzJ0ems3M3NldXF3OXlkY2tneW56djUiOlswXX0=,WzEzMSwxLDJd,eyJ0eXBlIjoibG9jay1kZXNjcmlwdGlvbiIsImluZm8iOnsiYXNzZXQiOiJBMTYxOTY0Njg2NjI5NTM4NjAwMDYiLCJxdWFudGl0eSI6MCwiZGVzY3JpcHRpb24iOiJMT0NLIiwiZGl2aXNpYmxlIjpmYWxzZSwiYXNzZXRfZGl2aXNpYmlsaXR5IjpmYWxzZX19";
+
+    final result = actionRepository.fromString(encodedString);
+
+    // Assert
+    expect(result.isRight(), true);
+    result.match((l) => fail('Expected Right but got Left: $l'), (r) {
+      expect(r, isA<RPCSignPsbtAction>());
+      final action = r as RPCSignPsbtAction;
+
+      expect(action.psbtType, isA<LockDescription>());
+      expect(
+          (action.psbtType as LockDescription).asset, 'A16196468662953860006');
+    });
   });
 }
