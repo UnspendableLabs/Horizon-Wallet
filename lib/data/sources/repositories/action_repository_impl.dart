@@ -1,6 +1,7 @@
 import "dart:convert";
 import 'package:decimal/decimal.dart';
 import "package:horizon/common/constants.dart";
+import "package:horizon/domain/entities/asset.dart";
 import "package:horizon/domain/entities/asset_quantity.dart";
 import "package:horizon/domain/entities/psbt_type.dart";
 import "package:horizon/domain/repositories/action_repository.dart";
@@ -491,15 +492,16 @@ PsbtType _derivePsbtType({
     case "send":
       final asset = _asString(info["asset"]);
       final quantityInt = _asInt(info["quantity"]);
+      final divisibility = _asBool(info["asset_divisibility"]);
+
       final destination = _asString(info["destination"]);
 
       if (asset == null || quantityInt == null || destination == null) {
         return OpaquePsbt();
       }
 
-      print("quantity $quantityInt");
-
       if (asset.toLowerCase() == "btc") {
+        // we should never hit this case actually
         return BtcSendPsbt(
           toAddress: destination,
           sats: BigInt.from(quantityInt),
@@ -508,8 +510,8 @@ PsbtType _derivePsbtType({
         return XCPSendPsbt(
           toAddress: destination,
           asset: asset,
-          // TODO: don't rely on DiviisibilityUnknown here
-          quantity: DivisibilityUnknown(raw: BigInt.from(quantityInt)),
+          quantity: AssetQuantity(
+              quantity: BigInt.from(quantityInt), divisible: divisibility),
         );
       }
 

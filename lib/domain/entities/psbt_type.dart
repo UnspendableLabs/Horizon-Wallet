@@ -13,21 +13,9 @@ class BtcSendPsbt extends TrustedPsbt {
   BtcSendPsbt({required this.toAddress, required this.sats});
 }
 
-sealed class XCPSendQuantity {}
-
-class DivisibilityKnown extends XCPSendQuantity {
-  AssetQuantity quantity;
-  DivisibilityKnown({required this.quantity});
-}
-
-class DivisibilityUnknown extends XCPSendQuantity {
-  BigInt raw;
-  DivisibilityUnknown({required this.raw});
-}
-
 class XCPSendPsbt extends TrustedPsbt {
   String asset;
-  XCPSendQuantity quantity;
+  AssetQuantity quantity;
   String toAddress;
 
   XCPSendPsbt({

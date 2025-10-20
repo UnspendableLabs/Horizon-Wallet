@@ -55,7 +55,7 @@ class BtcSendSummaryViewModel extends PsbtSummaryViewModel {
 class XCPSendSummaryViewModel extends PsbtSummaryViewModel {
   final String assetName;
   final String toAddress;
-  final XCPSendQuantity quantity;
+  final AssetQuantity quantity;
   final AssetQuantity networkFee;
   XCPSendSummaryViewModel({
     required this.assetName,
@@ -129,8 +129,78 @@ class SignPsbtState with FormzMixin {
   @override
   List<FormzInput> get inputs => [password];
 
+//
+// class Fairminter extends TrustedPsbt { final String? issuanceType;
+//   final String? asset;
+//   final AssetQuantity? quantity;
+//   final bool? divisible;
+//   final int? maxMintPerTx;
+//   final BigInt? quantityByPrice;
+//   final BigInt? premintQuantity;
+//   final num? mintedAssetCommission;
+//   final String? encoding;
+//   final String? inscription;
+//   final String? description;
+//   final String? mimeType;
+//   final String? audio;
+//   final String? media;
+//   final int? startBlock;
+//   final int? endBlock;
+//   final BigInt? softCap;
+//   final int? softCapDeadlineBlock;
   PsbtSummaryViewModel get psbtSummaryViewModel {
     return switch (psbtType) {
+      Fairminter(
+        asset: var asset,
+        quantity: var quantity,
+        divisible: var divisible,
+        maxMintPerTx: var maxMintPerTx,
+        quantityByPrice: var quantityByPrice,
+        premintQuantity: var premintQuantity,
+        mintedAssetCommission: var mintedAssetCommission,
+        encoding: var encoding,
+        inscription: var inscription,
+        description: var description,
+        mimeType: var mimeType,
+        audio: var audio,
+        media: var media,
+        startBlock: var startBlock,
+        endBlock: var endBlock,
+        softCap: var softCap,
+        softCapDeadlineBlock: var softCapDeadlineBlock,
+      ) =>
+        KeyValueSummaryViewModel(networkFee: networkFee, entries: [
+          MapEntry("type", "fairminter"),
+          MapEntry("asset", asset ?? "-"),
+          MapEntry("quantity", quantity?.normalizedPretty() ?? "-"),
+          MapEntry("divisible", divisible != null ? divisible.toString() : "-"),
+          MapEntry("max mint per tx",
+              maxMintPerTx != null ? maxMintPerTx.toString() : "-"),
+          MapEntry("quantity by price",
+              quantityByPrice != null ? quantityByPrice.toString() : "-"),
+          MapEntry("premint quantity",
+              premintQuantity != null ? premintQuantity.toString() : "-"),
+          MapEntry(
+              "minted asset commission",
+              mintedAssetCommission != null
+                  ? mintedAssetCommission.toString()
+                  : "-"),
+          MapEntry("encoding", encoding ?? "-"),
+          MapEntry("inscription", inscription ?? "-"),
+          MapEntry("description", description ?? "-"),
+          MapEntry("mime type", mimeType ?? "-"),
+          MapEntry("audio", audio ?? "-"),
+          MapEntry("media", media ?? "-"),
+          MapEntry(
+              "start block", startBlock != null ? startBlock.toString() : "-"),
+          MapEntry("end block", endBlock != null ? endBlock.toString() : "-"),
+          MapEntry("soft cap", softCap != null ? softCap.toString() : "-"),
+          MapEntry(
+              "soft cap deadline block",
+              softCapDeadlineBlock != null
+                  ? softCapDeadlineBlock.toString()
+                  : "-"),
+        ]),
       Issuance(
         asset: var asset,
         quantity: var quantity,

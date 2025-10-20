@@ -415,59 +415,14 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                                           mainAxisAlignment:
                                               MainAxisAlignment.start,
                                           children: [
-                                            switch (quantity) {
-                                              DivisibilityKnown(
-                                                quantity: var quantity
-                                              ) =>
-                                                Text(
-                                                  "${quantity.normalizedPretty()}",
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .labelSmall!
-                                                      .copyWith(
-                                                          color: Colors.white),
-                                                ),
-                                              DivisibilityUnknown(
-                                                raw: var raw
-                                              ) =>
-                                                RemoteDataTaskEitherBuilder(
-                                                  task: widget._assetRepository
-                                                      .getAssetVerboseT(
-                                                    httpConfig:
-                                                        session.httpConfig,
-                                                    assetName: assetName,
-                                                  ),
-                                                  builder: (context, state,
-                                                      refetch) {
-                                                    return state.fold3(
-                                                        onNone: () => Text(""),
-                                                        onFailure: (err) => Text(
-                                                            "error fetching asset details"),
-                                                        onReplete:
-                                                            (assetVerbose) {
-                                                          final AssetQuantity
-                                                              quantity =
-                                                              AssetQuantity(
-                                                                  quantity: raw,
-                                                                  divisible:
-                                                                      assetVerbose
-                                                                              .divisible_ ??
-                                                                          false);
-
-                                                          return Text(
-                                                            "${quantity.normalizedPretty()}",
-                                                            style: Theme.of(
-                                                                    context)
-                                                                .textTheme
-                                                                .labelSmall!
-                                                                .copyWith(
-                                                                    color: Colors
-                                                                        .white),
-                                                          );
-                                                        });
-                                                  },
-                                                )
-                                            }
+                                            Text(
+                                              quantity.normalizedPretty(),
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .labelSmall!
+                                                  .copyWith(
+                                                      color: Colors.white),
+                                            ),
                                           ])
                                     ],
                                   )
