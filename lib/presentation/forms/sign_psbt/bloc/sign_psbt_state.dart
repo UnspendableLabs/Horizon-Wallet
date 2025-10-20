@@ -320,7 +320,7 @@ class SignPsbtState with FormzMixin {
             MapEntry("type", "cancel order"),
             MapEntry("asset", asset),
             MapEntry("quantity", quantity.normalizedPretty()),
-            MapEntry("price", "${price.normalized()} $asset / XCP "),
+            MapEntry("price", "${price.normalized()} XCP  / $asset"),
           ],
         ),
       OrderPsbt(

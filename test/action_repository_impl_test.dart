@@ -1,13 +1,10 @@
 import 'package:horizon/domain/entities/asset_quantity.dart';
+import "package:horizon/common/constants.dart";
 import 'package:test/test.dart';
 import 'package:horizon/domain/repositories/action_repository.dart';
 import 'package:horizon/domain/entities/action.dart';
 import 'package:horizon/domain/entities/psbt_type.dart';
 import 'package:horizon/data/sources/repositories/action_repository_impl.dart';
-
-// TODO: add the following
-// attach
-// parsing action string: signPsbt,1423381683,8a466271-8e70-47de-83bc-c0056cede179,https://horizon.market,Horizon Market | Trade Bitcoin NFTs & Counterparty Tokens,https://horizon.market/icon0.ico?ca04633c4c0c2f74,70736274ff0100a50200000001b9c712c5cb58b0cd56430616ba576ad4c4802e1c1cf5636d9048d49e3f55f5580200000000ffffffff032202000000000000160014ac2f1826c10fd1461de8e95fe17913ddecb2000c00000000000000002b6a299c2bfe0203de3f5c2bb2a93ca92cc4351310e1e5b5213684cc08c7af84bcb69c543470e15f4065a5fdd247010000000000160014ac2f1826c10fd1461de8e95fe17913ddecb2000c000000000001011fb54a010000000000160014ac2f1826c10fd1461de8e95fe17913ddecb2000c0103040100000000000000,eyJiYzFxNHNoM3Nma3BwbGc1djgwZ2E5MDd6N2dubWhrdHlxcXZlN3k1bjIiOlswXX0=,WzEzMSwxLDJd,eyJ0eXBlIjoiYXR0YWNoIiwiaW5mbyI6eyJhc3NldCI6IkE3ODYzNjM2NjM4NTEyNzU4OTQ4IiwicXVhbnRpdHkiOjg5OTk5OTAwMDAsImFzc2V0X2RpdmlzaWJpbGl0eSI6dHJ1ZX19
 
 void main() {
   late ActionRepository actionRepository;
@@ -439,6 +436,35 @@ void main() {
         final action = r as RPCSignPsbtAction;
 
         expect(action.psbtType, isA<Fairminter>());
+      });
+    });
+
+    test("cancel-order", () {
+      const encodedString =
+          "signPsbt,1423382460,af9c3604-2360-4c72-84a6-7756dd7cbbe1,https://horizon-market-testnet.vercel.app,Horizon Market | Trade Bitcoin NFTs & Counterparty Tokens,https://horizon-market-testnet.vercel.app/icon0.ico?ca04633c4c0c2f74,70736274ff0100860200000001e46b0cbf2084102c917d0b8a05270882dff9a396a1b72c2a3fd1c756d0da7a1c0100000000ffffffff0200000000000000002b6a291940b778f024db7d1c011405ca518aafad127609f547fa336eb0cce8d9c5c6f0a285c5035da7f5cce64f9e030000000000160014a8b21366aa1dae07bffe52c56f4619e01c523716000000000001011fa3a4030000000000160014a8b21366aa1dae07bffe52c56f4619e01c52371601030401000000000000,eyJ0YjFxNHplcHhlNDJya2hxMDBsNzJ0ems3M3NldXF3OXlkY2tneW56djUiOlswXX0=,WzEzMSwxLDJd,eyJ0eXBlIjoiY2FuY2VsLW9yZGVyIiwiaW5mbyI6eyJ0eF9oYXNoIjoiZmEyMjUzYmExZTBjNzQ5NDQwYzc3NWFmOGEyNjQxYzI1OGI4NjFiMjlmNThiNjljNTBjOTljZDE1NWE4YjUwNCIsImFzc2V0IjoiQTE0MDc3MDg5MTk3OTkzODk0OTciLCJxdWFudGl0eSI6IjIiLCJwcmljZSI6IjQuMDAwMDAwMDAiLCJ4Y3BfcHJpY2UiOiI4LjAwMDAwMDAwIiwiY3JlYXRlZF9hdCI6MTc1ODkyMDY0MCwiYXNzZXRfZGl2aXNpYmlsaXR5IjpmYWxzZX19";
+
+      final result = actionRepository.fromString(encodedString);
+
+      // Assert
+      expect(result.isRight(), true);
+      result.match((l) => fail('Expected Right but got Left: $l'), (r) {
+        expect(r, isA<RPCSignPsbtAction>());
+        final action = r as RPCSignPsbtAction;
+
+        expect(action.psbtType, isA<CancelOrder>());
+        expect((action.psbtType as CancelOrder).asset, 'A1407708919799389497');
+        expect(
+            (action.psbtType as CancelOrder).quantity.quantity, BigInt.from(2));
+        expect(
+            (action.psbtType as CancelOrder).xcpPrice,
+            Price(
+              pair: MarketPair(
+                quoteDivisible: true,
+                baseDivisible: false,
+              ),
+              numer: BigInt.from(8) * TenToTheEigth.bigIntValue,
+              denom: BigInt.from(2),
+            ));
       });
     });
   });
