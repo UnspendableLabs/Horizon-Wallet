@@ -1,7 +1,6 @@
 import "dart:convert";
 import 'package:decimal/decimal.dart';
 import "package:horizon/common/constants.dart";
-import "package:horizon/domain/entities/asset.dart";
 import "package:horizon/domain/entities/asset_quantity.dart";
 import "package:horizon/domain/entities/psbt_type.dart";
 import "package:horizon/domain/repositories/action_repository.dart";

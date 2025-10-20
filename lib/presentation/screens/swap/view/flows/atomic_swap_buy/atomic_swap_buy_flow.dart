@@ -35,7 +35,6 @@ import 'package:horizon/domain/repositories/atomic_swap_repository.dart';
 
 import 'package:horizon/presentation/common/transactions/success_animation.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
-import 'package:horizon/extensions.dart';
 
 class SwapSuccessStep extends StatefulWidget {
   const SwapSuccessStep({super.key});

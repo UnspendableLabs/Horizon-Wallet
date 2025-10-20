@@ -2,14 +2,11 @@ import 'package:formz/formz.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/domain/entities/asset_quantity.dart';
 
 import 'package:horizon/domain/entities/extension_rpc.dart';
 import 'package:horizon/domain/entities/network.dart';
 import 'package:horizon/domain/entities/psbt_type.dart';
-import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
-import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:horizon/presentation/common/sats_to_usd_display.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_state.dart';

@@ -1,4 +1,3 @@
-import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/asset_quantity.dart';
 
 sealed class PsbtType {}

@@ -3,7 +3,6 @@ import 'package:horizon/domain/entities/account_v2.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:horizon/domain/entities/action.dart' as URLAction;
 import 'package:horizon/domain/entities/extension_rpc.dart';
-import 'package:horizon/domain/entities/psbt_type.dart';
 import 'package:horizon/extensions.dart';
 import 'package:horizon/domain/entities/action.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';

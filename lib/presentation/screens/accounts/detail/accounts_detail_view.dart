@@ -244,8 +244,7 @@ class _InfoRow extends StatelessWidget {
       this.valueStyle,
       this.monospace = false,
       this.copyable = false,
-      this.ellipsizeMiddle = false,
-      this.tooltip});
+      this.ellipsizeMiddle = false});
 
   @override
   Widget build(BuildContext context) {

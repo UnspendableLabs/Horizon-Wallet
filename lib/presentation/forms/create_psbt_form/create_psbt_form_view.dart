@@ -127,7 +127,7 @@ class CreatePsbtFormProvider extends StatelessWidget {
   final Widget Function(
       CreatePsbtFormActions actions, CreatePsbtFormModel state) child;
 
-  CreatePsbtFormProvider({
+  const CreatePsbtFormProvider({
     super.key,
     required this.asset,
     required this.assetRoyalty,
