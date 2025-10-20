@@ -540,21 +540,41 @@ void main() {
       });
     });
 
-    test("lock description", () {});
-    const encodedString =
-        "signPsbt,1423382443,63dd99ad-b6cd-468e-9509-3d3d111c9345,https://horizon-market-testnet.vercel.app,Horizon Market | Trade Bitcoin NFTs & Counterparty Tokens,https://horizon-market-testnet.vercel.app/icon0.ico?ca04633c4c0c2f74,70736274ff01007a0200000001501af54362af72cb13a0c970244fce2e443f92197015a7c0bfb30c44ba2e529b0100000000ffffffff0200000000000000001f6a1d45266484fc6612f8ccc947d55931086cb79278297b168bd1eb279499c313c8030000000000160014a8b21366aa1dae07bffe52c56f4619e01c523716000000000001011fefcd030000000000160014a8b21366aa1dae07bffe52c56f4619e01c52371601030401000000000000,eyJ0YjFxNHplcHhlNDJya2hxMDBsNzJ0ems3M3NldXF3OXlkY2tneW56djUiOlswXX0=,WzEzMSwxLDJd,eyJ0eXBlIjoibG9jay1kZXNjcmlwdGlvbiIsImluZm8iOnsiYXNzZXQiOiJBMTYxOTY0Njg2NjI5NTM4NjAwMDYiLCJxdWFudGl0eSI6MCwiZGVzY3JpcHRpb24iOiJMT0NLIiwiZGl2aXNpYmxlIjpmYWxzZSwiYXNzZXRfZGl2aXNpYmlsaXR5IjpmYWxzZX19";
+    test("lock description", () {
+      const encodedString =
+          "signPsbt,1423382443,63dd99ad-b6cd-468e-9509-3d3d111c9345,https://horizon-market-testnet.vercel.app,Horizon Market | Trade Bitcoin NFTs & Counterparty Tokens,https://horizon-market-testnet.vercel.app/icon0.ico?ca04633c4c0c2f74,70736274ff01007a0200000001501af54362af72cb13a0c970244fce2e443f92197015a7c0bfb30c44ba2e529b0100000000ffffffff0200000000000000001f6a1d45266484fc6612f8ccc947d55931086cb79278297b168bd1eb279499c313c8030000000000160014a8b21366aa1dae07bffe52c56f4619e01c523716000000000001011fefcd030000000000160014a8b21366aa1dae07bffe52c56f4619e01c52371601030401000000000000,eyJ0YjFxNHplcHhlNDJya2hxMDBsNzJ0ems3M3NldXF3OXlkY2tneW56djUiOlswXX0=,WzEzMSwxLDJd,eyJ0eXBlIjoibG9jay1kZXNjcmlwdGlvbiIsImluZm8iOnsiYXNzZXQiOiJBMTYxOTY0Njg2NjI5NTM4NjAwMDYiLCJxdWFudGl0eSI6MCwiZGVzY3JpcHRpb24iOiJMT0NLIiwiZGl2aXNpYmxlIjpmYWxzZSwiYXNzZXRfZGl2aXNpYmlsaXR5IjpmYWxzZX19";
 
-    final result = actionRepository.fromString(encodedString);
+      final result = actionRepository.fromString(encodedString);
 
-    // Assert
-    expect(result.isRight(), true);
-    result.match((l) => fail('Expected Right but got Left: $l'), (r) {
-      expect(r, isA<RPCSignPsbtAction>());
-      final action = r as RPCSignPsbtAction;
+      // Assert
+      expect(result.isRight(), true);
+      result.match((l) => fail('Expected Right but got Left: $l'), (r) {
+        expect(r, isA<RPCSignPsbtAction>());
+        final action = r as RPCSignPsbtAction;
 
-      expect(action.psbtType, isA<LockDescription>());
-      expect(
-          (action.psbtType as LockDescription).asset, 'A16196468662953860006');
+        expect(action.psbtType, isA<LockDescription>());
+        expect((action.psbtType as LockDescription).asset,
+            'A16196468662953860006');
+      });
+    });
+    test("change description", () {
+      const encodedString =
+          "signPsbt,1423382443,19b3792a-0f4e-433d-8984-13ca572e7aa6,https://horizon-market-testnet.vercel.app,Horizon Market | Trade Bitcoin NFTs & Counterparty Tokens,https://horizon-market-testnet.vercel.app/icon0.ico?ca04633c4c0c2f74,70736274ff010081020000000167a7510010e96c367c68c5a872b086d53dd612ed76491bb8d6fb519894b53f220100000000ffffffff020000000000000000266a24014f4dce892bda56af4b31b932f2df93cbfdbc3531cf9e772b49b9b10107d61ece47826e5451000000000000160014a8b21366aa1dae07bffe52c56f4619e01c523716000000000001011f7657000000000000160014a8b21366aa1dae07bffe52c56f4619e01c52371601030401000000000000,eyJ0YjFxNHplcHhlNDJya2hxMDBsNzJ0ems3M3NldXF3OXlkY2tneW56djUiOlswXX0=,WzEzMSwxLDJd,eyJ0eXBlIjoiY2hhbmdlLWRlc2NyaXB0aW9uIiwiaW5mbyI6eyJhc3NldCI6IkExNDA3NzA4OTE5Nzk5Mzg5NDk3IiwiZGVzY3JpcHRpb24iOiJyZWFsbHkgY29vbCIsInF1YW50aXR5IjowLCJkaXZpc2libGUiOmZhbHNlLCJhc3NldF9kaXZpc2liaWxpdHkiOmZhbHNlfX0=";
+
+      final result = actionRepository.fromString(encodedString);
+
+      // Assert
+      expect(result.isRight(), true);
+      result.match((l) => fail('Expected Right but got Left: $l'), (r) {
+        expect(r, isA<RPCSignPsbtAction>());
+        final action = r as RPCSignPsbtAction;
+
+        expect(action.psbtType, isA<ChangeDescription>());
+        expect((action.psbtType as ChangeDescription).asset,
+            'A1407708919799389497');
+        expect(
+            (action.psbtType as ChangeDescription).description, 'really cool');
+      });
     });
   });
 }
