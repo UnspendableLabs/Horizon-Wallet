@@ -247,12 +247,12 @@ class SignPsbtState with FormzMixin {
         ]),
       LockQuantity(
         asset: var asset,
-        quantity: var quantity,
+        // quantity: var quantity, Quantity is always 0?
       ) =>
         KeyValueSummaryViewModel(networkFee: networkFee, entries: [
           MapEntry("type", "lock quantity"),
           MapEntry("asset", asset),
-          MapEntry("quantity", quantity.normalizedPretty()),
+          // MapEntry("quantity", quantity.normalizedPretty()),
         ]),
       Destroy(asset: var asset, quantity: var quantity, tag: var tag) =>
         KeyValueSummaryViewModel(networkFee: networkFee, entries: [
