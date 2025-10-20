@@ -338,6 +338,67 @@ PsbtType _derivePsbtType({
   print("Deriving PsbtType for type='$type', info=$info");
 
   switch (type) {
+    case "fairminter":
+      final issuanceType = _asString(info["issuance_type"]);
+      final asset = _asString(info["asset"]);
+      final quantityInt = _asInt(info["quantity"]);
+      final divisible = _asBool(info["divisible"]);
+      final maxMintPerTx = _asInt(info["max_mint_per_tx"]);
+      final quantityByPriceInt = _asInt(info["quantity_by_price"]);
+      final premintQuantityInt = _asInt(info["premint_quantity"]);
+      final mintedAssetCommission = info["minted_asset_commission"] is num
+          ? (info["minted_asset_commission"] as num).toDouble()
+          : null;
+      final encoding = _asString(info["encoding"]);
+      final inscription = info["inscription"] is String
+          ? info["inscription"] as String
+          : (info["inscription"] is bool
+              ? (info["inscription"] as bool).toString()
+              : null);
+      final description = _asString(info["description"]);
+      final mimeType = _asString(info["mime_type"]);
+      final audio = _asString(info["audio"]);
+      final media = _asString(info["media"]);
+      final startBlock = _asInt(info["start_block"]);
+      final endBlock = _asInt(info["end_block"]);
+      final softCap = _asInt(info["soft_cap"]);
+      final softCapDeadlineBlock = _asInt(info["soft_cap_deadline_block"]);
+
+      return Fairminter(
+        issuanceType: issuanceType,
+        asset: asset,
+        quantity: quantityInt != null
+            ? AssetQuantity(
+                divisible: divisible,
+                quantity: BigInt.from(quantityInt),
+              )
+            : null,
+        maxMintPerTx: maxMintPerTx != null
+            ? AssetQuantity(
+                divisible: divisible,
+                quantity: BigInt.from(maxMintPerTx),
+              )
+            : null,
+        quantityByPrice:
+            quantityByPriceInt != null ? BigInt.from(quantityByPriceInt) : null,
+        premintQuantity: premintQuantityInt != null
+            ? AssetQuantity(
+                divisible: divisible,
+                quantity: BigInt.from(premintQuantityInt),
+              )
+            : null,
+        mintedAssetCommission: mintedAssetCommission,
+        encoding: encoding,
+        inscription: inscription,
+        description: description,
+        mimeType: mimeType,
+        audio: audio,
+        media: media,
+        startBlock: startBlock,
+        endBlock: endBlock,
+        softCap: softCap,
+        softCapDeadlineBlock: softCapDeadlineBlock,
+      );
     case "issuance":
       final asset = _asString(info["asset"]);
       final quantityInt = _asInt(info["quantity"]);

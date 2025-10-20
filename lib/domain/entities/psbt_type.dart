@@ -258,10 +258,9 @@ class Fairminter extends TrustedPsbt {
   final String? issuanceType;
   final String? asset;
   final AssetQuantity? quantity;
-  final bool? divisible;
-  final int? maxMintPerTx;
+  final AssetQuantity? maxMintPerTx;
   final BigInt? quantityByPrice;
-  final BigInt? premintQuantity;
+  final AssetQuantity? premintQuantity;
   final num? mintedAssetCommission;
   final String? encoding;
   final String? inscription;
@@ -271,14 +270,13 @@ class Fairminter extends TrustedPsbt {
   final String? media;
   final int? startBlock;
   final int? endBlock;
-  final BigInt? softCap;
+  final int? softCap;
   final int? softCapDeadlineBlock;
 
   Fairminter({
     this.issuanceType,
     this.asset,
     this.quantity,
-    this.divisible,
     this.maxMintPerTx,
     this.quantityByPrice,
     this.premintQuantity,

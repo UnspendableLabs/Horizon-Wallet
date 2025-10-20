@@ -425,5 +425,21 @@ void main() {
             BigInt.from(5012340000));
       });
     });
+
+    test("fairminter", () {
+      const encodedString =
+          "signPsbt,1423382259,c04cfb4f-9bc0-48a6-9e1f-00539d927df1,https://horizon.market,Horizon Market | Trade Bitcoin NFTs & Counterparty Tokens,https://horizon.market/icon0.ico?ca04633c4c0c2f74,70736274ff01007d0200000001b9c712c5cb58b0cd56430616ba576ad4c4802e1c1cf5636d9048d49e3f55f5580200000000ffffffff0283010000000000002251206ecccfe596aedd5fa6102906cc37c59e3668a7fc6fd97624d3170fc3825bcb106747010000000000160014ac2f1826c10fd1461de8e95fe17913ddecb2000c000000000001011fb54a010000000000160014ac2f1826c10fd1461de8e95fe17913ddecb2000c01030401000000000000,eyJiYzFxNHNoM3Nma3BwbGc1djgwZ2E5MDd6N2dubWhrdHlxcXZlN3k1bjIiOlswXX0=,WzEzMSwxLDJd,eyJ0eXBlIjoiZmFpcm1pbnRlciIsImluZm8iOnsiaXNzdWFuY2VfdHlwZSI6Im1pbnQiLCJhc3NldCI6IkExMzkzMTEzNDc4NDI5MjI4NzA1MCIsImRpdmlzaWJsZSI6ZmFsc2UsIm1heF9taW50X3Blcl90eCI6MSwiZW5jb2RpbmciOiJhdXRvIiwiaW5zY3JpcHRpb24iOm51bGwsImRlc2NyaXB0aW9uIjoiaXBmczpiYWZrcmVpZ2tpdmh4eXNscWx5Y2huNWx2Mzd4eXlnY3RwN2EzZWdrZnhjem9xanhmN2kzdnZzZzZlNCIsIm1pbWVfdHlwZSI6bnVsbCwiYXVkaW8iOm51bGwsIm1lZGlhIjoiYmFma3JlaWZpN2YzcG9rc242YTZqdG50bmVyNGNvcTc1bTRpcDRreDY2dmptd296cG1sNnJ5YW9sNXUifX0=";
+
+      final result = actionRepository.fromString(encodedString);
+
+      // Assert
+      expect(result.isRight(), true);
+      result.match((l) => fail('Expected Right but got Left: $l'), (r) {
+        expect(r, isA<RPCSignPsbtAction>());
+        final action = r as RPCSignPsbtAction;
+
+        expect(action.psbtType, isA<Fairminter>());
+      });
+    });
   });
 }

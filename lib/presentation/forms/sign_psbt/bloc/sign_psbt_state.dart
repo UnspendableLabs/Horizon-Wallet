@@ -153,7 +153,6 @@ class SignPsbtState with FormzMixin {
       Fairminter(
         asset: var asset,
         quantity: var quantity,
-        divisible: var divisible,
         maxMintPerTx: var maxMintPerTx,
         quantityByPrice: var quantityByPrice,
         premintQuantity: var premintQuantity,
@@ -169,38 +168,37 @@ class SignPsbtState with FormzMixin {
         softCap: var softCap,
         softCapDeadlineBlock: var softCapDeadlineBlock,
       ) =>
-        KeyValueSummaryViewModel(networkFee: networkFee, entries: [
-          MapEntry("type", "fairminter"),
-          MapEntry("asset", asset ?? "-"),
-          MapEntry("quantity", quantity?.normalizedPretty() ?? "-"),
-          MapEntry("divisible", divisible != null ? divisible.toString() : "-"),
-          MapEntry("max mint per tx",
-              maxMintPerTx != null ? maxMintPerTx.toString() : "-"),
-          MapEntry("quantity by price",
-              quantityByPrice != null ? quantityByPrice.toString() : "-"),
-          MapEntry("premint quantity",
-              premintQuantity != null ? premintQuantity.toString() : "-"),
-          MapEntry(
-              "minted asset commission",
-              mintedAssetCommission != null
-                  ? mintedAssetCommission.toString()
-                  : "-"),
-          MapEntry("encoding", encoding ?? "-"),
-          MapEntry("inscription", inscription ?? "-"),
-          MapEntry("description", description ?? "-"),
-          MapEntry("mime type", mimeType ?? "-"),
-          MapEntry("audio", audio ?? "-"),
-          MapEntry("media", media ?? "-"),
-          MapEntry(
-              "start block", startBlock != null ? startBlock.toString() : "-"),
-          MapEntry("end block", endBlock != null ? endBlock.toString() : "-"),
-          MapEntry("soft cap", softCap != null ? softCap.toString() : "-"),
-          MapEntry(
-              "soft cap deadline block",
-              softCapDeadlineBlock != null
-                  ? softCapDeadlineBlock.toString()
-                  : "-"),
-        ]),
+        KeyValueSummaryViewModel(
+          networkFee: networkFee,
+          entries: ([
+            MapEntry("type", "fairminter"),
+            if (asset != null) MapEntry("asset", asset.toString()),
+            if (quantity != null)
+              MapEntry("quantity", quantity.normalizedPretty()),
+            if (maxMintPerTx != null)
+              MapEntry("max mint per tx", maxMintPerTx.normalizedPretty()),
+            if (quantityByPrice != null)
+              MapEntry("quantity by price", quantityByPrice.toString()),
+            if (premintQuantity != null)
+              MapEntry("premint quantity", premintQuantity.normalizedPretty()),
+            if (mintedAssetCommission != null)
+              MapEntry(
+                  "minted asset commission", mintedAssetCommission.toString()),
+            if (encoding != null) MapEntry("encoding", encoding),
+            if (inscription != null) MapEntry("inscription", inscription),
+            if (description != null) MapEntry("description", description),
+            if (mimeType != null) MapEntry("mime type", mimeType),
+            if (audio != null) MapEntry("audio", audio.toString()),
+            if (media != null) MapEntry("media", media.toString()),
+            if (startBlock != null)
+              MapEntry("start block", startBlock.toString()),
+            if (endBlock != null) MapEntry("end block", endBlock.toString()),
+            if (softCap != null) MapEntry("soft cap", softCap.toString()),
+            if (softCapDeadlineBlock != null)
+              MapEntry(
+                  "soft cap deadline block", softCapDeadlineBlock.toString()),
+          ]),
+        ),
       Issuance(
         asset: var asset,
         quantity: var quantity,
