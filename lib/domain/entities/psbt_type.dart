@@ -232,3 +232,66 @@ class Issuance extends TrustedPsbt {
     this.quantity,
   });
 }
+
+// export type FairminterTransactionInfo = {
+//   issuance_type?: string;
+//   asset?: string;
+//   quantity?: number;
+//   divisible?: boolean;
+//   max_mint_per_tx?: number;
+//   quantity_by_price?: number;
+//   premint_quantity?: number;
+//   minted_asset_commission?: number;
+//   encoding?: string | null;
+//   inscription?: string | null | boolean;
+//   description?: string;
+//   mime_type?: string | null;
+//   audio?: string | null;
+//   media?: string | null;
+//   start_block?: number;
+//   end_block?: number;
+//   soft_cap?: number;
+//   soft_cap_deadline_block?: number;
+// };
+
+class Fairminter extends TrustedPsbt {
+  final String? issuanceType;
+  final String? asset;
+  final AssetQuantity? quantity;
+  final bool? divisible;
+  final int? maxMintPerTx;
+  final BigInt? quantityByPrice;
+  final BigInt? premintQuantity;
+  final num? mintedAssetCommission;
+  final String? encoding;
+  final String? inscription;
+  final String? description;
+  final String? mimeType;
+  final String? audio;
+  final String? media;
+  final int? startBlock;
+  final int? endBlock;
+  final BigInt? softCap;
+  final int? softCapDeadlineBlock;
+
+  Fairminter({
+    this.issuanceType,
+    this.asset,
+    this.quantity,
+    this.divisible,
+    this.maxMintPerTx,
+    this.quantityByPrice,
+    this.premintQuantity,
+    this.mintedAssetCommission,
+    this.encoding,
+    this.inscription,
+    this.description,
+    this.mimeType,
+    this.audio,
+    this.media,
+    this.startBlock,
+    this.endBlock,
+    this.softCap,
+    this.softCapDeadlineBlock,
+  });
+}

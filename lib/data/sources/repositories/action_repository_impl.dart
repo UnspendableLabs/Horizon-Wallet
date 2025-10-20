@@ -8,6 +8,10 @@ import "package:horizon/domain/repositories/action_repository.dart";
 import "package:horizon/domain/entities/action.dart";
 import "package:fpdart/fpdart.dart";
 
+// sign PSBT
+const signPsbtAction =
+    "signPsbt,1423382259,5f2306bc-6b41-4c74-9972-688ee27614a9,https://horizon.market,Horizon Market | Trade Bitcoin NFTs & Counterparty Tokens,https://horizon.market/icon0.ico?ca04633c4c0c2f74,70736274ff01009a020000000200000000000000000000000000000000000000000000000000000000000000000000000000ffffffff1a0c8c8d1fb07eecb8e024517e0b53830d73580e075c50367b7d187bb13eebfd0000000000ffffffff020000000000000000160014ac2f1826c10fd1461de8e95fe17913ddecb2000c80841e0000000000160014ac2f1826c10fd1461de8e95fe17913ddecb2000c0000000000010304020000000001011f2202000000000000160014ac2f1826c10fd1461de8e95fe17913ddecb2000c01030483000000000000,eyJiYzFxNHNoM3Nma3BwbGc1djgwZ2E5MDd6N2dubWhrdHlxcXZlN3k1bjIiOlsxXX0=,WzEzMSwxLDJd,eyJ0eXBlIjoic3dhcC1jcmVhdGUiLCJpbmZvIjp7ImFzc2V0IjoiQ1NBVCIsInF1YW50aXR5IjoxMDAwMDAwMDAsInByaWNlIjoyMDAwMDAwLCJleHBpcmVzX2F0IjoiMjAyNS0xMS0xOVQxNDo1Mjo1MS4zODRaIiwidXR4b19pZCI6ImZkZWIzZWIxN2IxODdkN2IzNjUwNWMwNzBlNTg3MzBkODM1MzBiN2U1MTI0ZTBiOGVjN2ViMDFmOGQ4YzBjMWE6MCIsInV0eG9fdmFsdWUiOjU0Niwic2VsbGVyX2FkZHJlc3MiOiJiYzFxNHNoM3Nma3BwbGc1djgwZ2E5MDd6N2dubWhrdHlxcXZlN3k1bjIiLCJhc3NldF9kaXZpc2liaWxpdHkiOmZhbHNlfX0=";
+
 // DETACH
 // parsing action string: signPsbt,1423381683,a806e4cb-8fa1-45ae-84ac-effa1a36c8f0,https://horizon.market,Horizon Market | Trade Bitcoin NFTs & Counterparty Tokens,https://horizon.market/icon0.ico?ca04633c4c0c2f74,70736274ff01004802000000011a0c8c8d1fb07eecb8e024517e0b53830d73580e075c50367b7d187bb13eebfd0000000000ffffffff0100000000000000000c6a0ac152adfb537dd25c6839000000000001011f2202000000000000160014ac2f1826c10fd1461de8e95fe17913ddecb2000c010304010000000000,eyJiYzFxNHNoM3Nma3BwbGc1djgwZ2E5MDd6N2dubWhrdHlxcXZlN3k1bjIiOlswXX0=,WzEzMSwxLDJd,eyJ0eXBlIjoiZGV0YWNoIiwiaW5mbyI6eyJ0eF9oYXNoIjoiZmRlYjNlYjE3YjE4N2Q3YjM2NTA1YzA3MGU1ODczMGQ4MzUzMGI3ZTUxMjRlMGI4ZWM3ZWIwMWY4ZDhjMGMxYSIsImFzc2V0IjoiIiwicXVhbnRpdHkiOjB9fQ==
 
@@ -250,27 +254,17 @@ RPCSignPsbtAction _buildSignPsbtAction({
 }) {
   final intTabId = int.parse(tabId);
   final decOrigin = Uri.decodeComponent(origin);
-  print("decOrigin: $decOrigin ");
   final decTitle = Uri.decodeComponent(title);
-  print("decTitle: $decTitle ");
   final decFavicon = Uri.decodeComponent(favicon);
-  print("decFavicon: $decFavicon ");
 
   final signInputs =
       _parseSignInputs(signInputsB64); // throws on bad format (kept)
 
-  print("signInputs: $signInputs ");
   final sighashTypes = _parseNullableSighashTypes(sighashTypesB64);
-
-  print("sighashTypes: $sighashTypes ");
 
   final txInfo = _parseNullableTxInfo(txInfoB64);
 
-  print("txInfo: $txInfo ");
-
   final psbtType = _derivePsbtType(origin: decOrigin, txInfo: txInfo);
-
-  print("psbtType: $psbtType ");
 
   return RPCSignPsbtAction(
     intTabId,
@@ -338,7 +332,10 @@ PsbtType _derivePsbtType({
 
   final type = txInfo["type"];
   final info = txInfo["info"];
+
   if (type is! String || info is! Map<String, dynamic>) return OpaquePsbt();
+
+  print("Deriving PsbtType for type='$type', info=$info");
 
   switch (type) {
     case "issuance":
@@ -521,6 +518,12 @@ PsbtType _derivePsbtType({
           ? null
           : AssetQuantity(divisible: true, quantity: BigInt.from(royaltyInt));
       return AtomicSwapBuyPsbt(royalty: royalty);
+    case "swap-multi-buy":
+      final royaltyInt = _asInt(info["royalty"]);
+      final royalty = royaltyInt == null
+          ? null
+          : AssetQuantity(divisible: true, quantity: BigInt.from(royaltyInt));
+      return AtomicSwapBuyPsbt(royalty: royalty);
     case "swap-create-fee":
       return AtomicSwapListingFee();
     case "swap-create":
@@ -559,11 +562,8 @@ class ActionRepositoryImpl implements ActionRepository {
   }
 
   Action _parse(String str) {
-    print("parsing action string: $str");
-
     // IMPORTANT: split first (no global decode)
     final parts = str.split(',');
-    print("Parsing action, parts.length=${parts.length}");
 
     if (parts.isEmpty) throw Exception('Empty action string');
 
