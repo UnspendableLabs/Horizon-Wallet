@@ -263,7 +263,7 @@ class SignPsbtState with FormzMixin {
         ]),
       UtxoMove(destination: var destination) =>
         KeyValueSummaryViewModel(networkFee: networkFee, entries: [
-          MapEntry("type", "sweep"),
+          MapEntry("type", "move"),
           MapEntry("destination", destination),
         ]),
       Sweep(destination: var destination) =>

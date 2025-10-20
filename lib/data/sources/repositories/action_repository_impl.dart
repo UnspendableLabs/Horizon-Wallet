@@ -626,6 +626,8 @@ class ActionRepositoryImpl implements ActionRepository {
     // IMPORTANT: split first (no global decode)
     final parts = str.split(',');
 
+    print(str);
+
     if (parts.isEmpty) throw Exception('Empty action string');
 
     switch (parts[0]) {
