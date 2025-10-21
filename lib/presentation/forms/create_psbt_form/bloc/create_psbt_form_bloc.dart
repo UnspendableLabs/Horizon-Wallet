@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:decimal/decimal.dart';
 import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/asset_quantity.dart';
+import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/royalty_by_asset.dart';
@@ -65,13 +66,21 @@ enum BtcPriceInputError {
   isTooSmallBecauseOfRoyalty
 }
 
+enum BtcPriceUnit {
+  sats,
+  btc,
+}
+
 class BtcPriceInput extends FormzInput<String, BtcPriceInputError> {
   final BigInt minPrice;
+  final BtcPriceUnit unit;
 
-  const BtcPriceInput.pure({required this.minPrice}) : super.pure('');
+  const BtcPriceInput.pure({required this.minPrice, required this.unit})
+      : super.pure('');
   const BtcPriceInput.dirty({
     required String value,
     required this.minPrice,
+    required this.unit,
   }) : super.dirty(value);
   @override
   BtcPriceInputError? validator(String value) {
@@ -111,6 +120,10 @@ class BtcPriceInput extends FormzInput<String, BtcPriceInputError> {
   }
 
   Option<BigInt> get asSats {
+    // chat, wihtha  value decimal value of 0.02, this returns 0
+    if (unit == BtcPriceUnit.sats) {
+      return asDecimal.map((d) => d.toBigInt());
+    }
     return asDecimal.map((d) => d * Decimal.fromInt(100000000)).map(
           (d) => d.toBigInt(),
         );
@@ -267,6 +280,10 @@ class BtcPriceInputChanged extends CreatePsbtFormEvent {
   const BtcPriceInputChanged({required this.value});
 }
 
+class BtcPriceUnitToggle extends CreatePsbtFormEvent {
+  const BtcPriceUnitToggle();
+}
+
 class SubmitClicked extends CreatePsbtFormEvent {}
 
 class CloseSignPsbtModalClicked extends CreatePsbtFormEvent {
@@ -325,6 +342,7 @@ class CreatePsbtFormBloc
             showSignPsbtModal: false,
             unsignedPsbtHex: const None(),
             btcPriceInput: BtcPriceInput.pure(
+                unit: BtcPriceUnit.sats,
                 minPrice: assetRoyalty.fold(
                     () => dust,
                     (royalty) => _calculateMinPrice(
@@ -354,6 +372,7 @@ class CreatePsbtFormBloc
     on<ExpiryDateSelected>(_onExpiryDateSelected);
     on<RelativePriceButtonClicked>(_onRelativePriceButtonClicked);
     on<FormDataRequested>(_onFormDataRequested);
+    on<BtcPriceUnitToggle>(_onBtcPriceUnitToggle);
 
     add(FormDataRequested());
   }
@@ -451,6 +470,7 @@ class CreatePsbtFormBloc
         () => state.copyWith(perUnitFloorPrice: Success(Option.none())),
         (data) => state.copyWith(
           btcPriceInput: BtcPriceInput.dirty(
+            unit: state.btcPriceInput.unit,
             minPrice: state.minPrice,
             value: data.$2,
           ),
@@ -467,13 +487,45 @@ class CreatePsbtFormBloc
     emit(state.copyWith(expiryDate: event.date));
   }
 
+  void _onBtcPriceUnitToggle(
+      BtcPriceUnitToggle event, Emitter<CreatePsbtFormModel> emit) {
+    final newUnit = state.btcPriceInput.unit == BtcPriceUnit.sats
+        ? BtcPriceUnit.btc
+        : BtcPriceUnit.sats;
+    // sats to btc and btc to sats convert value
+
+    if (state.btcPriceInput.value.isNotEmpty) {
+      final newValue = newUnit == BtcPriceUnit.btc
+          ? satoshisToBtc(state.btcPriceInput.asDecimal
+                  .getOrElse(() => Decimal.zero)
+                  .toBigInt()
+                  .toInt())
+              .toString()
+          : state.btcPriceInput.asSats.getOrElse(() => BigInt.zero).toString();
+      emit(state.copyWith(
+          btcPriceInput: BtcPriceInput.dirty(
+        minPrice: state.minPrice,
+        value: newValue,
+        unit: newUnit,
+      )));
+    } else {
+      emit(state.copyWith(
+          btcPriceInput: BtcPriceInput.pure(
+        minPrice: state.minPrice,
+        unit: newUnit,
+      )));
+    }
+  }
+
   // give the handler an explicit return type
   void _onBtcPriceInputChanged(
     BtcPriceInputChanged event,
     Emitter<CreatePsbtFormModel> emit,
   ) {
-    final btcPriceInput =
-        BtcPriceInput.dirty(minPrice: state.minPrice, value: event.value);
+    final btcPriceInput = BtcPriceInput.dirty(
+        minPrice: state.minPrice,
+        value: event.value,
+        unit: state.btcPriceInput.unit);
 
     emit(
       state.copyWith(
