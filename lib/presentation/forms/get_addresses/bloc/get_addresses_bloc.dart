@@ -44,7 +44,6 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
     on<AddressSelectionModeChanged>(_handleAddressSelectionModeChanged);
     on<ImportedAddressSelected>(_handleImportedAddressSelected);
     on<PasswordChanged>(_handlePasswordChanged);
-    on<WarningAcceptedChanged>(_handleWarningAcceptedChanged);
   }
 
   void _handlePasswordChanged(
@@ -75,13 +74,6 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
       throw GetAddressesException('Address selection mode not supported.');
     }
 
-    if (!state.warningAccepted) {
-      emit(state.copyWith(
-        submissionStatus: FormzSubmissionStatus.failure,
-        error: 'Please accept the warning before continuing.',
-      ));
-      return;
-    }
     emit(state.copyWith(submissionStatus: FormzSubmissionStatus.inProgress));
 
     AccountV2 account = accounts.firstWhere(
@@ -138,11 +130,6 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
           ? FormzSubmissionStatus.initial
           : FormzSubmissionStatus.failure,
     ));
-  }
-
-  void _handleWarningAcceptedChanged(
-      WarningAcceptedChanged event, Emitter<GetAddressesState> emit) {
-    emit(state.copyWith(warningAccepted: event.accepted));
   }
 }
 

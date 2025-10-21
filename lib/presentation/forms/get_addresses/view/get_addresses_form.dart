@@ -8,8 +8,8 @@ import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_even
 import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_state.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart'
     as HorizonUI;
-import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/dapp_info_widget.dart';
 
 String _shortenAddress(String? address, {int prefix = 6, int suffix = 5}) {
   if (address == null || address.length < (prefix + suffix)) {
@@ -25,6 +25,9 @@ class GetAddressesForm extends StatelessWidget {
   final List<AccountV2> accounts;
   final void Function(List<AddressRpc>) onSuccess;
   final VoidCallback onCancel;
+  final String? dappUrl;
+  final String? dappTitle;
+  final String? dappFavicon;
 
   const GetAddressesForm({
     super.key,
@@ -32,6 +35,9 @@ class GetAddressesForm extends StatelessWidget {
     required this.accounts,
     required this.onSuccess,
     required this.onCancel,
+    this.dappUrl,
+    this.dappTitle,
+    this.dappFavicon,
   });
 
   @override
@@ -50,66 +56,34 @@ class GetAddressesForm extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    const SizedBox(width: 16),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'CONNECT APP',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          // Text(
-                          //   'Requested by horizon.market',
-                          //   style: TextStyle(
-                          //     fontSize: 14,
-                          //     color: Colors.grey,
-                          //   ),
-                          // ),
-                        ],
-                      ),
-                    ),
-                  ],
+                DAppInfoWidget(
+                  title: 'CONNECT APP',
+                  dappUrl: dappUrl,
+                  dappTitle: dappTitle,
+                  dappFavicon: dappFavicon,
                 ),
                 const SizedBox(height: 24),
                 // Mode Selection
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Radio<AddressSelectionMode>(
-                          activeColor: green2,
-                          value: AddressSelectionMode.byAccount,
-                          groupValue: state.addressSelectionMode,
-                          onChanged: (mode) {
-                            context.read<GetAddressesBloc>().add(
-                                AddressSelectionModeChanged(
-                                    AddressSelectionMode.byAccount));
-                          },
-                        ),
-                        const Text('All Addresses in Account'),
-                      ],
+                HorizonUI.HorizonRedesignDropdown<AddressSelectionMode>(
+                  selectedValue: state.addressSelectionMode,
+                  onChanged: (mode) {
+                    if (mode != null) {
+                      context
+                          .read<GetAddressesBloc>()
+                          .add(AddressSelectionModeChanged(mode));
+                    }
+                  },
+                  items: const [
+                    DropdownMenuItem(
+                      value: AddressSelectionMode.byAccount,
+                      child: Text('All Addresses in Account'),
                     ),
-                    Row(children: [
-                      Radio<AddressSelectionMode>(
-                        activeColor: green2,
-                        value: AddressSelectionMode.importedAddresses,
-                        groupValue: state.addressSelectionMode,
-                        onChanged: (mode) {
-                          context.read<GetAddressesBloc>().add(
-                              AddressSelectionModeChanged(
-                                  AddressSelectionMode.importedAddresses));
-                        },
-                      ),
-                      const Text('Imported Addresses'),
-                    ])
+                    DropdownMenuItem(
+                      value: AddressSelectionMode.importedAddresses,
+                      child: Text('Imported Addresses'),
+                    ),
                   ],
+                  hintText: 'Select Address Mode',
                 ),
 
                 const SizedBox(height: 20),
@@ -168,26 +142,12 @@ class GetAddressesForm extends StatelessWidget {
                 ],
 
                 const SizedBox(height: 20),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Checkbox(
-                      value: state.warningAccepted,
-                      onChanged: (value) {
-                        context
-                            .read<GetAddressesBloc>()
-                            .add(WarningAcceptedChanged(value ?? false));
-                      },
-                      activeColor: green2,
-                      checkColor: Colors.white,
-                      side: const BorderSide(color: green2, width: 2),
-                    ),
-                    const Expanded(
-                      child: SelectableText(
-                        'If you use this address in a wallet that does not support Counterparty there is a very high risk of losing your UTXO-attached asset. Please confirm that you understand the risks.',
+                SelectableText(
+                  'If you use this address in a wallet that does not support Counterparty there is a very high risk of losing your UTXO-attached asset. By proceeding to connect you confirm that you understand this risk.',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: transparentWhite66,
                       ),
-                    ),
-                  ],
+                  textAlign: TextAlign.start,
                 ),
                 if (passwordRequired) ...[
                   const SizedBox(height: 24),
@@ -219,7 +179,6 @@ class GetAddressesForm extends StatelessWidget {
                       child: HorizonUI.HorizonButton(
                         disabled:
                             state.submissionStatus.isInProgressOrSuccess ||
-                                !state.warningAccepted ||
                                 (state.password.value.isEmpty &&
                                     passwordRequired) ||
                                 (state.addressSelectionMode ==

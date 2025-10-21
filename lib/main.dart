@@ -3,7 +3,6 @@ import 'package:horizon/domain/entities/account_v2.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:horizon/domain/entities/action.dart' as URLAction;
 import 'package:horizon/domain/entities/extension_rpc.dart';
-import 'package:horizon/domain/entities/psbt_type.dart';
 import 'package:horizon/extensions.dart';
 import 'package:horizon/domain/entities/action.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
@@ -30,6 +29,7 @@ import 'package:horizon/domain/services/database_manager_service.dart';
 import 'package:horizon/presentation/common/dialog_helper.dart';
 
 import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/dapp_info_widget.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_bloc.dart';
 import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_view.dart';
@@ -377,9 +377,57 @@ class AppRouter {
                   final action = actionRepository.dequeue().getOrThrow()
                       as RPCSignPsbtAction;
 
+                  final currentAddresses = session.addressIndexSet.list
+                      .map((e) => e.address)
+                      .toList();
+
+                  final signInputsFiltered = action.signInputs.keys;
+
+                  final intersection = currentAddresses
+                      .toSet()
+                      .intersection(signInputsFiltered.toSet());
+
+                  if (intersection.isEmpty) {
+                    return ActionHandlerShell(
+                        child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          DAppInfoWidget(
+                            title: 'SIGN PSBT',
+                            dappUrl: action.origin,
+                            dappTitle: action.title,
+                            dappFavicon: action.favicon,
+                          ),
+                          const SizedBox(height: 24),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              AppIcons.warningIcon(
+                                  color: red1, height: 32, width: 32),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+                          Expanded(
+                            child: Center(
+                              child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    "The application is requesting a signature from an address that is not found in your current account.  Select the correct account and try again.",
+                                    style: TextStyle(fontSize: 16, color: red1),
+                                  )),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ));
+                  }
+
                   return BlocProvider(
                       create: (_) => SignPsbtBloc(
-                            psbtType: OpaquePsbt(),
+                            psbtType: action.psbtType,
                             addresses: session.addressIndexSet.list,
                             httpConfig: session.httpConfig,
                             passwordRequired: GetIt.I<SettingsRepository>()
@@ -395,29 +443,15 @@ class AppRouter {
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                const SizedBox(width: 16),
-                                const Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'SIGN PSBT',
-                                        style: TextStyle(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                            DAppInfoWidget(
+                              title: 'SIGN PSBT',
+                              dappUrl: action.origin,
+                              dappTitle: action.title,
+                              dappFavicon: action.favicon,
                             ),
                             const SizedBox(height: 24),
                             SignPsbtForm(
-                              psbtType: OpaquePsbt(),
+                              psbtType: action.psbtType,
                               key: Key(action.psbt),
                               passwordRequired: GetIt.I<SettingsRepository>()
                                   .requirePasswordForCryptoOperations,
@@ -461,24 +495,11 @@ class AppRouter {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              const SizedBox(width: 16),
-                              const Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'SIGN MESSAGE',
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
+                          DAppInfoWidget(
+                            title: 'SIGN MESSAGE',
+                            dappUrl: action.origin,
+                            dappTitle: action.title,
+                            dappFavicon: action.favicon,
                           ),
                           Expanded(
                             child: Center(
@@ -506,25 +527,11 @@ class AppRouter {
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                const SizedBox(width: 16),
-                                const Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'SIGN MESSAGE',
-                                        style: TextStyle(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                            DAppInfoWidget(
+                              title: 'SIGN MESSAGE',
+                              dappUrl: action.origin,
+                              dappTitle: action.title,
+                              dappFavicon: action.favicon,
                             ),
                             SignMessageForm(
                               key: Key(action.message),

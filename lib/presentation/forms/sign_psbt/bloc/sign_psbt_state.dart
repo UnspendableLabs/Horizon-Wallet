@@ -52,6 +52,15 @@ class BtcSendSummaryViewModel extends PsbtSummaryViewModel {
   });
 }
 
+class MpmaSendSummaryViewModel extends PsbtSummaryViewModel {
+  final AssetQuantity networkFee;
+  final List<XCPSendSummaryViewModel> sends;
+  MpmaSendSummaryViewModel({
+    required this.networkFee,
+    required this.sends,
+  });
+}
+
 class XCPSendSummaryViewModel extends PsbtSummaryViewModel {
   final String assetName;
   final String toAddress;
@@ -88,6 +97,16 @@ class OpaquePsbtSummaryViewModel extends PsbtSummaryViewModel {
   });
 }
 
+class KeyValueSummaryViewModel extends PsbtSummaryViewModel {
+  final List<MapEntry<String, String>> entries;
+
+  final AssetQuantity networkFee;
+  KeyValueSummaryViewModel({
+    required this.networkFee,
+    required this.entries,
+  });
+}
+
 class SignPsbtState with FormzMixin {
   final PsbtType psbtType;
   final List<String> addresses;
@@ -121,6 +140,171 @@ class SignPsbtState with FormzMixin {
 
   PsbtSummaryViewModel get psbtSummaryViewModel {
     return switch (psbtType) {
+      Fairmint(asset: var asset, quantity: var quantity) =>
+        KeyValueSummaryViewModel(networkFee: networkFee, entries: [
+          MapEntry("type", "fairmint"),
+          MapEntry("asset", asset),
+          MapEntry("quantity", quantity.normalizedPretty()),
+        ]),
+      Dividend(
+        asset: var asset,
+        dividendAsset: var dividendAsset,
+        quantityPerUnit: var quantityPerUnit,
+      ) =>
+        KeyValueSummaryViewModel(
+          networkFee: networkFee,
+          entries: [
+            MapEntry("type", "dividend"),
+            MapEntry("asset", asset),
+            MapEntry("dividend asset", dividendAsset),
+            MapEntry("quantity per unit", quantityPerUnit.normalizedPretty()),
+          ],
+        ),
+      Mpma(sends: var sends) => MpmaSendSummaryViewModel(
+          networkFee: networkFee,
+          sends: sends
+              .map((e) => XCPSendSummaryViewModel(
+                    assetName: e.asset,
+                    toAddress: e.toAddress,
+                    quantity: e.quantity,
+                    networkFee: networkFee,
+                  ))
+              .toList(),
+        ),
+      Fairminter(
+        asset: var asset,
+        quantity: var quantity,
+        maxMintPerTx: var maxMintPerTx,
+        quantityByPrice: var quantityByPrice,
+        premintQuantity: var premintQuantity,
+        mintedAssetCommission: var mintedAssetCommission,
+        encoding: var encoding,
+        inscription: var inscription,
+        description: var description,
+        mimeType: var mimeType,
+        audio: var audio,
+        media: var media,
+        startBlock: var startBlock,
+        endBlock: var endBlock,
+        softCap: var softCap,
+        softCapDeadlineBlock: var softCapDeadlineBlock,
+      ) =>
+        KeyValueSummaryViewModel(
+          networkFee: networkFee,
+          entries: ([
+            MapEntry("type", "fairminter"),
+            if (asset != null) MapEntry("asset", asset.toString()),
+            if (quantity != null)
+              MapEntry("quantity", quantity.normalizedPretty()),
+            if (maxMintPerTx != null)
+              MapEntry("max mint per tx", maxMintPerTx.normalizedPretty()),
+            if (quantityByPrice != null)
+              MapEntry("quantity by price", quantityByPrice.toString()),
+            if (premintQuantity != null)
+              MapEntry("premint quantity", premintQuantity.normalizedPretty()),
+            if (mintedAssetCommission != null)
+              MapEntry(
+                  "minted asset commission", mintedAssetCommission.toString()),
+            if (encoding != null) MapEntry("encoding", encoding),
+            if (inscription != null) MapEntry("inscription", inscription),
+            if (description != null) MapEntry("description", description),
+            if (mimeType != null) MapEntry("mime type", mimeType),
+            if (audio != null) MapEntry("audio", audio.toString()),
+            if (media != null) MapEntry("media", media.toString()),
+            if (startBlock != null)
+              MapEntry("start block", startBlock.toString()),
+            if (endBlock != null) MapEntry("end block", endBlock.toString()),
+            if (softCap != null) MapEntry("soft cap", softCap.toString()),
+            if (softCapDeadlineBlock != null)
+              MapEntry(
+                  "soft cap deadline block", softCapDeadlineBlock.toString()),
+          ]),
+        ),
+      Issuance(
+        asset: var asset,
+        quantity: var quantity,
+      ) =>
+        KeyValueSummaryViewModel(networkFee: networkFee, entries: [
+          MapEntry("type", "issuance"),
+          MapEntry("asset", asset ?? "-"),
+          MapEntry("quantity", quantity?.normalizedPretty() ?? "-"),
+        ]),
+      IssueMore(
+        asset: var asset,
+        quantity: var quantity,
+      ) =>
+        KeyValueSummaryViewModel(networkFee: networkFee, entries: [
+          MapEntry("type", "issue more"),
+          MapEntry("asset", asset),
+          MapEntry("quantity", quantity.normalizedPretty()),
+        ]),
+      Reset(
+        asset: var asset,
+      ) =>
+        KeyValueSummaryViewModel(networkFee: networkFee, entries: [
+          MapEntry("type", "reset"),
+          MapEntry("asset", asset),
+        ]),
+      ChangeOwnership(
+        asset: var asset,
+        transferDestination: var transferDestination,
+      ) =>
+        KeyValueSummaryViewModel(networkFee: networkFee, entries: [
+          MapEntry("type", "change ownership"),
+          MapEntry("asset", asset),
+          MapEntry("transer destination", transferDestination),
+        ]),
+      ChangeDescription(asset: var asset, description: var description) =>
+        KeyValueSummaryViewModel(networkFee: networkFee, entries: [
+          MapEntry("type", "change description"),
+          MapEntry("asset", asset),
+          MapEntry("description", description),
+        ]),
+      LockDescription(
+        asset: var asset,
+        // description: var description descriptin is always "LOCK"
+      ) =>
+        KeyValueSummaryViewModel(networkFee: networkFee, entries: [
+          MapEntry("type", "lock description"),
+          MapEntry("asset", asset),
+          // MapEntry("description", description),
+        ]),
+      LockQuantity(
+        asset: var asset,
+        // quantity: var quantity, Quantity is always 0?
+      ) =>
+        KeyValueSummaryViewModel(networkFee: networkFee, entries: [
+          MapEntry("type", "lock quantity"),
+          MapEntry("asset", asset),
+          // MapEntry("quantity", quantity.normalizedPretty()),
+        ]),
+      Destroy(asset: var asset, quantity: var quantity, tag: var tag) =>
+        KeyValueSummaryViewModel(networkFee: networkFee, entries: [
+          MapEntry("type", "destroy"),
+          MapEntry("asset", asset),
+          MapEntry("quantity", quantity.normalizedPretty()),
+          MapEntry("tag", tag),
+        ]),
+      UtxoMove(destination: var destination) =>
+        KeyValueSummaryViewModel(networkFee: networkFee, entries: [
+          MapEntry("type", "move"),
+          MapEntry("destination", destination),
+        ]),
+      Sweep(destination: var destination) =>
+        KeyValueSummaryViewModel(networkFee: networkFee, entries: [
+          MapEntry("type", "sweep"),
+          MapEntry("destination", destination),
+        ]),
+      AttachPsbt(asset: var asset, quantity: var quantity) =>
+        KeyValueSummaryViewModel(networkFee: networkFee, entries: [
+          MapEntry("type", "attach"),
+          MapEntry("asset", asset),
+          MapEntry("quantity", quantity.normalizedPretty()),
+        ]),
+      DetachPsbt() =>
+        KeyValueSummaryViewModel(networkFee: networkFee, entries: [
+          MapEntry("type", "detach"),
+        ]),
       AtomicSwapListingFee() => AtomicSwapListingFeeSummaryViewModel(
           // service fee is the value of the first output
           serviceFee: augmentedOutputs?.first.vout.value != null
@@ -149,18 +333,36 @@ class SignPsbtState with FormzMixin {
             toAddress: toAddress,
             quantity: quantity,
             assetName: asset),
+      CancelOrder(
+        asset: var asset,
+        quantity: var quantity,
+        xcpPrice: var price,
+      ) =>
+        KeyValueSummaryViewModel(
+          networkFee: networkFee,
+          entries: [
+            MapEntry("type", "cancel order"),
+            MapEntry("asset", asset),
+            MapEntry("quantity", quantity.normalizedPretty()),
+            MapEntry("price", "${price.normalized()} XCP  / $asset"),
+          ],
+        ),
       OrderPsbt(
         giveAsset: var giveAsset,
         getAsset: var getAsset,
         giveQuantity: var giveQuantity,
         getQuantity: var getQuantity,
       ) =>
-        OrderSummaryViewModel(
-            networkFee: networkFee,
-            giveAsset: giveAsset,
-            getAsset: getAsset,
-            giveQuantity: giveQuantity,
-            getQuantity: getQuantity),
+        KeyValueSummaryViewModel(
+          networkFee: networkFee,
+          entries: [
+            MapEntry("type", "order"),
+            MapEntry("give_asset", giveAsset),
+            MapEntry("get_asset", getAsset),
+            MapEntry("give_quantity", giveQuantity.normalizedPretty()),
+            MapEntry("get_quantity", getQuantity.normalizedPretty()),
+          ],
+        ),
       OpaquePsbt() => OpaquePsbtSummaryViewModel(
           networkFee: networkFee,
         ),

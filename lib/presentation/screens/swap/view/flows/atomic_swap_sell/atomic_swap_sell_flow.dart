@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
+import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/http_config.dart';
@@ -391,6 +392,11 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                                         replete[1] as Option<RoyaltyByAsset>;
 
                                     return CreatePsbtFormProvider(
+                                      utxoQuantity: AssetQuantity(
+                                          divisible: variant.divisible,
+                                          quantity:
+                                              BigInt.from(variant.quantity)),
+                                      asset: variant.asset,
                                       assetRoyalty: royalties,
                                       utxoID: variant.utxoId,
                                       utxoTransaction: transaction,
