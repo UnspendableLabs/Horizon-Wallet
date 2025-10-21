@@ -205,6 +205,17 @@ class Issuance extends TrustedPsbt {
   });
 }
 
+class Fairmint extends TrustedPsbt {
+  final String asset;
+  final AssetQuantity quantity;
+
+  Fairmint({
+    super.rpc,
+    required this.asset,
+    required this.quantity,
+  });
+}
+
 class Fairminter extends TrustedPsbt {
   final String? issuanceType;
   final String? asset;

@@ -114,6 +114,17 @@ PsbtType _derivePsbtType({
   }
 
   switch (type) {
+    case "fairmint":
+      final asset = _asString(info["asset"]);
+      final divivisible = _asBool(info["asset_divisibility"]);
+      final quantityInt = _asInt(info["quantity"]);
+      return Fairmint(
+          rpc: true,
+          asset: asset ?? "-",
+          quantity: AssetQuantity(
+            divisible: divivisible,
+            quantity: BigInt.from(quantityInt ?? 0),
+          ));
     case "dividend":
       final asset = _asString(info["asset"]);
       final dividendAsset = _asString(info["dividend_asset"]);
