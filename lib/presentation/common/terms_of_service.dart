@@ -7,7 +7,7 @@ class TermsOfService extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    void _launchURL(String path) async {
+    void launchURL(String path) async {
       final uri = Uri.parse("https://horizon.market/$path");
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -31,7 +31,7 @@ class TermsOfService extends StatelessWidget {
               color: Colors.white,
             ),
             recognizer: TapGestureRecognizer()
-              ..onTap = () => _launchURL("wallet-terms"),
+              ..onTap = () => launchURL("wallet-terms"),
           ),
           const TextSpan(
             text: " and ",
@@ -45,7 +45,7 @@ class TermsOfService extends StatelessWidget {
               color: Colors.white,
             ),
             recognizer: TapGestureRecognizer()
-              ..onTap = () => _launchURL("wallet-privacy"),
+              ..onTap = () => launchURL("wallet-privacy"),
           ),
         ],
       ),

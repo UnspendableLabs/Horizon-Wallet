@@ -4,7 +4,6 @@ import 'package:get_it/get_it.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:decimal/decimal.dart';
-import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
@@ -24,8 +23,6 @@ import 'package:horizon/domain/services/seed_service.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/address_service.dart';
-import 'package:horizon/presentation/forms/swap_order_form/bloc/swap_order_form_bloc.dart';
-import 'package:rational/rational.dart';
 
 BigInt _calculateMinPrice(RoyaltyByAsset royalty, BigInt dust, int voutValue) {
   final baseMinimum = [

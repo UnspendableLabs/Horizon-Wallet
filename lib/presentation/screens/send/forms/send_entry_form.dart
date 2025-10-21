@@ -5,7 +5,6 @@ import 'package:fpdart/fpdart.dart' as fp;
 import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/presentation/common/asset_balance_list_item.dart';
-import 'package:horizon/presentation/common/link.dart';
 import 'package:horizon/presentation/common/transactions/gradient_quantity_input.dart';
 import 'package:horizon/presentation/common/transactions/token_name_field.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
