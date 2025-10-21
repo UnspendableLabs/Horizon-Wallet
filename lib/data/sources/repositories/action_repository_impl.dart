@@ -341,6 +341,20 @@ PsbtType _derivePsbtType({
   }
 
   switch (type) {
+    case "dividend":
+      final asset = _asString(info["asset"]);
+      final dividendAsset = _asString(info["dividend_asset"]);
+      final quantityPerUnitInt = _asInt(info["quantity_per_unit"]);
+      final dividendAssetDivisibility =
+          _asBool(info["dividend_asset_divisibility"]);
+
+      return Dividend(
+          asset: asset ?? "-",
+          dividendAsset: dividendAsset ?? "",
+          quantityPerUnit: AssetQuantity(
+            divisible: dividendAssetDivisibility,
+            quantity: BigInt.from(quantityPerUnitInt ?? 0),
+          ));
     case "fairminter":
       final issuanceType = _asString(info["issuance_type"]);
       final asset = _asString(info["asset"]);

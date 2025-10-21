@@ -326,3 +326,17 @@ class Mpma extends TrustedPsbt {
     required this.sends,
   });
 }
+
+// info {asset: A1101615775224090282, dividend_asset: A4884119577786320279, quantity_per_unit: 1, asset_divisibility: false, dividend_asset_divisibility: false}
+class Dividend extends TrustedPsbt {
+  final String asset;
+  final String dividendAsset;
+  final AssetQuantity quantityPerUnit;
+
+  Dividend({
+    super.rpc,
+    required this.asset,
+    required this.dividendAsset,
+    required this.quantityPerUnit,
+  });
+}

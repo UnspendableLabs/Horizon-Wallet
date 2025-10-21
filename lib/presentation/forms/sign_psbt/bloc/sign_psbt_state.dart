@@ -159,6 +159,20 @@ class SignPsbtState with FormzMixin {
 //   final int? softCapDeadlineBlock;
   PsbtSummaryViewModel get psbtSummaryViewModel {
     return switch (psbtType) {
+      Dividend(
+        asset: var asset,
+        dividendAsset: var dividendAsset,
+        quantityPerUnit: var quantityPerUnit,
+      ) =>
+        KeyValueSummaryViewModel(
+          networkFee: networkFee,
+          entries: [
+            MapEntry("type", "dividend"),
+            MapEntry("asset", asset),
+            MapEntry("dividend asset", dividendAsset),
+            MapEntry("quantity per unit", quantityPerUnit.normalizedPretty()),
+          ],
+        ),
       Mpma(sends: var sends) => MpmaSendSummaryViewModel(
           networkFee: networkFee,
           sends: sends
