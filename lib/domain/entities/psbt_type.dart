@@ -124,14 +124,6 @@ class Destroy extends TrustedPsbt {
   });
 }
 
-// export type LockQuantityTransactionInfo = {
-//   asset: string;
-//   quantity: number;
-//   lock: boolean;
-//   divisible: boolean;
-//   asset_divisibility: boolean;
-// };
-
 class LockQuantity extends TrustedPsbt {
   final String asset;
   final AssetQuantity quantity;
@@ -145,14 +137,6 @@ class LockQuantity extends TrustedPsbt {
   });
 }
 
-//
-// export type LockDescriptionTransactionInfo = {
-//   asset: string;
-//   quantity: number;
-//   description: string;
-//   divisible: boolean;
-//   asset_divisibility: boolean;
-// };
 class LockDescription extends TrustedPsbt {
   final String asset;
   final String description;
@@ -163,13 +147,6 @@ class LockDescription extends TrustedPsbt {
     required this.description,
   });
 }
-// export type ChangeDescriptionTransactionInfo = {
-//   asset: string;
-//   description: string;
-//   quantity: number;
-//   divisible: boolean;
-//   asset_divisibility: boolean;
-// };
 
 class ChangeDescription extends TrustedPsbt {
   final String asset;
@@ -182,14 +159,6 @@ class ChangeDescription extends TrustedPsbt {
   });
 }
 
-// export type ChangeOwnershipTransactionInfo = {
-//   asset: string;
-//   transfer_destination: string;
-//   quantity: number;
-//   divisible: boolean;
-//   asset_divisibility: boolean;
-// };
-
 class ChangeOwnership extends TrustedPsbt {
   final String asset;
   final String transferDestination;
@@ -200,14 +169,6 @@ class ChangeOwnership extends TrustedPsbt {
     required this.transferDestination,
   });
 }
-
-// export type ResetTransactionInfo = {
-//   asset: string;
-//   quantity: number;
-//   divisible: boolean;
-//   reset: boolean;
-//   asset_divisibility: boolean;
-// };
 
 class Reset extends TrustedPsbt {
   final String asset;
@@ -221,12 +182,6 @@ class Reset extends TrustedPsbt {
     required this.reset,
   });
 }
-// export type IssueMoreTransactionInfo = {
-//   asset: string;
-//   quantity: number;
-//   divisible: boolean;
-//   asset_divisibility: boolean;
-// };
 
 class IssueMore extends TrustedPsbt {
   final String asset;
@@ -238,12 +193,6 @@ class IssueMore extends TrustedPsbt {
     required this.quantity,
   });
 }
-// export type IssuanceTransactionInfo = {
-
-//   asset?: string;
-//   quantity?: number;
-//   divisible?: boolean;
-// };
 
 class Issuance extends TrustedPsbt {
   final String? asset;
@@ -255,27 +204,6 @@ class Issuance extends TrustedPsbt {
     this.quantity,
   });
 }
-
-// export type FairminterTransactionInfo = {
-//   issuance_type?: string;
-//   asset?: string;
-//   quantity?: number;
-//   divisible?: boolean;
-//   max_mint_per_tx?: number;
-//   quantity_by_price?: number;
-//   premint_quantity?: number;
-//   minted_asset_commission?: number;
-//   encoding?: string | null;
-//   inscription?: string | null | boolean;
-//   description?: string;
-//   mime_type?: string | null;
-//   audio?: string | null;
-//   media?: string | null;
-//   start_block?: number;
-//   end_block?: number;
-//   soft_cap?: number;
-//   soft_cap_deadline_block?: number;
-// };
 
 class Fairminter extends TrustedPsbt {
   final String? issuanceType;
@@ -327,7 +255,6 @@ class Mpma extends TrustedPsbt {
   });
 }
 
-// info {asset: A1101615775224090282, dividend_asset: A4884119577786320279, quantity_per_unit: 1, asset_divisibility: false, dividend_asset_divisibility: false}
 class Dividend extends TrustedPsbt {
   final String asset;
   final String dividendAsset;

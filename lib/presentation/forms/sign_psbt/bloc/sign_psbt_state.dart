@@ -138,25 +138,6 @@ class SignPsbtState with FormzMixin {
   @override
   List<FormzInput> get inputs => [password];
 
-//
-// class Fairminter extends TrustedPsbt { final String? issuanceType;
-//   final String? asset;
-//   final AssetQuantity? quantity;
-//   final bool? divisible;
-//   final int? maxMintPerTx;
-//   final BigInt? quantityByPrice;
-//   final BigInt? premintQuantity;
-//   final num? mintedAssetCommission;
-//   final String? encoding;
-//   final String? inscription;
-//   final String? description;
-//   final String? mimeType;
-//   final String? audio;
-//   final String? media;
-//   final int? startBlock;
-//   final int? endBlock;
-//   final BigInt? softCap;
-//   final int? softCapDeadlineBlock;
   PsbtSummaryViewModel get psbtSummaryViewModel {
     return switch (psbtType) {
       Dividend(
