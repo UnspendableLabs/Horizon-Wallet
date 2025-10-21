@@ -377,6 +377,54 @@ class AppRouter {
                   final action = actionRepository.dequeue().getOrThrow()
                       as RPCSignPsbtAction;
 
+                  final currentAddresses = session.addressIndexSet.list
+                      .map((e) => e.address)
+                      .toList();
+
+                  final signInputsFiltered = action.signInputs.keys;
+
+                  final intersection = currentAddresses
+                      .toSet()
+                      .intersection(signInputsFiltered.toSet());
+
+                  if (intersection.isEmpty) {
+                    return ActionHandlerShell(
+                        child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          DAppInfoWidget(
+                            title: 'SIGN PSBT',
+                            dappUrl: action.origin,
+                            dappTitle: action.title,
+                            dappFavicon: action.favicon,
+                          ),
+                          const SizedBox(height: 24),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              AppIcons.warningIcon(
+                                  color: red1, height: 32, width: 32),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+                          Expanded(
+                            child: Center(
+                              child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    "The application is requesting a signature from an address that is not found in your current account.  Select the correct account and try again.",
+                                    style: TextStyle(fontSize: 16, color: red1),
+                                  )),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ));
+                  }
+
                   return BlocProvider(
                       create: (_) => SignPsbtBloc(
                             psbtType: action.psbtType,
