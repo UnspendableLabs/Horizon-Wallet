@@ -5,6 +5,7 @@ import 'package:horizon/domain/entities/action.dart' as URLAction;
 import 'package:horizon/domain/entities/extension_rpc.dart';
 import 'package:horizon/extensions.dart';
 import 'package:horizon/domain/entities/action.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 import 'package:dio/dio.dart';
@@ -910,64 +911,71 @@ void main() {
 
   // Catch uncaught asynchronous errors
   runZonedGuarded<Future<void>>(() async {
-    WidgetsFlutterBinding.ensureInitialized();
+    final config = GetIt.I<Config>();
+    await SentryFlutter.init((options) {
+      options.dsn = config.sentryDsn;
+      options.tracesSampleRate = config.sentrySampleRate;
+      options.release = config.version.toString();
+    }, appRunner: () async {
+      WidgetsFlutterBinding.ensureInitialized();
 
-    await initSettings();
+      await initSettings();
 
-    final version = GetIt.I<Config>().version;
-    final versionInfo = GetIt.I<VersionRepository>().get();
+      final version = config.version;
+      final versionInfo = GetIt.I<VersionRepository>().get();
 
-    versionInfo.match((failure) {
-      runApp(MyApp(
-        currentVersion: version,
-        latestVersion: version,
-        warning: VersionServiceUnreachable(),
-      ));
-    }, (versionInfo) {
-      if (version < versionInfo.min) {
-        runApp(MaterialApp(
-          debugShowCheckedModeBanner: false,
-          home: Scaffold(
-            body: Center(
-                child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                  AppIcons.warningIcon(
-                    width: 60.0,
-                    height: 60.0,
-                    color: red1,
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    "Upgrade Required!",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold, // Bold font weight
+      versionInfo.match((failure) {
+        runApp(MyApp(
+          currentVersion: version,
+          latestVersion: version,
+          warning: VersionServiceUnreachable(),
+        ));
+      }, (versionInfo) {
+        if (version < versionInfo.min) {
+          runApp(MaterialApp(
+            debugShowCheckedModeBanner: false,
+            home: Scaffold(
+              body: Center(
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                    AppIcons.warningIcon(
+                      width: 60.0,
+                      height: 60.0,
+                      color: red1,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                      "Your version ($version) is below the minimum supported version (${versionInfo.min})",
-                      style: const TextStyle(
-                        fontSize: 18.0, // Standard readable font size
-                        color: Colors.black87,
-                      )),
-                ])),
-          ),
-        ));
-      } else if (version < versionInfo.latest) {
-        runApp(MyApp(
-          currentVersion: version,
-          latestVersion: versionInfo.latest,
-          warning: NewVersionAvailable(),
-        ));
-      } else {
-        runApp(MyApp(
-          currentVersion: version,
-          latestVersion: versionInfo.latest,
-        ));
-      }
-    }).run();
+                    const SizedBox(height: 16),
+                    const Text(
+                      "Upgrade Required!",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold, // Bold font weight
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                        "Your version ($version) is below the minimum supported version (${versionInfo.min})",
+                        style: const TextStyle(
+                          fontSize: 18.0, // Standard readable font size
+                          color: Colors.black87,
+                        )),
+                  ])),
+            ),
+          ));
+        } else if (version < versionInfo.latest) {
+          runApp(MyApp(
+            currentVersion: version,
+            latestVersion: versionInfo.latest,
+            warning: NewVersionAvailable(),
+          ));
+        } else {
+          runApp(MyApp(
+            currentVersion: version,
+            latestVersion: versionInfo.latest,
+          ));
+        }
+      }).run();
+    });
   }, (Object error, StackTrace stackTrace) {
     final logger = GetIt.I<Logger>();
 
@@ -985,9 +993,6 @@ void main() {
       // Add more specific error type handling here as needed
       const errorMessage = 'An unexpected error occurred';
       logger.error(errorMessage, null, stackTrace);
-      GetIt.I<ErrorService>().captureException(FlutterError(errorMessage),
-          message: errorMessage,
-          context: {'errorType': error.runtimeType.toString()});
     }
   });
 }
