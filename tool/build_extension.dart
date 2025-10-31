@@ -58,7 +58,6 @@ Future<void> buildFlutter(
     '--dart-define=FLUTTER_WEB_USE_SKIA=false',
     '--release',
     '--source-maps',
-    '--dart-define=WALLET_VERSION=$version',
     '--dart-define=HORIZON_IS_EXTENSION=true',
     '--dart-define=HORIZON_ANALYTICS_ENABLED=$analyticsEnabled',
     '--dart-define=HORIZON_POSTHOG_API_KEY=$posthogApiKey',

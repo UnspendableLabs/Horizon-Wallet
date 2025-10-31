@@ -3,14 +3,7 @@ import 'package:pub_semver/pub_semver.dart';
 
 class ConfigImpl implements Config {
   @override
-  Version get version {
-    // this env is set from manifest.json during the build process
-    final envVersion = const String.fromEnvironment('WALLET_VERSION');
-    if (envVersion.isEmpty) {
-      throw Exception('WALLET_VERSION is not set');
-    }
-    return Version.parse(envVersion);
-  }
+  Version get version => Version.parse('2.1.0');
 
   @override
   String get versionInfoEndpoint {
