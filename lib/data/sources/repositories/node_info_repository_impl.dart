@@ -1,4 +1,6 @@
+import 'package:fpdart/fpdart.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/data/sources/repositories/network_error_helpers.dart';
 import 'package:horizon/domain/entities/node_info.dart';
 import 'package:horizon/domain/repositories/node_info_repository.dart';
 import 'package:horizon/domain/entities/http_config.dart';
@@ -13,13 +15,19 @@ class NodeInfoRepositoryImpl implements NodeInfoRepository {
             counterpartyClientFactory ?? GetIt.I<CounterpartyClientFactory>();
 
   @override
-  Future<NodeInfo> getNodeInfo(HttpConfig httpConfig) async {
-    final response =
-        await _counterpartyClientFactory.getClient(httpConfig).getNodeInfo();
-    final nodeInfo = response.result;
-    if (nodeInfo == null) {
-      throw Exception('Failed to fetch node info');
-    }
-    return nodeInfo.toDomain();
+  TaskEither<String, NodeInfo> getNodeInfo(HttpConfig httpConfig) {
+    return handleNetworkCall(
+      () async {
+        final response = await _counterpartyClientFactory
+            .getClient(httpConfig)
+            .getNodeInfo();
+
+        if (response.result == null) {
+          throw Exception('Failed to fetch node info');
+        }
+
+        return response.result!.toDomain();
+      },
+    );
   }
 }

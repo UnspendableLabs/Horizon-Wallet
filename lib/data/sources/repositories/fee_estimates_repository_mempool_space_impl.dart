@@ -1,3 +1,4 @@
+import "package:horizon/data/sources/repositories/network_error_helpers.dart";
 import "package:horizon/domain/repositories/fee_estimates_repository.dart";
 import "package:horizon/domain/entities/fee_estimates.dart";
 import "package:horizon/domain/entities/http_config.dart";
@@ -7,15 +8,14 @@ import 'package:horizon/data/sources/network/mempool_space_client_factory.dart';
 class FeeEstimatesRespositoryMempoolSpaceImpl
     implements FeeEstimatesRespository {
   final MempoolSpaceClientFactory _mempoolSpaceClientFactory;
-
-  FeeEstimatesRespositoryMempoolSpaceImpl(
-      {required MempoolSpaceClientFactory mempoolSpaceClientFactory})
-      : _mempoolSpaceClientFactory = mempoolSpaceClientFactory;
+  FeeEstimatesRespositoryMempoolSpaceImpl({
+    required MempoolSpaceClientFactory mempoolSpaceClientFactory,
+  }) : _mempoolSpaceClientFactory = mempoolSpaceClientFactory;
 
   @override
   TaskEither<String, FeeEstimates> getFeeEstimates(
       {required HttpConfig httpConfig}) {
-    return TaskEither.tryCatch(
+    return handleNetworkCallWithRetry(
       () async {
         final client = _mempoolSpaceClientFactory.getClient(httpConfig);
         final response = await client.getFeeEstimates();
@@ -25,7 +25,12 @@ class FeeEstimatesRespositoryMempoolSpaceImpl
           slow: response.hourFee,
         );
       },
-      (error, stacktrace) => "GetFeeEstimates failure",
+      onError: (error) {
+        if (error.statusCode == 503) {
+          return "GetFeeEstimates failure";
+        }
+        return null;
+      },
     );
   }
 }

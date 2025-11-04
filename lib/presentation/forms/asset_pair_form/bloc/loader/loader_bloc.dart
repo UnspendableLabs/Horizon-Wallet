@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import "package:horizon/presentation/forms/base/base_form_bloc.dart";
 import 'package:horizon/domain/entities/multi_address_balance.dart';
@@ -30,10 +31,13 @@ class SwapFormLoaderFn extends Loader<SwapFormLoaderArgs, SwapFormLoaderData> {
 
   @override
   Future<SwapFormLoaderData> load(SwapFormLoaderArgs args) async {
-    List<MultiAddressBalance> multiAddressBalance =
-        await _balanceRepository.getBalancesForAddresses(
+    final result = await _balanceRepository
+        .getBalancesForAddresses(
             httpConfig: args.httpConfig,
-            addresses: args.addresses.map((a) => a.address).toList());
+            addresses: args.addresses.map((a) => a.address).toList())
+        .run();
+    final multiAddressBalance =
+        result.fold((error) => throw Exception(error), (result) => result);
 
     // final mockXCPBalance = MultiAddressBalance(
     //   asset: "XCP",

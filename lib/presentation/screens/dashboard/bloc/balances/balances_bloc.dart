@@ -61,9 +61,11 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
     }
 
     try {
-      final balances = await balanceRepository.getBalancesForAddresses(
-          httpConfig: httpConfig, addresses: addresses);
-
+      final result = await balanceRepository
+          .getBalancesForAddresses(httpConfig: httpConfig, addresses: addresses)
+          .run();
+      final balances =
+          result.fold((error) => throw Exception(error), (result) => result);
       // Only update state if the new data is different
       if (_cachedBalances == null ||
           !MultiAddressBalance.equals(_cachedBalances!, balances)) {

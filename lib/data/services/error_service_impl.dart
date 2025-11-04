@@ -22,6 +22,7 @@ class ErrorServiceImpl implements ErrorService {
         (options) {
           options.dsn = config.sentryDsn;
           options.tracesSampleRate = config.sentrySampleRate;
+          options.release = config.version.toString();
         },
       );
       _isInitialized = true;

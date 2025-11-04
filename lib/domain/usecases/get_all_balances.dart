@@ -339,11 +339,9 @@ class GetAllBalancesUseCase
   TaskEither<String, BalancesSet> call(GetAllBalancesUseCaseParams params) {
     return TaskEither<String, BalancesSet>.Do(($) async {
       final confirmedTask = _balanceRepository
-          .getBalancesForAddressesT(
+          .getBalancesForAddresses(
             httpConfig: params.httpConfig,
             addresses: params.addresses,
-            onError: (_, __) =>
-                "Failed to read confirmed balances for ${params.addresses}",
           )
           .map<List<BalanceV2>>((balances) => balances
               .map<List<BalanceV2>>((MultiAddressBalance balance) =>

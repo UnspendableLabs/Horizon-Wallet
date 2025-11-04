@@ -14,7 +14,7 @@ abstract class BalanceRepository {
     bool? excludeUtxoAttached,
   });
 
-  Future<List<MultiAddressBalance>> getBalancesForAddresses({
+  TaskEither<String, List<MultiAddressBalance>> getBalancesForAddresses({
     required HttpConfig httpConfig,
     required List<String> addresses,
     BalanceType? type,
@@ -52,20 +52,6 @@ extension BalanceRepositoryX on BalanceRepository {
         httpConfig: httpConfig,
         address: address,
         excludeUtxoAttached: excludeUtxoAttached,
-      ),
-      onError,
-    );
-  }
-
-  TaskEither<E, List<MultiAddressBalance>> getBalancesForAddressesT<E>({
-    required HttpConfig httpConfig,
-    required List<String> addresses,
-    required E Function(Object error, StackTrace stack) onError,
-  }) {
-    return TaskEither.tryCatch(
-      () => getBalancesForAddresses(
-        httpConfig: httpConfig,
-        addresses: addresses,
       ),
       onError,
     );
