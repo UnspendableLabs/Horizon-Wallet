@@ -1,5 +1,8 @@
+import 'package:fpdart/fpdart.dart';
+import 'package:horizon/data/sources/repositories/network_error_helpers.dart';
 import 'package:horizon/domain/entities/asset.dart' as a;
 import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/entities/network_error.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
 
 import 'package:dio/dio.dart';
@@ -18,92 +21,103 @@ class AssetRepositoryImpl implements AssetRepository {
             counterpartyClientFactory ?? GetIt.I<CounterpartyClientFactory>();
 
   @override
-  Future<a.Asset> getAssetVerbose(
-      {required String assetName, required HttpConfig httpConfig}) async {
-    final response = await _counterpartyClientFactory
-        .getClient(httpConfig)
-        .getAssetVerbose(assetName, Options()..disableRetry = true);
+  TaskEither<NetworkError, a.Asset> getAssetVerbose(
+      {required String assetName, required HttpConfig httpConfig}) {
+    return handleNetworkCall(() async {
+      final response = await _counterpartyClientFactory
+          .getClient(httpConfig)
+          .getAssetVerbose(assetName, Options()..disableRetry = true);
 
-    if (response.result == null) {
-      throw Exception('Asset not found');
-    }
+      if (response.result == null) {
+        throw Exception('Asset not found');
+      }
 
-    final asset = response.result!;
+      final asset = response.result!;
 
-    return a.Asset(
-        asset: asset.asset,
-        assetLongname: asset.assetLongname,
-        divisible_: asset.divisible,
-        issuer: asset.issuer,
-        owner: asset.owner,
-        locked: asset.locked,
-        supply: asset.supply,
-        description: asset.description,
-        supplyNormalized: asset.supplyNormalized);
+      return a.Asset(
+          asset: asset.asset,
+          assetLongname: asset.assetLongname,
+          divisible_: asset.divisible,
+          issuer: asset.issuer,
+          owner: asset.owner,
+          locked: asset.locked,
+          supply: asset.supply,
+          description: asset.description,
+          supplyNormalized: asset.supplyNormalized);
+    });
   }
 
   @override
-  Future<(List<a.Asset>, cursor_entity.Cursor? nextCursor, int? resultCount)>
+  TaskEither<NetworkError,
+          (List<a.Asset>, cursor_entity.Cursor? nextCursor, int? resultCount)>
       getValidAssetsByOwnerVerbose(
           {required String address,
           cursor_entity.Cursor? cursor,
           int? limit,
-          required HttpConfig httpConfig}) async {
-    final response = await _counterpartyClientFactory
-        .getClient(httpConfig)
-        .getValidAssetsByOwnerVerbose(
-          address,
-          cursor_model.CursorMapper.toData(cursor),
-          limit,
-        );
+          required HttpConfig httpConfig}) {
+    return handleNetworkCall(() async {
+      final response = await _counterpartyClientFactory
+          .getClient(httpConfig)
+          .getValidAssetsByOwnerVerbose(
+            address,
+            cursor_model.CursorMapper.toData(cursor),
+            limit,
+          );
 
-    if (response.error != null) {
-      throw Exception('Error getting assets by owner: ${response.error}');
-    }
+      if (response.error != null) {
+        throw Exception('Error getting assets by owner: ${response.error}');
+      }
 
-    cursor_entity.Cursor? nextCursor =
-        cursor_model.CursorMapper.toDomain(response.nextCursor);
+      cursor_entity.Cursor? nextCursor =
+          cursor_model.CursorMapper.toDomain(response.nextCursor);
 
-    final assets = response.result!
-        .map((asset) => a.Asset(
-              asset: asset.asset,
-              assetLongname: asset.assetLongname,
-              divisible_: asset.divisible,
-              description: asset.description,
-              locked: asset.locked,
-              issuer: asset.issuer,
-              owner: asset.owner,
-              supply: asset.supply,
-              supplyNormalized: asset.supplyNormalized,
-            ))
-        .toList();
+      final assets = response.result!
+          .map((asset) => a.Asset(
+                asset: asset.asset,
+                assetLongname: asset.assetLongname,
+                divisible_: asset.divisible,
+                description: asset.description,
+                locked: asset.locked,
+                issuer: asset.issuer,
+                owner: asset.owner,
+                supply: asset.supply,
+                supplyNormalized: asset.supplyNormalized,
+              ))
+          .toList();
 
-    return (assets, nextCursor, response.resultCount);
+      return (assets, nextCursor, response.resultCount);
+    });
   }
 
   @override
-  Future<List<a.Asset>> getAllValidAssetsByOwnerVerbose(
-      {required String address, required HttpConfig httpConfig}) async {
-    final allAssets = <a.Asset>[];
-    cursor_entity.Cursor? cursor;
-    bool hasMore = true;
+  TaskEither<NetworkError, List<a.Asset>> getAllValidAssetsByOwnerVerbose(
+      {required String address, required HttpConfig httpConfig}) {
+    return handleNetworkCall(() async {
+      final allAssets = <a.Asset>[];
+      cursor_entity.Cursor? cursor;
+      bool hasMore = true;
 
-    while (hasMore) {
-      final (assets, nextCursor, _) = await getValidAssetsByOwnerVerbose(
-          address: address,
-          cursor: cursor,
-          limit: 1000,
-          httpConfig: httpConfig);
+      while (hasMore) {
+        final result = await getValidAssetsByOwnerVerbose(
+                address: address,
+                cursor: cursor,
+                limit: 1000,
+                httpConfig: httpConfig)
+            .run();
 
-      allAssets.addAll(assets);
+        final (assets, nextCursor, resultCount) =
+            result.fold((error) => throw Exception(error), (result) => result);
 
-      if (nextCursor == null) {
-        hasMore = false;
-      } else {
-        cursor = nextCursor;
+        allAssets.addAll(assets);
+
+        if (nextCursor == null) {
+          hasMore = false;
+        } else {
+          cursor = nextCursor;
+        }
       }
-    }
 
-    return allAssets;
+      return allAssets;
+    });
   }
 }

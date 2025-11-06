@@ -5,6 +5,7 @@ import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:decimal/decimal.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/asset_quantity.dart';
+import 'package:horizon/domain/usecases/get_asset_verbose.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:fpdart/fpdart.dart' hide Order, State;
@@ -228,7 +229,7 @@ class SwapOrderFormActions {
 
 class SwapOrderFormProvider extends StatefulWidget {
   final OrderRepository _orderRepository;
-  final AssetRepository _assetRepository;
+  final GetAssetVerboseUseCase _getAssetVerboseUseCase;
 
   final String giveAsset;
   final Function(SubmitParams params) onSubmitClicked;
@@ -246,7 +247,7 @@ class SwapOrderFormProvider extends StatefulWidget {
 
   SwapOrderFormProvider(
       {super.key,
-      AssetRepository? assetRepository,
+      GetAssetVerboseUseCase? getAssetVerboseUseCase,
       OrderRepository? orderRepository,
       required this.onSubmitClicked,
       required this.multiAddressBalanceEntry,
@@ -256,7 +257,8 @@ class SwapOrderFormProvider extends StatefulWidget {
       required this.giveAsset,
       required this.getAsset})
       : _orderRepository = orderRepository ?? GetIt.I<OrderRepository>(),
-        _assetRepository = assetRepository ?? GetIt.I<AssetRepository>();
+        _getAssetVerboseUseCase =
+            getAssetVerboseUseCase ?? GetIt.I<GetAssetVerboseUseCase>();
 
   @override
   State<SwapOrderFormProvider> createState() => _SwapOrderFormProviderState();
@@ -266,13 +268,17 @@ class _SwapOrderFormProviderState extends State<SwapOrderFormProvider> {
   @override
   Widget build(BuildContext context) {
     final task = TaskEither.sequenceList([
-      widget._assetRepository.getAssetVerboseT(
-        assetName: widget.giveAsset,
-        httpConfig: widget.httpConfig,
+      widget._getAssetVerboseUseCase.call(
+        GetAssetVerboseParams(
+          assetName: widget.giveAsset,
+          httpConfig: widget.httpConfig,
+        ),
       ),
-      widget._assetRepository.getAssetVerboseT(
-        assetName: widget.getAsset,
-        httpConfig: widget.httpConfig,
+      widget._getAssetVerboseUseCase.call(
+        GetAssetVerboseParams(
+          assetName: widget.getAsset,
+          httpConfig: widget.httpConfig,
+        ),
       ),
       widget._orderRepository.getByPairTE(
         status: "open",

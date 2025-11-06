@@ -51,14 +51,12 @@ class XCPTitle extends StatelessWidget {
                   txid: txid,
                   onError: (e) => 'Error fetching transaction: $txid',
                 )
-                .flatMap((txHex) => _transactionRepository.getInfoT(
+                .flatMap((txHex) => _transactionRepository
+                    .getInfo(
                       httpConfig: session.httpConfig,
                       raw: txHex,
-                      onError: (e, callstack) {
-                        print(callstack);
-                        e.toString();
-                      },
-                    )),
+                    )
+                    .mapLeft((error) => error.message)),
             builder: (context, state, refresh) {
               return state.fold3(
                 onNone: () => Text("-",

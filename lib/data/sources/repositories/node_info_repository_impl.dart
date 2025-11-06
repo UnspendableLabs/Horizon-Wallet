@@ -28,6 +28,6 @@ class NodeInfoRepositoryImpl implements NodeInfoRepository {
 
         return response.result!.toDomain();
       },
-    );
+    ).mapLeft((error) => error.message);
   }
 }

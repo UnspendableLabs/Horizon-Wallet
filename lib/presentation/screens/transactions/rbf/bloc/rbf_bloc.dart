@@ -21,10 +21,11 @@ import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
+import 'package:horizon/domain/usecases/get_fee_estimates.dart';
+import 'package:horizon/domain/usecases/send_raw_transaction.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transactions/get_fee_option.dart';
-import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/transactions/rbf/bloc/rbf_event.dart';
 import 'package:horizon/domain/entities/decryption_strategy.dart';
@@ -66,6 +67,7 @@ class RBFBloc
   final EncryptionService _encryptionService;
   final AddressService _addressService;
   final BitcoindService bitcoindService;
+  final SendRawTransactionUseCase _sendRawTransactionUseCase;
   final TransactionLocalRepository transactionLocalRepository;
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
   final SeedService _seedService;
@@ -88,12 +90,15 @@ class RBFBloc
     required this.writelocalTransactionUseCase,
     SeedService? seedService,
     WalletConfigRepository? walletConfigRepository,
+    SendRawTransactionUseCase? sendRawTransactionUseCase,
   })  : _inMemoryKeyRepository = inMemoryKeyRepository,
         _encryptionService = encryptionService,
         _addressService = addressService,
         _seedService = seedService ?? GetIt.I<SeedService>(),
         _walletConfigRepository =
             walletConfigRepository ?? GetIt.I<WalletConfigRepository>(),
+        _sendRawTransactionUseCase =
+            sendRawTransactionUseCase ?? GetIt.I<SendRawTransactionUseCase>(),
         super(TransactionState<RBFData, RBFComposeData>(
           formState: TransactionFormState<RBFData>(
             balancesState: const BalancesState.initial(),
@@ -123,9 +128,8 @@ class RBFBloc
     ));
 
     final task = TaskEither<String, FormDependenciesResult>.Do(($) async {
-      final feeEstimates = await $(getFeeEstimatesUseCase.callT(
-          httpConfig: httpConfig,
-          onError: (e) => "error: could not get fee estimates"));
+      final feeEstimates = await $(getFeeEstimatesUseCase
+          .call(GetFeeEstimatesParams(httpConfig: httpConfig)));
 
       final originalTransaction = await $(bitcoinRepository.getTransactionT(
           txid: event.txHash,
@@ -272,10 +276,14 @@ class RBFBloc
           httpConfig: httpConfig,
           onError: (_) => "Error while signing transaction "));
 
-      final hash = await $(bitcoindService.sendrawtransactionT(
+      final sendTask = _sendRawTransactionUseCase.call(
+        SendRawTransactionParams(
           signedHex: signedHex,
           httpConfig: httpConfig,
-          onError: (msg, _) => msg.toString()));
+        ),
+      );
+      final result = await sendTask.run();
+      final hash = result.fold((error) => error, (hash) => hash);
 
       return (signedHex, hash);
     });

@@ -66,9 +66,7 @@ class BalanceRepositoryImpl implements BalanceRepository {
             type: type));
         return balances;
       },
-      operationName: 'getBalancesForAddresses',
-      customErrorMessage: 'Failed to get balances for addresses',
-    );
+    ).mapLeft((error) => error.message);
   }
 
   @override

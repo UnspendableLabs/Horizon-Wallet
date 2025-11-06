@@ -7,6 +7,16 @@ import 'package:horizon/data/services/secure_kv_service_impl.dart';
 import 'package:horizon/domain/entities/address_rpc.dart';
 import 'package:horizon/domain/services/mempool_price_service.dart';
 import 'package:horizon/domain/services/secure_kv_service.dart';
+import 'package:horizon/domain/usecases/get_fee_estimates.dart';
+import 'package:horizon/domain/usecases/atomic_swap_create.dart';
+import 'package:horizon/domain/usecases/atomic_swap_multi_buy.dart';
+import 'package:horizon/domain/usecases/create_on_chain_payment.dart';
+import 'package:horizon/domain/usecases/decode_raw_transaction.dart';
+import 'package:horizon/domain/usecases/get_swaps_by_asset.dart';
+import 'package:horizon/domain/usecases/get_utxo_swap_map.dart';
+import 'package:horizon/domain/usecases/horizon_api_asset_search.dart';
+import 'package:horizon/domain/usecases/search_swaps.dart';
+import 'package:horizon/domain/usecases/send_raw_transaction.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 
 import 'package:horizon/data/sources/repositories/in_memory_key_repository_impl.dart';
@@ -128,7 +138,6 @@ import 'package:horizon/data/sources/network/mempool_space_client_factory.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/usecase/set_mnemonic_usecase.dart';
 
-import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/get_virtual_size_usecase.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
@@ -644,6 +653,20 @@ void setup() {
 
   injector.registerSingleton<GetUTXOBalancesUseCase>(GetUTXOBalancesUseCase());
   injector.registerSingleton<GetAllBalancesUseCase>(GetAllBalancesUseCase());
+  injector
+      .registerSingleton<AtomicSwapCreateUseCase>(AtomicSwapCreateUseCase());
+  injector.registerSingleton<AtomicSwapMultiBuyUseCase>(
+      AtomicSwapMultiBuyUseCase());
+  injector.registerSingleton<CreateOnChainPaymentUseCase>(
+      CreateOnChainPaymentUseCase());
+  injector.registerSingleton<DecodeRawTransactionUseCase>(
+      DecodeRawTransactionUseCase());
+  injector.registerSingleton<GetSwapsByAssetUseCase>(GetSwapsByAssetUseCase());
+  injector.registerSingleton<SearchSwapsUseCase>(SearchSwapsUseCase());
+  injector.registerSingleton<SendRawTransactionUseCase>(
+      SendRawTransactionUseCase());
+  injector.registerSingleton<GetUtxoSwapMapUseCase>(GetUtxoSwapMapUseCase());
+  injector.registerSingleton<SearchAssetsUseCase>(SearchAssetsUseCase());
 }
 
 class CustomDioException extends DioException {

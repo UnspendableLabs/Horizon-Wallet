@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:horizon/domain/entities/psbt_type.dart';
+import 'package:horizon/domain/usecases/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -52,7 +53,7 @@ class SwapMultiBuySignFormProvider extends StatelessWidget {
   final HttpConfig httpConfig;
   final List<AtomicSwap> atomicSwaps;
   final String assetName;
-  final FeeEstimatesRespository _feeEstimatesRepository;
+  final GetFeeEstimatesUseCase _getFeeEstimatesUseCase;
   final AddressV2 address;
   final BigInt royaltyAmount;
   final String? royaltyAddress;
@@ -71,16 +72,16 @@ class SwapMultiBuySignFormProvider extends StatelessWidget {
     required this.address,
     required this.royaltyAmount,
     required this.royaltyAddress,
-    FeeEstimatesRespository? feeEstimatesRepository,
-  }) : _feeEstimatesRepository =
-            feeEstimatesRepository ?? GetIt.I<FeeEstimatesRespository>();
+    GetFeeEstimatesUseCase? getFeeEstimatesUseCase,
+  }) : _getFeeEstimatesUseCase =
+            getFeeEstimatesUseCase ?? GetIt.I<GetFeeEstimatesUseCase>();
   @override
   Widget build(BuildContext context) {
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
 
     return RemoteDataTaskEitherBuilder<String, FeeEstimates>(
-        task: _feeEstimatesRepository.getFeeEstimates(
-            httpConfig: session.httpConfig),
+        task: _getFeeEstimatesUseCase(
+            GetFeeEstimatesParams(httpConfig: session.httpConfig)),
         builder: (context, state, refresh) => state.fold(
             onInitial: () => const SizedBox.shrink(),
             onLoading: () => const Center(child: CircularProgressIndicator()),

@@ -4,6 +4,7 @@ import 'package:horizon/domain/entities/atomic_swap/atomic_swap_buy.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap_create.dart';
 import "package:fpdart/fpdart.dart";
 import 'package:horizon/domain/entities/http_config.dart';
+import 'package:horizon/domain/entities/network_error.dart';
 
 // typescript api
 // public async atomicSwapBuy(
@@ -25,12 +26,12 @@ import 'package:horizon/domain/entities/http_config.dart';
 // };
 
 abstract class AtomicSwapRepository {
-  Future<Map<String, bool>> getUtxoSwapMap({
+  TaskEither<NetworkError, Map<String, bool>> getUtxoSwapMap({
     required HttpConfig httpConfig,
     required String sellerAddress,
   });
 
-  Future<AtomicSwapCreate> atomicSwapCreate({
+  TaskEither<NetworkError, AtomicSwapCreate> atomicSwapCreate({
     required HttpConfig httpConfig,
     required String psbtHex,
     required String sellerAddress,
@@ -45,158 +46,31 @@ abstract class AtomicSwapRepository {
     required bool assetDivisible,
   });
 
-  Future<List<AtomicSwapBuy>> atomicSwapMultiBuy({
+  TaskEither<NetworkError, List<AtomicSwapBuy>> atomicSwapMultiBuy({
     required HttpConfig httpConfig,
     required List<String> ids,
     required String psbtHex,
     required String buyerAddress,
   });
 
-  Future<OnChainPayment> createOnChainPayment({
+  TaskEither<NetworkError, OnChainPayment> createOnChainPayment({
     required HttpConfig httpConfig,
     required String address,
     required List<String> utxoSetIds,
     required num satsPerVbyte,
   });
 
-  Future<List<AtomicSwap>> getSwapsByAsset({
+  TaskEither<NetworkError, List<AtomicSwap>> getSwapsByAsset({
     required HttpConfig httpConfig,
     required String asset,
     required String orderBy,
     required String order,
   });
 
-  Future<List<AtomicSwap>> searchSwaps({
-    required HttpConfig httpConfig,
-    required String search,
-    required String orderBy,
-    required String order,
-  });
-}
-
-extension AtomicSwapRepositoryX on AtomicSwapRepository {
-  TaskEither<String, AtomicSwapCreate> atomicSwapCreateT({
-    required HttpConfig httpConfig,
-    required String psbtHex,
-    required String sellerAddress,
-    required String assetUtxoId,
-    required int assetUtxoValue,
-    required String assetName,
-    required int assetQuantity,
-    required int price,
-    required DateTime? expiresAt,
-    required String feePaymentId,
-    required String feePaymentPsbtHex,
-    required bool assetDivisible,
-    String Function(Object error, StackTrace stacktrace)? onError,
-  }) {
-    return TaskEither.tryCatch(
-      () => atomicSwapCreate(
-        assetDivisible: assetDivisible,
-        httpConfig: httpConfig,
-        psbtHex: psbtHex,
-        sellerAddress: sellerAddress,
-        assetUtxoId: assetUtxoId,
-        assetUtxoValue: assetUtxoValue,
-        assetName: assetName,
-        assetQuantity: assetQuantity,
-        price: price,
-        expiresAt: expiresAt,
-        feePaymentId: feePaymentId,
-        feePaymentPsbtHex: feePaymentPsbtHex,
-      ),
-      (error, stacktrace) =>
-          onError != null ? onError(error, stacktrace) : error.toString(),
-    );
-  }
-
-  TaskEither<String, List<AtomicSwapBuy>> atomicSwapMultiBuyT({
-    required HttpConfig httpConfig,
-    required List<String> ids,
-    required String psbtHex,
-    required String buyerAddress,
-    String Function(Object error, StackTrace stacktrace)? onError,
-  }) {
-    return TaskEither.tryCatch(
-      () => atomicSwapMultiBuy(
-        httpConfig: httpConfig,
-        ids: ids,
-        psbtHex: psbtHex,
-        buyerAddress: buyerAddress,
-      ),
-      (error, stacktrace) =>
-          onError != null ? onError(error, stacktrace) : error.toString(),
-    );
-  }
-
-  TaskEither<String, OnChainPayment> createOnChainPaymentT({
-    required HttpConfig httpConfig,
-    required String address,
-    required List<String> utxoSetIds,
-    required num satsPerVbyte,
-    String Function(Object error, StackTrace stacktrace)? onError,
-  }) {
-    return TaskEither.tryCatch(
-        () => createOnChainPayment(
-              httpConfig: httpConfig,
-              address: address,
-              utxoSetIds: utxoSetIds,
-              satsPerVbyte: satsPerVbyte,
-            ),
-        (error, stacktrace) =>
-            onError != null ? onError(error, stacktrace) : error.toString());
-  }
-
-  TaskEither<String, List<AtomicSwap>> getSwapsByAssetT({
-    required HttpConfig httpConfig,
-    required String asset,
-    required String orderBy,
-    required String order,
-    String Function(Object error, StackTrace stacktrace)? onError,
-  }) {
-    return TaskEither.tryCatch(
-      () => getSwapsByAsset(
-        httpConfig: httpConfig,
-        asset: asset,
-        orderBy: orderBy,
-        order: order,
-      ),
-      (error, stacktrace) =>
-          onError != null ? onError(error, stacktrace) : error.toString(),
-    );
-  }
-
-  TaskEither<String, Map<String, bool>> getUtxoSwapMapT({
-    required HttpConfig httpConfig,
-    required String sellerAddress,
-    String Function(Object error, StackTrace stacktrace)? onError,
-  }) {
-    return TaskEither.tryCatch(
-      () => getUtxoSwapMap(
-        httpConfig: httpConfig,
-        sellerAddress: sellerAddress,
-      ),
-      (error, stacktrace) =>
-          onError != null ? onError(error, stacktrace) : error.toString(),
-    );
-  }
-
-  TaskEither<String, List<AtomicSwap>> searchSwapsT({
+  TaskEither<NetworkError, List<AtomicSwap>> searchSwaps({
     required HttpConfig httpConfig,
     required String search,
     String orderBy = "price",
     String order = "asc",
-    String Function(Object error, StackTrace stacktrace)? onError,
-  }) {
-    return TaskEither.tryCatch(
-      () => searchSwaps(
-        httpConfig: httpConfig,
-        search: search,
-        orderBy: orderBy,
-        order: order,
-      ),
-      (error, stacktrace) =>
-          onError != null ? onError(error, stacktrace) : error.toString(),
-    );
-  }
+  });
 }

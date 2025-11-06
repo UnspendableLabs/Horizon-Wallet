@@ -14,6 +14,8 @@ import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/services/seed_service.dart';
+import 'package:horizon/extensions.dart';
+import 'package:horizon/domain/services/error_service.dart';
 
 export 'package:horizon/domain/entities/decryption_strategy.dart';
 
@@ -49,7 +51,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
   final InMemoryKeyRepository _inMemoryKeyRepository;
   final SeedService _seedService;
   final WalletConfigRepository _walletConfigRepository;
-
+  final ErrorService _errorService;
   SignAndBroadcastTransactionUseCase({
     InMemoryKeyRepository? inMemoryKeyRepository,
     UtxoRepository? utxoRepository,
@@ -59,6 +61,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
     BitcoindService? bitcoindService,
     SeedService? seedService,
     WalletConfigRepository? walletConfigRepository,
+    ErrorService? errorService,
   })  : _utxoRepository = utxoRepository ?? GetIt.I<UtxoRepository>(),
         _encryptionService = encryptionService ?? GetIt.I<EncryptionService>(),
         _addressService = addressService ?? GetIt.I<AddressService>(),
@@ -69,7 +72,8 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
             inMemoryKeyRepository ?? GetIt.I<InMemoryKeyRepository>(),
         _seedService = seedService ?? GetIt.I<SeedService>(),
         _walletConfigRepository =
-            walletConfigRepository ?? GetIt.I<WalletConfigRepository>();
+            walletConfigRepository ?? GetIt.I<WalletConfigRepository>(),
+        _errorService = errorService ?? GetIt.I<ErrorService>();
 
   Future<void> call({
     required AddressV2 source,
@@ -145,10 +149,21 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
           onError: (error) =>
               kDebugMode ? error.toString() : "Failed to sign transaction"));
 
-      final hash = await $(_bitcoindService.sendrawtransactionT(
-          signedHex: signedHex,
-          httpConfig: httpConfig,
-          onError: (err, _) => err.toString()));
+      final sendTask = await _bitcoindService
+          .sendrawtransaction(signedHex, httpConfig)
+          .run();
+
+      final hash = sendTask.fold((error) {
+        _errorService.captureException(error,
+            message: "Failed to send raw transaction",
+            context: {
+              "endpoint": error.endpoint,
+              "fullUrl": error.fullUrl,
+              "statusCode": error.statusCode,
+              "message": error.message,
+            });
+        return error.message;
+      }, (hash) => hash);
 
       return BroadcastResponse(
         hex: signedHex,

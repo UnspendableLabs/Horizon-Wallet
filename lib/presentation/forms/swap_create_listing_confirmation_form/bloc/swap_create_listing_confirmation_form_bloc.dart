@@ -14,6 +14,7 @@ import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/atomic_swap_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
+import 'package:horizon/domain/usecases/create_on_chain_payment.dart';
 import "package:horizon/presentation/forms/base/transaction_form_model_base.dart";
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
@@ -182,6 +183,7 @@ class SwapCreateListingFormBloc
     extends Bloc<SwapCreateListingFormEvent, SwapCreateListingFormModel> {
   final HttpConfig httpConfig;
   final AtomicSwapRepository _atomicSwapRepository;
+  final CreateOnChainPaymentUseCase _createOnChainPaymentUseCase;
   final UtxoRepository _utxoRepository;
 
   SwapCreateListingFormBloc({
@@ -199,9 +201,12 @@ class SwapCreateListingFormBloc
     BitcoinRepository? bitcoinRepository,
     AtomicSwapRepository? atomicSwapRepository,
     UtxoRepository? utxoRepository,
+    CreateOnChainPaymentUseCase? createOnChainPaymentUseCase,
   })  : _atomicSwapRepository =
             atomicSwapRepository ?? GetIt.I<AtomicSwapRepository>(),
         _utxoRepository = utxoRepository ?? GetIt.I<UtxoRepository>(),
+        _createOnChainPaymentUseCase = createOnChainPaymentUseCase ??
+            GetIt.I<CreateOnChainPaymentUseCase>(),
         super(SwapCreateListingFormModel(
           royaltyPrice: royaltyPrice,
           feeEstimates: feeEstimates,
@@ -252,11 +257,15 @@ class SwapCreateListingFormBloc
       ));
 
       final onChainPayment = await $(
-          _atomicSwapRepository.createOnChainPaymentT(
-              httpConfig: httpConfig,
-              address: state.address.address,
-              utxoSetIds: utxoMap.keys.toList(),
-              satsPerVbyte: state.getSatsPerVByte));
+        _createOnChainPaymentUseCase(
+          CreateOnChainPaymentParams(
+            httpConfig: httpConfig,
+            address: state.address.address,
+            utxoSetIds: utxoMap.keys.toList(),
+            satsPerVbyte: state.getSatsPerVByte,
+          ),
+        ),
+      );
 
       return onChainPayment;
     });

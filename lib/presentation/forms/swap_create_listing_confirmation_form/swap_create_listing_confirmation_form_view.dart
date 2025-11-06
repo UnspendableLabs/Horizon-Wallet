@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/psbt_type.dart';
+import 'package:horizon/domain/usecases/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
@@ -157,7 +158,7 @@ class SwapCreateListingFormProvider extends StatelessWidget {
   final BigInt btcPrice;
   final BigInt royaltyPrice;
 
-  final FeeEstimatesRespository _feeEstimatesRepository;
+  final GetFeeEstimatesUseCase _getFeeEstimatesUseCase;
 
   final Widget Function(SwapCreateListingFormActions actions,
       SwapCreateListingFormModel state) child;
@@ -172,17 +173,17 @@ class SwapCreateListingFormProvider extends StatelessWidget {
     required this.giveQuantityNormalized,
     required this.btcPrice,
     required this.royaltyPrice,
-    FeeEstimatesRespository? feeEstimatesRepository,
-  }) : _feeEstimatesRepository =
-            feeEstimatesRepository ?? GetIt.I<FeeEstimatesRespository>();
+    GetFeeEstimatesUseCase? getFeeEstimatesUseCase,
+  }) : _getFeeEstimatesUseCase =
+            getFeeEstimatesUseCase ?? GetIt.I<GetFeeEstimatesUseCase>();
 
   @override
   Widget build(BuildContext context) {
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
 
     return RemoteDataTaskEitherBuilder<String, FeeEstimates>(
-        task: _feeEstimatesRepository.getFeeEstimates(
-            httpConfig: session.httpConfig),
+        task: _getFeeEstimatesUseCase(
+            GetFeeEstimatesParams(httpConfig: session.httpConfig)),
         builder: (context, state, refresh) => state.fold(
             onInitial: () => const SizedBox.shrink(),
             onLoading: () => const Center(child: CircularProgressIndicator()),

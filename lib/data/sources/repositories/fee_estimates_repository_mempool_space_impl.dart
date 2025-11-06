@@ -1,4 +1,5 @@
 import "package:horizon/data/sources/repositories/network_error_helpers.dart";
+import "package:horizon/domain/entities/network_error.dart";
 import "package:horizon/domain/repositories/fee_estimates_repository.dart";
 import "package:horizon/domain/entities/fee_estimates.dart";
 import "package:horizon/domain/entities/http_config.dart";
@@ -13,7 +14,7 @@ class FeeEstimatesRespositoryMempoolSpaceImpl
   }) : _mempoolSpaceClientFactory = mempoolSpaceClientFactory;
 
   @override
-  TaskEither<String, FeeEstimates> getFeeEstimates(
+  TaskEither<NetworkError, FeeEstimates> getFeeEstimates(
       {required HttpConfig httpConfig}) {
     return handleNetworkCallWithRetry(
       () async {
@@ -24,12 +25,6 @@ class FeeEstimatesRespositoryMempoolSpaceImpl
           medium: response.halfHourFee,
           slow: response.hourFee,
         );
-      },
-      onError: (error) {
-        if (error.statusCode == 503) {
-          return "GetFeeEstimates failure";
-        }
-        return null;
       },
     );
   }

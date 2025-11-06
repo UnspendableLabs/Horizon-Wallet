@@ -11,6 +11,7 @@ import 'package:horizon/domain/entities/royalty_by_asset.dart';
 import 'package:horizon/domain/repositories/royalties_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/domain/usecases/atomic_swap_create.dart';
 import 'package:horizon/presentation/forms/asset_balance_form/bloc/asset_balance_form_bloc.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/utxo.dart';
@@ -185,6 +186,7 @@ class AtomicSwapSellFlowView extends StatefulWidget {
   final BitcoinRepository _bitcoinRepository;
   final UtxoRepository _utxoRepository;
   final AnalyticsService _analyticsService;
+  final AtomicSwapCreateUseCase _atomicSwapCreateUseCase;
 
   final List<AddressV2> addresses;
   final AssetBalanceSummary balances;
@@ -199,6 +201,7 @@ class AtomicSwapSellFlowView extends StatefulWidget {
       RoyaltiesRepository? royaltiesRepository,
       BitcoinRepository? bitcoinRepository,
       AnalyticsService? analyticsService,
+      AtomicSwapCreateUseCase? atomicSwapCreateUseCase,
       super.key})
       : _config = config ?? GetIt.I<Config>(),
         _utxoRepository = utxoRepository ?? GetIt.I<UtxoRepository>(),
@@ -207,7 +210,9 @@ class AtomicSwapSellFlowView extends StatefulWidget {
         _atomicSwapRepository =
             atomicSwapRepository ?? GetIt.I<AtomicSwapRepository>(),
         _analyticsService = analyticsService ?? GetIt.I<AnalyticsService>(),
-        _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>();
+        _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>(),
+        _atomicSwapCreateUseCase =
+            atomicSwapCreateUseCase ?? GetIt.I<AtomicSwapCreateUseCase>();
 
   @override
   State<AtomicSwapSellFlowView> createState() => _AtomicSwapSellFlowViewState();
@@ -548,21 +553,21 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                       final assetQuantity =
                           swapSellDetails.sellDetails.quantity;
 
-                      final atomicSwap = await $(
-                          widget._atomicSwapRepository.atomicSwapCreateT(
-                        assetDivisible: swapSellDetails.sellDetails.divisible,
+                      final atomicSwap = await $(widget._atomicSwapCreateUseCase
+                          .call(AtomicSwapCreateParams(
                         httpConfig: widget.httpConfig,
                         psbtHex: signedSwapPsbt,
                         sellerAddress: sellerAddress.address,
                         assetUtxoId: assetUtxoId.toString(),
-                        feePaymentPsbtHex: a.signedPsbtHex,
-                        feePaymentId: a.id,
-                        price: (btcPrice - royaltyPrice).toInt(), // TODO
-                        assetQuantity: assetQuantity,
                         assetUtxoValue: utxoValue,
                         assetName: swapSellDetails.sellDetails.asset,
+                        assetQuantity: assetQuantity,
+                        price: (btcPrice - royaltyPrice).toInt(), // TODO
                         expiresAt: swapSellDetails.expiresAt,
-                      ));
+                        feePaymentId: a.id,
+                        feePaymentPsbtHex: a.signedPsbtHex,
+                        assetDivisible: swapSellDetails.sellDetails.divisible,
+                      )));
 
                       return atomicSwap.id;
                     }).tap((_) => widget._analyticsService

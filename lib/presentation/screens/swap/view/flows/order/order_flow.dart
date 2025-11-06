@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:horizon/domain/entities/balance_v2.dart';
+import 'package:horizon/domain/usecases/send_raw_transaction.dart';
 import 'package:horizon/presentation/common/link.dart';
 import 'package:horizon/presentation/forms/asset_balance_form/bloc/asset_balance_form_bloc.dart';
 import 'package:flutter/services.dart';
@@ -242,12 +243,14 @@ class _OrderFlowViewState extends State<OrderFlowView> {
                             psbtHex: psbtHex,
                             onError: (e, _) => e.toString())));
 
-                final hash = $(GetIt.I<BitcoindService>()
-                    .sendrawtransactionT(
-                        signedHex: finalizedTx,
-                        httpConfig: session.httpConfig,
-                        onError: (e, _) => e.toString())
-                    .minimumDuration(const Duration(seconds: 2)));
+                final sendTask = GetIt.I<SendRawTransactionUseCase>()
+                    .call(SendRawTransactionParams(
+                  signedHex: finalizedTx,
+                  httpConfig: session.httpConfig,
+                ));
+
+                final result = await sendTask.run();
+                final hash = result.fold((error) => error, (hash) => hash);
 
                 return hash;
               }), builder: (context, state, retry) {

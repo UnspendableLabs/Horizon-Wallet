@@ -14,8 +14,12 @@ class WriteLocalTransactionUseCase {
       required String hash,
       required HttpConfig httpConfig}) async {
     try {
+      final txInfoTask = await transactionRepository
+          .getInfo(raw: hex, httpConfig: httpConfig)
+          .run();
+
       final txInfo =
-          await transactionRepository.getInfo(raw: hex, httpConfig: httpConfig);
+          txInfoTask.fold((error) => throw error, (txInfo) => txInfo);
 
       await transactionLocalRepository.insert(txInfo.copyWith(
         hash: hash,

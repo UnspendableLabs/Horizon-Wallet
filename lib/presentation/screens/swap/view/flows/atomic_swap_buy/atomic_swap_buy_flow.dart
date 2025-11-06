@@ -6,6 +6,7 @@ import 'package:horizon/domain/entities/http_config.dart';
 
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/domain/usecases/atomic_swap_multi_buy.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/transactions/transaction_error.dart';
 import 'package:lottie/lottie.dart';
@@ -132,6 +133,7 @@ class AtomicSwapBuyFlowView extends StatefulWidget {
 
   final VoidCallback onExitFlow;
   final AtomicSwapRepository _atomicSwapRepository;
+  final AtomicSwapMultiBuyUseCase _atomicSwapMultiBuyUseCase;
   final AnalyticsService _analyticsService;
 
   AtomicSwapBuyFlowView(
@@ -140,11 +142,14 @@ class AtomicSwapBuyFlowView extends StatefulWidget {
       required this.balances,
       required this.onExitFlow,
       AtomicSwapRepository? atomicSwapRepository,
+      AtomicSwapMultiBuyUseCase? atomicSwapMultiBuyUseCase,
       AnalyticsService? analyticsService,
       super.key})
       : _analyticsService = analyticsService ?? GetIt.I<AnalyticsService>(),
         _atomicSwapRepository =
-            atomicSwapRepository ?? GetIt.I<AtomicSwapRepository>();
+            atomicSwapRepository ?? GetIt.I<AtomicSwapRepository>(),
+        _atomicSwapMultiBuyUseCase =
+            atomicSwapMultiBuyUseCase ?? GetIt.I<AtomicSwapMultiBuyUseCase>();
 
   @override
   State<AtomicSwapBuyFlowView> createState() => _AtomicSwapBuyFlowViewState();
@@ -385,8 +390,8 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
                       ))))),
           model.signedPsbtHex.map((signedPsbtHex) => MaterialPage(
               child: RemoteDataTaskEitherBuilder(
-                  task: widget._atomicSwapRepository
-                      .atomicSwapMultiBuyT(
+                  task: widget
+                      ._atomicSwapMultiBuyUseCase(AtomicSwapMultiBuyParams(
                     httpConfig: session.httpConfig,
                     ids: model.atomicSwapsToSign
                         .getOrThrow()
@@ -401,11 +406,7 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
                               model.bitcoinBalance.getOrThrow().address,
                         )
                         .address,
-                  )
-                      .tap((success) {
-                    widget._analyticsService.trackAnonymousEvent(
-                        "atomic_swap_listing(s)_purchased");
-                  }),
+                  )),
                   builder: (context, state, retry) {
                     //TODO: move this into RemoteDataTaskEitherBuilder
                     bool disabled = switch (state) {

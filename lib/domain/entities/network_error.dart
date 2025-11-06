@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 
 /// Network error utility for parsing and formatting DioExceptions
-class NetworkError {
+class NetworkError extends Error {
   final DioExceptionType type;
   final int? statusCode;
   final String? originalMessage;
@@ -18,10 +18,33 @@ class NetworkError {
     this.fullUrl,
   });
 
+  String get message => userMessage;
+
+  /// Extract error message from response data if available
+  /// Checks if response data (typically a Map) contains an 'error' field
+  static String? _extractErrorFromResponse(dynamic responseData) {
+    if (responseData == null) return null;
+
+    // Check if it's a Map with 'error' field
+    // Dio typically returns response data as Map<String, dynamic>
+    if (responseData is Map) {
+      final error = responseData['error'];
+      if (error is String && error.isNotEmpty) {
+        return error;
+      }
+    }
+
+    return null;
+  }
+
   /// Create NetworkError from DioException
   factory NetworkError.fromDioException(DioException error) {
     final statusCode = error.response?.statusCode;
-    final userMessage = _formatUserMessage(error.type, statusCode);
+
+    // Extract error message from response data if available (takes precedence)
+    final responseError = _extractErrorFromResponse(error.response?.data);
+    final defaultMessage = _formatUserMessage(error.type, statusCode);
+    final userMessage = responseError ?? defaultMessage;
 
     // Extract endpoint information
     final method = error.requestOptions.method;

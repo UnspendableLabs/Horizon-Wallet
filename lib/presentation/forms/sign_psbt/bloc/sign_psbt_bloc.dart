@@ -6,6 +6,7 @@ import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import "package:get_it/get_it.dart";
 import 'package:horizon/common/format.dart';
+import 'package:horizon/domain/usecases/decode_raw_transaction.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:collection/collection.dart';
 import 'package:horizon/domain/entities/psbt_type.dart';
@@ -162,6 +163,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
   final EncryptionService _encryptionService;
   final AddressService _addressService;
   final BitcoindService _bitcoindService;
+  final DecodeRawTransactionUseCase _decodeRawTransactionUseCase;
   final UtxoRepository _utxoRepository;
   final GetUTXOBalancesUseCase _getUTXOBalancesUseCase;
   final BitcoinRepository _bitcoinRepository = GetIt.I<BitcoinRepository>();
@@ -187,8 +189,11 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
     UtxoRepository? utxoRepository,
     EventsRepository? eventsRepository,
     GetUTXOBalancesUseCase? getUTXOBalancesUseCase,
+    DecodeRawTransactionUseCase? decodeRawTransactionUseCase,
     this.embeddedWitnessData = false,
   })  : _bitcoindService = bitcoindService ?? GetIt.I<BitcoindService>(),
+        _decodeRawTransactionUseCase = decodeRawTransactionUseCase ??
+            GetIt.I<DecodeRawTransactionUseCase>(),
         _transactionService =
             transactionService ?? GetIt.I<TransactionService>(),
         _inMemoryKeyRepository =
@@ -219,8 +224,14 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
       final transactionHex =
           _transactionService.psbtToUnsignedTransactionHex(unsignedPsbt);
 
-      final decoded = await _bitcoindService.decoderawtransaction(
-          transactionHex, httpConfig);
+      final decodedTask = await _decodeRawTransactionUseCase
+          .call(DecodeRawTransactionParams(
+            raw: transactionHex,
+            httpConfig: httpConfig,
+          ))
+          .run();
+      final decoded =
+          decodedTask.fold((error) => throw error, (decoded) => decoded);
 
       Either<Failure, List<Option<AugmentedInput>>> inputs =
           await TaskEither.traverseListWithIndex(decoded.vin, (vin, index) {
