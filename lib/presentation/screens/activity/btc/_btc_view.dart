@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/transaction_repository.dart';
+import 'package:horizon/domain/usecases/esplora/get_transaction_hex.dart';
 import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/common/tx_hash_display.dart';
@@ -24,16 +25,17 @@ extension StringExtension on String {
 }
 
 class XCPTitle extends StatelessWidget {
-  final BitcoinRepository _bitcoinRepository;
+  final GetTransactionHexEsploraUseCase _getTransactionHexEsploraUseCase;
   final TransactionRepository _transactionRepository;
   final String txid;
 
   XCPTitle({
     required this.txid,
-    BitcoinRepository? bitcoinRepository,
+    GetTransactionHexEsploraUseCase? getTransactionHexEsploraUseCase,
     TransactionRepository? transactionRepository,
     super.key,
-  })  : _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>(),
+  })  : _getTransactionHexEsploraUseCase = getTransactionHexEsploraUseCase ??
+            GetIt.I<GetTransactionHexEsploraUseCase>(),
         _transactionRepository =
             transactionRepository ?? GetIt.I<TransactionRepository>();
 
@@ -45,12 +47,10 @@ class XCPTitle extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         RemoteDataTaskEitherBuilder(
-            task: _bitcoinRepository
-                .getTransactionHexT(
-                  httpConfig: session.httpConfig,
-                  txid: txid,
-                  onError: (e) => 'Error fetching transaction: $txid',
-                )
+            task: _getTransactionHexEsploraUseCase
+                .call(GetTransactionHexEsploraParams(
+                    httpConfig: session.httpConfig, txid: txid))
+                .mapLeft((_) => 'Error fetching transaction: $txid')
                 .flatMap((txHex) => _transactionRepository
                     .getInfo(
                       httpConfig: session.httpConfig,

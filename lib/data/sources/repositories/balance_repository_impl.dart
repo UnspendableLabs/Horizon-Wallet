@@ -15,15 +15,16 @@ import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/data/sources/network/counterparty_client_factory.dart';
+import 'package:horizon/domain/usecases/esplora/get_address_info.dart';
 
 class BalanceRepositoryImpl implements BalanceRepository {
   final UtxoRepository utxoRepository;
-  final BitcoinRepository bitcoinRepository;
   final CounterpartyClientFactory counterpartyClientFactory;
+  final GetAddressInfoEsploraUseCase getAddressInfoEsploraUseCase;
 
   BalanceRepositoryImpl({
     required this.utxoRepository,
-    required this.bitcoinRepository,
+    required this.getAddressInfoEsploraUseCase,
     required this.counterpartyClientFactory,
   });
 
@@ -162,8 +163,13 @@ class BalanceRepositoryImpl implements BalanceRepository {
 
   Future<b.Balance> _getBtcBalance(
       {required String address, required HttpConfig httpConfig}) async {
-    final info = await bitcoinRepository.getAddressInfo(
-        address: address, httpConfig: httpConfig);
+    final infoTask = await getAddressInfoEsploraUseCase
+        .call(GetAddressInfoEsploraParams(
+          httpConfig: httpConfig,
+          address: address,
+        ))
+        .run();
+    final info = infoTask.fold((error) => throw error, (info) => info);
     final funded = info.chainStats.fundedTxoSum;
     final spent = info.chainStats.spentTxoSum;
     final quantity = funded - spent;

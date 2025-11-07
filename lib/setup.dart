@@ -7,6 +7,15 @@ import 'package:horizon/data/services/secure_kv_service_impl.dart';
 import 'package:horizon/domain/entities/address_rpc.dart';
 import 'package:horizon/domain/services/mempool_price_service.dart';
 import 'package:horizon/domain/services/secure_kv_service.dart';
+import 'package:horizon/domain/usecases/esplora/get_address_info.dart';
+import 'package:horizon/domain/usecases/esplora/get_block_height.dart';
+import 'package:horizon/domain/usecases/esplora/get_confirmed_transactions_paginated.dart';
+import 'package:horizon/domain/usecases/esplora/get_mempool_transactions.dart';
+import 'package:horizon/domain/usecases/esplora/get_transaction.dart';
+import 'package:horizon/domain/usecases/esplora/get_transaction_hex.dart';
+import 'package:horizon/domain/usecases/esplora/get_transactions.dart';
+import 'package:horizon/domain/usecases/get_asset_verbose.dart';
+import 'package:horizon/domain/usecases/get_detach_data.dart';
 import 'package:horizon/domain/usecases/get_fee_estimates.dart';
 import 'package:horizon/domain/usecases/atomic_swap_create.dart';
 import 'package:horizon/domain/usecases/atomic_swap_multi_buy.dart';
@@ -395,10 +404,15 @@ void setup() {
   )));
   injector.registerSingleton<UtxoRepository>(
       UtxoRepositoryImpl(cacheProvider: GetIt.I.get<CacheProvider>()));
+  injector.registerSingleton<GetTransactionHexEsploraUseCase>(
+      GetTransactionHexEsploraUseCase());
+  injector.registerSingleton<GetAddressInfoEsploraUseCase>(
+      GetAddressInfoEsploraUseCase());
   injector.registerSingleton<BalanceRepository>(BalanceRepositoryImpl(
       counterpartyClientFactory: GetIt.I.get<CounterpartyClientFactory>(),
       utxoRepository: GetIt.I.get<UtxoRepository>(),
-      bitcoinRepository: GetIt.I.get<BitcoinRepository>()));
+      getAddressInfoEsploraUseCase:
+          GetIt.I.get<GetAddressInfoEsploraUseCase>()));
 
   injector.registerSingleton<BlockRepository>(BlockRepositoryImpl());
 
@@ -485,10 +499,22 @@ void setup() {
 
   injector.registerSingleton<GetVirtualSizeUseCase>(GetVirtualSizeUseCase(
     transactionService: GetIt.I.get<TransactionService>(),
+    errorService: GetIt.I.get<ErrorService>(),
   ));
+  injector.registerSingleton<GetTransactionEsploraUseCase>(
+      GetTransactionEsploraUseCase());
+
+  injector.registerSingleton<GetBlockHeightEsploraUseCase>(
+      GetBlockHeightEsploraUseCase());
+  injector.registerSingleton<GetMempoolTransactionsEsploraUseCase>(
+      GetMempoolTransactionsEsploraUseCase());
+  injector.registerSingleton<GetConfirmedTransactionsPaginatedUseCase>(
+      GetConfirmedTransactionsPaginatedUseCase());
+  injector.registerSingleton<GetTransactionsEsploraUseCase>(
+      GetTransactionsEsploraUseCase());
 
   injector.registerSingleton<EventsRepository>(EventsRepositoryImpl(
-      bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
+      getTransactionEsploraUseCase: GetIt.I.get<GetTransactionEsploraUseCase>(),
       cacheProvider: GetIt.I.get<CacheProvider>()));
 
   injector.registerSingleton<SeedService>(SeedServiceImpl());
@@ -667,6 +693,8 @@ void setup() {
       SendRawTransactionUseCase());
   injector.registerSingleton<GetUtxoSwapMapUseCase>(GetUtxoSwapMapUseCase());
   injector.registerSingleton<SearchAssetsUseCase>(SearchAssetsUseCase());
+  injector.registerSingleton<GetAssetVerboseUseCase>(GetAssetVerboseUseCase());
+  injector.registerSingleton<GetDetachDataUseCase>(GetDetachDataUseCase());
 }
 
 class CustomDioException extends DioException {

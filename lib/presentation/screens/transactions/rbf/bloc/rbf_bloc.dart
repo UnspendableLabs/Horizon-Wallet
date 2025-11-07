@@ -21,6 +21,8 @@ import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
+import 'package:horizon/domain/usecases/esplora/get_transaction.dart';
+import 'package:horizon/domain/usecases/esplora/get_transaction_hex.dart';
 import 'package:horizon/domain/usecases/get_fee_estimates.dart';
 import 'package:horizon/domain/usecases/send_raw_transaction.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
@@ -72,6 +74,8 @@ class RBFBloc
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
   final SeedService _seedService;
   final WalletConfigRepository _walletConfigRepository;
+  final GetTransactionEsploraUseCase _getTransactionEsploraUseCase;
+  final GetTransactionHexEsploraUseCase _getTransactionHexEsploraUseCase;
 
   RBFBloc({
     required this.address,
@@ -91,6 +95,8 @@ class RBFBloc
     SeedService? seedService,
     WalletConfigRepository? walletConfigRepository,
     SendRawTransactionUseCase? sendRawTransactionUseCase,
+    GetTransactionEsploraUseCase? getTransactionEsploraUseCase,
+    GetTransactionHexEsploraUseCase? getTransactionHexEsploraUseCase,
   })  : _inMemoryKeyRepository = inMemoryKeyRepository,
         _encryptionService = encryptionService,
         _addressService = addressService,
@@ -99,6 +105,10 @@ class RBFBloc
             walletConfigRepository ?? GetIt.I<WalletConfigRepository>(),
         _sendRawTransactionUseCase =
             sendRawTransactionUseCase ?? GetIt.I<SendRawTransactionUseCase>(),
+        _getTransactionEsploraUseCase = getTransactionEsploraUseCase ??
+            GetIt.I<GetTransactionEsploraUseCase>(),
+        _getTransactionHexEsploraUseCase = getTransactionHexEsploraUseCase ??
+            GetIt.I<GetTransactionHexEsploraUseCase>(),
         super(TransactionState<RBFData, RBFComposeData>(
           formState: TransactionFormState<RBFData>(
             balancesState: const BalancesState.initial(),
@@ -131,16 +141,17 @@ class RBFBloc
       final feeEstimates = await $(getFeeEstimatesUseCase
           .call(GetFeeEstimatesParams(httpConfig: httpConfig)));
 
-      final originalTransaction = await $(bitcoinRepository.getTransactionT(
-          txid: event.txHash,
-          httpConfig: httpConfig,
-          onError: (e) => "error: could not get transaction"));
+      final originalTransaction = await $(
+          _getTransactionEsploraUseCase.call(GetTransactionEsploraParams(
+        httpConfig: httpConfig,
+        txid: event.txHash,
+      )));
 
       final originalTransactionHex = await $(
-          bitcoinRepository.getTransactionHexT(
-              txid: event.txHash,
-              httpConfig: httpConfig,
-              onError: (e) => "error: could not get transaction"));
+          _getTransactionHexEsploraUseCase.call(GetTransactionHexEsploraParams(
+        httpConfig: httpConfig,
+        txid: event.txHash,
+      )));
 
       final virtualSize = await $(TaskEither.fromEither(
           transactionService.getVirtualSizeT(
@@ -266,7 +277,7 @@ class RBFBloc
           inputsByTxHash: composeData.makeRBFResponse.inputsByTxHash,
           httpConfig: httpConfig,
           address: address.address,
-          bitcoinRepository: bitcoinRepository));
+          getTransactionEsploraUseCase: _getTransactionEsploraUseCase));
 
       final signedHex = await $(transactionService.signTransactionT(
           unsignedTransaction: composeData.makeRBFResponse.txHex,
@@ -346,17 +357,18 @@ TaskEither<String, Map<String, Utxo>> buildUtxoMapT({
   required Map<String, List<int>> inputsByTxHash,
   required HttpConfig httpConfig,
   required String address,
-  required BitcoinRepository bitcoinRepository,
+  required GetTransactionEsploraUseCase getTransactionEsploraUseCase,
 }) {
   final tasks = inputsByTxHash.entries.map((entry) {
     final txHash = entry.key;
     final indices = entry.value;
 
-    return bitcoinRepository
-        .getTransactionT(
-            txid: txHash,
-            httpConfig: httpConfig,
-            onError: (_) => 'Failed to fetch transaction $txHash: $_')
+    return getTransactionEsploraUseCase
+        .call(GetTransactionEsploraParams(
+          httpConfig: httpConfig,
+          txid: txHash,
+        ))
+        .mapLeft((error) => 'Failed to fetch transaction $txHash: $error')
         .map(
           (tx) => {
             for (final index in indices)

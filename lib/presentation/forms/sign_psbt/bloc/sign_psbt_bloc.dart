@@ -7,6 +7,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import "package:get_it/get_it.dart";
 import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/usecases/decode_raw_transaction.dart';
+import 'package:horizon/domain/usecases/esplora/get_transaction.dart';
+import 'package:horizon/domain/usecases/esplora/get_transactions.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:collection/collection.dart';
 import 'package:horizon/domain/entities/psbt_type.dart';
@@ -162,11 +164,10 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
   final TransactionService _transactionService;
   final EncryptionService _encryptionService;
   final AddressService _addressService;
-  final BitcoindService _bitcoindService;
   final DecodeRawTransactionUseCase _decodeRawTransactionUseCase;
   final UtxoRepository _utxoRepository;
   final GetUTXOBalancesUseCase _getUTXOBalancesUseCase;
-  final BitcoinRepository _bitcoinRepository = GetIt.I<BitcoinRepository>();
+  final GetTransactionEsploraUseCase _getTransactionEsploraUseCase;
 
   final bool embeddedWitnessData;
 
@@ -190,9 +191,9 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
     EventsRepository? eventsRepository,
     GetUTXOBalancesUseCase? getUTXOBalancesUseCase,
     DecodeRawTransactionUseCase? decodeRawTransactionUseCase,
+    GetTransactionEsploraUseCase? getTransactionEsploraUseCase,
     this.embeddedWitnessData = false,
-  })  : _bitcoindService = bitcoindService ?? GetIt.I<BitcoindService>(),
-        _decodeRawTransactionUseCase = decodeRawTransactionUseCase ??
+  })  : _decodeRawTransactionUseCase = decodeRawTransactionUseCase ??
             GetIt.I<DecodeRawTransactionUseCase>(),
         _transactionService =
             transactionService ?? GetIt.I<TransactionService>(),
@@ -206,6 +207,8 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
         _utxoRepository = utxoRepository ?? GetIt.I<UtxoRepository>(),
         _getUTXOBalancesUseCase =
             getUTXOBalancesUseCase ?? GetIt.I<GetUTXOBalancesUseCase>(),
+        _getTransactionEsploraUseCase = getTransactionEsploraUseCase ??
+            GetIt.I<GetTransactionEsploraUseCase>(),
         super(SignPsbtState(
             addresses: addresses.map((addy) => addy.address).toList(),
             psbtType: psbtType)) {
@@ -242,17 +245,12 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
           }
 
           // TODO: don't go chasin' waterfalls.
-          final getTransactionTask = _bitcoinRepository
-              .getTransactionT(
-                  txid: vin.txid,
-                  httpConfig: httpConfig,
-                  onError: (_) =>
-                      "Failed to get transaction with txid: ${vin.txid}")
-              .mapLeft(
-                (_) => UnexpectedFailure(
-                  message: "Failed to get transaction with txid: ${vin.txid}",
-                ),
-              );
+          final getTransactionTask = _getTransactionEsploraUseCase
+              .call(GetTransactionEsploraParams(
+                txid: vin.txid,
+                httpConfig: httpConfig,
+              ))
+              .mapLeft((s) => UnexpectedFailure(message: s));
 
           final utxoBalancesTask = _getUTXOBalancesUseCase
               .call(GetUTXOBalancesUseCaseParams(

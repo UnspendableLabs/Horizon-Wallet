@@ -15,145 +15,136 @@ import 'package:horizon/domain/entities/compose_order.dart';
 import 'package:horizon/domain/entities/compose_cancel.dart';
 import 'package:horizon/domain/entities/compose_mpma_send.dart';
 import 'package:horizon/domain/entities/compose_sweep.dart';
+import 'package:horizon/domain/entities/network_error.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:fpdart/fpdart.dart';
 
 abstract class ComposeRepository {
-  Future<ComposeSendResponse> composeSendVerbose(
+  TaskEither<NetworkError, ComposeSendResponse> composeSendVerbose(
     num satPerVbyte,
     List<Utxo> inputsSet,
     ComposeSendParams params,
     HttpConfig httpConfig,
   );
 
-  Future<ComposeMpmaSendResponse> composeMpmaSend(
+  TaskEither<NetworkError, ComposeMpmaSendResponse> composeMpmaSend(
     num satPerVbyte,
     List<Utxo> inputsSet,
     ComposeMpmaSendParams params,
     HttpConfig httpConfig,
   );
 
-  Future<ComposeIssuanceResponseVerbose> composeIssuanceVerbose(
+  TaskEither<NetworkError, ComposeIssuanceResponseVerbose>
+      composeIssuanceVerbose(
     num satPerVbyte,
     List<Utxo> inputsSet,
     ComposeIssuanceParams params,
     HttpConfig httpConfig,
   );
 
-  Future<ComposeDispenserResponseVerbose> composeDispenserVerbose(
+  TaskEither<NetworkError, ComposeDispenserResponseVerbose>
+      composeDispenserVerbose(
     num satPerVbyte,
     List<Utxo> inputsSet,
     ComposeDispenserParams params,
     HttpConfig httpConfig,
   );
 
-  Future<ComposeDispenseResponse> composeDispense(
+  TaskEither<NetworkError, ComposeDispenseResponse> composeDispense(
     num satPerVbyte,
     List<Utxo> inputsSet,
     ComposeDispenseParams params,
     HttpConfig httpConfig,
   );
 
-  Future<ComposeFairmintResponse> composeFairmintVerbose(
+  TaskEither<NetworkError, ComposeFairmintResponse> composeFairmintVerbose(
     num satPerVbyte,
     List<Utxo> inputsSet,
     ComposeFairmintParams params,
     HttpConfig httpConfig,
   );
 
-  Future<ComposeFairminterResponse> composeFairminterVerbose(
+  TaskEither<NetworkError, ComposeFairminterResponse> composeFairminterVerbose(
     num satPerVbyte,
     List<Utxo> inputsSet,
     ComposeFairminterParams params,
     HttpConfig httpConfig,
   );
 
-  Future<ComposeDispenserResponseVerbose> composeDispenserChain(
+  TaskEither<NetworkError, ComposeDispenserResponseVerbose>
+      composeDispenserChain(
     int exactFee,
     DecodedTx prevDecodedTransaction,
     ComposeDispenserParams params,
     HttpConfig httpConfig,
   );
 
-  Future<ComposeOrderResponse> composeOrder(
+  TaskEither<NetworkError, ComposeOrderResponse> composeOrder(
     num satPerVbyte,
     List<Utxo> inputsSet,
     ComposeOrderParams params,
     HttpConfig httpConfig,
   );
 
-  Future<ComposeCancelResponse> composeCancel(
+  TaskEither<NetworkError, ComposeCancelResponse> composeCancel(
     num satPerVbyte,
     List<Utxo> inputsSet,
     ComposeCancelParams params,
     HttpConfig httpConfig,
   );
 
-  Future<ComposeAttachUtxoResponse> composeAttachUtxo(
+  TaskEither<NetworkError, ComposeAttachUtxoResponse> composeAttachUtxo(
     num satPerVbyte,
     List<Utxo> inputsSet,
     ComposeAttachUtxoParams params,
     HttpConfig httpConfig,
   );
 
-  Future<ComposeDetachUtxoResponse> composeDetachUtxo(
+  TaskEither<NetworkError, ComposeDetachUtxoResponse> composeDetachUtxo(
     num satPerVbyte,
     List<Utxo> inputsSet,
     ComposeDetachUtxoParams params,
     HttpConfig httpConfig,
   );
 
-  Future<String> getDetachData({
+  TaskEither<NetworkError, String> getDetachData({
     required String destination,
     required HttpConfig httpConfig,
   });
 
-  Future<ComposeMoveToUtxoResponse> composeMoveToUtxo(
+  TaskEither<NetworkError, ComposeMoveToUtxoResponse> composeMoveToUtxo(
     num satPerVbyte,
     List<Utxo> inputsSet,
     ComposeMoveToUtxoParams params,
     HttpConfig httpConfig,
   );
 
-  Future<ComposeDestroyResponse> composeDestroy(
+  TaskEither<NetworkError, ComposeDestroyResponse> composeDestroy(
     num satPerVbyte,
     List<Utxo> inputsSet,
     ComposeDestroyParams params,
     HttpConfig httpConfig,
   );
 
-  Future<ComposeDividendResponse> composeDividend(
+  TaskEither<NetworkError, ComposeDividendResponse> composeDividend(
     num satPerVbyte,
     List<Utxo> inputsSet,
     ComposeDividendParams params,
     HttpConfig httpConfig,
   );
 
-  Future<ComposeSweepResponse> composeSweep(
+  TaskEither<NetworkError, ComposeSweepResponse> composeSweep(
     num satPerVbyte,
     List<Utxo> inputsSet,
     ComposeSweepParams params,
     HttpConfig httpConfig,
   );
 
-  Future<ComposeBurnResponse> composeBurn(
+  TaskEither<NetworkError, ComposeBurnResponse> composeBurn(
     num satPerVbyte,
     List<Utxo> inputsSet,
     ComposeBurnParams params,
     HttpConfig httpConfig,
   );
-}
-
-extension ComposeRepositoryX on ComposeRepository {
-  TaskEither<String, String> getDetachDataT({
-    required String destination,
-    required HttpConfig httpConfig,
-    required String Function(Object error, StackTrace stack) onError,
-  }) {
-    return TaskEither.tryCatch(
-      () => getDetachData(destination: destination, httpConfig: httpConfig),
-      onError,
-    );
-  }
 }

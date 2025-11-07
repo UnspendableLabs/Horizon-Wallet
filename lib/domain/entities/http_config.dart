@@ -58,8 +58,8 @@ class Signet extends HttpConfig {
           counterparty: "https://signet.counterparty.io:34000/v2/",
           esplora: "https://signet.counterparty.io:33000",
           btcExplorer: "https://mempool.space/signet",
-          horizonMarket: "https://horizon-market-signet.vercel.app",
-          horizonMarketApi: "https://horizon-market-signet.vercel.app/api",
+          horizonMarket: "http://localhost:3000",
+          horizonMarketApi: "http://localhost:3000/api",
           mempoolSpaceApi: "https://mempool.space/signet/api/v1",
         );
 }

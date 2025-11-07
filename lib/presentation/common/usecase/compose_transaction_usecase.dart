@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import "package:equatable/equatable.dart";
 import 'package:horizon/domain/entities/compose_fn.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
+import 'package:horizon/domain/entities/network_error.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
@@ -65,8 +66,22 @@ class ComposeTransactionUseCase {
             await _getLargeInputsSet(source, inputsSet, httpConfig);
       }
 
-      final R finalTx =
-          await composeFn(feeRate, inputsSetForTx, params, httpConfig);
+      final finalTxTask =
+          await composeFn(feeRate, inputsSetForTx, params, httpConfig).run();
+      final finalTx = finalTxTask.fold((error) {
+        errorService.captureException(
+          error,
+          message: 'Failed to compose',
+          context: {
+            'message': error.message,
+            'endpoint': error.endpoint,
+            'fullUrl': error.fullUrl,
+            'statusCode': error.statusCode,
+            'feeRate': feeRate,
+          },
+        );
+        throw error;
+      }, (finalTx) => finalTx);
       return finalTx;
     } on DioException catch (e) {
       if (e.response?.data != null && e.response?.data["error"] != null) {

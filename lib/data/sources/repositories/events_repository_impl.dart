@@ -13,6 +13,7 @@ import 'package:horizon/domain/repositories/events_repository.dart';
 
 import 'package:get_it/get_it.dart';
 import 'package:horizon/data/sources/network/counterparty_client_factory.dart';
+import 'package:horizon/domain/usecases/esplora/get_transaction.dart';
 
 class StateMapper {
   static EventState getVerbose(api.VerboseEvent apiEvent) {
@@ -24,8 +25,10 @@ class StateMapper {
 }
 
 class VerboseEventMapper {
-  final BitcoinRepository bitcoinRepository;
-  VerboseEventMapper({required this.bitcoinRepository});
+  final GetTransactionEsploraUseCase _getTransactionEsploraUseCase;
+  VerboseEventMapper({
+    required GetTransactionEsploraUseCase getTransactionEsploraUseCase,
+  }) : _getTransactionEsploraUseCase = getTransactionEsploraUseCase;
 
   Future<VerboseEvent> toDomain(api.VerboseEvent apiEvent) async {
     switch (apiEvent.event) {
@@ -148,8 +151,14 @@ class VerboseEventMapper {
       return VerboseMoveToUtxoEventMapper.toDomain(apiEvent);
     }
 
-    final BitcoinTx transactionInfo = await bitcoinRepository.getTransaction(
-        txid: apiEvent.txHash!, httpConfig: httpConfig);
+    final transactionInfoTask = await _getTransactionEsploraUseCase
+        .call(GetTransactionEsploraParams(
+          httpConfig: httpConfig,
+          txid: apiEvent.txHash!,
+        ))
+        .run();
+    final transactionInfo = transactionInfoTask.fold(
+        (error) => throw error, (transaction) => transaction);
 
     // atomic swaps will have at least 2 different input sources
     final isAtomicSwap = _isAtomicSwap(transactionInfo);
@@ -1114,16 +1123,17 @@ class BurnParamsMapper {
 }
 
 class EventsRepositoryImpl implements EventsRepository {
-  final BitcoinRepository bitcoinRepository;
   final CacheProvider cacheProvider;
   final CounterpartyClientFactory _counterpartyClientFactory;
-
+  final GetTransactionEsploraUseCase _getTransactionEsploraUseCase;
   EventsRepositoryImpl({
-    required this.bitcoinRepository,
     required this.cacheProvider,
     CounterpartyClientFactory? counterpartyClientFactory,
-  }) : _counterpartyClientFactory =
-            counterpartyClientFactory ?? GetIt.I<CounterpartyClientFactory>();
+    GetTransactionEsploraUseCase? getTransactionEsploraUseCase,
+  })  : _counterpartyClientFactory =
+            counterpartyClientFactory ?? GetIt.I<CounterpartyClientFactory>(),
+        _getTransactionEsploraUseCase = getTransactionEsploraUseCase ??
+            GetIt.I<GetTransactionEsploraUseCase>();
 
   @override
   Future<
@@ -1159,7 +1169,8 @@ class EventsRepositoryImpl implements EventsRepository {
 
     List<VerboseEvent> events_ =
         await Future.wait(response.result!.map((event) async {
-      return await VerboseEventMapper(bitcoinRepository: bitcoinRepository)
+      return await VerboseEventMapper(
+              getTransactionEsploraUseCase: _getTransactionEsploraUseCase)
           .toDomain(event);
     }).toList());
     events.addAll(events_);
@@ -1256,7 +1267,8 @@ class EventsRepositoryImpl implements EventsRepository {
         cursor_model.CursorMapper.toDomain(response.nextCursor);
     List<VerboseEvent> events =
         await Future.wait(response.result!.map((event) async {
-      return await VerboseEventMapper(bitcoinRepository: bitcoinRepository)
+      return await VerboseEventMapper(
+              getTransactionEsploraUseCase: _getTransactionEsploraUseCase)
           .toDomain(event);
     }).toList());
 

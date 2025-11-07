@@ -12,6 +12,8 @@ import 'package:horizon/domain/repositories/royalties_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/usecases/atomic_swap_create.dart';
+import 'package:horizon/domain/usecases/esplora/get_transaction.dart';
+import 'package:horizon/domain/usecases/esplora/get_transactions.dart';
 import 'package:horizon/presentation/forms/asset_balance_form/bloc/asset_balance_form_bloc.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/utxo.dart';
@@ -181,12 +183,11 @@ class AtomicSwapSellFlowView extends StatefulWidget {
   final HttpConfig httpConfig;
   final Config _config;
 
-  final AtomicSwapRepository _atomicSwapRepository;
   final RoyaltiesRepository _royaltiesRepository;
-  final BitcoinRepository _bitcoinRepository;
   final UtxoRepository _utxoRepository;
   final AnalyticsService _analyticsService;
   final AtomicSwapCreateUseCase _atomicSwapCreateUseCase;
+  final GetTransactionEsploraUseCase _getTransactionEsploraUseCase;
 
   final List<AddressV2> addresses;
   final AssetBalanceSummary balances;
@@ -202,17 +203,17 @@ class AtomicSwapSellFlowView extends StatefulWidget {
       BitcoinRepository? bitcoinRepository,
       AnalyticsService? analyticsService,
       AtomicSwapCreateUseCase? atomicSwapCreateUseCase,
+      GetTransactionEsploraUseCase? getTransactionEsploraUseCase,
       super.key})
       : _config = config ?? GetIt.I<Config>(),
         _utxoRepository = utxoRepository ?? GetIt.I<UtxoRepository>(),
         _royaltiesRepository =
             royaltiesRepository ?? GetIt.I<RoyaltiesRepository>(),
-        _atomicSwapRepository =
-            atomicSwapRepository ?? GetIt.I<AtomicSwapRepository>(),
         _analyticsService = analyticsService ?? GetIt.I<AnalyticsService>(),
-        _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>(),
         _atomicSwapCreateUseCase =
-            atomicSwapCreateUseCase ?? GetIt.I<AtomicSwapCreateUseCase>();
+            atomicSwapCreateUseCase ?? GetIt.I<AtomicSwapCreateUseCase>(),
+        _getTransactionEsploraUseCase = getTransactionEsploraUseCase ??
+            GetIt.I<GetTransactionEsploraUseCase>();
 
   @override
   State<AtomicSwapSellFlowView> createState() => _AtomicSwapSellFlowViewState();
@@ -373,10 +374,14 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                         widthFactor: .8,
                         body: RemoteDataTaskEitherBuilder(
                             task: TaskEither.sequenceList([
-                              widget._bitcoinRepository.getTransactionT(
-                                  txid: variant.utxoId.txid,
-                                  httpConfig: widget.httpConfig,
-                                  onError: (_) =>
+                              widget._getTransactionEsploraUseCase
+                                  .call(
+                                    GetTransactionEsploraParams(
+                                      httpConfig: widget.httpConfig,
+                                      txid: variant.utxoId.txid,
+                                    ),
+                                  )
+                                  .mapLeft((_) =>
                                       "Error fetching tx with id: ${variant.utxoId.txid}"),
                               widget._royaltiesRepository.getByAssetT(
                                   assetName: variant.asset,

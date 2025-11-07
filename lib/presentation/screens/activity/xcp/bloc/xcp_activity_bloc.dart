@@ -11,7 +11,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
-import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/domain/usecases/esplora/get_block_height.dart';
 
 final DEFAULT_WHITELIST = [
   "ENHANCED_SEND",
@@ -125,16 +125,17 @@ class XcpActivityBloc extends Bloc<XCPActivityEvent, XcpActivityState> {
   Timer? timer;
   String address;
   final EventsRepository _eventsRepository;
-  final BitcoinRepository _bitcoinRepository;
+  final GetBlockHeightEsploraUseCase _getBlockHeightEsploraUseCase;
 
   XcpActivityBloc({
     required this.httpConfig,
     this.logger,
     required this.address,
     EventsRepository? eventsRepository,
-    BitcoinRepository? bitcoinRepository,
+    GetBlockHeightEsploraUseCase? getBlockHeightEsploraUseCase,
   })  : _eventsRepository = eventsRepository ?? GetIt.I<EventsRepository>(),
-        _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>(),
+        _getBlockHeightEsploraUseCase = getBlockHeightEsploraUseCase ??
+            GetIt.I<GetBlockHeightEsploraUseCase>(),
         super(const XcpActivityState(remoteState: Initial())) {
     on<Load>(_onLoad);
     on<LoadMore>(_onLoadMore);
@@ -157,9 +158,9 @@ class XcpActivityBloc extends Bloc<XCPActivityEvent, XcpActivityState> {
           whitelist: DEFAULT_WHITELIST,
           onError: (e, s) => "Error fetching XCP events at $address");
 
-      final blockHeightTask = _bitcoinRepository.getBlockHeightT(
-          httpConfig: httpConfig,
-          onError: (_) => "error fetching block height");
+      final blockHeightTask = _getBlockHeightEsploraUseCase
+          .call(GetBlockHeightEsploraParams(httpConfig: httpConfig))
+          .mapLeft((error) => "error fetching block height");
 
       final [confirmedTxs as (List<Event>, Cursor?, int), blockHeight as int] =
           await $(TaskEither.sequenceList([confirmedTask, blockHeightTask]));
@@ -214,9 +215,9 @@ class XcpActivityBloc extends Bloc<XCPActivityEvent, XcpActivityState> {
           limit: 40,
           onError: (e, s) => "Error fetching XCP events at $address");
 
-      final blockHeightTask = _bitcoinRepository.getBlockHeightT(
-          httpConfig: httpConfig,
-          onError: (_) => "error fetching block height");
+      final blockHeightTask = _getBlockHeightEsploraUseCase
+          .call(GetBlockHeightEsploraParams(httpConfig: httpConfig))
+          .mapLeft((error) => "error fetching block height");
 
       final [
         mempoolTxs as List<Event>,
