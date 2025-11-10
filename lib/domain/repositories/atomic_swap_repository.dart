@@ -26,12 +26,12 @@ import 'package:horizon/domain/entities/network_error.dart';
 // };
 
 abstract class AtomicSwapRepository {
-  TaskEither<NetworkError, Map<String, bool>> getUtxoSwapMap({
+  Future<Map<String, bool>> getUtxoSwapMap({
     required HttpConfig httpConfig,
     required String sellerAddress,
   });
 
-  TaskEither<NetworkError, AtomicSwapCreate> atomicSwapCreate({
+  Future<AtomicSwapCreate> atomicSwapCreate({
     required HttpConfig httpConfig,
     required String psbtHex,
     required String sellerAddress,
@@ -46,28 +46,28 @@ abstract class AtomicSwapRepository {
     required bool assetDivisible,
   });
 
-  TaskEither<NetworkError, List<AtomicSwapBuy>> atomicSwapMultiBuy({
+  Future<List<AtomicSwapBuy>> atomicSwapMultiBuy({
     required HttpConfig httpConfig,
     required List<String> ids,
     required String psbtHex,
     required String buyerAddress,
   });
 
-  TaskEither<NetworkError, OnChainPayment> createOnChainPayment({
+  Future<OnChainPayment> createOnChainPayment({
     required HttpConfig httpConfig,
     required String address,
     required List<String> utxoSetIds,
     required num satsPerVbyte,
   });
 
-  TaskEither<NetworkError, List<AtomicSwap>> getSwapsByAsset({
+  Future<List<AtomicSwap>> getSwapsByAsset({
     required HttpConfig httpConfig,
     required String asset,
     required String orderBy,
     required String order,
   });
 
-  TaskEither<NetworkError, List<AtomicSwap>> searchSwaps({
+  Future<List<AtomicSwap>> searchSwaps({
     required HttpConfig httpConfig,
     required String search,
     String orderBy = "price",

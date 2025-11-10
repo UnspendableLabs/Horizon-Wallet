@@ -1,7 +1,7 @@
 import "package:fpdart/fpdart.dart";
 import "package:get_it/get_it.dart";
+import "package:horizon/data/sources/repositories/network_error_helpers.dart";
 import "package:horizon/domain/entities/http_config.dart";
-import "package:horizon/domain/entities/network_error.dart";
 import "package:horizon/domain/entities/atomic_swap/atomic_swap.dart";
 import "package:horizon/domain/repositories/atomic_swap_repository.dart";
 import "package:horizon/domain/services/error_service.dart";
@@ -37,34 +37,31 @@ class GetSwapsByAssetUseCase
         _errorService = errorService ?? GetIt.I<ErrorService>();
 
   @override
-  TaskEither<String, List<AtomicSwap>> call(GetSwapsByAssetParams params) {
-    final task = _atomicSwapRepository.getSwapsByAsset(
-      httpConfig: params.httpConfig,
-      asset: params.asset,
-      orderBy: params.orderBy,
-      order: params.order,
-    );
-
-    return task.tapError((error) {
+  TaskEither<String, List<AtomicSwap>> call(GetSwapsByAssetParams params,
+      {int maxRetries = 1}) {
+    return handleNetworkCall(
+      () async {
+        return await _atomicSwapRepository.getSwapsByAsset(
+          httpConfig: params.httpConfig,
+          asset: params.asset,
+          orderBy: params.orderBy,
+          order: params.order,
+        );
+      },
+      maxRetries: maxRetries,
+    ).tapError((error) {
       _errorService.captureException(
         error,
         message: "Failed to get swaps by asset",
-        context: error is NetworkError
-            ? {
-                "message": error.message,
-                "endpoint": error.endpoint,
-                "fullUrl": error.fullUrl,
-                "statusCode": error.statusCode,
-                "asset": params.asset,
-                "orderBy": params.orderBy,
-                "order": params.order,
-              }
-            : {
-                "message": error?.toString(),
-                "asset": params.asset,
-                "orderBy": params.orderBy,
-                "order": params.order,
-              },
+        context: {
+          "message": error.message,
+          "endpoint": error.endpoint,
+          "fullUrl": error.fullUrl,
+          "statusCode": error.statusCode,
+          "asset": params.asset,
+          "orderBy": params.orderBy,
+          "order": params.order,
+        },
       );
     }).mapLeft((error) => error.message);
   }

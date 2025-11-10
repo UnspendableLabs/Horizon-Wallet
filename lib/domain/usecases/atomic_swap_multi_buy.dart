@@ -1,7 +1,7 @@
 import "package:fpdart/fpdart.dart";
 import "package:get_it/get_it.dart";
+import "package:horizon/data/sources/repositories/network_error_helpers.dart";
 import "package:horizon/domain/entities/http_config.dart";
-import "package:horizon/domain/entities/network_error.dart";
 import "package:horizon/domain/entities/atomic_swap/atomic_swap_buy.dart";
 import "package:horizon/domain/repositories/atomic_swap_repository.dart";
 import "package:horizon/domain/services/analytics_service.dart";
@@ -43,32 +43,31 @@ class AtomicSwapMultiBuyUseCase
 
   @override
   TaskEither<String, List<AtomicSwapBuy>> call(
-      AtomicSwapMultiBuyParams params) {
-    final task = _atomicSwapRepository.atomicSwapMultiBuy(
-      httpConfig: params.httpConfig,
-      ids: params.ids,
-      psbtHex: params.psbtHex,
-      buyerAddress: params.buyerAddress,
-    );
-
-    return task.tap((success) {
+      AtomicSwapMultiBuyParams params,
+      {int maxRetries = 1}) {
+    return handleNetworkCall(
+      () async {
+        return await _atomicSwapRepository.atomicSwapMultiBuy(
+          httpConfig: params.httpConfig,
+          ids: params.ids,
+          psbtHex: params.psbtHex,
+          buyerAddress: params.buyerAddress,
+        );
+      },
+      maxRetries: maxRetries,
+    ).tap((success) {
       _analyticsService.trackAnonymousEvent("atomic_swap_listing(s)_purchased");
     }).tapError((error) {
       _errorService.captureException(
         error,
         message: "Failed to execute atomic swap multi-buy",
-        context: error is NetworkError
-            ? {
-                "message": error.message,
-                "endpoint": error.endpoint,
-                "fullUrl": error.fullUrl,
-                "statusCode": error.statusCode,
-                "ids": params.ids,
-              }
-            : {
-                "message": error?.toString(),
-                "ids": params.ids,
-              },
+        context: {
+          "message": error.message,
+          "endpoint": error.endpoint,
+          "fullUrl": error.fullUrl,
+          "statusCode": error.statusCode,
+          "ids": params.ids,
+        },
       );
     }).mapLeft((error) => error.message);
   }

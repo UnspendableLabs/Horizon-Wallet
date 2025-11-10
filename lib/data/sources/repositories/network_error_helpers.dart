@@ -3,34 +3,6 @@ import 'package:fpdart/fpdart.dart';
 import 'package:flutter/material.dart';
 import 'package:horizon/domain/entities/network_error.dart';
 
-/// Helper to wrap network calls in TaskEither with proper error handling
-///
-/// Parameters:
-/// - [call] - The async function to execute
-/// - [operationName] - Name for logging
-/// - [customErrorMessage] - Fallback error message (deprecated, use onError instead)
-/// - [onError] - Custom error handler. Return null to use default NetworkError
-TaskEither<NetworkError, T> handleNetworkCall<T>(
-  Future<T> Function() call, {
-  NetworkError? Function(NetworkError error)? onError,
-}) {
-  return TaskEither.tryCatch(
-    call,
-    (error, stackTrace) {
-      // Parse error into user-friendly message
-      final networkError = NetworkError.fromError(error, stackTrace);
-
-      // Try custom error handler first
-      if (onError != null) {
-        final customError = onError(networkError);
-        return customError ?? networkError;
-      }
-
-      return networkError;
-    },
-  );
-}
-
 /// Helper to wrap network calls with automatic retry logic
 ///
 /// Only retries on transient failures (timeouts, connection errors, 5xx errors)
@@ -44,7 +16,7 @@ TaskEither<NetworkError, T> handleNetworkCall<T>(
 /// - [retryDelay] - Base delay between retries (default: 1 second, uses exponential backoff)
 /// - [onError] - Custom error handler called on final failure. Return null to use default NetworkError
 ///
-TaskEither<NetworkError, T> handleNetworkCallWithRetry<T>(
+TaskEither<NetworkError, T> handleNetworkCall<T>(
   Future<T> Function() call, {
   int maxRetries = 3,
   Duration retryDelay = const Duration(seconds: 1),

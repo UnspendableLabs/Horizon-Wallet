@@ -16,7 +16,7 @@ class FeeEstimatesRespositoryMempoolSpaceImpl
   @override
   TaskEither<NetworkError, FeeEstimates> getFeeEstimates(
       {required HttpConfig httpConfig}) {
-    return handleNetworkCallWithRetry(
+    return handleNetworkCall(
       () async {
         final client = _mempoolSpaceClientFactory.getClient(httpConfig);
         final response = await client.getFeeEstimates();

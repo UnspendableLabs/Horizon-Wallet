@@ -1,7 +1,7 @@
 import "package:fpdart/fpdart.dart";
 import "package:get_it/get_it.dart";
+import "package:horizon/data/sources/repositories/network_error_helpers.dart";
 import "package:horizon/domain/entities/http_config.dart";
-import "package:horizon/domain/entities/network_error.dart";
 import "package:horizon/domain/entities/atomic_swap/on_chain_payment.dart";
 import "package:horizon/domain/repositories/atomic_swap_repository.dart";
 import "package:horizon/domain/services/error_service.dart";
@@ -37,33 +37,30 @@ class CreateOnChainPaymentUseCase
         _errorService = errorService ?? GetIt.I<ErrorService>();
 
   @override
-  TaskEither<String, OnChainPayment> call(CreateOnChainPaymentParams params) {
-    final task = _atomicSwapRepository.createOnChainPayment(
-      httpConfig: params.httpConfig,
-      address: params.address,
-      utxoSetIds: params.utxoSetIds,
-      satsPerVbyte: params.satsPerVbyte,
-    );
-
-    return task
-        .tapError((error) {
-          _errorService.captureException(
-            error,
-            message: "Failed to create on-chain payment",
-            context: error is NetworkError
-                ? {
-                    "message": error.message,
-                    "endpoint": error.endpoint,
-                    "fullUrl": error.fullUrl,
-                    "statusCode": error.statusCode,
-                    "utxoSetIds": params.utxoSetIds,
-                  }
-                : {
-                    "message": error?.toString(),
-                    "utxoSetIds": params.utxoSetIds,
-                  },
-          );
-        })
-        .mapLeft((error) => error.message);
+  TaskEither<String, OnChainPayment> call(CreateOnChainPaymentParams params,
+      {int maxRetries = 1}) {
+    return handleNetworkCall(
+      () async {
+        return await _atomicSwapRepository.createOnChainPayment(
+          httpConfig: params.httpConfig,
+          address: params.address,
+          utxoSetIds: params.utxoSetIds,
+          satsPerVbyte: params.satsPerVbyte,
+        );
+      },
+      maxRetries: maxRetries,
+    ).tapError((error) {
+      _errorService.captureException(
+        error,
+        message: "Failed to create on-chain payment",
+        context: {
+          "message": error.message,
+          "endpoint": error.endpoint,
+          "fullUrl": error.fullUrl,
+          "statusCode": error.statusCode,
+          "utxoSetIds": params.utxoSetIds,
+        },
+      );
+    }).mapLeft((error) => error.message);
   }
 }

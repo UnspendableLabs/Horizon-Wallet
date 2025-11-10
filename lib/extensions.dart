@@ -34,7 +34,7 @@ extension Tap<L, R> on TaskEither<L, R> {
     });
   }
 
-  TaskEither<L, R> tapError(void Function(dynamic) f) {
+  TaskEither<L, R> tapError(void Function(L) f) {
     return mapLeft((a) {
       try {
         f(a);
