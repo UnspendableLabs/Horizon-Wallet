@@ -14,6 +14,7 @@ import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/usecases/atomic_swap_create.dart';
 import 'package:horizon/domain/usecases/esplora/get_transaction.dart';
 import 'package:horizon/domain/usecases/esplora/get_transactions.dart';
+import 'package:horizon/domain/usecases/get_royalty_by_asset.dart';
 import 'package:horizon/presentation/forms/asset_balance_form/bloc/asset_balance_form_bloc.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/utxo.dart';
@@ -183,7 +184,7 @@ class AtomicSwapSellFlowView extends StatefulWidget {
   final HttpConfig httpConfig;
   final Config _config;
 
-  final RoyaltiesRepository _royaltiesRepository;
+  final GetRoyaltyByAssetUseCase _getRoyaltyByAssetUseCase;
   final UtxoRepository _utxoRepository;
   final AnalyticsService _analyticsService;
   final AtomicSwapCreateUseCase _atomicSwapCreateUseCase;
@@ -199,7 +200,7 @@ class AtomicSwapSellFlowView extends StatefulWidget {
       Config? config,
       AtomicSwapRepository? atomicSwapRepository,
       UtxoRepository? utxoRepository,
-      RoyaltiesRepository? royaltiesRepository,
+      GetRoyaltyByAssetUseCase? getRoyaltyByAssetUseCase,
       BitcoinRepository? bitcoinRepository,
       AnalyticsService? analyticsService,
       AtomicSwapCreateUseCase? atomicSwapCreateUseCase,
@@ -207,8 +208,8 @@ class AtomicSwapSellFlowView extends StatefulWidget {
       super.key})
       : _config = config ?? GetIt.I<Config>(),
         _utxoRepository = utxoRepository ?? GetIt.I<UtxoRepository>(),
-        _royaltiesRepository =
-            royaltiesRepository ?? GetIt.I<RoyaltiesRepository>(),
+        _getRoyaltyByAssetUseCase =
+            getRoyaltyByAssetUseCase ?? GetIt.I<GetRoyaltyByAssetUseCase>(),
         _analyticsService = analyticsService ?? GetIt.I<AnalyticsService>(),
         _atomicSwapCreateUseCase =
             atomicSwapCreateUseCase ?? GetIt.I<AtomicSwapCreateUseCase>(),
@@ -383,11 +384,14 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                                   )
                                   .mapLeft((_) =>
                                       "Error fetching tx with id: ${variant.utxoId.txid}"),
-                              widget._royaltiesRepository.getByAssetT(
-                                  assetName: variant.asset,
-                                  httpConfig: widget.httpConfig,
-                                  onError: (_, __) =>
-                                      "Error fetching royalties"),
+                              widget._getRoyaltyByAssetUseCase
+                                  .call(
+                                    GetRoyaltyByAssetParams(
+                                      httpConfig: widget.httpConfig,
+                                      assetName: variant.asset,
+                                    ),
+                                  )
+                                  .mapLeft((_) => "Error fetching royalties"),
                             ]),
                             builder: (context, state, _) {
                               return state.fold3(

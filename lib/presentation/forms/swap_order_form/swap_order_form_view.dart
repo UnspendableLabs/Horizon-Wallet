@@ -6,6 +6,7 @@ import 'package:decimal/decimal.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:horizon/domain/usecases/get_asset_verbose.dart';
+import 'package:horizon/domain/usecases/get_order_by_pair.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:fpdart/fpdart.dart' hide Order, State;
@@ -228,9 +229,8 @@ class SwapOrderFormActions {
 }
 
 class SwapOrderFormProvider extends StatefulWidget {
-  final OrderRepository _orderRepository;
   final GetAssetVerboseUseCase _getAssetVerboseUseCase;
-
+  final GetOrderByPairUseCase _getOrderByPairUseCase;
   final String giveAsset;
   final Function(SubmitParams params) onSubmitClicked;
 
@@ -248,7 +248,7 @@ class SwapOrderFormProvider extends StatefulWidget {
   SwapOrderFormProvider(
       {super.key,
       GetAssetVerboseUseCase? getAssetVerboseUseCase,
-      OrderRepository? orderRepository,
+      GetOrderByPairUseCase? getOrderByPairUseCase,
       required this.onSubmitClicked,
       required this.multiAddressBalanceEntry,
       required this.child,
@@ -256,7 +256,8 @@ class SwapOrderFormProvider extends StatefulWidget {
       required this.address,
       required this.giveAsset,
       required this.getAsset})
-      : _orderRepository = orderRepository ?? GetIt.I<OrderRepository>(),
+      : _getOrderByPairUseCase =
+            getOrderByPairUseCase ?? GetIt.I<GetOrderByPairUseCase>(),
         _getAssetVerboseUseCase =
             getAssetVerboseUseCase ?? GetIt.I<GetAssetVerboseUseCase>();
 
@@ -280,17 +281,21 @@ class _SwapOrderFormProviderState extends State<SwapOrderFormProvider> {
           httpConfig: widget.httpConfig,
         ),
       ),
-      widget._orderRepository.getByPairTE(
-        status: "open",
-        giveAsset: widget.getAsset,
-        getAsset: widget.giveAsset,
-        httpConfig: widget.httpConfig,
+      widget._getOrderByPairUseCase.call(
+        GetOrderByPairParams(
+          httpConfig: widget.httpConfig,
+          giveAsset: widget.giveAsset,
+          getAsset: widget.getAsset,
+          status: "open",
+        ),
       ),
-      widget._orderRepository.getByPairTE(
-        giveAsset: widget.giveAsset,
-        getAsset: widget.getAsset,
-        status: "open",
-        httpConfig: widget.httpConfig,
+      widget._getOrderByPairUseCase.call(
+        GetOrderByPairParams(
+          httpConfig: widget.httpConfig,
+          giveAsset: widget.giveAsset,
+          getAsset: widget.getAsset,
+          status: "open",
+        ),
       ),
     ]);
 

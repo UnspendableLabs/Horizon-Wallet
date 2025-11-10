@@ -21,6 +21,8 @@ import 'package:horizon/domain/usecases/atomic_swap_create.dart';
 import 'package:horizon/domain/usecases/atomic_swap_multi_buy.dart';
 import 'package:horizon/domain/usecases/create_on_chain_payment.dart';
 import 'package:horizon/domain/usecases/decode_raw_transaction.dart';
+import 'package:horizon/domain/usecases/get_order_by_pair.dart';
+import 'package:horizon/domain/usecases/get_royalty_by_asset.dart';
 import 'package:horizon/domain/usecases/get_swaps_by_asset.dart';
 import 'package:horizon/domain/usecases/get_utxo_swap_map.dart';
 import 'package:horizon/domain/usecases/horizon_api_asset_search.dart';
@@ -463,6 +465,8 @@ void setup() {
 
   injector.registerSingleton<OrderRepository>(OrderRepositoryImpl());
 
+  injector.registerSingleton<GetOrderByPairUseCase>(GetOrderByPairUseCase());
+
   injector
       .registerSingleton<TransactionRepository>(TransactionRepositoryImpl());
 
@@ -676,6 +680,8 @@ void setup() {
       mempoolSpaceClientFactory: GetIt.I.get<MempoolSpaceClientFactory>()));
 
   injector.registerSingleton<RoyaltiesRepository>(RoyaltiesRepositoryImpl());
+  injector
+      .registerSingleton<GetRoyaltyByAssetUseCase>(GetRoyaltyByAssetUseCase());
 
   injector.registerSingleton<GetUTXOBalancesUseCase>(GetUTXOBalancesUseCase());
   injector.registerSingleton<GetAllBalancesUseCase>(GetAllBalancesUseCase());
