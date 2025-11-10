@@ -114,6 +114,7 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
           final addressIndex =
               accountConfig.fold(() => 0, (config) => config.addressIndex);
 
+          print("atempting to derive");
           final addresses = await $(_addressService
               .deriveAddressT(
                   addressKinds: walletConfig.supportedKinds,
@@ -122,6 +123,8 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
                   seed: seed,
                   network: walletConfig.network)
               .map((map) => map.values.toList()));
+
+          print("derived");
 
           return addresses;
         }),

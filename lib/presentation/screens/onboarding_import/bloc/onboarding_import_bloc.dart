@@ -112,7 +112,11 @@ class OnboardingImportBloc
           password: password,
         );
 
+        print("password");
+
         final basePath = state.walletType!.basePath;
+
+        print("basepath: $basePath");
 
         WalletConfig walletConfig = await _walletConfigRepository.findOrCreate(
             basePath: basePath,
@@ -125,12 +129,16 @@ class OnboardingImportBloc
               WalletType.bip32 => SeedDerivation.mnemonicJSToHex,
             });
 
+        print("$walletConfig");
+
         await _settingsRepository.setWalletConfigID(walletConfig.uuid);
 
         // await accountV2Repository.insert(AccountV2(uuid: uuid.v4(), index: 0));
 
         emit(state.copyWith(importState: const ImportState.success()));
+        print("success??");
       } catch (e) {
+        rethrow;
         emit(state.copyWith(
             importState: ImportState.error(message: e.toString())));
       }
