@@ -553,7 +553,8 @@ void setup() {
                       "address": address.address,
                       "type": switch (address.type) {
                         AddressRpcType.p2wpkh => "p2wpkh",
-                        AddressRpcType.p2pkh => "p2pkh"
+                        AddressRpcType.p2pkh => "p2pkh",
+                        AddressRpcType.p2tr => "p2tr",
                       },
                       "publicKey": address.publicKey,
                     };

@@ -1,5 +1,6 @@
 import 'dart:js_interop';
 import 'dart:typed_data';
+import 'package:hex/hex.dart';
 
 import 'package:convert/convert.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
@@ -13,10 +14,74 @@ import 'package:horizon/js/buffer.dart';
 import 'package:horizon/js/ecpair.dart' as ecpair;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
 
+// TODO: add a notion of AddressPurpose??
+bool _btcEccInited = false;
+
+class _ParsedPath {
+  final int purpose; // hardened (e.g., 84 -> 84')
+  final int coin; // hardened (0 mainnet, 1 test/signet)
+  final int account; // hardened
+  final int change; // 0/1
+  final int index; // 0..n
+  _ParsedPath(this.purpose, this.coin, this.account, this.change, this.index);
+}
+
+_ParsedPath _parseStdPath(String path) {
+  // m/<purpose>'/<coin>'/<account>'/<change>/<index>
+  final parts = path.split('/');
+  if (parts.length != 6 || parts[0] != 'm') {
+    throw ArgumentError('Unsupported BIP path format: $path');
+  }
+  int ph(String s) => int.parse(s.replaceAll("'", ""));
+  int pn(String s) => int.parse(s);
+  return _ParsedPath(
+    ph(parts[1]),
+    ph(parts[2]),
+    ph(parts[3]),
+    pn(parts[4]),
+    pn(parts[5]),
+  );
+}
+
+String _formatPath({
+  required int purpose,
+  required int coin,
+  required int account,
+  required int change,
+  required int index,
+}) =>
+    "m/$purpose'/$coin'/$account'/$change/$index";
+
+int _coinTypeFor(Network net) => net.isMainnet ? 0 : 1;
+
+// If the incoming path isn't BIP86, re-map ONLY the purpose/coin for P2TR.
+// Account/change/index are preserved.
+String _taprootPathFromBase(String base, Network network) {
+  final p = _parseStdPath(base);
+  return _formatPath(
+    purpose: 86, // BIP86
+    coin: _coinTypeFor(network), // 0' mainnet, 1' test/signet
+    account: p.account,
+    change: p.change,
+    index: p.index,
+  );
+}
+
+void _ensureEcc() {
+  if (_btcEccInited) return;
+  // tinysecp256k1js.ecc is your JS ECC object (already used by BIP32Factory).
+  bitcoin.initEccLib(tinysecp256k1js.ecc);
+  _btcEccInited = true;
+}
+
 class AddressServiceWeb implements AddressService {
   final bip32.BIP32Factory _bip32 = bip32.BIP32Factory(tinysecp256k1js.ecc);
+  ecpair.ECPairFactory ecpairFactory =
+      ecpair.ECPairFactory(tinysecp256k1js.ecc);
 
-  AddressServiceWeb();
+  AddressServiceWeb() {
+    _ensureEcc();
+  }
 
   @override
   Future<Map<AddressV2Type, AddressV2>> deriveAddress({
@@ -29,7 +94,7 @@ class AddressServiceWeb implements AddressService {
     bip32.BIP32Interface root =
         _bip32.fromSeed(Buffer.from(seed.bytes.toJS), network.toJS);
 
-    bip32.BIP32Interface child = _deriveChildKey(
+    bip32.BIP32Interface defaultChild = _deriveChildKey(
       path: path,
       privKey: hex.encode(root.privateKey!.toDart),
       chainCodeHex: hex.encode(root.chainCode.toDart),
@@ -38,17 +103,34 @@ class AddressServiceWeb implements AddressService {
 
     final Map<AddressV2Type, AddressV2> result = {};
     for (final kind in addressKinds) {
+      final bip32.BIP32Interface child = switch (kind) {
+        AddressV2Type.p2tr => _deriveChildKey(
+            path: _taprootPathFromBase(path, network),
+            privKey: hex.encode(root.privateKey!.toDart),
+            chainCodeHex: hex.encode(root.chainCode.toDart),
+            network: network,
+          ),
+        _ => defaultChild,
+      };
+
       final address = switch (kind) {
         AddressV2Type.p2wpkh => _bech32FromBip32(child, network.toBech32Prefix),
         AddressV2Type.p2pkh => _legacyFromBip32(child, network),
+        AddressV2Type.p2tr => _taprootFromBip32(child, network),
+      };
+
+      final compressedPub = child.publicKey.toDart; // Uint8List of length 33
+      final String publicKeyHex = switch (kind) {
+        AddressV2Type.p2tr =>
+          hex.encode(compressedPub.sublist(1, 33)), // x-only
+        _ => hex.encode(compressedPub), // compressed
       };
 
       result[kind] = AddressV2(
-        type: kind,
-        address: address,
-        derivation: Bip32Path(value: path),
-        publicKey: hex.encode(child.publicKey.toDart),
-      );
+          type: kind,
+          address: address,
+          derivation: Bip32Path(value: _taprootPathFromBase(path, network)),
+          publicKey: publicKeyHex);
     }
 
     return result;
@@ -91,6 +173,28 @@ class AddressServiceWeb implements AddressService {
         .toList();
     words.insert(0, 0);
     return bech32.encode(bech32_, words.map((el) => el.toJS).toList().toJS);
+  }
+
+  String _taprootFromBip32(bip32.BIP32Interface child, Network network) {
+    final Uint8List compressed = child.publicKey.toDart;
+    if (compressed.length != 33) {
+      throw StateError(
+          'Expected 33-byte compressed pubkey, got ${compressed.length}');
+    }
+    final Uint8List xOnlyBytes = compressed.sublist(1); // [1..33)
+
+    // Back to JS Buffer
+    final Buffer xOnly = Buffer.from(xOnlyBytes.toJS);
+
+    // Use Taproot options binding (BIP86 key-path when only internalPubkey is provided)
+    final opts = bitcoin.PaymentOptionsTaproot(
+      internalPubkey: xOnly,
+      network: network.toJS,
+    );
+
+    final pay = bitcoin.p2tr(opts);
+
+    return pay.address; // bech32m
   }
 
   bip32.BIP32Interface _deriveChildKey(

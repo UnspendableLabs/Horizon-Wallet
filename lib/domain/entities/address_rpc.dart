@@ -1,4 +1,4 @@
-enum AddressRpcType { p2pkh, p2wpkh }
+enum AddressRpcType { p2pkh, p2wpkh, p2tr }
 
 class AddressRpc {
   final String address;

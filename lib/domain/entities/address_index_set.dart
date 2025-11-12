@@ -18,6 +18,7 @@ class AddressIndexSet {
     return switch (type) {
       AddressV2Type.p2wpkh => 0,
       AddressV2Type.p2pkh => 1,
+      AddressV2Type.p2tr => 2,
     };
   }
 
