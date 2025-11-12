@@ -195,12 +195,6 @@ class SwapCreateListingFormBloc
     required String giveQuantityNormalized,
     required BigInt btcPrice,
     required BigInt royaltyPrice,
-    ComposeTransactionUseCase? composeTransactionUseCase,
-    ComposeRepository? composeRepository,
-    SignAndBroadcastTransactionUseCase? signAndBroadcastTransactionUseCase,
-    BitcoinRepository? bitcoinRepository,
-    AtomicSwapRepository? atomicSwapRepository,
-    UtxoRepository? utxoRepository,
     CreateOnChainPaymentUseCase? createOnChainPaymentUseCase,
     GetUtxoMapForAddressUseCase? getUtxoMapForAddressUseCase,
   })  : _getUtxoMapForAddressUseCase = getUtxoMapForAddressUseCase ??

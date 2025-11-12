@@ -406,6 +406,8 @@ void setup() {
       GetTransactionHexEsploraUseCase());
   injector.registerSingleton<GetAddressInfoEsploraUseCase>(
       GetAddressInfoEsploraUseCase());
+  injector.registerSingleton<GetAddressInfoMultiEsploraUseCase>(
+      GetAddressInfoMultiEsploraUseCase());
   injector.registerSingleton<BalanceRepository>(BalanceRepositoryImpl(
     counterpartyClientFactory: GetIt.I.get<CounterpartyClientFactory>(),
     utxoRepository: GetIt.I.get<UtxoRepository>(),

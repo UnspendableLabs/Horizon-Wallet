@@ -170,7 +170,6 @@ class AssetAttachFormBloc
   final ComposeTransactionUseCase _composeTransactionUseCase;
   final ComposeRepository _composeRepository;
   final SignAndBroadcastTransactionUseCase _signAndBroadcastTransactionUseCase;
-  final BitcoinRepository _bitcoinRepository;
   final UtxoAttachRepository _utxoAttachRepository;
 
   AssetAttachFormBloc({
@@ -193,7 +192,6 @@ class AssetAttachFormBloc
         _signAndBroadcastTransactionUseCase =
             signAndBroadcastTransactionUseCase ??
                 GetIt.I<SignAndBroadcastTransactionUseCase>(),
-        _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>(),
         _utxoAttachRepository =
             utxoAttachRepository ?? GetIt.I<UtxoAttachRepository>(),
         super(AssetAttachFormModel(
