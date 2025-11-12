@@ -1,5 +1,6 @@
 import "package:fpdart/fpdart.dart";
 import "package:get_it/get_it.dart";
+import "package:horizon/data/sources/repositories/network_error_helpers.dart";
 import "package:horizon/domain/entities/http_config.dart";
 import "package:horizon/domain/entities/network_error.dart";
 import "package:horizon/domain/entities/royalty_by_asset.dart";
@@ -36,28 +37,25 @@ class GetRoyaltyByAssetUseCase
   @override
   TaskEither<String, Option<RoyaltyByAsset>> call(
       GetRoyaltyByAssetParams params) {
-    final task = _royaltiesRepository.getByAsset(
-      assetName: params.assetName,
-      httpConfig: params.httpConfig,
-    );
+    final task = handleNetworkCall(() async {
+      return await _royaltiesRepository.getByAsset(
+        assetName: params.assetName,
+        httpConfig: params.httpConfig,
+      );
+    });
 
     return task
         .tapError((error) {
           _errorService.captureException(
             error,
             message: "Failed to get royalty by asset",
-            context: error is NetworkError
-                ? {
-                    "message": error.message,
-                    "endpoint": error.endpoint,
-                    "fullUrl": error.fullUrl,
-                    "statusCode": error.statusCode,
-                    "assetName": params.assetName,
-                  }
-                : {
-                    "message": error?.toString(),
-                    "assetName": params.assetName,
-                  },
+            context: {
+              "message": error.message,
+              "endpoint": error.endpoint,
+              "fullUrl": error.fullUrl,
+              "statusCode": error.statusCode,
+              "assetName": params.assetName,
+            },
           );
         })
         .mapLeft((error) => error.message)

@@ -1,9 +1,6 @@
-import 'package:fpdart/fpdart.dart';
 import 'package:horizon/data/models/transaction_unpacked.dart';
 import 'package:horizon/data/models/transaction_info.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart' as api;
-import 'package:horizon/data/sources/repositories/network_error_helpers.dart';
-import 'package:horizon/domain/entities/network_error.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/transaction_unpacked.dart'
     as unpacked_entity;
@@ -23,39 +20,33 @@ class TransactionRepositoryImpl implements TransactionRepository {
             counterpartyClientFactory ?? GetIt.I<CounterpartyClientFactory>();
 
   @override
-  TaskEither<NetworkError, unpacked_entity.TransactionUnpacked> unpack(
-      {required String raw, required HttpConfig httpConfig}) {
-    return handleNetworkCall(() async {
-      final response = await _counterpartyClientFactory
-          .getClient(httpConfig)
-          .unpackTransactionVerbose(raw);
+  Future<unpacked_entity.TransactionUnpacked> unpack(
+      {required String raw, required HttpConfig httpConfig}) async {
+    final response = await _counterpartyClientFactory
+        .getClient(httpConfig)
+        .unpackTransactionVerbose(raw);
 
-      // todo: check for errors
-      if (response.result == null) {
-        throw Exception("Failed to unpack transaction: $raw");
-      }
+    // todo: check for errors
+    if (response.result == null) {
+      throw Exception("Failed to unpack transaction: $raw");
+    }
 
-      return UnpackedVerboseMapper.toDomain(response.result!);
-    });
+    return UnpackedVerboseMapper.toDomain(response.result!);
   }
 
   @override
-  TaskEither<NetworkError, TransactionInfo> getInfo(
-      {required String raw,
-      required HttpConfig httpConfig,
-      String Function(NetworkError error)? onError}) {
-    return handleNetworkCall(() async {
-      final response = await _counterpartyClientFactory
-          .getClient(httpConfig)
-          .getTransactionInfoVerbose(raw);
+  Future<TransactionInfo> getInfo(
+      {required String raw, required HttpConfig httpConfig}) async {
+    final response = await _counterpartyClientFactory
+        .getClient(httpConfig)
+        .getTransactionInfoVerbose(raw);
 
-      if (response.result == null) {
-        throw Exception("Failed to get transaction info: $raw");
-      }
+    if (response.result == null) {
+      throw Exception("Failed to get transaction info: $raw");
+    }
 
-      api.InfoVerbose info = response.result!;
+    api.InfoVerbose info = response.result!;
 
-      return InfoVerboseMapper.toDomain(info);
-    });
+    return InfoVerboseMapper.toDomain(info);
   }
 }

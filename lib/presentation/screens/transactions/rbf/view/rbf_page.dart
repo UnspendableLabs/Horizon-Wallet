@@ -19,7 +19,6 @@ import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_form_page.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/transaction_stepper.dart';
-import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/transactions/rbf/bloc/rbf_bloc.dart';
 import 'package:horizon/presentation/screens/transactions/rbf/bloc/rbf_event.dart';
@@ -86,7 +85,6 @@ class _RBFPageState extends State<RBFPage> {
         httpConfig: session.httpConfig,
         getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
         bitcoinRepository: GetIt.I<BitcoinRepository>(),
-        writelocalTransactionUseCase: GetIt.I<WriteLocalTransactionUseCase>(),
         analyticsService: GetIt.I<AnalyticsService>(),
         logger: GetIt.I<Logger>(),
         settingsRepository: GetIt.I<SettingsRepository>(),

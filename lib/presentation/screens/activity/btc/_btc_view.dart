@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/domain/repositories/bitcoin_repository.dart';
-import 'package:horizon/domain/repositories/transaction_repository.dart';
+import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/usecases/esplora/get_transaction_hex.dart';
+import 'package:horizon/domain/usecases/get_transaction_info.dart';
 import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/common/tx_hash_display.dart';
@@ -25,19 +25,15 @@ extension StringExtension on String {
 }
 
 class XCPTitle extends StatelessWidget {
-  final GetTransactionHexEsploraUseCase _getTransactionHexEsploraUseCase;
-  final TransactionRepository _transactionRepository;
+  final GetTransactionInfoByTxIdUseCase _getTransactionInfoByTxIdUseCase;
   final String txid;
 
   XCPTitle({
     required this.txid,
-    GetTransactionHexEsploraUseCase? getTransactionHexEsploraUseCase,
-    TransactionRepository? transactionRepository,
+    GetTransactionInfoByTxIdUseCase? getTransactionInfoByTxIdUseCase,
     super.key,
-  })  : _getTransactionHexEsploraUseCase = getTransactionHexEsploraUseCase ??
-            GetIt.I<GetTransactionHexEsploraUseCase>(),
-        _transactionRepository =
-            transactionRepository ?? GetIt.I<TransactionRepository>();
+  }) : _getTransactionInfoByTxIdUseCase = getTransactionInfoByTxIdUseCase ??
+            GetIt.I<GetTransactionInfoByTxIdUseCase>();
 
   @override
   Widget build(BuildContext context) {
@@ -47,16 +43,9 @@ class XCPTitle extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         RemoteDataTaskEitherBuilder(
-            task: _getTransactionHexEsploraUseCase
-                .call(GetTransactionHexEsploraParams(
-                    httpConfig: session.httpConfig, txid: txid))
-                .mapLeft((_) => 'Error fetching transaction: $txid')
-                .flatMap((txHex) => _transactionRepository
-                    .getInfo(
-                      httpConfig: session.httpConfig,
-                      raw: txHex,
-                    )
-                    .mapLeft((error) => error.message)),
+            task: _getTransactionInfoByTxIdUseCase.call(
+                GetTransactionInfoByTxIdParams(
+                    httpConfig: session.httpConfig, txid: txid)),
             builder: (context, state, refresh) {
               return state.fold3(
                 onNone: () => Text("-",

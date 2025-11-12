@@ -16,13 +16,13 @@ import 'package:horizon/data/sources/network/counterparty_client_factory.dart';
 
 class BalanceRepositoryImpl implements BalanceRepository {
   final UtxoRepository utxoRepository;
-  final CounterpartyClientFactory counterpartyClientFactory;
   final BitcoinRepository bitcoinRepository;
+  final CounterpartyClientFactory counterpartyClientFactory;
 
   BalanceRepositoryImpl({
     required this.utxoRepository,
-    required this.counterpartyClientFactory,
     required this.bitcoinRepository,
+    required this.counterpartyClientFactory,
   });
 
   @override

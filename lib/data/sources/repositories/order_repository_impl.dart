@@ -1,7 +1,4 @@
-import 'package:fpdart/fpdart.dart' show TaskEither;
 import 'package:get_it/get_it.dart';
-import 'package:horizon/data/sources/repositories/network_error_helpers.dart';
-import 'package:horizon/domain/entities/network_error.dart';
 import "package:horizon/domain/entities/order.dart";
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/repositories/order_repository.dart';
@@ -19,54 +16,50 @@ class OrderRepositoryImpl implements OrderRepository {
             counterpartyClientFactory ?? GetIt.I<CounterpartyClientFactory>();
 
   @override
-  TaskEither<NetworkError, List<Order>> getByAddress(
+  Future<List<Order>> getByAddress(
       {required String address,
       String? status,
-      required HttpConfig httpConfig}) {
-    return handleNetworkCall(() async {
-      int limit = 50;
-      cursor_model.CursorModel? cursor;
-      final List<Order> orders = [];
+      required HttpConfig httpConfig}) async {
+    int limit = 50;
+    cursor_model.CursorModel? cursor;
+    final List<Order> orders = [];
 
-      while (true) {
-        final response = await _counterpartyClientFactory
-            .getClient(httpConfig)
-            .getOrdersByAddressVerbose(address, status, cursor, limit);
-        final result = response.result ?? [];
+    while (true) {
+      final response = await _counterpartyClientFactory
+          .getClient(httpConfig)
+          .getOrdersByAddressVerbose(address, status, cursor, limit);
+      final result = response.result ?? [];
 
-        orders.addAll(result.map((order) => order.toDomain()));
+      orders.addAll(result.map((order) => order.toDomain()));
 
-        cursor = response.nextCursor;
-        if (cursor == null) break;
-      }
-      return orders;
-    });
+      cursor = response.nextCursor;
+      if (cursor == null) break;
+    }
+    return orders;
   }
 
   @override
-  TaskEither<NetworkError, List<Order>> getByPair(
+  Future<List<Order>> getByPair(
       {required String giveAsset,
       required String getAsset,
       String? status,
       String? sort,
-      required HttpConfig httpConfig}) {
-    return handleNetworkCall(() async {
-      int limit = 50;
-      cursor_model.CursorModel? cursor;
-      final List<Order> orders = [];
+      required HttpConfig httpConfig}) async {
+    int limit = 50;
+    cursor_model.CursorModel? cursor;
+    final List<Order> orders = [];
 
-      while (true) {
-        final response = await _counterpartyClientFactory
-            .getClient(httpConfig)
-            .getOrders(status, getAsset, giveAsset, cursor, limit, null, sort);
-        final result = response.result ?? [];
+    while (true) {
+      final response = await _counterpartyClientFactory
+          .getClient(httpConfig)
+          .getOrders(status, getAsset, giveAsset, cursor, limit, null, sort);
+      final result = response.result ?? [];
 
-        orders.addAll(result.map((order) => order.toDomain()));
+      orders.addAll(result.map((order) => order.toDomain()));
 
-        cursor = response.nextCursor;
-        if (cursor == null) break;
-      }
-      return orders;
-    });
+      cursor = response.nextCursor;
+      if (cursor == null) break;
+    }
+    return orders;
   }
 }

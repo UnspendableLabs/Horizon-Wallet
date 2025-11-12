@@ -1,5 +1,6 @@
 import "package:fpdart/fpdart.dart" hide Order;
 import "package:get_it/get_it.dart";
+import "package:horizon/data/sources/repositories/network_error_helpers.dart";
 import "package:horizon/domain/entities/http_config.dart";
 import "package:horizon/domain/entities/network_error.dart";
 import "package:horizon/domain/entities/order.dart";
@@ -39,32 +40,28 @@ class GetOrderByPairUseCase
 
   @override
   TaskEither<String, List<Order>> call(GetOrderByPairParams params) {
-    final task = _orderRepository.getByPair(
-      giveAsset: params.giveAsset,
-      getAsset: params.getAsset,
-      status: params.status,
-      sort: params.sort,
-      httpConfig: params.httpConfig,
-    );
+    final task = handleNetworkCall(() async {
+      return await _orderRepository.getByPair(
+        giveAsset: params.giveAsset,
+        getAsset: params.getAsset,
+        status: params.status,
+        sort: params.sort,
+        httpConfig: params.httpConfig,
+      );
+    });
 
     return task.tapError((error) {
       _errorService.captureException(
         error,
         message: "Failed to get orders by pair",
-        context: error is NetworkError
-            ? {
-                "message": error.message,
-                "endpoint": error.endpoint,
-                "fullUrl": error.fullUrl,
-                "statusCode": error.statusCode,
-                "giveAsset": params.giveAsset,
-                "getAsset": params.getAsset,
-              }
-            : {
-                "message": error?.toString(),
-                "giveAsset": params.giveAsset,
-                "getAsset": params.getAsset,
-              },
+        context: {
+          "message": error.message,
+          "endpoint": error.endpoint,
+          "fullUrl": error.fullUrl,
+          "statusCode": error.statusCode,
+          "giveAsset": params.giveAsset,
+          "getAsset": params.getAsset,
+        },
       );
     }).mapLeft((error) => error.message);
   }

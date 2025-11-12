@@ -28,7 +28,6 @@ import 'package:horizon/domain/usecases/send_raw_transaction.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transactions/get_fee_option.dart';
-import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/transactions/rbf/bloc/rbf_event.dart';
 import 'package:horizon/domain/entities/decryption_strategy.dart';
 
@@ -71,7 +70,6 @@ class RBFBloc
   final BitcoindService bitcoindService;
   final SendRawTransactionUseCase _sendRawTransactionUseCase;
   final TransactionLocalRepository transactionLocalRepository;
-  final WriteLocalTransactionUseCase writelocalTransactionUseCase;
   final SeedService _seedService;
   final WalletConfigRepository _walletConfigRepository;
   final GetTransactionEsploraUseCase _getTransactionEsploraUseCase;
@@ -91,7 +89,6 @@ class RBFBloc
     required AddressService addressService,
     required this.bitcoindService,
     required this.transactionLocalRepository,
-    required this.writelocalTransactionUseCase,
     SeedService? seedService,
     WalletConfigRepository? walletConfigRepository,
     SendRawTransactionUseCase? sendRawTransactionUseCase,
@@ -307,10 +304,6 @@ class RBFBloc
             ), (success) {
       final txHex = success.$1;
       final txHash = success.$2;
-
-      // await writelocalTransactionUseCase.call(
-      //     hex: txHex, hash: txHash, httpConfig: httpConfig);
-      // transactionLocalRepository.delete(composeData.txid);
 
       analyticsService.trackAnonymousEvent('broadcast_rbf',
           properties: {'distinct_id': uuid.v4()});

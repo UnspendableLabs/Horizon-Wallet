@@ -64,7 +64,6 @@ import 'package:horizon/data/sources/repositories/block_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/compose_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/fairminter_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/imported_address_repository_impl.dart';
-import 'package:horizon/data/sources/repositories/node_info_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/utxo_repository_impl.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
@@ -73,7 +72,6 @@ import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/estimate_xcp_fee_repository.dart';
 import 'package:horizon/domain/repositories/fairminter_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
-import 'package:horizon/domain/repositories/node_info_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/bip39.dart';
@@ -150,7 +148,6 @@ import 'package:horizon/presentation/common/usecase/set_mnemonic_usecase.dart';
 
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
-import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:horizon/domain/usecases/get_utxo_balances.dart';
@@ -491,8 +488,6 @@ void setup() {
       FeeEstimatesRespositoryMempoolSpaceImpl(
           mempoolSpaceClientFactory: GetIt.I.get<MempoolSpaceClientFactory>()));
 
-  injector.registerSingleton<NodeInfoRepository>(NodeInfoRepositoryImpl());
-
   injector.registerSingleton<GetFeeEstimatesUseCase>(GetFeeEstimatesUseCase(
       feeEstimatesRepository: GetIt.I.get<FeeEstimatesRespository>()));
 
@@ -522,12 +517,6 @@ void setup() {
 
   injector.registerSingleton<SignAndBroadcastTransactionUseCase>(
       SignAndBroadcastTransactionUseCase());
-
-  injector.registerSingleton<WriteLocalTransactionUseCase>(
-      WriteLocalTransactionUseCase(
-    transactionRepository: GetIt.I.get<TransactionRepository>(),
-    transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),
-  ));
 
   injector.registerSingleton<ActionRepository>(ActionRepositoryImpl());
 
