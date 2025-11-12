@@ -15,6 +15,7 @@ import 'package:horizon/domain/repositories/atomic_swap_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/usecases/create_on_chain_payment.dart';
+import 'package:horizon/domain/usecases/get_utxo_map_for_address.dart';
 import "package:horizon/presentation/forms/base/transaction_form_model_base.dart";
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
@@ -182,9 +183,8 @@ class SignatureCompleted extends SwapCreateListingFormEvent {
 class SwapCreateListingFormBloc
     extends Bloc<SwapCreateListingFormEvent, SwapCreateListingFormModel> {
   final HttpConfig httpConfig;
-  final AtomicSwapRepository _atomicSwapRepository;
   final CreateOnChainPaymentUseCase _createOnChainPaymentUseCase;
-  final UtxoRepository _utxoRepository;
+  final GetUtxoMapForAddressUseCase _getUtxoMapForAddressUseCase;
 
   SwapCreateListingFormBloc({
     required this.httpConfig,
@@ -202,9 +202,9 @@ class SwapCreateListingFormBloc
     AtomicSwapRepository? atomicSwapRepository,
     UtxoRepository? utxoRepository,
     CreateOnChainPaymentUseCase? createOnChainPaymentUseCase,
-  })  : _atomicSwapRepository =
-            atomicSwapRepository ?? GetIt.I<AtomicSwapRepository>(),
-        _utxoRepository = utxoRepository ?? GetIt.I<UtxoRepository>(),
+    GetUtxoMapForAddressUseCase? getUtxoMapForAddressUseCase,
+  })  : _getUtxoMapForAddressUseCase = getUtxoMapForAddressUseCase ??
+            GetIt.I<GetUtxoMapForAddressUseCase>(),
         _createOnChainPaymentUseCase = createOnChainPaymentUseCase ??
             GetIt.I<CreateOnChainPaymentUseCase>(),
         super(SwapCreateListingFormModel(
@@ -251,9 +251,11 @@ class SwapCreateListingFormBloc
     emit(state.copyWith(onChainPayment: const Loading<OnChainPayment>()));
 
     final task = TaskEither<String, OnChainPayment>.Do(($) async {
-      final utxoMap = await $(_utxoRepository.getUnattachedUTXOMapForAddressT(
-        httpConfig: httpConfig,
-        address: state.address,
+      final utxoMap = await $(_getUtxoMapForAddressUseCase.call(
+        GetUtxoMapForAddressParams(
+          httpConfig: httpConfig,
+          address: state.address,
+        ),
       ));
 
       final onChainPayment = await $(

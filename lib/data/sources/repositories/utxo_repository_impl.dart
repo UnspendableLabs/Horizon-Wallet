@@ -7,6 +7,7 @@ import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/utxo_attach_repository.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
 
 class UtxoRepositoryImpl implements UtxoRepository {
   final CounterpartyClientFactory _counterpartyClientFactory =
@@ -136,5 +137,36 @@ class UtxoRepositoryImpl implements UtxoRepository {
     }
 
     return unattachedMap.values.toList();
+  }
+
+  @override
+  Future<Map<String, Utxo>> getUTXOMapForAddress(
+    AddressV2 address,
+    HttpConfig httpConfig,
+  ) async {
+    final (utxos, _) = await getUnspentForAddress(
+      address.address,
+      httpConfig,
+      excludeCached: true,
+    );
+
+    return {
+      for (final utxo in utxos) "${utxo.txid}:${utxo.vout}": utxo,
+    };
+  }
+
+  @override
+  Future<Map<String, Utxo>> getUnattachedUTXOMapForAddress(
+    String address,
+    HttpConfig httpConfig,
+  ) async {
+    final utxos = await getUnattachedForAddress(
+      address,
+      httpConfig,
+    );
+
+    return {
+      for (final utxo in utxos) "${utxo.txid}:${utxo.vout}": utxo,
+    };
   }
 }

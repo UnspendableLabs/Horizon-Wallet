@@ -1,20 +1,18 @@
 import "package:fpdart/fpdart.dart";
 import 'package:formz/formz.dart';
 import 'package:horizon/domain/entities/asset_quantity.dart';
-import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import "package:get_it/get_it.dart";
-import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/usecases/decode_raw_transaction.dart';
 import 'package:horizon/domain/usecases/esplora/get_transaction.dart';
-import 'package:horizon/domain/usecases/esplora/get_transactions.dart';
+import 'package:horizon/domain/usecases/get_augmented_psbt_data.dart';
+import 'package:horizon/domain/usecases/get_utxo_map_for_address.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:collection/collection.dart';
 import 'package:horizon/domain/entities/psbt_type.dart';
 
 import 'package:horizon/domain/entities/address_v2.dart';
-import 'package:horizon/domain/entities/failure.dart';
 import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
@@ -164,11 +162,9 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
   final TransactionService _transactionService;
   final EncryptionService _encryptionService;
   final AddressService _addressService;
-  final DecodeRawTransactionUseCase _decodeRawTransactionUseCase;
-  final UtxoRepository _utxoRepository;
-  final GetUTXOBalancesUseCase _getUTXOBalancesUseCase;
-  final GetTransactionEsploraUseCase _getTransactionEsploraUseCase;
 
+  final GetAugmentedPsbtDataUseCase _getAugmentedPsbtDataUseCase;
+  final GetUtxoMapForAddressUseCase _getUtxoMapForAddressUseCase;
   final bool embeddedWitnessData;
 
   SignPsbtBloc({
@@ -192,10 +188,10 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
     GetUTXOBalancesUseCase? getUTXOBalancesUseCase,
     DecodeRawTransactionUseCase? decodeRawTransactionUseCase,
     GetTransactionEsploraUseCase? getTransactionEsploraUseCase,
+    GetAugmentedPsbtDataUseCase? getAugmentedPsbtDataUseCase,
+    GetUtxoMapForAddressUseCase? getUtxoMapForAddressUseCase,
     this.embeddedWitnessData = false,
-  })  : _decodeRawTransactionUseCase = decodeRawTransactionUseCase ??
-            GetIt.I<DecodeRawTransactionUseCase>(),
-        _transactionService =
+  })  : _transactionService =
             transactionService ?? GetIt.I<TransactionService>(),
         _inMemoryKeyRepository =
             inMemoryKeyRepository ?? GetIt.I<InMemoryKeyRepository>(),
@@ -204,11 +200,10 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
         _walletConfigRepository =
             walletConfigRepository ?? GetIt.I<WalletConfigRepository>(),
         _seedService = seedService ?? GetIt.I<SeedService>(),
-        _utxoRepository = utxoRepository ?? GetIt.I<UtxoRepository>(),
-        _getUTXOBalancesUseCase =
-            getUTXOBalancesUseCase ?? GetIt.I<GetUTXOBalancesUseCase>(),
-        _getTransactionEsploraUseCase = getTransactionEsploraUseCase ??
-            GetIt.I<GetTransactionEsploraUseCase>(),
+        _getAugmentedPsbtDataUseCase = getAugmentedPsbtDataUseCase ??
+            GetIt.I<GetAugmentedPsbtDataUseCase>(),
+        _getUtxoMapForAddressUseCase = getUtxoMapForAddressUseCase ??
+            GetIt.I<GetUtxoMapForAddressUseCase>(),
         super(SignPsbtState(
             addresses: addresses.map((addy) => addy.address).toList(),
             psbtType: psbtType)) {
@@ -221,139 +216,27 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
     FetchFormEvent event,
     Emitter<SignPsbtState> emit,
   ) async {
-    try {
-      // decode the psbt transaction
+    final task = _getAugmentedPsbtDataUseCase.call(GetAugmentedPsbtDataParams(
+      httpConfig: httpConfig,
+      unsignedPsbt: unsignedPsbt,
+      addresses: addresses,
+      signInputs: signInputs,
+    ));
+    final result = await task.run();
 
-      final transactionHex =
-          _transactionService.psbtToUnsignedTransactionHex(unsignedPsbt);
-
-      final decodedTask = await _decodeRawTransactionUseCase
-          .call(DecodeRawTransactionParams(
-            raw: transactionHex,
-            httpConfig: httpConfig,
-          ))
-          .run();
-      final decoded =
-          decodedTask.fold((error) => throw error, (decoded) => decoded);
-
-      Either<Failure, List<Option<AugmentedInput>>> inputs =
-          await TaskEither.traverseListWithIndex(decoded.vin, (vin, index) {
-        return TaskEither<Failure, Option<AugmentedInput>>.Do(($) async {
-          if (vin.txid == dummyTxID && vin.vout == 0) {
-            // this is a dummy input, skip it
-            return $(TaskEither.right(const Option.none()));
-          }
-
-          // TODO: don't go chasin' waterfalls.
-          final getTransactionTask = _getTransactionEsploraUseCase
-              .call(GetTransactionEsploraParams(
-                txid: vin.txid,
-                httpConfig: httpConfig,
-              ))
-              .mapLeft((s) => UnexpectedFailure(message: s));
-
-          final utxoBalancesTask = _getUTXOBalancesUseCase
-              .call(GetUTXOBalancesUseCaseParams(
-                addresses: addresses.map((a) => a.address).toList(),
-                httpConfig: httpConfig,
-                utxoID: UtxoID.fromString("${vin.txid}:${vin.vout}"),
-              ))
-              .mapLeft((s) => UnexpectedFailure(message: s));
-
-          final results = await $(TaskEither.sequenceList([
-            getTransactionTask,
-            utxoBalancesTask,
-          ]));
-
-          final transaction = results[0] as BitcoinTx;
-          final balances = results[1] as List<UtxoBalance>;
-
-          final prevout = transaction.vout[vin.vout];
-          final address = prevout.scriptpubkeyAddress;
-
-          final signatureRequired =
-              signInputs[address]?.contains(index) ?? false;
-
-          return $(TaskEither.right(Option.of(AugmentedInput(
-              confirmed: transaction.status.confirmed,
-              address: address,
-              vin: vin,
-              prevOut: prevout,
-              balances: balances,
-              signatureRequired: signatureRequired))));
-        });
-      }).run();
-
-      List<Option<AugmentedInput>> augmentedInputs_ = inputs.getOrElse((error) {
-        throw error;
-      });
-
-      List<AugmentedInput> augmentedInputs = augmentedInputs_
-          .where((input) => input.isSome())
-          .map((input) => input.getOrElse(() => throw Exception("Invariant")))
-          .toList();
-
-      // append asset balances to output that has same value as input
-      final augmentedOutputs = decoded.vout
-          .map((o) => AugmentedOutput(
-              vout: o,
-              balances: augmentedInputs.firstWhereOrNull((input) {
-                    return satoshisToBtc(input.prevOut.value).toDouble() ==
-                        o.value;
-                  })?.balances ??
-                  []))
-          .toList();
-
-      final addressSet = addresses.map((address) => address.address).toSet();
-
-      final debits =
-          augmentedInputs.map((i) => i.getDebits(addressSet)).flatten.toList();
-
-      final credits = augmentedOutputs
-          .map((o) => o.getCredits(addressSet))
-          .flatten
-          .toList();
-
-      Map<String, AssetQuantity> map = {};
-
-      for (final debit in debits) {
-        map.putIfAbsent(debit.asset,
-            () => AssetQuantity.empty(divisible: debit.quantity.divisible));
-        map[debit.asset] = map[debit.asset]! - debit.quantity;
-      }
-
-      for (final credit in credits) {
-        map.putIfAbsent(credit.asset,
-            () => AssetQuantity.empty(divisible: credit.quantity.divisible));
-        map[credit.asset] = map[credit.asset]! + credit.quantity;
-      }
-
-      final netDebits = map.entries
-          .filter((entry) => entry.value.quantity < BigInt.zero)
-          .map((e) => AssetDebit(
-                asset: e.key,
-                quantity: e.value.map((value) => value.abs()),
-              ));
-
-      final netCredits = map.entries
-          .filter((entry) => entry.value.quantity > BigInt.zero)
-          .map((e) => AssetCredit(
-                asset: e.key,
-                quantity: e.value.map((value) => value.abs()),
-              ));
-
-      emit(state.copyWith(
-        debits: netDebits.toList(),
-        credits: netCredits.toList(),
-        augmentedInputs: augmentedInputs,
-        augmentedOutputs: augmentedOutputs,
-        isFormDataLoaded: true,
-      ));
-    } catch (e) {
+    result.fold((error) {
       emit(state.copyWith(
         isFormDataLoaded: true,
       ));
-    }
+    }, (data) {
+      emit(state.copyWith(
+        debits: data.debits,
+        credits: data.credits,
+        augmentedInputs: data.augmentedInputs,
+        augmentedOutputs: data.augmentedOutputs,
+        isFormDataLoaded: true,
+      ));
+    });
   }
 
   void _handlePasswordChanged(
@@ -382,8 +265,11 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
       String psbt = unsignedPsbt;
 
       if (embeddedWitnessData) {
-        final utxoMap = await $(_utxoRepository.getUTXOMapForAddressT(
-            address: addresses.first, httpConfig: httpConfig));
+        final utxoMap = await $(
+            _getUtxoMapForAddressUseCase.call(GetUtxoMapForAddressParams(
+          address: addresses.first,
+          httpConfig: httpConfig,
+        )));
 
         psbt = await $(_transactionService.embedWitnessDataT(
             psbtHex: unsignedPsbt,

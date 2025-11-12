@@ -15,6 +15,7 @@ import 'package:horizon/domain/usecases/atomic_swap_create.dart';
 import 'package:horizon/domain/usecases/esplora/get_transaction.dart';
 import 'package:horizon/domain/usecases/esplora/get_transactions.dart';
 import 'package:horizon/domain/usecases/get_royalty_by_asset.dart';
+import 'package:horizon/domain/usecases/get_utxo_map_for_address.dart';
 import 'package:horizon/presentation/forms/asset_balance_form/bloc/asset_balance_form_bloc.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/utxo.dart';
@@ -185,7 +186,7 @@ class AtomicSwapSellFlowView extends StatefulWidget {
   final Config _config;
 
   final GetRoyaltyByAssetUseCase _getRoyaltyByAssetUseCase;
-  final UtxoRepository _utxoRepository;
+  final GetUtxoMapForAddressUseCase _getUtxoMapForAddressUseCase;
   final AnalyticsService _analyticsService;
   final AtomicSwapCreateUseCase _atomicSwapCreateUseCase;
   final GetTransactionEsploraUseCase _getTransactionEsploraUseCase;
@@ -199,7 +200,7 @@ class AtomicSwapSellFlowView extends StatefulWidget {
       required this.balances,
       Config? config,
       AtomicSwapRepository? atomicSwapRepository,
-      UtxoRepository? utxoRepository,
+      GetUtxoMapForAddressUseCase? getUtxoMapForAddressUseCase,
       GetRoyaltyByAssetUseCase? getRoyaltyByAssetUseCase,
       BitcoinRepository? bitcoinRepository,
       AnalyticsService? analyticsService,
@@ -207,7 +208,8 @@ class AtomicSwapSellFlowView extends StatefulWidget {
       GetTransactionEsploraUseCase? getTransactionEsploraUseCase,
       super.key})
       : _config = config ?? GetIt.I<Config>(),
-        _utxoRepository = utxoRepository ?? GetIt.I<UtxoRepository>(),
+        _getUtxoMapForAddressUseCase = getUtxoMapForAddressUseCase ??
+            GetIt.I<GetUtxoMapForAddressUseCase>(),
         _getRoyaltyByAssetUseCase =
             getRoyaltyByAssetUseCase ?? GetIt.I<GetRoyaltyByAssetUseCase>(),
         _analyticsService = analyticsService ?? GetIt.I<AnalyticsService>(),
@@ -543,11 +545,12 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
 
                       final assetUtxoId = swapSellDetails.sellDetails.utxoId;
 
-                      final utxoMap =
-                          await $(widget._utxoRepository.getUTXOMapForAddressT(
+                      final utxoMap = await $(widget
+                          ._getUtxoMapForAddressUseCase
+                          .call(GetUtxoMapForAddressParams(
                         httpConfig: widget.httpConfig,
                         address: sellerAddress,
-                      ));
+                      )));
 
                       final utxo = utxoMap[assetUtxoId.toString()];
 

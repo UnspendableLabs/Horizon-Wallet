@@ -17,6 +17,7 @@ import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/entities/http_config.dart' hide Custom;
 import 'package:horizon/domain/usecases/esplora/get_transaction.dart';
 import 'package:horizon/domain/usecases/get_detach_data.dart';
+import 'package:horizon/domain/usecases/get_unattached_utxo_map_for_address.dart';
 
 // this is ported over directly from horozn market
 int calculateTxBytesFeeWithRate({
@@ -300,7 +301,8 @@ class SwapMultiBuySignFormBloc
     extends Bloc<SwapMultiBuySignFormEvent, SwapMultiBuySignFormModel> {
   final HttpConfig httpConfig;
   final TransactionService _transactionService;
-  final UtxoRepository _utxoRepository;
+  final GetUnattachedUtxoMapForAddressUseCase
+      _getUnattachedUtxoMapForAddressUseCase;
   final GetTransactionEsploraUseCase _getTransactionEsploraUseCase;
   final GetDetachDataUseCase _getDetachDataUseCase;
   // final AtomicSwapRepository _atomicSwapRepository;
@@ -313,13 +315,16 @@ class SwapMultiBuySignFormBloc
     required BigInt royaltyAmount,
     required String? royaltyAddress,
     TransactionService? transactionService,
-    UtxoRepository? utxoRepository,
+    GetUnattachedUtxoMapForAddressUseCase?
+        getUnattachedUtxoMapForAddressUseCase,
     GetTransactionEsploraUseCase? getTransactionEsploraUseCase,
     AtomicSwapRepository? atomicSwapRepository,
     GetDetachDataUseCase? getDetachDataUseCase,
   })  : _transactionService =
             transactionService ?? GetIt.I<TransactionService>(),
-        _utxoRepository = utxoRepository ?? GetIt.I<UtxoRepository>(),
+        _getUnattachedUtxoMapForAddressUseCase =
+            getUnattachedUtxoMapForAddressUseCase ??
+                GetIt.I<GetUnattachedUtxoMapForAddressUseCase>(),
         _getDetachDataUseCase =
             getDetachDataUseCase ?? GetIt.I<GetDetachDataUseCase>(),
         _getTransactionEsploraUseCase = getTransactionEsploraUseCase ??
@@ -390,25 +395,28 @@ class SwapMultiBuySignFormBloc
                   .map((tx) => (swap, tx)))
               .toList()));
 
-      List<UtxoWithTransaction> utxosWithTransactions = await $(_utxoRepository
-          .getUnattachedUTXOMapForAddressT(
-            httpConfig: httpConfig,
-            address: buyerAddress,
-          )
-          .map((m) => m.values.toList())
-          .flatMap(
-            (utxos) => TaskEither.sequenceList(
-              utxos
-                  .map((utxo) => _getTransactionEsploraUseCase
-                      .call(GetTransactionEsploraParams(
-                        httpConfig: httpConfig,
-                        txid: utxo.txid,
-                      ))
-                      .map((bitcoinTransaction) => UtxoWithTransaction(
-                          utxo: utxo, transaction: bitcoinTransaction)))
-                  .toList(),
-            ),
-          ));
+      List<UtxoWithTransaction> utxosWithTransactions =
+          await $(_getUnattachedUtxoMapForAddressUseCase
+              .call(
+                GetUnattachedUtxoMapForAddressParams(
+                  httpConfig: httpConfig,
+                  address: buyerAddress.address,
+                ),
+              )
+              .map((m) => m.values.toList())
+              .flatMap(
+                (utxos) => TaskEither.sequenceList(
+                  utxos
+                      .map((utxo) => _getTransactionEsploraUseCase
+                          .call(GetTransactionEsploraParams(
+                            httpConfig: httpConfig,
+                            txid: utxo.txid,
+                          ))
+                          .map((bitcoinTransaction) => UtxoWithTransaction(
+                              utxo: utxo, transaction: bitcoinTransaction)))
+                      .toList(),
+                ),
+              ));
 
       for (var utxo in utxosWithTransactions) {}
 

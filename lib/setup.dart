@@ -27,6 +27,9 @@ import 'package:horizon/domain/usecases/get_order_by_pair.dart';
 import 'package:horizon/domain/usecases/get_royalty_by_asset.dart';
 import 'package:horizon/domain/usecases/get_swaps_by_asset.dart';
 import 'package:horizon/domain/usecases/get_utxo_swap_map.dart';
+import 'package:horizon/domain/usecases/get_utxo_map_for_address.dart';
+import 'package:horizon/domain/usecases/get_unattached_utxo_map_for_address.dart';
+import 'package:horizon/domain/usecases/get_augmented_psbt_data.dart';
 import 'package:horizon/domain/usecases/horizon_api_asset_search.dart';
 import 'package:horizon/domain/usecases/search_swaps.dart';
 import 'package:horizon/domain/usecases/send_raw_transaction.dart';
@@ -667,6 +670,8 @@ void setup() {
       .registerSingleton<GetRoyaltyByAssetUseCase>(GetRoyaltyByAssetUseCase());
 
   injector.registerSingleton<GetUTXOBalancesUseCase>(GetUTXOBalancesUseCase());
+  injector.registerSingleton<GetAugmentedPsbtDataUseCase>(
+      GetAugmentedPsbtDataUseCase());
   injector.registerSingleton<GetAllBalancesUseCase>(GetAllBalancesUseCase());
   injector
       .registerSingleton<AtomicSwapCreateUseCase>(AtomicSwapCreateUseCase());
@@ -681,6 +686,10 @@ void setup() {
   injector.registerSingleton<SendRawTransactionUseCase>(
       SendRawTransactionUseCase());
   injector.registerSingleton<GetUtxoSwapMapUseCase>(GetUtxoSwapMapUseCase());
+  injector.registerSingleton<GetUtxoMapForAddressUseCase>(
+      GetUtxoMapForAddressUseCase());
+  injector.registerSingleton<GetUnattachedUtxoMapForAddressUseCase>(
+      GetUnattachedUtxoMapForAddressUseCase());
   injector.registerSingleton<SearchAssetsUseCase>(SearchAssetsUseCase());
   injector.registerSingleton<GetAssetVerboseUseCase>(GetAssetVerboseUseCase());
   injector.registerSingleton<GetDetachDataUseCase>(GetDetachDataUseCase());
