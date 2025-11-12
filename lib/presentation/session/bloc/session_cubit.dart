@@ -90,8 +90,6 @@ class SessionStateCubit extends Cubit<SessionState> {
   Future<GetSessionStateResponse> _getSessionState() async {
     final mnemonic = await _mnemonicRepository.get();
 
-    print("get sessin state?");
-
     if (mnemonic.isNone()) {
       // TODO: consider moving this into setup.dart
       // if mnemonic is not found, it's possible we've just migrated
@@ -104,8 +102,6 @@ class SessionStateCubit extends Cubit<SessionState> {
       //       in turn will make sure in memory decryption
       //       keys are set correctly
 
-      print("no mnemonic found, checking legacy wallet repo");
-
       final wallet = await _walletRepositoryDeprecated.getCurrentWallet();
 
       if (wallet != null && wallet.encryptedMnemonic != null) {
@@ -115,11 +111,8 @@ class SessionStateCubit extends Cubit<SessionState> {
         return LoggedOut();
       }
 
-      print("no wallet");
       return NoWallet();
     }
-
-    print("mnemonic found");
 
     final mnemonicKey = await inMemoryKeyRepository.getMnemonicKey();
 
@@ -129,8 +122,6 @@ class SessionStateCubit extends Cubit<SessionState> {
 
     final storedDeadlineString =
         await kvService.read(key: kInactivityDeadlineKey);
-
-    print("stored deadline: $storedDeadlineString");
 
     if (storedDeadlineString != null && storedDeadlineString.isNotEmpty) {
       final storedDeadline = DateTime.tryParse(storedDeadlineString);
@@ -149,8 +140,6 @@ class SessionStateCubit extends Cubit<SessionState> {
     try {
       encryptionService.decryptWithKey(
           mnemonic.getOrThrow(), mnemonicKey.getOrThrow());
-
-      print("logged in");
 
       return LoggedIn(decryptionKey: mnemonicKey.getOrThrow());
     } catch (e) {
@@ -179,8 +168,6 @@ class SessionStateCubit extends Cubit<SessionState> {
           WalletConfig walletConfig =
               await _walletConfigRepository.getCurrent();
 
-          print("wallet config: ${walletConfig.uuid}");
-
           analyticsService.trackAnonymousEvent('wallet_opened',
               properties: {'distinct_id': walletConfig.uuid});
 
@@ -188,8 +175,6 @@ class SessionStateCubit extends Cubit<SessionState> {
               await _accountV2Repository.getByWalletConfig(
             walletConfigID: walletConfig.uuid,
           );
-
-          print("accounts count: ${accounts.length}");
 
           String? currentAccountHash =
               cacheProvider.getString("current-account-hash");
@@ -202,8 +187,6 @@ class SessionStateCubit extends Cubit<SessionState> {
           AddressIndexSet addressIndexSet =
               await _addressV2Repository.getByAccount(currentAccount);
 
-          print("address index set retrieved $addressIndexSet");
-
           emit(SessionState.success(SessionStateSuccess(
             httpConfig: httpConfigForNetwork(walletConfig.network),
             walletConfig: walletConfig,
@@ -215,8 +198,6 @@ class SessionStateCubit extends Cubit<SessionState> {
           return;
       }
     } catch (error) {
-      rethrow;
-
       emit(SessionState.error(error.toString()));
     }
   }

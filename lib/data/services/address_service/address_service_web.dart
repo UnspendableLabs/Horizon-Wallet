@@ -103,8 +103,6 @@ class AddressServiceWeb implements AddressService {
 
     final Map<AddressV2Type, AddressV2> result = {};
     for (final kind in addressKinds) {
-      print("trying to derive address of kind: $kind");
-
       final bip32.BIP32Interface child = switch (kind) {
         AddressV2Type.p2tr => _deriveChildKey(
             path: _taprootPathFromBase(path, network),
@@ -127,7 +125,6 @@ class AddressServiceWeb implements AddressService {
           hex.encode(compressedPub.sublist(1, 33)), // x-only
         _ => hex.encode(compressedPub), // compressed
       };
-      print("derived address of kind $kind: $address");
 
       result[kind] = AddressV2(
           type: kind,
@@ -179,32 +176,25 @@ class AddressServiceWeb implements AddressService {
   }
 
   String _taprootFromBip32(bip32.BIP32Interface child, Network network) {
-    // 33-byte compressed pubkey → drop prefix to get x-only (32 bytes)
-    try {
-      final Uint8List compressed = child.publicKey.toDart;
-      if (compressed.length != 33) {
-        throw StateError(
-            'Expected 33-byte compressed pubkey, got ${compressed.length}');
-      }
-      final Uint8List xOnlyBytes = compressed.sublist(1); // [1..33)
-
-      // Back to JS Buffer
-      final Buffer xOnly = Buffer.from(xOnlyBytes.toJS);
-
-      // Use Taproot options binding (BIP86 key-path when only internalPubkey is provided)
-      final opts = bitcoin.PaymentOptionsTaproot(
-        internalPubkey: xOnly,
-        network: network.toJS,
-      );
-
-      final pay = bitcoin.p2tr(opts);
-
-      return pay.address; // bech32m
-    } catch (e, callstack) {
-      print(e);
-      print(callstack);
-      rethrow;
+    final Uint8List compressed = child.publicKey.toDart;
+    if (compressed.length != 33) {
+      throw StateError(
+          'Expected 33-byte compressed pubkey, got ${compressed.length}');
     }
+    final Uint8List xOnlyBytes = compressed.sublist(1); // [1..33)
+
+    // Back to JS Buffer
+    final Buffer xOnly = Buffer.from(xOnlyBytes.toJS);
+
+    // Use Taproot options binding (BIP86 key-path when only internalPubkey is provided)
+    final opts = bitcoin.PaymentOptionsTaproot(
+      internalPubkey: xOnly,
+      network: network.toJS,
+    );
+
+    final pay = bitcoin.p2tr(opts);
+
+    return pay.address; // bech32m
   }
 
   bip32.BIP32Interface _deriveChildKey(

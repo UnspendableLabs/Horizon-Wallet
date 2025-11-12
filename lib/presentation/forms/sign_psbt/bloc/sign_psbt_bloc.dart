@@ -264,7 +264,6 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
 
       String psbt = unsignedPsbt;
 
-      print("embeddedWitnessData: $embeddedWitnessData");
       if (embeddedWitnessData) {
         final utxoMap = await $(
             _getUtxoMapForAddressUseCase.call(GetUtxoMapForAddressParams(
@@ -279,8 +278,6 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
             httpConfig: httpConfig,
             onError: (e, c) => c.toString()));
       }
-
-      print("calling sign");
 
       String signedHex = await $(TaskEither.fromEither(
           _transactionService.signPsbtT(
@@ -320,11 +317,6 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
             Option.fromNullable(
                 addresses.firstWhereOrNull((a) => a.address == entry.key)),
             () => "Address not found"));
-
-        print("address: ${address}");
-
-        print("address derivation: ${address.derivation}");
-        print("address type: ${address.type}");
 
         String pk = switch (address.derivation) {
           Bip32Path(value: var value) => await $(_walletConfigRepository

@@ -29,7 +29,6 @@ extension type ECPairInterface._(JSObject _) implements Signer {
   external c.Network network;
   external bool lowR;
   external Buffer? privateKey;
-  external String toWIF();
 }
 
 extension type ECPairFactory._(JSObject _) implements JSObject {
