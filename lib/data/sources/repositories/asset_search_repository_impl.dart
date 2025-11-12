@@ -1,9 +1,6 @@
-import 'package:fpdart/fpdart.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/data/sources/repositories/network_error_helpers.dart';
 import 'package:horizon/domain/entities/asset_search_result.dart';
 import 'package:horizon/domain/entities/http_config.dart';
-import 'package:horizon/domain/entities/network_error.dart';
 import 'package:horizon/domain/repositories/asset_search_repository.dart';
 import 'package:horizon/data/sources/network/horizon_explorer_client_factory.dart';
 
@@ -16,16 +13,14 @@ class AssetSearchRepositoryImpl implements AssetSearchRepository {
             GetIt.I<HorizonExplorerClientFactory>();
 
   @override
-  TaskEither<NetworkError, List<AssetSearchResult>> search(
-      {required HttpConfig httpConfig,
-      required String term,
-      NetworkError? Function(NetworkError error)? onError}) {
-    return handleNetworkCall(() async {
-      final client = _horizonExplorerClientFactory.getClient(httpConfig);
+  Future<List<AssetSearchResult>> search(
+      {required HttpConfig httpConfig, required String term}) async {
+// {"data":["XCP","A10748947519108282879","A2977114591417842298","A7644917367163002844","A9571979917063295926"]}
 
-      final res = client.searchAssets(query: term);
+    final client = _horizonExplorerClientFactory.getClient(httpConfig);
 
-      return res;
-    }, onError: onError);
+    final res = client.searchAssets(query: term);
+
+    return res;
   }
 }

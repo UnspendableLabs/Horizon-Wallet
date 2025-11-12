@@ -88,12 +88,11 @@ class AssetRepositoryImpl implements AssetRepository {
     bool hasMore = true;
 
     while (hasMore) {
-      final (assets, nextCursor, resultCount) =
-          await getValidAssetsByOwnerVerbose(
-              address: address,
-              cursor: cursor,
-              limit: 1000,
-              httpConfig: httpConfig);
+      final (assets, nextCursor, _) = await getValidAssetsByOwnerVerbose(
+          address: address,
+          cursor: cursor,
+          limit: 1000,
+          httpConfig: httpConfig);
 
       allAssets.addAll(assets);
 
