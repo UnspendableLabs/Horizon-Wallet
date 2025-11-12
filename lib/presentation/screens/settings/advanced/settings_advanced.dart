@@ -9,11 +9,55 @@ import 'package:horizon/domain/entities/address_v2.dart';
 import "./bloc/settings_advanced_bloc.dart";
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
+import 'package:horizon/domain/entities/network.dart';
 
 import 'package:fpdart/fpdart.dart';
 import 'package:horizon/common/constants.dart';
 
 import "../settings_view.dart" show SettingsItem;
+
+class TaprootAddressTypeSettings extends StatelessWidget {
+  final SettingsAdvancedState state;
+  const TaprootAddressTypeSettings({super.key, required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    final currentCfg =
+        state.walletConfigChange.getOrElse(() => state.initialWalletConfig);
+    final isSignet = currentCfg.network.isSignet;
+
+    final hasP2TR = state.walletConfigChange.fold(
+      () =>
+          state.initialWalletConfig.supportedKinds.contains(AddressV2Type.p2tr),
+      (change) => change.supportedKinds.contains(AddressV2Type.p2tr),
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SettingsItem(
+          title: "P2TR (Taproot)",
+          trailing: Switch(
+            value: hasP2TR,
+            onChanged: isSignet
+                ? (value) => context
+                    .read<SettingsAdvancedBloc>()
+                    .add(EnableP2TRChanged(value))
+                : null, // disabled when not on Signet
+          ),
+        ),
+        if (!isSignet)
+          const Padding(
+            padding: EdgeInsets.fromLTRB(20, 6, 20, 0),
+            child: Text(
+              "Taproot (P2TR) is in early beta and currently only supported on Signet.",
+              style: TextStyle(fontSize: 12, color: Colors.orange),
+            ),
+          ),
+      ],
+    );
+  }
+}
 
 class SettingsAdvancedProvider extends StatelessWidget {
   final WalletConfigRepository _walletConfigRepository;
@@ -143,14 +187,16 @@ class SettingsAdvanced extends StatelessWidget {
                               LegacyAddressTypeSettings(state: state),
                             ImportFormat.freewallet =>
                               LegacyAddressTypeSettings(state: state),
-                            _ => const SizedBox.shrink(),
+                            ImportFormat.horizon =>
+                              TaprootAddressTypeSettings(state: state),
                           }),
                   (change) => switch (change) {
                         ImportFormat.counterwallet =>
                           LegacyAddressTypeSettings(state: state),
                         ImportFormat.freewallet =>
                           LegacyAddressTypeSettings(state: state),
-                        _ => const SizedBox.shrink(),
+                        ImportFormat.horizon =>
+                          TaprootAddressTypeSettings(state: state),
                       }),
               const SizedBox(height: 40),
               state.walletConfigChange.fold(
