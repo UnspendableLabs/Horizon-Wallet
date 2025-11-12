@@ -1,7 +1,6 @@
 import 'package:horizon/domain/entities/asset.dart' as a;
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
-
 import 'package:dio/dio.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:horizon/data/models/cursor.dart' as cursor_model;

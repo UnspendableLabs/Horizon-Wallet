@@ -4,13 +4,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:horizon/domain/usecases/get_balances_by_addresses.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 
 /// BalancesBloc manages the loading and caching of cryptocurrency balances
 class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
-  final BalanceRepository balanceRepository;
+  final GetBalancesByAddressesUseCase getBalancesByAddressesUseCase;
   final List<String> addresses;
   final CacheProvider cacheProvider;
   Timer? _pollingTimer;
@@ -21,7 +22,7 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
 
   /// Create a BalancesBloc with repository and addresses to monitor
   BalancesBloc({
-    required this.balanceRepository,
+    required this.getBalancesByAddressesUseCase,
     required this.addresses,
     required this.cacheProvider,
     required this.httpConfig,
@@ -61,9 +62,12 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
     }
 
     try {
-      final balances = await balanceRepository.getBalancesForAddresses(
-          httpConfig: httpConfig, addresses: addresses);
-
+      final result = await getBalancesByAddressesUseCase
+          .call(GetBalancesByAddressesParams(
+              httpConfig: httpConfig, addresses: addresses))
+          .run();
+      final balances =
+          result.fold((error) => throw Exception(error), (result) => result);
       // Only update state if the new data is different
       if (_cachedBalances == null ||
           !MultiAddressBalance.equals(_cachedBalances!, balances)) {

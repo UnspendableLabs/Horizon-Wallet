@@ -1,4 +1,5 @@
 import 'package:decimal/decimal.dart';
+import 'package:horizon/data/sources/repositories/network_error_helpers.dart';
 import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 
@@ -338,14 +339,13 @@ class GetAllBalancesUseCase
   @override
   TaskEither<String, BalancesSet> call(GetAllBalancesUseCaseParams params) {
     return TaskEither<String, BalancesSet>.Do(($) async {
-      final confirmedTask = _balanceRepository
-          .getBalancesForAddressesT(
-            httpConfig: params.httpConfig,
-            addresses: params.addresses,
-            onError: (_, __) =>
-                "Failed to read confirmed balances for ${params.addresses}",
-          )
-          .map<List<BalanceV2>>((balances) => balances
+      final confirmedTask = handleNetworkCall(() async {
+        return await _balanceRepository.getBalancesForAddresses(
+          httpConfig: params.httpConfig,
+          addresses: params.addresses,
+        );
+      }).mapLeft((error) => error.message).map<List<BalanceV2>>((balances) =>
+          balances
               .map<List<BalanceV2>>((MultiAddressBalance balance) =>
                   balance.entries.map<BalanceV2>((entry) {
                     return entry.utxo != null
@@ -375,13 +375,20 @@ class GetAllBalancesUseCase
               .expand((el) => el)
               .toList());
 
-      final mempoolTask =
-          _eventsRepository.getAllMempoolVerboseEventsForAddressesT(
-        params.httpConfig,
-        params.addresses,
-        ["ATTACH_TO_UTXO", "DETACH_FROM_UTXO", "UTXO_MOVE", "CREDIT", "DEBIT"],
-        (_, __) => "Failed to get mempool events ",
-      );
+      final mempoolTask = handleNetworkCall(() async {
+        return await _eventsRepository.getAllMempoolVerboseEventsForAddresses(
+          params.httpConfig,
+          params.addresses,
+          [
+            "ATTACH_TO_UTXO",
+            "DETACH_FROM_UTXO",
+            "UTXO_MOVE",
+            "CREDIT",
+            "DEBIT"
+          ],
+        );
+      }).mapLeft((error) => error.message).map<List<VerboseEvent>>(
+          (events) => events.map<VerboseEvent>((event) => event).toList());
 
       final result =
           await $(TaskEither.sequenceList([confirmedTask, mempoolTask]));

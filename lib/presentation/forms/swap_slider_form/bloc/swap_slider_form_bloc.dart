@@ -9,8 +9,8 @@ import 'package:fpdart/fpdart.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/asset_quantity.dart';
-import 'package:horizon/domain/repositories/atomic_swap_repository.dart';
-import 'package:horizon/domain/repositories/asset_repository.dart';
+import 'package:horizon/domain/usecases/get_asset_verbose.dart';
+import 'package:horizon/domain/usecases/get_swaps_by_asset.dart';
 
 enum SelectionMode { slider, manual }
 
@@ -230,18 +230,19 @@ class SubmitClicked extends SwapSliderFormEvent {
 class SwapSliderFormBloc
     extends Bloc<SwapSliderFormEvent, SwapSliderFormModel> {
   final HttpConfig httpConfig;
-  final AtomicSwapRepository _atomicSwapRepository;
-  final AssetRepository _assetRepository;
+  final GetSwapsByAssetUseCase _getSwapsByAssetUseCase;
+  final GetAssetVerboseUseCase _getAssetVerboseUseCase;
 
   SwapSliderFormBloc({
     required String assetName,
     required AddressBalance bitcoinBalance,
     required this.httpConfig,
-    AtomicSwapRepository? atomicSwapRepository,
-    AssetRepository? assetRepository,
-  })  : _atomicSwapRepository =
-            atomicSwapRepository ?? GetIt.I<AtomicSwapRepository>(),
-        _assetRepository = assetRepository ?? GetIt.I<AssetRepository>(),
+    GetAssetVerboseUseCase? getAssetVerboseUseCase,
+    GetSwapsByAssetUseCase? getSwapsByAssetUseCase,
+  })  : _getAssetVerboseUseCase =
+            getAssetVerboseUseCase ?? GetIt.I<GetAssetVerboseUseCase>(),
+        _getSwapsByAssetUseCase =
+            getSwapsByAssetUseCase ?? GetIt.I<GetSwapsByAssetUseCase>(),
         super(
           SwapSliderFormModel(
               manuallySelectedSwapIndices: {},
@@ -304,16 +305,18 @@ class SwapSliderFormBloc
     emit(state.copyWith(atomicSwaps: const Loading()));
 
     final task = TaskEither.sequenceList([
-      _assetRepository.getAssetVerboseT(
-        httpConfig: httpConfig,
-        assetName: state.assetName,
+      _getAssetVerboseUseCase.call(
+        GetAssetVerboseParams(
+          assetName: state.assetName,
+          httpConfig: httpConfig,
+        ),
       ),
-      _atomicSwapRepository.getSwapsByAssetT(
+      _getSwapsByAssetUseCase.call(GetSwapsByAssetParams(
         httpConfig: httpConfig,
         asset: state.assetName,
         orderBy: "price",
         order: "asc",
-      )
+      )),
     ]);
 
     final result = await task.run();

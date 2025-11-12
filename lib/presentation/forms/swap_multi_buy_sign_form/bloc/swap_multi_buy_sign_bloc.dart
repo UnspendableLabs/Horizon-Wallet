@@ -15,6 +15,9 @@ import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/entities/http_config.dart' hide Custom;
+import 'package:horizon/domain/usecases/esplora/get_transaction.dart';
+import 'package:horizon/domain/usecases/get_detach_data.dart';
+import 'package:horizon/domain/usecases/get_unattached_utxo_map_for_address.dart';
 
 // this is ported over directly from horozn market
 int calculateTxBytesFeeWithRate({
@@ -298,9 +301,10 @@ class SwapMultiBuySignFormBloc
     extends Bloc<SwapMultiBuySignFormEvent, SwapMultiBuySignFormModel> {
   final HttpConfig httpConfig;
   final TransactionService _transactionService;
-  final UtxoRepository _utxoRepository;
-  final BitcoinRepository _bitcoinRepository;
-  final ComposeRepository _composeRepository;
+  final GetUnattachedUtxoMapForAddressUseCase
+      _getUnattachedUtxoMapForAddressUseCase;
+  final GetTransactionEsploraUseCase _getTransactionEsploraUseCase;
+  final GetDetachDataUseCase _getDetachDataUseCase;
   // final AtomicSwapRepository _atomicSwapRepository;
 
   SwapMultiBuySignFormBloc({
@@ -311,15 +315,20 @@ class SwapMultiBuySignFormBloc
     required BigInt royaltyAmount,
     required String? royaltyAddress,
     TransactionService? transactionService,
-    UtxoRepository? utxoRepository,
-    BitcoinRepository? bitcoinRepository,
+    GetUnattachedUtxoMapForAddressUseCase?
+        getUnattachedUtxoMapForAddressUseCase,
+    GetTransactionEsploraUseCase? getTransactionEsploraUseCase,
     AtomicSwapRepository? atomicSwapRepository,
-    ComposeRepository? composeRepository,
+    GetDetachDataUseCase? getDetachDataUseCase,
   })  : _transactionService =
             transactionService ?? GetIt.I<TransactionService>(),
-        _utxoRepository = utxoRepository ?? GetIt.I<UtxoRepository>(),
-        _composeRepository = composeRepository ?? GetIt.I<ComposeRepository>(),
-        _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>(),
+        _getUnattachedUtxoMapForAddressUseCase =
+            getUnattachedUtxoMapForAddressUseCase ??
+                GetIt.I<GetUnattachedUtxoMapForAddressUseCase>(),
+        _getDetachDataUseCase =
+            getDetachDataUseCase ?? GetIt.I<GetDetachDataUseCase>(),
+        _getTransactionEsploraUseCase = getTransactionEsploraUseCase ??
+            GetIt.I<GetTransactionEsploraUseCase>(),
         // _atomicSwapRepository =
         //     atomicSwapRepository ?? GetIt.I<AtomicSwapRepository>(),
         super(SwapMultiBuySignFormModel(
@@ -378,49 +387,56 @@ class SwapMultiBuySignFormBloc
 
       List<(AtomicSwap, BitcoinTx)> swapsWithTransactions =
           await $(TaskEither.sequenceList(state.atomicSwaps
-              .map((swap) => _bitcoinRepository
-                  .getTransactionT(
+              .map((swap) => _getTransactionEsploraUseCase
+                  .call(GetTransactionEsploraParams(
                     httpConfig: httpConfig,
                     txid: swap.assetUtxoId.txid,
-                    onError: (error) =>
-                        'Failed to get transaction for atomic swap UTXO: ${swap.assetUtxoId.txid}',
-                  )
+                  ))
                   .map((tx) => (swap, tx)))
               .toList()));
 
-      List<UtxoWithTransaction> utxosWithTransactions = await $(_utxoRepository
-          .getUnattachedUTXOMapForAddressT(
-            httpConfig: httpConfig,
-            address: buyerAddress,
-          )
-          .map((m) => m.values.toList())
-          .flatMap(
-            (utxos) => TaskEither.sequenceList(
-              utxos
-                  .map((utxo) => _bitcoinRepository
-                      .getTransactionT(
-                        httpConfig: httpConfig,
-                        txid: utxo.txid,
-                        onError: (error) =>
-                            'Failed to get transaction for UTXO: ${utxo.txid}:${utxo.vout}',
-                      )
-                      .map((bitcoinTransaction) => UtxoWithTransaction(
-                          utxo: utxo, transaction: bitcoinTransaction)))
-                  .toList(),
-            ),
-          ));
+      List<UtxoWithTransaction> utxosWithTransactions =
+          await $(_getUnattachedUtxoMapForAddressUseCase
+              .call(
+                GetUnattachedUtxoMapForAddressParams(
+                  httpConfig: httpConfig,
+                  address: buyerAddress.address,
+                ),
+              )
+              .map((m) => m.values.toList())
+              .flatMap(
+                (utxos) => TaskEither.sequenceList(
+                  utxos
+                      .map((utxo) => _getTransactionEsploraUseCase
+                          .call(GetTransactionEsploraParams(
+                            httpConfig: httpConfig,
+                            txid: utxo.txid,
+                          ))
+                          .map((bitcoinTransaction) => UtxoWithTransaction(
+                              utxo: utxo, transaction: bitcoinTransaction)))
+                      .toList(),
+                ),
+              ));
 
       for (var utxo in utxosWithTransactions) {}
 
-      String? detachData;
+      // String? detachData;
 
-      if (state.detachAssetsAfterSwap) {
-        detachData = await $(_composeRepository.getDetachDataT(
-          destination: buyerAddress.address,
-          httpConfig: httpConfig,
-          onError: (error, st) => 'Failed to get detach data: $error \n\n$st',
-        ));
-      }
+      // if (state.detachAssetsAfterSwap) {
+      //   detachData = await $(_composeRepository.getDetachDataT(
+      //     destination: buyerAddress.address,
+      //     httpConfig: httpConfig,
+      //     onError: (error, st) => 'Failed to get detach data: $error \n\n$st',
+      //   ));
+      // }
+      final detachDataTask = await _getDetachDataUseCase
+          .call(GetDetachDataParams(
+            httpConfig: httpConfig,
+            destination: buyerAddress.address,
+          ))
+          .run();
+      final detachData =
+          detachDataTask.fold((error) => null, (detachData) => detachData);
 
       return await $(_transactionService.makeMultiBuyPsbtT(
         buyerAddress: buyerAddress.address,

@@ -17,7 +17,6 @@ import 'package:horizon/domain/entities/compose_mpma_send.dart';
 import 'package:horizon/domain/entities/compose_sweep.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/http_config.dart';
-import 'package:fpdart/fpdart.dart';
 
 abstract class ComposeRepository {
   Future<ComposeSendResponse> composeSendVerbose(
@@ -143,17 +142,4 @@ abstract class ComposeRepository {
     ComposeBurnParams params,
     HttpConfig httpConfig,
   );
-}
-
-extension ComposeRepositoryX on ComposeRepository {
-  TaskEither<String, String> getDetachDataT({
-    required String destination,
-    required HttpConfig httpConfig,
-    required String Function(Object error, StackTrace stack) onError,
-  }) {
-    return TaskEither.tryCatch(
-      () => getDetachData(destination: destination, httpConfig: httpConfig),
-      onError,
-    );
-  }
 }

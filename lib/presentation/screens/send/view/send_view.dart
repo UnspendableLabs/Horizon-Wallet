@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
+import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/domain/usecases/get_all_balances.dart';
+import 'package:horizon/domain/usecases/send_raw_transaction.dart';
 import 'package:horizon/presentation/common/link.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:flutter/services.dart';
@@ -33,8 +35,7 @@ import 'package:horizon/presentation/screens/send/forms/send_form_token_selector
 import 'package:horizon/presentation/screens/send/forms/send_review_form.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
-import 'package:horizon/domain/services/bitcoind_service.dart';
-import 'package:horizon/domain/services/transaction_service.dart';
+import 'package:horizon/domain/usecases/finalize_psbt_send_raw_txn.dart';
 import 'package:horizon/utils/app_icons.dart';
 
 class SendFlowComposeStep {
@@ -422,221 +423,219 @@ class _SendViewState extends State<SendView> {
                   body: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: RemoteDataTaskEitherBuilder(
-                          task: TaskEither<String, String>.Do(($) async {
-                        final finalizedTx = await $(TaskEither.fromEither(
-                            GetIt.I<TransactionService>()
-                                .finalizePsbtAndExtractTransactionT(
-                                    psbtHex: confirmationStep.psbtHex,
-                                    onError: (e, _) => e.toString())));
-
-                        final hash = $(GetIt.I<BitcoindService>()
-                            .sendrawtransactionT(
-                                signedHex: finalizedTx,
-                                httpConfig: session.httpConfig,
-                                onError: (e, _) => e.toString())
-                            .minimumDuration(const Duration(seconds: 2)));
-
-                        return hash;
-                      }), builder: (context, state, retry) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 500),
-                                child: state.fold3(
-                                  onNone: () => Center(
-                                      child: Lottie.asset(
-                                    "assets/lottie/txn_success_anim.json",
-                                    width: 127,
-                                    key: const ValueKey('lottie'),
-                                  )),
-                                  onReplete: (_) => const Center(
-                                      child: TxnSuccessAnimation()),
-                                  onFailure: (err) => TransactionError(
-                                    errorMessage: err.toString(),
-                                    onErrorButtonAction: retry,
-                                    buttonText: "Retry",
+                          task: GetIt.I<FinalizePsbtSendRawTxnUseCase>().call(
+                              FinalizePsbtSendRawTxnParams(
+                                  httpConfig: session.httpConfig,
+                                  psbtHex: confirmationStep.psbtHex)),
+                          builder: (context, state, retry) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                AnimatedSwitcher(
+                                    duration: const Duration(milliseconds: 500),
+                                    child: state.fold3(
+                                      onNone: () => Center(
+                                          child: Lottie.asset(
+                                        "assets/lottie/txn_success_anim.json",
+                                        width: 127,
+                                        key: const ValueKey('lottie'),
+                                      )),
+                                      onReplete: (_) => const Center(
+                                          child: TxnSuccessAnimation()),
+                                      onFailure: (err) => TransactionError(
+                                        errorMessage: err.toString(),
+                                        onErrorButtonAction: retry,
+                                        buttonText: "Retry",
+                                      ),
+                                    )),
+                                commonHeightSizedBox,
+                                state.fold3(
+                                  onNone: () => Text(
+                                    "Broadcasting...",
+                                    style:
+                                        Theme.of(context).textTheme.titleMedium,
                                   ),
-                                )),
-                            commonHeightSizedBox,
-                            state.fold3(
-                              onNone: () => Text(
-                                "Broadcasting...",
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              onFailure: (_) => const SizedBox.shrink(),
-                              onReplete: (hash) => Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text("Broadcast Success",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium!),
-                                ],
-                              ),
-                            ),
-                            commonHeightSizedBox,
-                            commonHeightSizedBox,
-                            Container(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 14.0),
-                              height: 56,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(18),
-                                border: Border.all(
-                                  color: Theme.of(context)
-                                          .inputDecorationTheme
-                                          .outlineBorder
-                                          ?.color ??
-                                      transparentBlack8,
+                                  onFailure: (_) => const SizedBox.shrink(),
+                                  onReplete: (hash) => Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Text("Broadcast Success",
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleMedium!),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(left: 8.0),
-                                      child: RichText(
-                                        text: TextSpan(
-                                          children: [
-                                            TextSpan(
-                                              text: 'Transaction id: ',
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .labelSmall
-                                                  ?.copyWith(
-                                                    fontWeight: FontWeight.w500,
-                                                    color: Theme.of(context)
-                                                        .textTheme
-                                                        .labelSmall
-                                                        ?.color,
-                                                  ),
+                                commonHeightSizedBox,
+                                commonHeightSizedBox,
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 14.0),
+                                  height: 56,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(18),
+                                    border: Border.all(
+                                      color: Theme.of(context)
+                                              .inputDecorationTheme
+                                              .outlineBorder
+                                              ?.color ??
+                                          transparentBlack8,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 8.0),
+                                          child: RichText(
+                                            text: TextSpan(
+                                              children: [
+                                                TextSpan(
+                                                  text: 'Transaction id: ',
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .labelSmall
+                                                      ?.copyWith(
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color: Theme.of(context)
+                                                            .textTheme
+                                                            .labelSmall
+                                                            ?.color,
+                                                      ),
+                                                ),
+                                                TextSpan(
+                                                  text: state.fold3(
+                                                      onNone: () => '',
+                                                      onFailure: (_) => '',
+                                                      onReplete: (hash) =>
+                                                          hash.replaceRange(
+                                                              6,
+                                                              hash.length - 6,
+                                                              '...')),
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodySmall
+                                                      ?.copyWith(
+                                                        color: Theme.of(context)
+                                                            .textTheme
+                                                            .bodySmall
+                                                            ?.color,
+                                                      ),
+                                                ),
+                                              ],
                                             ),
-                                            TextSpan(
-                                              text: state.fold3(
-                                                  onNone: () => '',
-                                                  onFailure: (_) => '',
-                                                  onReplete: (hash) =>
-                                                      hash.replaceRange(
-                                                          6,
-                                                          hash.length - 6,
-                                                          '...')),
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodySmall
-                                                  ?.copyWith(
-                                                    color: Theme.of(context)
-                                                        .textTheme
-                                                        .bodySmall
-                                                        ?.color,
-                                                  ),
-                                            ),
-                                          ],
+                                            overflow: TextOverflow.visible,
+                                            maxLines: 1,
+                                          ),
                                         ),
-                                        overflow: TextOverflow.visible,
-                                        maxLines: 1,
                                       ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8.0),
-                                    child: TextButton(
-                                      style: Theme.of(context)
-                                          .textButtonTheme
-                                          .style
-                                          ?.copyWith(
-                                            backgroundColor:
-                                                WidgetStateProperty.all(
-                                              transparentPurple8,
-                                            ),
-                                            padding: WidgetStateProperty.all(
-                                              const EdgeInsets.symmetric(
-                                                  horizontal: 10, vertical: 12),
-                                            ),
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(right: 8.0),
+                                        child: TextButton(
+                                          style: Theme.of(context)
+                                              .textButtonTheme
+                                              .style
+                                              ?.copyWith(
+                                                backgroundColor:
+                                                    WidgetStateProperty.all(
+                                                  transparentPurple8,
+                                                ),
+                                                padding:
+                                                    WidgetStateProperty.all(
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 10,
+                                                      vertical: 12),
+                                                ),
+                                              ),
+                                          onPressed: state.fold3(
+                                              onNone: () => () {},
+                                              onFailure: (_) => () {},
+                                              onReplete: (hash) => () {
+                                                    Clipboard.setData(
+                                                        ClipboardData(
+                                                            text: hash));
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                      const SnackBar(
+                                                        content: Text(
+                                                            'Tx id copied to clipboard'),
+                                                        duration: Duration(
+                                                            seconds: 2),
+                                                      ),
+                                                    );
+                                                  }),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              AppIcons.copyIcon(
+                                                context: context,
+                                                width: 16,
+                                                height: 16,
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                'COPY',
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodySmall,
+                                              ),
+                                            ],
                                           ),
-                                      onPressed: state.fold3(
-                                          onNone: () => () {},
-                                          onFailure: (_) => () {},
-                                          onReplete: (hash) => () {
-                                                Clipboard.setData(
-                                                    ClipboardData(text: hash));
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                  const SnackBar(
-                                                    content: Text(
-                                                        'Tx id copied to clipboard'),
-                                                    duration:
-                                                        Duration(seconds: 2),
-                                                  ),
-                                                );
-                                              }),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          AppIcons.copyIcon(
-                                            context: context,
-                                            width: 16,
-                                            height: 16,
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            'COPY',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodySmall,
-                                          ),
-                                        ],
+                                        ),
                                       ),
-                                    ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 28),
-                            HorizonButton(
-                              onPressed: state.fold3(
-                                  onNone: () => () {},
-                                  onFailure: (_) => () {},
-                                  onReplete: (hash) => () {
-                                        _launchExplorer(
-                                            hash, session.httpConfig);
-                                      }),
-                              disabled: state.fold3(
-                                onNone: () => true,
-                                onFailure: (_) => true,
-                                onReplete: (_) => false,
-                              ),
-                              child:
-                                  TextButtonContent(value: "View Transaction"),
-                              variant: ButtonVariant.black,
-                            ),
-                            commonHeightSizedBox,
-                            HorizonButton(
-                              onPressed: () {
-                                context.go("/");
-                              },
-                              child: TextButtonContent(value: "Close"),
-                              disabled: state.fold3(
-                                onNone: () => true,
-                                onFailure: (_) => true,
-                                onReplete: (_) => false,
-                              ),
-                              variant: ButtonVariant.black,
-                            ),
-                          ],
-                        );
+                                ),
+                                const SizedBox(height: 28),
+                                HorizonButton(
+                                  onPressed: state.fold3(
+                                      onNone: () => () {},
+                                      onFailure: (_) => () {},
+                                      onReplete: (hash) => () {
+                                            _launchExplorer(
+                                                hash, session.httpConfig);
+                                          }),
+                                  disabled: state.fold3(
+                                    onNone: () => true,
+                                    onFailure: (_) => true,
+                                    onReplete: (_) => false,
+                                  ),
+                                  child: TextButtonContent(
+                                      value: "View Transaction"),
+                                  variant: ButtonVariant.black,
+                                ),
+                                commonHeightSizedBox,
+                                HorizonButton(
+                                  onPressed: () {
+                                    context.go("/");
+                                  },
+                                  child: TextButtonContent(value: "Close"),
+                                  disabled: state.fold3(
+                                    onNone: () => true,
+                                    onFailure: (_) => true,
+                                    onReplete: (_) => false,
+                                  ),
+                                  variant: ButtonVariant.black,
+                                ),
+                              ],
+                            );
 
-                        // return switch (state) {
-                        //   Loading() => AnimatedSwitcher(
-                        //         child: Lottie.asset(
-                        //       "assets/lottie/txn_success_anim.json",
-                        //       width: 127,
-                        //       key: const ValueKey('lottie'),
-                        //     )),
-                        //   _ => Text(state.toString())
-                        // };
-                        return Text(state.toString());
-                      })))))
+                            // return switch (state) {
+                            //   Loading() => AnimatedSwitcher(
+                            //         child: Lottie.asset(
+                            //       "assets/lottie/txn_success_anim.json",
+                            //       width: 127,
+                            //       key: const ValueKey('lottie'),
+                            //     )),
+                            //   _ => Text(state.toString())
+                            // };
+                            return Text(state.toString());
+                          })))))
         ]
             .filter((page) => page.isSome())
             .map((page) => page.getOrThrow())

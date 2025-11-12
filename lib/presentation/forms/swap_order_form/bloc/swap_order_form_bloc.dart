@@ -3,6 +3,7 @@ import 'package:fpdart/fpdart.dart' hide Order;
 import 'package:formz/formz.dart';
 import 'package:decimal/decimal.dart';
 import 'package:horizon/domain/entities/balance_v2.dart';
+import 'package:horizon/domain/usecases/get_order_by_pair.dart';
 import 'package:rational/rational.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:rxdart/rxdart.dart';
@@ -582,7 +583,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
 
   final AddressV2 address;
 
-  final OrderRepository _orderRepository;
+  final GetOrderByPairUseCase _getOrderByPairUseCase;
 
   SwapOrderFormBloc({
     required this.address,
@@ -592,8 +593,9 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     required List<Order> buyOrders,
     required List<Order> sellOrders,
     required AddressBalance giveAssetBalance,
-    OrderRepository? orderRepository,
-  })  : _orderRepository = orderRepository ?? GetIt.I<OrderRepository>(),
+    GetOrderByPairUseCase? getOrderByPairUseCase,
+  })  : _getOrderByPairUseCase =
+            getOrderByPairUseCase ?? GetIt.I<GetOrderByPairUseCase>(),
         super(SwapOrderFormModel(
             expiry: none(),
             giveAssetBalance: giveAssetBalance,
@@ -786,17 +788,22 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
         TaskEither<String, (List<Order>, List<Order>, List<SimulatedOrder>)>.Do(
       ($) async {
         final result = await $(TaskEither.sequenceList([
-          _orderRepository.getByPairTE(
-              status: "open",
+          _getOrderByPairUseCase.call(
+            GetOrderByPairParams(
+              httpConfig: httpConfig,
               giveAsset: state.getAsset.asset,
               getAsset: state.giveAsset.asset,
+              status: "open",
+              sort: "give_price",
+            ),
+          ),
+          _getOrderByPairUseCase.call(
+            GetOrderByPairParams(
               httpConfig: httpConfig,
-              sort: "give_price"),
-          _orderRepository.getByPairTE(
-            giveAsset: state.giveAsset.asset,
-            getAsset: state.getAsset.asset,
-            status: "open",
-            httpConfig: httpConfig,
+              giveAsset: state.giveAsset.asset,
+              getAsset: state.getAsset.asset,
+              status: "open",
+            ),
           ),
         ]));
 

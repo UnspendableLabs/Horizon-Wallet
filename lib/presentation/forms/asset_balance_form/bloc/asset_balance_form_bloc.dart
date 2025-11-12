@@ -4,7 +4,7 @@ import 'package:horizon/domain/entities/balance_v2.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/utxo.dart';
-import 'package:horizon/domain/repositories/atomic_swap_repository.dart';
+import 'package:horizon/domain/usecases/get_utxo_swap_map.dart';
 import 'package:formz/formz.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -183,19 +183,19 @@ enum DisallowSelection { listingExists, balanceIsUtxo }
 
 class AssetBalanceFormBloc
     extends Bloc<AssetBalanceFormEvent, AssetBalanceFormModel> {
-  final AtomicSwapRepository _atomicSwapRepository;
+  final GetUtxoSwapMapUseCase _getUtxoSwapMapUseCase;
 
   final HttpConfig httpConfig;
   final List<DisallowSelection> disallowSelections;
 
   AssetBalanceFormBloc(
-      {AtomicSwapRepository? atomicSwapRepository,
+      {GetUtxoSwapMapUseCase? getUtxoSwapMapUseCase,
       required this.httpConfig,
       required this.disallowSelections,
       required List<String> addresses,
       required AssetBalanceSummary assetBalanceSummary})
-      : _atomicSwapRepository =
-            atomicSwapRepository ?? GetIt.I<AtomicSwapRepository>(),
+      : _getUtxoSwapMapUseCase =
+            getUtxoSwapMapUseCase ?? GetIt.I<GetUtxoSwapMapUseCase>(),
         super(AssetBalanceFormModel(
           utxoSwapMap: const Initial(),
           assetIsUtxoInput: const AssetIsUtxoInput.pure(),
@@ -218,22 +218,13 @@ class AssetBalanceFormBloc
     Emitter<AssetBalanceFormModel> emit,
   ) async {
     emit(state.copyWith(utxoSwapMap: const Loading()));
-    final task = TaskEither<String, Map<String, bool>>.Do(($) async {
-      final tasks = event.addresses.map((address) {
-        return _atomicSwapRepository.getUtxoSwapMapT(
-            httpConfig: httpConfig,
-            sellerAddress: address,
-            onError: (error, stacktrace) {
-              return "There was an error fetching the utxo swap map";
-            });
-      });
 
-      return await $(TaskEither.sequenceList(tasks.toList())
-          .map((listOfMaps) => listOfMaps.fold<Map<String, bool>>(
-                {},
-                (acc, map) => {...acc, ...map},
-              )));
-    });
+    final task = _getUtxoSwapMapUseCase(
+      GetUtxoSwapMapParams(
+        httpConfig: httpConfig,
+        addresses: event.addresses,
+      ),
+    );
 
     final result = await task.run();
 

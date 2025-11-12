@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/domain/repositories/bitcoin_repository.dart';
-import 'package:horizon/domain/repositories/transaction_repository.dart';
+import 'package:horizon/domain/entities/transaction_info.dart';
+import 'package:horizon/domain/usecases/esplora/get_transaction_hex.dart';
+import 'package:horizon/domain/usecases/get_transaction_info.dart';
 import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/common/tx_hash_display.dart';
@@ -24,18 +25,15 @@ extension StringExtension on String {
 }
 
 class XCPTitle extends StatelessWidget {
-  final BitcoinRepository _bitcoinRepository;
-  final TransactionRepository _transactionRepository;
+  final GetTransactionInfoByTxIdUseCase _getTransactionInfoByTxIdUseCase;
   final String txid;
 
   XCPTitle({
     required this.txid,
-    BitcoinRepository? bitcoinRepository,
-    TransactionRepository? transactionRepository,
+    GetTransactionInfoByTxIdUseCase? getTransactionInfoByTxIdUseCase,
     super.key,
-  })  : _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>(),
-        _transactionRepository =
-            transactionRepository ?? GetIt.I<TransactionRepository>();
+  }) : _getTransactionInfoByTxIdUseCase = getTransactionInfoByTxIdUseCase ??
+            GetIt.I<GetTransactionInfoByTxIdUseCase>();
 
   @override
   Widget build(BuildContext context) {
@@ -45,20 +43,9 @@ class XCPTitle extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         RemoteDataTaskEitherBuilder(
-            task: _bitcoinRepository
-                .getTransactionHexT(
-                  httpConfig: session.httpConfig,
-                  txid: txid,
-                  onError: (e) => 'Error fetching transaction: $txid',
-                )
-                .flatMap((txHex) => _transactionRepository.getInfoT(
-                      httpConfig: session.httpConfig,
-                      raw: txHex,
-                      onError: (e, callstack) {
-                        print(callstack);
-                        e.toString();
-                      },
-                    )),
+            task: _getTransactionInfoByTxIdUseCase.call(
+                GetTransactionInfoByTxIdParams(
+                    httpConfig: session.httpConfig, txid: txid)),
             builder: (context, state, refresh) {
               return state.fold3(
                 onNone: () => Text("-",

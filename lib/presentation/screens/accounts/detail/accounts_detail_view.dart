@@ -8,6 +8,7 @@ import 'package:horizon/domain/entities/wallet_config.dart';
 import 'package:horizon/domain/entities/account_configuration.dart';
 import 'package:get_it/get_it.dart';
 import 'package:fpdart/fpdart.dart' hide State;
+import 'package:horizon/domain/usecases/esplora/get_address_info.dart';
 import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
@@ -49,8 +50,10 @@ class AccountAddressesTile extends StatefulWidget {
 
 class _AccountAddressesTileState extends State<AccountAddressesTile>
     with AutomaticKeepAliveClientMixin {
-  late final BitcoinRepository _bitcoinRepository =
-      widget.bitcoinRepository ?? GetIt.I<BitcoinRepository>();
+  late final GetAddressInfoMultiEsploraUseCase _getAddressInfoMultiUseCase =
+      GetAddressInfoMultiEsploraUseCase(
+    bitcoinRepository: widget.bitcoinRepository ?? GetIt.I<BitcoinRepository>(),
+  );
 
   // Cache the task so it isn't recreated on every build:
   late final TaskEither<String, List<AddressInfo>> _addressInfoTask;
@@ -64,6 +67,8 @@ class _AccountAddressesTileState extends State<AccountAddressesTile>
   void initState() {
     super.initState();
 
+    final session = context.read<SessionStateCubit>().state.successOrThrow();
+
     // Build once:
     final addresses = [widget.p2pkhAddress, widget.p2wpkhAddress]
         .whereType<String>()
@@ -72,15 +77,10 @@ class _AccountAddressesTileState extends State<AccountAddressesTile>
     // If there’s nothing to fetch, keep a completed task:
     _addressInfoTask = addresses.isEmpty
         ? TaskEither.right(<AddressInfo>[])
-        : _bitcoinRepository.getAddressInfoMultiT(
-            httpConfig: context
-                .read<SessionStateCubit>()
-                .state
-                .successOrThrow()
-                .httpConfig,
+        : _getAddressInfoMultiUseCase.call(GetAddressInfoMultiEsploraParams(
+            httpConfig: session.httpConfig,
             addresses: addresses,
-            onError: (e) => "failed to fetch BTC balance",
-          );
+          ));
   }
 
   @override

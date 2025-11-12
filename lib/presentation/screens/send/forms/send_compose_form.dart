@@ -9,6 +9,7 @@ import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/repositories/fee_estimates_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:horizon/domain/usecases/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:horizon/presentation/common/transactions/transaction_fee_selection.dart';
@@ -23,7 +24,7 @@ import 'package:horizon/utils/app_icons.dart';
 class SendComposeFormProvider extends StatelessWidget {
   final AssetBalanceSummary assetBalanceSummary;
   final List<SendEntryFormModel> initialEntries;
-  final FeeEstimatesRespository _feeEstimatesRepository;
+  final GetFeeEstimatesUseCase _getFeeEstimatesUseCase;
   final String sourceAddress;
 
   final Widget Function(
@@ -35,17 +36,17 @@ class SendComposeFormProvider extends StatelessWidget {
     required this.initialEntries,
     required this.sourceAddress,
     required this.child,
-    FeeEstimatesRespository? feeEstimatesRepository,
-  }) : _feeEstimatesRepository =
-            feeEstimatesRepository ?? GetIt.I<FeeEstimatesRespository>();
+    GetFeeEstimatesUseCase? getFeeEstimatesUseCase,
+  }) : _getFeeEstimatesUseCase =
+            getFeeEstimatesUseCase ?? GetIt.I<GetFeeEstimatesUseCase>();
 
   @override
   Widget build(BuildContext context) {
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
 
     return RemoteDataTaskEitherBuilder<String, FeeEstimates>(
-      task: _feeEstimatesRepository.getFeeEstimates(
-          httpConfig: session.httpConfig),
+      task: _getFeeEstimatesUseCase(
+          GetFeeEstimatesParams(httpConfig: session.httpConfig)),
       builder: (context, state, refresh) => state.fold(
         onInitial: () => const SizedBox.shrink(),
         onLoading: () => const Center(child: CircularProgressIndicator()),

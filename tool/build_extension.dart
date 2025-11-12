@@ -20,6 +20,11 @@ void main(List<String> args) async {
   final sentrySampleRate =
       Platform.environment['HORIZON_SENTRY_SAMPLE_RATE'] ?? '1.0';
 
+  // Read version from manifest.json
+  final manifestContent = await File('web/manifest.json').readAsString();
+  final manifestJson = jsonDecode(manifestContent) as Map<String, dynamic>;
+  final version = manifestJson['version'];
+
   if (browser != "chromium") {
     print(
         'Chromium is only supported build target.  See https://bugzilla.mozilla.org/show_bug.cgi?id=1688314');
@@ -29,7 +34,7 @@ void main(List<String> args) async {
   final originalIndexHtml = await buildIndexHtml();
   final originalManifest = await buildManifest(browser);
   await buildFlutter(analyticsEnabled, posthogApiKey, posthogApiHost,
-      isSentryEnabled, sentryDsn, sentrySampleRate);
+      isSentryEnabled, sentryDsn, sentrySampleRate, version);
 
   // reset index.html
   await resetFile('web/index.html', originalIndexHtml);
@@ -41,7 +46,8 @@ Future<void> buildFlutter(
     String posthogApiHost,
     String isSentryEnabled,
     String sentryDsn,
-    String sentrySampleRate) async {
+    String sentrySampleRate,
+    String version) async {
   // Run the Flutter build command with environment variables
   await _process.runProcess([
     'flutter',
@@ -51,6 +57,7 @@ Future<void> buildFlutter(
     '--no-web-resources-cdn',
     '--dart-define=FLUTTER_WEB_USE_SKIA=false',
     '--release',
+    '--source-maps',
     '--dart-define=HORIZON_IS_EXTENSION=true',
     '--dart-define=HORIZON_ANALYTICS_ENABLED=$analyticsEnabled',
     '--dart-define=HORIZON_POSTHOG_API_KEY=$posthogApiKey',
@@ -60,6 +67,38 @@ Future<void> buildFlutter(
     '--dart-define=HORIZON_SENTRY_SAMPLE_RATE=$sentrySampleRate',
   ]);
   print('Flutter web build complete.');
+
+  if (isSentryEnabled == 'true') {
+    await uploadSourceMaps(version);
+  }
+}
+
+Future<void> uploadSourceMaps(String version) async {
+  print('Uploading source maps to Sentry for release: $version...');
+
+  final sentryProject = Platform.environment['SENTRY_PROJECT'];
+  final sentryOrg = Platform.environment['SENTRY_ORG'];
+  final sentryAuthToken = Platform.environment['SENTRY_AUTH_TOKEN'];
+
+  if (sentryProject == null || sentryOrg == null || sentryAuthToken == null) {
+    print(
+        'WARNING: Sentry upload skipped - missing SENTRY_PROJECT, SENTRY_ORG, or SENTRY_AUTH_TOKEN');
+    return;
+  }
+
+  await _process.runProcess([
+    'flutter',
+    'pub',
+    'run',
+    'sentry_dart_plugin',
+    '--sentry-define=upload_source_maps=true',
+    '--sentry-define=upload_sources=true',
+    '--sentry-define=release=$version',
+    '--sentry-define=project=$sentryProject',
+    '--sentry-define=org=$sentryOrg',
+    '--sentry-define=auth_token=$sentryAuthToken',
+  ]);
+  print('Source maps uploaded successfully for release: $version');
 }
 
 Future<String> buildManifest(String browser) async {

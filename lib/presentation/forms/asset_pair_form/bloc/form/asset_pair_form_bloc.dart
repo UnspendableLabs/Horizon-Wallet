@@ -12,6 +12,8 @@ import 'package:fpdart/fpdart.dart';
 import 'package:horizon/domain/entities/swap_type.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/usecases/get_all_balances.dart';
+import 'package:horizon/domain/usecases/horizon_api_asset_search.dart';
+import 'package:horizon/domain/usecases/search_swaps.dart';
 
 class AssetPairFormOption {
   final String name;
@@ -282,18 +284,23 @@ class AssetPairFormModel with FormzMixin {
 
 class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
   final HttpConfig httpConfig;
-  final AssetSearchRepository _assetSearchRepository;
   final AtomicSwapRepository _atomicSwapRepository;
+  final SearchSwapsUseCase _searchSwapsUseCase;
+  final SearchAssetsUseCase _searchAssetsUseCase;
 
   AssetPairFormBloc({
     AssetSearchRepository? assetSearchRepository,
     AtomicSwapRepository? atomicSwapRepository,
+    SearchAssetsUseCase? searchAssetsUseCase,
+    SearchSwapsUseCase? searchSwapsUseCase,
     required this.httpConfig,
     required BalancesSet balancesSet,
-  })  : _assetSearchRepository =
-            assetSearchRepository ?? GetIt.I<AssetSearchRepository>(),
+  })  : _searchAssetsUseCase =
+            searchAssetsUseCase ?? GetIt.I<SearchAssetsUseCase>(),
         _atomicSwapRepository =
             atomicSwapRepository ?? GetIt.I<AtomicSwapRepository>(),
+        _searchSwapsUseCase =
+            searchSwapsUseCase ?? GetIt.I<SearchSwapsUseCase>(),
         super(
           AssetPairFormModel(
               balancesSet: balancesSet,
@@ -341,12 +348,10 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
     TaskEither<String, List<AssetSearchResult>>? task;
 
     if (event.value.name.toLowerCase() == "btc") {
-      task = _atomicSwapRepository
-          .searchSwapsT(
-              httpConfig: httpConfig,
-              search: "",
-              onError: (err, __) => "Error: $err")
-          .map((swaps) {
+      task = _searchSwapsUseCase(SearchSwapsParams(
+        httpConfig: httpConfig,
+        search: "",
+      )).map((swaps) {
         final Map<String, AssetSearchResult> resultMap = {};
         for (final swap in swaps) {
           resultMap.putIfAbsent(
@@ -428,12 +433,10 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
         searchAssetInput: SearchAssetInput.dirty(event.value)));
 
     final task = switch (state.giveAssetInput.value?.name) {
-      "BTC" => _atomicSwapRepository
-            .searchSwapsT(
-                httpConfig: httpConfig,
-                search: event.value,
-                onError: (err, __) => "Error: $err")
-            .map((swaps) {
+      "BTC" => _searchSwapsUseCase(SearchSwapsParams(
+          httpConfig: httpConfig,
+          search: event.value,
+        )).map((swaps) {
           final Map<String, AssetSearchResult> resultMap = {};
           for (final swap in swaps) {
             resultMap.putIfAbsent(
@@ -444,10 +447,8 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
 
           return resultMap.values.toList();
         }),
-      _ => _assetSearchRepository.searchT(
-          httpConfig: httpConfig,
-          term: event.value,
-          onError: (err, __) => "Error: $err"),
+      _ => _searchAssetsUseCase
+          .call(SearchAssetsParams(httpConfig: httpConfig, term: event.value)),
     };
 
     final result = await task.run();

@@ -23,6 +23,7 @@ import 'package:horizon/domain/services/seed_service.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/usecases/get_swaps_by_asset.dart';
 
 BigInt _calculateMinPrice(RoyaltyByAsset royalty, BigInt dust, int voutValue) {
   final baseMinimum = [
@@ -311,6 +312,7 @@ class CreatePsbtFormBloc
   final TransactionService _transactionService;
 
   final AtomicSwapRepository _atomicSwapRepository;
+  final GetSwapsByAssetUseCase _getSwapsByAssetUseCase;
 
   CreatePsbtFormBloc({
     required this.asset,
@@ -327,9 +329,12 @@ class CreatePsbtFormBloc
     InMemoryKeyRepository? inMemoryKeyRepository,
     EncryptionService? encryptionService,
     AddressService? addressService,
+    GetSwapsByAssetUseCase? getSwapsByAssetUseCase,
   })  : _transactionService =
             transactionService ?? GetIt.I<TransactionService>(),
         _atomicSwapRepository = GetIt.I<AtomicSwapRepository>(),
+        _getSwapsByAssetUseCase =
+            getSwapsByAssetUseCase ?? GetIt.I<GetSwapsByAssetUseCase>(),
         super(
           CreatePsbtFormModel(
             perUnitFloorPrice: Initial(),
@@ -383,12 +388,12 @@ class CreatePsbtFormBloc
 
     final TaskEither<String, Option<AssetQuantity>> task =
         TaskEither<String, Option<AssetQuantity>>.Do(($) async {
-      final swaps = await $(_atomicSwapRepository.getSwapsByAssetT(
+      final swaps = await $(_getSwapsByAssetUseCase(GetSwapsByAssetParams(
         httpConfig: httpConfig,
         asset: asset,
         orderBy: "price",
         order: "asc",
-      ));
+      )));
 
       if (swaps.isEmpty) {
         return Option.none();
@@ -413,12 +418,12 @@ class CreatePsbtFormBloc
       Emitter<CreatePsbtFormModel> emit) async {
     final TaskEither<String, Option<(AssetQuantity, String)>> task =
         TaskEither<String, Option<(AssetQuantity, String)>>.Do(($) async {
-      final swaps = await $(_atomicSwapRepository.getSwapsByAssetT(
+      final swaps = await $(_getSwapsByAssetUseCase(GetSwapsByAssetParams(
         httpConfig: httpConfig,
         asset: asset,
         orderBy: "price",
         order: "asc",
-      ));
+      )));
 
       if (swaps.isEmpty) {
         return Option.none();

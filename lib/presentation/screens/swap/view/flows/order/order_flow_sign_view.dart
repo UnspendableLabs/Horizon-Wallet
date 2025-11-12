@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:formz/formz.dart';
 import 'package:horizon/domain/entities/psbt_type.dart';
+import 'package:horizon/domain/usecases/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/transactions/transaction_fee_selection.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
@@ -37,7 +38,7 @@ class OrderFlowSignActions {
 }
 
 class OrderFlowSignProvider extends StatelessWidget {
-  final FeeEstimatesRespository _feeEstimatesRepository;
+  final GetFeeEstimatesUseCase _getFeeEstimatesUseCase;
   final AddressV2 address;
   final String giveAsset;
   final String getAsset;
@@ -58,15 +59,14 @@ class OrderFlowSignProvider extends StatelessWidget {
     required this.getQuantity,
     required this.child,
     FeeEstimatesRespository? feeEstimatesRepository,
-  }) : _feeEstimatesRepository =
-            feeEstimatesRepository ?? GetIt.I<FeeEstimatesRespository>();
+  }) : _getFeeEstimatesUseCase = GetIt.I<GetFeeEstimatesUseCase>();
 
   @override
   Widget build(BuildContext context) {
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
     return RemoteDataTaskEitherBuilder<String, FeeEstimates>(
-        task: _feeEstimatesRepository.getFeeEstimates(
-            httpConfig: session.httpConfig),
+        task: _getFeeEstimatesUseCase(
+            GetFeeEstimatesParams(httpConfig: session.httpConfig)),
         builder: (context, state, refresh) => state.fold(
             onFailure: (error) => Center(
                   child: Text(
