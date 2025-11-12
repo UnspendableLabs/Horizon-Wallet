@@ -14,6 +14,7 @@ import 'package:horizon/domain/usecases/esplora/get_mempool_transactions.dart';
 import 'package:horizon/domain/usecases/esplora/get_transaction.dart';
 import 'package:horizon/domain/usecases/esplora/get_transaction_hex.dart';
 import 'package:horizon/domain/usecases/esplora/get_transactions.dart';
+import 'package:horizon/domain/usecases/finalize_psbt_send_raw_txn.dart';
 import 'package:horizon/domain/usecases/get_asset_verbose.dart';
 import 'package:horizon/domain/usecases/get_balances_by_addresses.dart';
 import 'package:horizon/domain/usecases/get_detach_data.dart';
@@ -425,6 +426,9 @@ void setup() {
       createMnemonicService(bip39Service: GetIt.I.get<Bip39Service>()));
   injector.registerSingleton<BitcoindService>(
       BitcoindServiceCounterpartyProxyImpl());
+
+  injector.registerSingleton<FinalizePsbtSendRawTxnUseCase>(
+      FinalizePsbtSendRawTxnUseCase());
 
   injector.registerSingleton<WalletConfigRepository>(
       WalletConfigRepositoryImpl(injector.get<DatabaseManager>().database));
