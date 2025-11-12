@@ -1,5 +1,6 @@
 import "package:fpdart/fpdart.dart";
 import "package:get_it/get_it.dart";
+import "package:horizon/data/sources/repositories/network_error_helpers.dart";
 import "package:horizon/domain/entities/http_config.dart";
 import "package:horizon/domain/entities/network_error.dart";
 import "package:horizon/domain/repositories/compose_repository.dart";
@@ -32,27 +33,24 @@ class GetDetachDataUseCase
 
   @override
   TaskEither<String, String> call(GetDetachDataParams params) {
-    final task = _composeRepository.getDetachData(
-      httpConfig: params.httpConfig,
-      destination: params.destination,
-    );
+    final task = handleNetworkCall(() async {
+      return await _composeRepository.getDetachData(
+        httpConfig: params.httpConfig,
+        destination: params.destination,
+      );
+    });
 
     return task.tapError((error) {
       _errorService.captureException(
         error,
         message: "Failed to get detach data",
-        context: error is NetworkError
-            ? {
-                "message": error.message,
-                "endpoint": error.endpoint,
-                "fullUrl": error.fullUrl,
-                "statusCode": error.statusCode,
-                "destination": params.destination,
-              }
-            : {
-                "message": error?.toString(),
-                "destination": params.destination,
-              },
+        context: {
+          "message": error.message,
+          "endpoint": error.endpoint,
+          "fullUrl": error.fullUrl,
+          "statusCode": error.statusCode,
+          "destination": params.destination,
+        },
       );
     }).mapLeft((error) => error.message);
   }

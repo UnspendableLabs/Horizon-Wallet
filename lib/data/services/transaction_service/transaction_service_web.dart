@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 import 'dart:js_interop';
 import 'dart:typed_data';
 
@@ -6,6 +8,7 @@ import 'package:convert/convert.dart';
 import 'dart:convert';
 import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
+import 'package:horizon/data/sources/repositories/network_error_helpers.dart';
 
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
@@ -13,7 +16,6 @@ import 'package:horizon/domain/entities/http_config.dart';
 import "package:horizon/domain/entities/bitcoin_tx.dart";
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
-import 'package:horizon/domain/usecases/esplora/get_transaction_hex.dart';
 import 'package:horizon/js/bitcoin.dart' as bitcoinjs;
 import 'package:horizon/js/buffer.dart';
 import 'package:horizon/js/ecpair.dart' as ecpair;
@@ -126,7 +128,7 @@ Future<bitcoinjs.TxInput> createInputConfig({
   required UtxoID utxo,
   required Vout vout,
   required int sighashType,
-  required GetTransactionHexEsploraUseCase getTransactionHexEsploraUseCase,
+  required BitcoinRepository bitcoinRepository,
   required HttpConfig httpConfig,
 }) async {
   // Vout vout = utxoTransaction.vout[utxo.vout];
@@ -137,12 +139,15 @@ Future<bitcoinjs.TxInput> createInputConfig({
       sighashType: sighashType);
 
   if (isP2PKHScript(scriptHex: vout.scriptpubkey)) {
-    final utxoTransactionTask = await getTransactionHexEsploraUseCase
-        .call(GetTransactionHexEsploraParams(
-            txid: utxo.txid, httpConfig: httpConfig))
-        .run();
-    final utxoTransactionHex =
-        utxoTransactionTask.fold((error) => throw error, (hex) => hex);
+    final hexTask = handleNetworkCall(() async {
+      return await bitcoinRepository.getTransactionHex(
+          txid: utxo.txid, httpConfig: httpConfig);
+    });
+
+    final hexResult = await hexTask.run();
+    final utxoTransactionHex = hexResult.fold(
+        (error) => throw TransactionServiceException(error.message),
+        (hex) => hex);
 
     input.nonWitnessUtxo =
         Buffer.from(Uint8List.fromList(HEX.decode(utxoTransactionHex)).toJS);
@@ -162,8 +167,7 @@ class TransactionServiceWeb implements TransactionService {
   /// Returns a map with 'hash', 'index', and 'witnessUtxo' (containing 'script' and 'value').
   ecpair.ECPairFactory ecpairFactory =
       ecpair.ECPairFactory(tinysecp256k1js.ecc);
-  final _getTransactionHexEsploraUseCase =
-      GetIt.I.get<GetTransactionHexEsploraUseCase>();
+  final _bitcoinRepository = GetIt.I.get<BitcoinRepository>();
 
   TransactionServiceWeb();
 
@@ -223,7 +227,7 @@ class TransactionServiceWeb implements TransactionService {
       ),
       vout: primaryTx.vout[primaryUtxo.vout],
       sighashType: SIGHASH_ALL,
-      getTransactionHexEsploraUseCase: _getTransactionHexEsploraUseCase,
+      bitcoinRepository: _bitcoinRepository,
       httpConfig: httpConfig,
     );
 
@@ -240,7 +244,7 @@ class TransactionServiceWeb implements TransactionService {
         utxo: sellerUtxoID,
         vout: sellerTransaction.vout[sellerUtxoID.vout],
         sighashType: SIGHASH_SINGLE | SIGHASH_ANYONECANPAY,
-        getTransactionHexEsploraUseCase: _getTransactionHexEsploraUseCase,
+        bitcoinRepository: _bitcoinRepository,
         httpConfig: httpConfig,
       );
 
@@ -318,7 +322,7 @@ class TransactionServiceWeb implements TransactionService {
         ),
         vout: tx.vout[utxo.vout],
         sighashType: SIGHASH_ALL,
-        getTransactionHexEsploraUseCase: _getTransactionHexEsploraUseCase,
+        bitcoinRepository: _bitcoinRepository,
         httpConfig: httpConfig,
       );
 
@@ -398,7 +402,7 @@ class TransactionServiceWeb implements TransactionService {
       ),
       vout: firstUtxoTransaction.vout[firstUtxo.vout],
       sighashType: SIGHASH_ALL,
-      getTransactionHexEsploraUseCase: _getTransactionHexEsploraUseCase,
+      bitcoinRepository: _bitcoinRepository,
       httpConfig: httpConfig,
     );
 
@@ -410,7 +414,7 @@ class TransactionServiceWeb implements TransactionService {
       utxo: sellerUtxoID,
       vout: sellerTransaction.vout[sellerUtxoID.vout],
       sighashType: SIGHASH_SINGLE | SIGHASH_ANYONECANPAY,
-      getTransactionHexEsploraUseCase: _getTransactionHexEsploraUseCase,
+      bitcoinRepository: _bitcoinRepository,
       httpConfig: httpConfig,
     );
 
@@ -436,7 +440,7 @@ class TransactionServiceWeb implements TransactionService {
         utxo: UtxoID(txid: utxo.txid, vout: utxo.vout),
         vout: transaction.vout[utxo.vout],
         sighashType: SIGHASH_ALL,
-        getTransactionHexEsploraUseCase: _getTransactionHexEsploraUseCase,
+        bitcoinRepository: _bitcoinRepository,
         httpConfig: httpConfig,
       );
       psbt.addInput(input);
@@ -501,7 +505,7 @@ class TransactionServiceWeb implements TransactionService {
       utxo: UtxoID(txid: utxoTxid, vout: utxoVoutIndex),
       vout: utxoVout,
       sighashType: SIGHASH_SINGLE | SIGHASH_ANYONECANPAY,
-      getTransactionHexEsploraUseCase: _getTransactionHexEsploraUseCase,
+      bitcoinRepository: _bitcoinRepository,
       httpConfig: httpConfig,
     );
 
@@ -695,13 +699,8 @@ class TransactionServiceWeb implements TransactionService {
           psbt.addInput(input);
         } else {
           input.script = script.output;
-          final txHexTask = await _getTransactionHexEsploraUseCase
-              .call(GetTransactionHexEsploraParams(
-                txid: prev.txid,
-                httpConfig: httpConfig,
-              ))
-              .run();
-          final txHex = txHexTask.fold((error) => throw error, (hex) => hex);
+          final txHex =
+              await getTransactionHex(txid: prev.txid, httpConfig: httpConfig);
 
           input.nonWitnessUtxo =
               Buffer.from(Uint8List.fromList(hex.decode(txHex)).toJS);
@@ -761,16 +760,10 @@ class TransactionServiceWeb implements TransactionService {
           psbt.addInput(input);
         } else {
           input.script = script.output;
-          final txHexTask = await _getTransactionHexEsploraUseCase
-              .call(GetTransactionHexEsploraParams(
-                txid: prev.txid,
-                httpConfig: httpConfig,
-              ))
-              .run();
-          final txHex = txHexTask.fold((error) => throw error, (hex) => hex);
-
+          final txHex =
+              await getTransactionHex(txid: prev.txid, httpConfig: httpConfig);
           input.nonWitnessUtxo =
-              Buffer.from(Uint8List.fromList(hex.decode(txHex)).toJS);
+              Buffer.from(Uint8List.fromList(HEX.decode(txHex)).toJS);
           psbt.addInput(input);
         }
       } else {
@@ -962,16 +955,10 @@ class TransactionServiceWeb implements TransactionService {
               script: Buffer.from(sourceScript.output), value: prev.value);
         } else {
           input.script = sourceScript.output;
-          final txHexTask = await _getTransactionHexEsploraUseCase
-              .call(GetTransactionHexEsploraParams(
-                txid: prev.txid,
-                httpConfig: httpConfig,
-              ))
-              .run();
-          final txHex = txHexTask.fold((error) => throw error, (hex) => hex);
-
+          final txHex =
+              await getTransactionHex(txid: prev.txid, httpConfig: httpConfig);
           input.nonWitnessUtxo =
-              Buffer.from(Uint8List.fromList(hex.decode(txHex)).toJS);
+              Buffer.from(Uint8List.fromList(HEX.decode(txHex)).toJS);
         }
         inputSetValue += prev.value;
         psbt.addInput(input);
@@ -1016,15 +1003,10 @@ class TransactionServiceWeb implements TransactionService {
         // For legacy inputs, fetch the full previous transaction
         // TODO: for chaining transactions, the previous transaction may not exist yet. we will need to find another way to get the full tx
         // for now, we will just throw an error if the previous transaction is not found
-        final txHexTask = await _getTransactionHexEsploraUseCase
-            .call(GetTransactionHexEsploraParams(
-              txid: utxo.txid,
-              httpConfig: httpConfig,
-            ))
-            .run();
-        final txHex = txHexTask.fold((error) => throw error, (hex) => hex);
+        final txHex =
+            await getTransactionHex(txid: utxo.txid, httpConfig: httpConfig);
         txInput['nonWitnessUtxo'] =
-            Buffer.from(Uint8List.fromList(hex.decode(txHex)).toJS);
+            Buffer.from(Uint8List.fromList(HEX.decode(txHex)).toJS);
       }
 
       psbt.addInput(txInput.jsify() as bitcoinjs.TxInput);
@@ -1134,15 +1116,10 @@ class TransactionServiceWeb implements TransactionService {
         bitcoinjs.Payment script = bitcoinjs.p2pkh(bitcoinjs.PaymentOptions(
             pubkey: signer.publicKey, network: httpConfig.network.toJS));
         input.script = script.output;
-        final txHexTask = await _getTransactionHexEsploraUseCase
-            .call(GetTransactionHexEsploraParams(
-              txid: utxo.txid,
-              httpConfig: httpConfig,
-            ))
-            .run();
-        final txHex = txHexTask.fold((error) => throw error, (hex) => hex);
+        final txHex =
+            await getTransactionHex(txid: utxo.txid, httpConfig: httpConfig);
         input.nonWitnessUtxo =
-            Buffer.from(Uint8List.fromList(hex.decode(txHex)).toJS);
+            Buffer.from(Uint8List.fromList(HEX.decode(txHex)).toJS);
 
         psbt.addInput(input);
       }
@@ -1167,6 +1144,19 @@ class TransactionServiceWeb implements TransactionService {
     bitcoinjs.Transaction tx = psbt.extractTransaction();
 
     return tx.toHex();
+  }
+
+  Future<String> getTransactionHex(
+      {required String txid, required HttpConfig httpConfig}) async {
+    final hexTask = handleNetworkCall(() async {
+      return await _bitcoinRepository.getTransactionHex(
+          txid: txid, httpConfig: httpConfig);
+    });
+
+    final hexResult = await hexTask.run();
+    return hexResult.fold(
+        (error) => throw TransactionServiceException(error.message),
+        (hex) => hex);
   }
 }
 

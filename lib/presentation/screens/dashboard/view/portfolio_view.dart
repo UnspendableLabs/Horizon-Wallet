@@ -1,6 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:horizon/domain/usecases/esplora/get_address_info.dart';
+import 'package:horizon/domain/usecases/get_balances_by_addresses.dart';
 import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:horizon/presentation/common/sats_to_usd_display.dart';
 import 'package:flutter/services.dart';
@@ -96,7 +97,8 @@ class _PortfolioViewState extends State<PortfolioView>
           key: ValueKey('balances-bloc-$addressesKey'),
           create: (context) => BalancesBloc(
             httpConfig: session.httpConfig,
-            balanceRepository: GetIt.I.get<BalanceRepository>(),
+            getBalancesByAddressesUseCase:
+                GetIt.I.get<GetBalancesByAddressesUseCase>(),
             addresses: addresses,
             cacheProvider: GetIt.I.get<CacheProvider>(),
           )..add(Start(pollingInterval: const Duration(seconds: 30))),

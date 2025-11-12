@@ -278,11 +278,13 @@ class AssetAttachFormBloc
       ));
 
       final broadcastResponse =
-          await $(_signAndBroadcastTransactionUseCase.callT(
-        httpConfig: httpConfig,
-        source: state.address,
-        decryptionStrategy: InMemoryKey(),
-        rawtransaction: composeResponse.rawtransaction,
+          await $(_signAndBroadcastTransactionUseCase.call(
+        SignAndBroadcastTransactionParams(
+          httpConfig: httpConfig,
+          source: state.address,
+          decryptionStrategy: InMemoryKey(),
+          rawtransaction: composeResponse.rawtransaction,
+        ),
       ));
 
       await _utxoAttachRepository.create(

@@ -1,5 +1,6 @@
 import "package:fpdart/fpdart.dart";
 import "package:get_it/get_it.dart";
+import "package:horizon/data/sources/repositories/network_error_helpers.dart";
 import "package:horizon/domain/entities/http_config.dart";
 import "package:horizon/domain/entities/network_error.dart";
 import "package:horizon/domain/services/bitcoind_service.dart";
@@ -31,27 +32,24 @@ class SendRawTransactionUseCase
         _errorService = errorService ?? GetIt.I<ErrorService>();
 
   @override
-  TaskEither<String, String> call(SendRawTransactionParams params) {
-    final task = _bitcoindService.sendrawtransaction(
-      params.signedHex,
-      params.httpConfig,
-    );
+  TaskEither<String, String> call(SendRawTransactionParams params,
+      {int maxRetries = 1}) {
+    final task = handleNetworkCall(() async {
+      return await _bitcoindService.sendrawtransaction(
+        params.signedHex,
+        params.httpConfig,
+      );
+    }, maxRetries: maxRetries);
 
     return task.tapError((error) {
-      _errorService.captureException(
-        error,
-        message: "Failed to send raw transaction",
-        context: error is NetworkError
-            ? {
-                "message": error.message,
-                "endpoint": error.endpoint,
-                "fullUrl": error.fullUrl,
-                "statusCode": error.statusCode,
-              }
-            : {
-                "message": error?.toString(),
-              },
-      );
+      _errorService.captureException(error,
+          message: "Failed to send raw transaction",
+          context: {
+            "message": error.message,
+            "endpoint": error.endpoint,
+            "fullUrl": error.fullUrl,
+            "statusCode": error.statusCode,
+          });
     }).mapLeft((error) => error.message);
   }
 }

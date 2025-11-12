@@ -1,9 +1,7 @@
-import 'package:fpdart/fpdart.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/data/models/cursor.dart' as cursor_model;
 import 'package:horizon/data/sources/network/api/v2_api.dart';
-import 'package:horizon/data/sources/repositories/network_error_helpers.dart';
 import 'package:horizon/domain/entities/asset_info.dart' as ai;
 import 'package:horizon/domain/entities/balance.dart' as b;
 import 'package:horizon/domain/entities/http_config.dart';
@@ -15,17 +13,16 @@ import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/data/sources/network/counterparty_client_factory.dart';
-import 'package:horizon/domain/usecases/esplora/get_address_info.dart';
 
 class BalanceRepositoryImpl implements BalanceRepository {
   final UtxoRepository utxoRepository;
   final CounterpartyClientFactory counterpartyClientFactory;
-  final GetAddressInfoEsploraUseCase getAddressInfoEsploraUseCase;
+  final BitcoinRepository bitcoinRepository;
 
   BalanceRepositoryImpl({
     required this.utxoRepository,
-    required this.getAddressInfoEsploraUseCase,
     required this.counterpartyClientFactory,
+    required this.bitcoinRepository,
   });
 
   @override
@@ -47,27 +44,23 @@ class BalanceRepositoryImpl implements BalanceRepository {
   }
 
   @override
-  TaskEither<String, List<mba.MultiAddressBalance>> getBalancesForAddresses({
+  Future<List<mba.MultiAddressBalance>> getBalancesForAddresses({
     required List<String> addresses,
     required HttpConfig httpConfig,
     BalanceType? type,
-  }) {
-    return handleNetworkCall(
-      () async {
-        final List<mba.MultiAddressBalance> balances = [];
-        balances.addAll([
-          await _getBtcBalancesForAddresses(
-            addresses: addresses,
-            httpConfig: httpConfig,
-          )
-        ]);
-        balances.addAll(await _fetchBalancesByAllAddresses(
-            api: counterpartyClientFactory.getClient(httpConfig),
-            addresses: addresses,
-            type: type));
-        return balances;
-      },
-    ).mapLeft((error) => error.message);
+  }) async {
+    final List<mba.MultiAddressBalance> balances = [];
+    balances.addAll([
+      await _getBtcBalancesForAddresses(
+        addresses: addresses,
+        httpConfig: httpConfig,
+      )
+    ]);
+    balances.addAll(await _fetchBalancesByAllAddresses(
+        api: counterpartyClientFactory.getClient(httpConfig),
+        addresses: addresses,
+        type: type));
+    return balances;
   }
 
   @override
@@ -163,13 +156,8 @@ class BalanceRepositoryImpl implements BalanceRepository {
 
   Future<b.Balance> _getBtcBalance(
       {required String address, required HttpConfig httpConfig}) async {
-    final infoTask = await getAddressInfoEsploraUseCase
-        .call(GetAddressInfoEsploraParams(
-          httpConfig: httpConfig,
-          address: address,
-        ))
-        .run();
-    final info = infoTask.fold((error) => throw error, (info) => info);
+    final info = await bitcoinRepository.getAddressInfo(
+        address: address, httpConfig: httpConfig);
     final funded = info.chainStats.fundedTxoSum;
     final spent = info.chainStats.spentTxoSum;
     final quantity = funded - spent;

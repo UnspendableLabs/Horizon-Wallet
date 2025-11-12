@@ -1,5 +1,6 @@
 import "package:fpdart/fpdart.dart";
 import "package:get_it/get_it.dart";
+import "package:horizon/data/sources/repositories/network_error_helpers.dart";
 import "package:horizon/domain/entities/bitcoin_tx.dart";
 import "package:horizon/domain/entities/http_config.dart";
 import "package:horizon/domain/entities/network_error.dart";
@@ -33,29 +34,25 @@ class GetTransactionEsploraUseCase
 
   @override
   TaskEither<String, BitcoinTx> call(GetTransactionEsploraParams params) {
-    final task = _bitcoinRepository.getTransaction(
-      httpConfig: params.httpConfig,
-      txid: params.txid,
-    );
+    final task = handleNetworkCall(() async {
+      return await _bitcoinRepository.getTransaction(
+        httpConfig: params.httpConfig,
+        txid: params.txid,
+      );
+    });
 
     return task.tapError((error) {
       _errorService.captureException(
         error,
         message: "Failed to get transaction",
-        context: error is NetworkError
-            ? {
-                "message": error.message,
-                "endpoint": error.endpoint,
-                "fullUrl": error.fullUrl,
-                "statusCode": error.statusCode,
-                "txid": params.txid,
-              }
-            : {
-                "message": error?.toString(),
-                "txid": params.txid,
-              },
+        context: {
+          "message": error.message,
+          "endpoint": error.endpoint,
+          "fullUrl": error.fullUrl,
+          "statusCode": error.statusCode,
+          "txid": params.txid,
+        },
       );
     }).mapLeft((error) => error.message);
   }
 }
-

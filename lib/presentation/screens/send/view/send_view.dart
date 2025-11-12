@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/domain/usecases/get_all_balances.dart';
+import 'package:horizon/domain/usecases/send_raw_transaction.dart';
 import 'package:horizon/presentation/common/link.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:flutter/services.dart';
@@ -430,20 +431,13 @@ class _SendViewState extends State<SendView> {
                                     psbtHex: confirmationStep.psbtHex,
                                     onError: (e, _) => e.toString())));
 
-                        final sendTask = GetIt.I<BitcoindService>()
-                            .sendrawtransaction(
-                                finalizedTx, session.httpConfig);
+                        final sendTask = GetIt.I<SendRawTransactionUseCase>()
+                            .call(SendRawTransactionParams(
+                                httpConfig: session.httpConfig,
+                                signedHex: finalizedTx));
                         final result = await sendTask.run();
-                        final hash = result.fold((error) {
-                          GetIt.I<ErrorService>().captureException(error,
-                              message: "Failed to send raw transaction",
-                              context: {
-                                "endpoint": error.endpoint,
-                                "fullUrl": error.fullUrl,
-                                "statusCode": error.statusCode,
-                              });
-                          return error.message;
-                        }, (hash) => hash);
+                        final hash =
+                            result.fold((error) => error, (hash) => hash);
 
                         return hash;
                       }), builder: (context, state, retry) {

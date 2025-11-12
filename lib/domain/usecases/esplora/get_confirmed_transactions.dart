@@ -1,5 +1,6 @@
 import "package:fpdart/fpdart.dart";
 import "package:get_it/get_it.dart";
+import "package:horizon/data/sources/repositories/network_error_helpers.dart";
 import "package:horizon/domain/entities/bitcoin_tx.dart";
 import "package:horizon/domain/entities/http_config.dart";
 import "package:horizon/domain/entities/network_error.dart";
@@ -22,7 +23,8 @@ class GetConfirmedTransactionsEsploraParams {
 
 class GetConfirmedTransactionsEsploraUseCase
     implements
-        UseCaseTE<List<BitcoinTx>, GetConfirmedTransactionsEsploraParams, String> {
+        UseCaseTE<List<BitcoinTx>, GetConfirmedTransactionsEsploraParams,
+            String> {
   final BitcoinRepository _bitcoinRepository;
   final ErrorService _errorService;
 
@@ -35,29 +37,25 @@ class GetConfirmedTransactionsEsploraUseCase
   @override
   TaskEither<String, List<BitcoinTx>> call(
       GetConfirmedTransactionsEsploraParams params) {
-    final task = _bitcoinRepository.getConfirmedTransactions(
-      httpConfig: params.httpConfig,
-      addresses: params.addresses,
-    );
+    final task = handleNetworkCall(() async {
+      return await _bitcoinRepository.getConfirmedTransactions(
+        httpConfig: params.httpConfig,
+        addresses: params.addresses,
+      );
+    });
 
     return task.tapError((error) {
       _errorService.captureException(
         error,
         message: "Failed to get confirmed transactions",
-        context: error is NetworkError
-            ? {
-                "message": error.message,
-                "endpoint": error.endpoint,
-                "fullUrl": error.fullUrl,
-                "statusCode": error.statusCode,
-                "addresses": params.addresses,
-              }
-            : {
-                "message": error?.toString(),
-                "addresses": params.addresses,
-              },
+        context: {
+          "message": error.message,
+          "endpoint": error.endpoint,
+          "fullUrl": error.fullUrl,
+          "statusCode": error.statusCode,
+          "addresses": params.addresses,
+        },
       );
     }).mapLeft((error) => error.message);
   }
 }
-

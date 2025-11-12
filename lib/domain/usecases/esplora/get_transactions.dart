@@ -1,5 +1,6 @@
 import "package:fpdart/fpdart.dart";
 import "package:get_it/get_it.dart";
+import "package:horizon/data/sources/repositories/network_error_helpers.dart";
 import "package:horizon/domain/entities/bitcoin_tx.dart";
 import "package:horizon/domain/entities/http_config.dart";
 import "package:horizon/domain/entities/network_error.dart";
@@ -33,30 +34,25 @@ class GetTransactionsEsploraUseCase
         _errorService = errorService ?? GetIt.I<ErrorService>();
 
   @override
-  TaskEither<String, List<BitcoinTx>> call(
-      GetTransactionsEsploraParams params) {
-    final task = _bitcoinRepository.getTransactions(
-      httpConfig: params.httpConfig,
-      addresses: params.addresses,
-    );
+  TaskEither<String, List<BitcoinTx>> call(GetTransactionsEsploraParams params,
+      {int maxRetries = 1}) {
+    final task = handleNetworkCall(() async {
+      return await _bitcoinRepository.getTransactions(
+        httpConfig: params.httpConfig,
+        addresses: params.addresses,
+      );
+    }, maxRetries: maxRetries);
 
     return task.tapError((error) {
-      _errorService.captureException(
-        error,
-        message: "Failed to get transactions",
-        context: error is NetworkError
-            ? {
-                "message": error.message,
-                "endpoint": error.endpoint,
-                "fullUrl": error.fullUrl,
-                "statusCode": error.statusCode,
-                "addresses": params.addresses,
-              }
-            : {
-                "message": error?.toString(),
-                "addresses": params.addresses,
-              },
-      );
+      _errorService.captureException(error,
+          message: "Failed to get transactions",
+          context: {
+            "message": error.message,
+            "endpoint": error.endpoint,
+            "fullUrl": error.fullUrl,
+            "statusCode": error.statusCode,
+            "addresses": params.addresses,
+          });
     }).mapLeft((error) => error.message);
   }
 }

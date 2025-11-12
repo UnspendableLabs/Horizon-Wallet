@@ -1,5 +1,6 @@
 import "package:fpdart/fpdart.dart";
 import "package:get_it/get_it.dart";
+import "package:horizon/data/sources/repositories/network_error_helpers.dart";
 import "package:horizon/domain/entities/address_info.dart";
 import "package:horizon/domain/entities/http_config.dart";
 import "package:horizon/domain/entities/network_error.dart";
@@ -33,27 +34,24 @@ class GetAddressInfoEsploraUseCase
 
   @override
   TaskEither<String, AddressInfo> call(GetAddressInfoEsploraParams params) {
-    final task = _bitcoinRepository.getAddressInfo(
-      httpConfig: params.httpConfig,
-      address: params.address,
-    );
+    final task = handleNetworkCall(() async {
+      return await _bitcoinRepository.getAddressInfo(
+        httpConfig: params.httpConfig,
+        address: params.address,
+      );
+    });
 
     return task.tapError((error) {
       _errorService.captureException(
         error,
         message: "Failed to get address info",
-        context: error is NetworkError
-            ? {
-                "message": error.message,
-                "endpoint": error.endpoint,
-                "fullUrl": error.fullUrl,
-                "statusCode": error.statusCode,
-                "address": params.address,
-              }
-            : {
-                "message": error?.toString(),
-                "address": params.address,
-              },
+        context: {
+          "message": error.message,
+          "endpoint": error.endpoint,
+          "fullUrl": error.fullUrl,
+          "statusCode": error.statusCode,
+          "address": params.address,
+        },
       );
     }).mapLeft((error) => error.message);
   }
@@ -85,25 +83,19 @@ class GetAddressInfoMultiEsploraUseCase
   TaskEither<String, List<AddressInfo>> call(
       GetAddressInfoMultiEsploraParams params) {
     return TaskEither.sequenceList(params.addresses
-        .map((address) => _bitcoinRepository
-                .getAddressInfo(address: address, httpConfig: params.httpConfig)
-                .tapError((e) {
-              _errorService.captureException(
-                e,
-                message: "Failed to get address info",
-                context: e is NetworkError
-                    ? {
-                        "message": e.message,
-                        "endpoint": e.endpoint,
-                        "fullUrl": e.fullUrl,
-                        "statusCode": e.statusCode,
-                        "address": address,
-                      }
-                    : {
-                        "message": e?.toString(),
-                        "address": address,
-                      },
-              );
+        .map((address) => handleNetworkCall(() async {
+              return await _bitcoinRepository.getAddressInfo(
+                  address: address, httpConfig: params.httpConfig);
+            }).tapError((e) {
+              _errorService.captureException(e,
+                  message: "Failed to get address info",
+                  context: {
+                    "message": e.message,
+                    "endpoint": e.endpoint,
+                    "fullUrl": e.fullUrl,
+                    "statusCode": e.statusCode,
+                    "address": address,
+                  });
             }).mapLeft((e) => e.message))
         .toList());
   }

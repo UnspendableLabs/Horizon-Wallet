@@ -1,5 +1,6 @@
 import "package:fpdart/fpdart.dart";
 import "package:get_it/get_it.dart";
+import "package:horizon/data/sources/repositories/network_error_helpers.dart";
 import "package:horizon/domain/entities/asset.dart";
 import "package:horizon/domain/entities/http_config.dart";
 import "package:horizon/domain/entities/network_error.dart";
@@ -33,28 +34,23 @@ class GetAssetVerboseUseCase
 
   @override
   TaskEither<String, Asset> call(GetAssetVerboseParams params) {
-    final task = _assetRepository.getAssetVerbose(
-      assetName: params.assetName,
-      httpConfig: params.httpConfig,
-    );
+    final task = handleNetworkCall(() async {
+      return await _assetRepository.getAssetVerbose(
+        assetName: params.assetName,
+        httpConfig: params.httpConfig,
+      );
+    });
 
     return task.tapError((error) {
-      _errorService.captureException(
-        error,
-        message: "Failed to get asset verbose: ${params.assetName}",
-        context: error is NetworkError
-            ? {
-                "message": error.message,
-                "endpoint": error.endpoint,
-                "fullUrl": error.fullUrl,
-                "statusCode": error.statusCode,
-                "assetName": params.assetName,
-              }
-            : {
-                "message": error.toString(),
-                "assetName": params.assetName,
-              },
-      );
+      _errorService.captureException(error,
+          message: "Failed to get asset verbose: ${params.assetName}",
+          context: {
+            "message": error.message,
+            "endpoint": error.endpoint,
+            "fullUrl": error.fullUrl,
+            "statusCode": error.statusCode,
+            "assetName": params.assetName,
+          });
     }).mapLeft((error) => error.message);
   }
 }

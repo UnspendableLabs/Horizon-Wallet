@@ -1,5 +1,6 @@
 import "package:fpdart/fpdart.dart";
 import "package:get_it/get_it.dart";
+import "package:horizon/data/sources/repositories/network_error_helpers.dart";
 import "package:horizon/domain/entities/bitcoin_tx.dart";
 import "package:horizon/domain/entities/http_config.dart";
 import "package:horizon/domain/entities/network_error.dart";
@@ -22,7 +23,8 @@ class GetMempoolTransactionsEsploraParams {
 
 class GetMempoolTransactionsEsploraUseCase
     implements
-        UseCaseTE<List<BitcoinTx>, GetMempoolTransactionsEsploraParams, String> {
+        UseCaseTE<List<BitcoinTx>, GetMempoolTransactionsEsploraParams,
+            String> {
   final BitcoinRepository _bitcoinRepository;
   final ErrorService _errorService;
 
@@ -35,10 +37,12 @@ class GetMempoolTransactionsEsploraUseCase
   @override
   TaskEither<String, List<BitcoinTx>> call(
       GetMempoolTransactionsEsploraParams params) {
-    final task = _bitcoinRepository.getMempoolTransactions(
-      httpConfig: params.httpConfig,
-      addresses: params.addresses,
-    );
+    final task = handleNetworkCall(() async {
+      return await _bitcoinRepository.getMempoolTransactions(
+        httpConfig: params.httpConfig,
+        addresses: params.addresses,
+      );
+    });
 
     return task.tapError((error) {
       _errorService.captureException(
@@ -60,4 +64,3 @@ class GetMempoolTransactionsEsploraUseCase
     }).mapLeft((error) => error.message);
   }
 }
-

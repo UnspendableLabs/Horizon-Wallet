@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/usecases/get_balances_by_addresses.dart';
 import "package:horizon/presentation/forms/base/base_form_bloc.dart";
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
@@ -24,17 +25,18 @@ class SwapFormLoaderData {
 }
 
 class SwapFormLoaderFn extends Loader<SwapFormLoaderArgs, SwapFormLoaderData> {
-  final BalanceRepository _balanceRepository;
+  final GetBalancesByAddressesUseCase _getBalancesByAddressesUseCase;
   SwapFormLoaderFn({
-    BalanceRepository? balanceRepository,
-  }) : _balanceRepository = balanceRepository ?? GetIt.I<BalanceRepository>();
+    GetBalancesByAddressesUseCase? getBalancesByAddressesUseCase,
+  }) : _getBalancesByAddressesUseCase = getBalancesByAddressesUseCase ??
+            GetIt.I<GetBalancesByAddressesUseCase>();
 
   @override
   Future<SwapFormLoaderData> load(SwapFormLoaderArgs args) async {
-    final result = await _balanceRepository
-        .getBalancesForAddresses(
+    final result = await _getBalancesByAddressesUseCase
+        .call(GetBalancesByAddressesParams(
             httpConfig: args.httpConfig,
-            addresses: args.addresses.map((a) => a.address).toList())
+            addresses: args.addresses.map((a) => a.address).toList()))
         .run();
     final multiAddressBalance =
         result.fold((error) => throw Exception(error), (result) => result);

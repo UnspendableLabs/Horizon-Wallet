@@ -1,8 +1,6 @@
 import 'package:collection/collection.dart';
-import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/format.dart';
-import 'package:horizon/data/sources/repositories/network_error_helpers.dart';
 import 'package:horizon/domain/entities/asset_info.dart' as asset_info;
 import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart'
@@ -32,7 +30,6 @@ import 'package:horizon/domain/entities/compose_dividend.dart'
     as compose_dividend;
 import 'package:horizon/domain/entities/compose_sweep.dart' as compose_sweep;
 import 'package:horizon/domain/entities/compose_burn.dart' as compose_burn;
-import 'package:horizon/domain/entities/network_error.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
@@ -51,42 +48,33 @@ class ComposeRepositoryImpl extends ComposeRepository {
             counterpartyClientFactory ?? GetIt.I<CounterpartyClientFactory>(),
         _config = config ?? GetIt.I<Config>();
 
-  TaskEither<NetworkError, T> retryOnInvalidUtxo<T>(
-      Future<T> Function(List<Utxo> inputsSet) apiCall, List<Utxo> inputsSet) {
+  Future<T> retryOnInvalidUtxo<T>(
+      Future<T> Function(List<Utxo> inputsSet) apiCall,
+      List<Utxo> inputsSet) async {
     return _retryOnInvalidUtxo(apiCall, inputsSet);
   }
 
-  TaskEither<NetworkError, T> _retryOnInvalidUtxo<T>(
-      Future<T> Function(List<Utxo> inputsSet) apiCall, List<Utxo> inputsSet) {
-    return TaskEither(() async {
-      final either =
-          await handleNetworkCall(() async => await apiCall(inputsSet)).run();
+  Future<T> _retryOnInvalidUtxo<T>(
+      Future<T> Function(List<Utxo> inputsSet) apiCall,
+      List<Utxo> currentInputsSet) async {
+    try {
+      return await apiCall(currentInputsSet);
+    } catch (e) {
+      final error = extractInvalidUtxoErrors(e.toString());
 
-      return either.fold(
-        // Left (error) case
-        (error) async {
-          final invalidUtxoErrors = extractInvalidUtxoErrors(error.message);
-          return await invalidUtxoErrors.fold(
-            // No invalid UTXO errors - return the original error
-            () async => Either<NetworkError, T>.left(error),
-            // Invalid UTXOs found - retry with filtered set
-            (invalidUtxos) async {
-              final newInputsSet = removeUtxosFromList(inputsSet, invalidUtxos);
-              if (newInputsSet.isEmpty) {
-                return Either<NetworkError, T>.left(NetworkError(
-                    type: DioExceptionType.badResponse,
-                    userMessage:
-                        'No valid UTXOs left after removing invalid UTXOs'));
-              }
-              // Recursive retry with newInputsSet - execute the TaskEither and return its result
-              return await _retryOnInvalidUtxo(apiCall, newInputsSet).run();
-            },
-          );
-        },
-        // Right (success) case
-        (result) async => Either<NetworkError, T>.right(result),
-      );
-    });
+      return error.fold(() => throw e, (invalidUtxos) {
+        // Remove all invalid UTXOs from the current input set
+        final newInputsSet =
+            removeUtxosFromList(currentInputsSet, invalidUtxos);
+
+        if (newInputsSet.isEmpty) {
+          throw Exception('No valid UTXOs left after removing invalid UTXOs');
+        }
+
+        // Retry with the updated input set
+        return _retryOnInvalidUtxo(apiCall, newInputsSet);
+      });
+    }
   }
 
   List<Utxo> removeUtxosFromList(
@@ -99,12 +87,12 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  TaskEither<NetworkError, compose_send.ComposeSendResponse> composeSendVerbose(
+  Future<compose_send.ComposeSendResponse> composeSendVerbose(
       num satPerVbyte,
       List<Utxo> inputsSet,
       compose_send.ComposeSendParams params,
-      HttpConfig httpConfig) {
-    return _retryOnInvalidUtxo<compose_send.ComposeSendResponse>(
+      HttpConfig httpConfig) async {
+    return await _retryOnInvalidUtxo<compose_send.ComposeSendResponse>(
       (currentInputSet) async {
         final source = params.source;
         final destination = params.destination;
@@ -161,13 +149,12 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  TaskEither<NetworkError, compose_mpma_send.ComposeMpmaSendResponse>
-      composeMpmaSend(
-          num satPerVbyte,
-          List<Utxo> inputsSet,
-          compose_mpma_send.ComposeMpmaSendParams params,
-          HttpConfig httpConfig) {
-    return _retryOnInvalidUtxo<compose_mpma_send.ComposeMpmaSendResponse>(
+  Future<compose_mpma_send.ComposeMpmaSendResponse> composeMpmaSend(
+      num satPerVbyte,
+      List<Utxo> inputsSet,
+      compose_mpma_send.ComposeMpmaSendParams params,
+      HttpConfig httpConfig) async {
+    return await _retryOnInvalidUtxo<compose_mpma_send.ComposeMpmaSendResponse>(
       (currentInputSet) async {
         final source = params.source;
         final destinations = params.destinations;
@@ -218,13 +205,14 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  TaskEither<NetworkError, compose_issuance.ComposeIssuanceResponseVerbose>
+  Future<compose_issuance.ComposeIssuanceResponseVerbose>
       composeIssuanceVerbose(
           num satPerVbyte,
           List<Utxo> inputsSet,
           compose_issuance.ComposeIssuanceParams params,
-          HttpConfig httpConfig) {
-    return _retryOnInvalidUtxo<compose_issuance.ComposeIssuanceResponseVerbose>(
+          HttpConfig httpConfig) async {
+    return await _retryOnInvalidUtxo<
+        compose_issuance.ComposeIssuanceResponseVerbose>(
       (currentInputSet) async {
         final source = params.source;
         final name = params.name;
@@ -284,13 +272,13 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  TaskEither<NetworkError, compose_dispenser.ComposeDispenserResponseVerbose>
+  Future<compose_dispenser.ComposeDispenserResponseVerbose>
       composeDispenserVerbose(
           num satPerVbyte,
           List<Utxo> inputsSet,
           compose_dispenser.ComposeDispenserParams params,
-          HttpConfig httpConfig) {
-    return _retryOnInvalidUtxo<
+          HttpConfig httpConfig) async {
+    return await _retryOnInvalidUtxo<
         compose_dispenser.ComposeDispenserResponseVerbose>(
       (currentInputSet) async {
         final sourceAddress = params.source;
@@ -361,13 +349,12 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  TaskEither<NetworkError, compose_dispense.ComposeDispenseResponse>
-      composeDispense(
-          num satPerVbyte,
-          List<Utxo> inputsSet,
-          compose_dispense.ComposeDispenseParams params,
-          HttpConfig httpConfig) {
-    return _retryOnInvalidUtxo<compose_dispense.ComposeDispenseResponse>(
+  Future<compose_dispense.ComposeDispenseResponse> composeDispense(
+      num satPerVbyte,
+      List<Utxo> inputsSet,
+      compose_dispense.ComposeDispenseParams params,
+      HttpConfig httpConfig) async {
+    return await _retryOnInvalidUtxo<compose_dispense.ComposeDispenseResponse>(
       (currentInputSet) async {
         final sourceAddress = params.address;
         final dispenser = params.dispenser;
@@ -402,13 +389,12 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  TaskEither<NetworkError, compose_fairmint.ComposeFairmintResponse>
-      composeFairmintVerbose(
-          num satPerVbyte,
-          List<Utxo> inputsSet,
-          compose_fairmint.ComposeFairmintParams params,
-          HttpConfig httpConfig) {
-    return _retryOnInvalidUtxo<compose_fairmint.ComposeFairmintResponse>(
+  Future<compose_fairmint.ComposeFairmintResponse> composeFairmintVerbose(
+      num satPerVbyte,
+      List<Utxo> inputsSet,
+      compose_fairmint.ComposeFairmintParams params,
+      HttpConfig httpConfig) async {
+    return await _retryOnInvalidUtxo<compose_fairmint.ComposeFairmintResponse>(
       (currentInputSet) async {
         final sourceAddress = params.source;
         final asset = params.asset;
@@ -434,13 +420,13 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  TaskEither<NetworkError, compose_fairminter.ComposeFairminterResponse>
-      composeFairminterVerbose(
-          num satPerVbyte,
-          List<Utxo> inputsSet,
-          compose_fairminter.ComposeFairminterParams params,
-          HttpConfig httpConfig) {
-    return _retryOnInvalidUtxo<compose_fairminter.ComposeFairminterResponse>(
+  Future<compose_fairminter.ComposeFairminterResponse> composeFairminterVerbose(
+      num satPerVbyte,
+      List<Utxo> inputsSet,
+      compose_fairminter.ComposeFairminterParams params,
+      HttpConfig httpConfig) async {
+    return await _retryOnInvalidUtxo<
+        compose_fairminter.ComposeFairminterResponse>(
       (currentInputSet) async {
         final sourceAddress = params.source;
         final asset = params.asset;
@@ -485,101 +471,98 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  TaskEither<NetworkError, compose_dispenser.ComposeDispenserResponseVerbose>
+  Future<compose_dispenser.ComposeDispenserResponseVerbose>
       composeDispenserChain(
           int exactFee,
           DecodedTx prevDecodedTransaction,
           compose_dispenser.ComposeDispenserParams params,
-          HttpConfig httpConfig) {
-    return handleNetworkCall(() async {
-      final source = params.source;
-      final asset = params.asset;
-      final giveQuantity = params.giveQuantity;
-      final escrowQuantity = params.escrowQuantity;
-      final mainchainrate = params.mainchainrate;
-      const allowUnconfirmedInputs = true;
-      const oracleAddress = null;
-      const openAddress = null;
-      final status = params.status ?? 0;
-      const excludeUtxosWithBalances = true;
-      const validateCompose = false;
-      const disableUtxoLocks = false;
+          HttpConfig httpConfig) async {
+    final source = params.source;
+    final asset = params.asset;
+    final giveQuantity = params.giveQuantity;
+    final escrowQuantity = params.escrowQuantity;
+    final mainchainrate = params.mainchainrate;
+    const allowUnconfirmedInputs = true;
+    const oracleAddress = null;
+    const openAddress = null;
+    final status = params.status ?? 0;
+    const excludeUtxosWithBalances = true;
+    const validateCompose = false;
+    const disableUtxoLocks = false;
 
-      final Vout? outputForChaining = prevDecodedTransaction.vout
-          .firstWhereOrNull(
-              (vout) => vout.scriptPubKey.address == params.source);
+    final Vout? outputForChaining = prevDecodedTransaction.vout
+        .firstWhereOrNull((vout) => vout.scriptPubKey.address == params.source);
 
-      if (outputForChaining == null) {
-        throw Exception('Output for chaining not found');
-      }
+    if (outputForChaining == null) {
+      throw Exception('Output for chaining not found');
+    }
 
-      final scriptPubKey = outputForChaining.scriptPubKey;
-      final int value =
-          (outputForChaining.value * SATOSHI_RATE).ceil(); // convert to sats
-      final String txid = prevDecodedTransaction.txid;
-      final int vout = outputForChaining.n;
+    final scriptPubKey = outputForChaining.scriptPubKey;
+    final int value =
+        (outputForChaining.value * SATOSHI_RATE).ceil(); // convert to sats
+    final String txid = prevDecodedTransaction.txid;
+    final int vout = outputForChaining.n;
 
-      // since this utxo hasn't been confirmed yet, we need to add all the necessary info for value and scriptPubKey
-      final newInputSet = '$txid:$vout:$value:${scriptPubKey.hex}';
+    // since this utxo hasn't been confirmed yet, we need to add all the necessary info for value and scriptPubKey
+    final newInputSet = '$txid:$vout:$value:${scriptPubKey.hex}';
 
-      final response = await _counterpartyClientFactory
-          .getClient(httpConfig)
-          .composeDispenserVerbose(
-            source,
-            asset,
-            giveQuantity,
-            escrowQuantity,
-            mainchainrate,
-            status,
-            openAddress,
-            oracleAddress,
-            allowUnconfirmedInputs,
-            exactFee,
-            null, // null satPerVbyte since we need to specify the exact fee for the dispenser chain
-            newInputSet,
-            excludeUtxosWithBalances,
-            validateCompose,
-            disableUtxoLocks,
-          );
+    final response = await _counterpartyClientFactory
+        .getClient(httpConfig)
+        .composeDispenserVerbose(
+          source,
+          asset,
+          giveQuantity,
+          escrowQuantity,
+          mainchainrate,
+          status,
+          openAddress,
+          oracleAddress,
+          allowUnconfirmedInputs,
+          exactFee,
+          null, // null satPerVbyte since we need to specify the exact fee for the dispenser chain
+          newInputSet,
+          excludeUtxosWithBalances,
+          validateCompose,
+          disableUtxoLocks,
+        );
 
-      if (response.result == null) {
-        throw Exception('Failed to compose send');
-      }
+    if (response.result == null) {
+      throw Exception('Failed to compose send');
+    }
 
-      final txVerbose = response.result!;
-      return compose_dispenser.ComposeDispenserResponseVerbose(
-          rawtransaction: txVerbose.rawtransaction,
-          psbt: txVerbose.psbt,
-          btcIn: txVerbose.btcIn,
-          btcOut: txVerbose.btcOut,
-          btcChange: txVerbose.btcChange,
-          btcFee: txVerbose.btcFee,
-          data: txVerbose.data,
-          params: compose_dispenser.ComposeDispenserResponseVerboseParams(
-            source: txVerbose.params.source,
-            asset: txVerbose.params.asset,
-            giveQuantity: txVerbose.params.giveQuantity,
-            escrowQuantity: txVerbose.params.escrowQuantity,
-            mainchainrate: txVerbose.params.mainchainrate,
-            status: txVerbose.params.status,
-            openAddress: txVerbose.params.openAddress,
-            oracleAddress: txVerbose.params.oracleAddress,
-            giveQuantityNormalized: txVerbose.params.giveQuantityNormalized,
-            escrowQuantityNormalized: txVerbose.params.escrowQuantityNormalized,
-          ),
-          name: txVerbose.name,
-          signedTxEstimatedSize: txVerbose.signedTxEstimatedSize.toDomain());
-    });
+    final txVerbose = response.result!;
+    return compose_dispenser.ComposeDispenserResponseVerbose(
+        rawtransaction: txVerbose.rawtransaction,
+        psbt: txVerbose.psbt,
+        btcIn: txVerbose.btcIn,
+        btcOut: txVerbose.btcOut,
+        btcChange: txVerbose.btcChange,
+        btcFee: txVerbose.btcFee,
+        data: txVerbose.data,
+        params: compose_dispenser.ComposeDispenserResponseVerboseParams(
+          source: txVerbose.params.source,
+          asset: txVerbose.params.asset,
+          giveQuantity: txVerbose.params.giveQuantity,
+          escrowQuantity: txVerbose.params.escrowQuantity,
+          mainchainrate: txVerbose.params.mainchainrate,
+          status: txVerbose.params.status,
+          openAddress: txVerbose.params.openAddress,
+          oracleAddress: txVerbose.params.oracleAddress,
+          giveQuantityNormalized: txVerbose.params.giveQuantityNormalized,
+          escrowQuantityNormalized: txVerbose.params.escrowQuantityNormalized,
+        ),
+        name: txVerbose.name,
+        signedTxEstimatedSize: txVerbose.signedTxEstimatedSize.toDomain());
   }
 
   // CHAT make same HttpConfig change to all below endpoints
   @override
-  TaskEither<NetworkError, compose_order.ComposeOrderResponse> composeOrder(
+  Future<compose_order.ComposeOrderResponse> composeOrder(
       num satPerVbyte,
       List<Utxo> inputsSet,
       compose_order.ComposeOrderParams params,
-      HttpConfig httpConfig) {
-    return _retryOnInvalidUtxo<compose_order.ComposeOrderResponse>(
+      HttpConfig httpConfig) async {
+    return await _retryOnInvalidUtxo<compose_order.ComposeOrderResponse>(
       (currentInputSet) async {
         final source = params.source;
         final giveQuantity = params.giveQuantity;
@@ -619,12 +602,12 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  TaskEither<NetworkError, compose_cancel.ComposeCancelResponse> composeCancel(
+  Future<compose_cancel.ComposeCancelResponse> composeCancel(
       num satPerVbyte,
       List<Utxo> inputsSet,
       compose_cancel.ComposeCancelParams params,
-      HttpConfig httpConfig) {
-    return _retryOnInvalidUtxo<compose_cancel.ComposeCancelResponse>(
+      HttpConfig httpConfig) async {
+    return await _retryOnInvalidUtxo<compose_cancel.ComposeCancelResponse>(
       (currentInputSet) async {
         final source = params.source;
         final offerHash = params.offerHash;
@@ -656,13 +639,13 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  TaskEither<NetworkError, compose_attach_utxo.ComposeAttachUtxoResponse>
-      composeAttachUtxo(
-          num satPerVbyte,
-          List<Utxo> inputsSet,
-          compose_attach_utxo.ComposeAttachUtxoParams params,
-          HttpConfig httpConfig) {
-    return _retryOnInvalidUtxo<compose_attach_utxo.ComposeAttachUtxoResponse>(
+  Future<compose_attach_utxo.ComposeAttachUtxoResponse> composeAttachUtxo(
+      num satPerVbyte,
+      List<Utxo> inputsSet,
+      compose_attach_utxo.ComposeAttachUtxoParams params,
+      HttpConfig httpConfig) async {
+    return await _retryOnInvalidUtxo<
+        compose_attach_utxo.ComposeAttachUtxoResponse>(
       (currentInputSet) async {
         final address = params.address;
         final asset = params.asset;
@@ -701,27 +684,25 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  TaskEither<NetworkError, String> getDetachData({
+  Future<String> getDetachData({
     required String destination,
     required HttpConfig httpConfig,
-  }) {
-    return handleNetworkCall(() async {
-      final client = _counterpartyClientFactory.getClient(httpConfig);
+  }) async {
+    final client = _counterpartyClientFactory.getClient(httpConfig);
 
-      final response = await client.getDetachData(destination);
+    final response = await client.getDetachData(destination);
 
-      return response.result!.data;
-    });
+    return response.result!.data;
   }
 
   @override
-  TaskEither<NetworkError, compose_detach_utxo.ComposeDetachUtxoResponse>
-      composeDetachUtxo(
-          num satPerVbyte,
-          List<Utxo> inputsSet,
-          compose_detach_utxo.ComposeDetachUtxoParams params,
-          HttpConfig httpConfig) {
-    return _retryOnInvalidUtxo<compose_detach_utxo.ComposeDetachUtxoResponse>(
+  Future<compose_detach_utxo.ComposeDetachUtxoResponse> composeDetachUtxo(
+      num satPerVbyte,
+      List<Utxo> inputsSet,
+      compose_detach_utxo.ComposeDetachUtxoParams params,
+      HttpConfig httpConfig) async {
+    return await _retryOnInvalidUtxo<
+        compose_detach_utxo.ComposeDetachUtxoResponse>(
       (currentInputSet) async {
         final utxo = params.utxo;
         final destination = params.destination;
@@ -757,13 +738,13 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  TaskEither<NetworkError, compose_movetoutxo.ComposeMoveToUtxoResponse>
-      composeMoveToUtxo(
-          num satPerVbyte,
-          List<Utxo> inputsSet,
-          compose_movetoutxo.ComposeMoveToUtxoParams params,
-          HttpConfig httpConfig) {
-    return _retryOnInvalidUtxo<compose_movetoutxo.ComposeMoveToUtxoResponse>(
+  Future<compose_movetoutxo.ComposeMoveToUtxoResponse> composeMoveToUtxo(
+      num satPerVbyte,
+      List<Utxo> inputsSet,
+      compose_movetoutxo.ComposeMoveToUtxoParams params,
+      HttpConfig httpConfig) async {
+    return await _retryOnInvalidUtxo<
+        compose_movetoutxo.ComposeMoveToUtxoResponse>(
       (currentInputSet) async {
         final utxo = params.utxo;
         final destination = params.destination;
@@ -798,10 +779,12 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  TaskEither<NetworkError, compose_destroy.ComposeDestroyResponse>
-      composeDestroy(num satPerVbyte, List<Utxo> inputsSet,
-          compose_destroy.ComposeDestroyParams params, HttpConfig httpConfig) {
-    return _retryOnInvalidUtxo<compose_destroy.ComposeDestroyResponse>(
+  Future<compose_destroy.ComposeDestroyResponse> composeDestroy(
+      num satPerVbyte,
+      List<Utxo> inputsSet,
+      compose_destroy.ComposeDestroyParams params,
+      HttpConfig httpConfig) async {
+    return await _retryOnInvalidUtxo<compose_destroy.ComposeDestroyResponse>(
       (currentInputSet) async {
         final source = params.source;
         final asset = params.asset;
@@ -836,13 +819,12 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  TaskEither<NetworkError, compose_dividend.ComposeDividendResponse>
-      composeDividend(
-          num satPerVbyte,
-          List<Utxo> inputsSet,
-          compose_dividend.ComposeDividendParams params,
-          HttpConfig httpConfig) {
-    return _retryOnInvalidUtxo<compose_dividend.ComposeDividendResponse>(
+  Future<compose_dividend.ComposeDividendResponse> composeDividend(
+      num satPerVbyte,
+      List<Utxo> inputsSet,
+      compose_dividend.ComposeDividendParams params,
+      HttpConfig httpConfig) async {
+    return await _retryOnInvalidUtxo<compose_dividend.ComposeDividendResponse>(
       (currentInputSet) async {
         final source = params.source;
         final asset = params.asset;
@@ -877,12 +859,12 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  TaskEither<NetworkError, compose_sweep.ComposeSweepResponse> composeSweep(
+  Future<compose_sweep.ComposeSweepResponse> composeSweep(
       num satPerVbyte,
       List<Utxo> inputsSet,
       compose_sweep.ComposeSweepParams params,
-      HttpConfig httpConfig) {
-    return _retryOnInvalidUtxo<compose_sweep.ComposeSweepResponse>(
+      HttpConfig httpConfig) async {
+    return await _retryOnInvalidUtxo<compose_sweep.ComposeSweepResponse>(
       (currentInputSet) async {
         final source = params.source;
         final destination = params.destination;
@@ -916,12 +898,12 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  TaskEither<NetworkError, compose_burn.ComposeBurnResponse> composeBurn(
+  Future<compose_burn.ComposeBurnResponse> composeBurn(
       num satPerVbyte,
       List<Utxo> inputsSet,
       compose_burn.ComposeBurnParams params,
-      HttpConfig httpConfig) {
-    return _retryOnInvalidUtxo<compose_burn.ComposeBurnResponse>(
+      HttpConfig httpConfig) async {
+    return await _retryOnInvalidUtxo<compose_burn.ComposeBurnResponse>(
       (currentInputSet) async {
         final source = params.source;
         final quantity = params.quantity;

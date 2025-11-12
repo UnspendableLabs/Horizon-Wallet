@@ -15,6 +15,7 @@ import 'package:horizon/domain/usecases/esplora/get_transaction.dart';
 import 'package:horizon/domain/usecases/esplora/get_transaction_hex.dart';
 import 'package:horizon/domain/usecases/esplora/get_transactions.dart';
 import 'package:horizon/domain/usecases/get_asset_verbose.dart';
+import 'package:horizon/domain/usecases/get_balances_by_addresses.dart';
 import 'package:horizon/domain/usecases/get_detach_data.dart';
 import 'package:horizon/domain/usecases/get_fee_estimates.dart';
 import 'package:horizon/domain/usecases/atomic_swap_create.dart';
@@ -58,7 +59,6 @@ import 'package:horizon/data/services/mnemonic_service/mnemonic_service_factory.
 import 'package:horizon/data/services/transaction_service/transaction_service_factory.dart';
 // import 'package:horizon/data/services/wallet_service_impl.dart';
 import 'package:horizon/data/sources/repositories/account_settings_repository_impl.dart';
-import 'package:horizon/data/sources/repositories/address_tx_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/balance_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/block_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/compose_repository_impl.dart';
@@ -67,7 +67,6 @@ import 'package:horizon/data/sources/repositories/imported_address_repository_im
 import 'package:horizon/data/sources/repositories/node_info_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/utxo_repository_impl.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
-import 'package:horizon/domain/repositories/address_tx_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/block_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
@@ -149,7 +148,6 @@ import 'package:horizon/data/sources/network/mempool_space_client_factory.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/usecase/set_mnemonic_usecase.dart';
 
-import 'package:horizon/presentation/common/usecase/get_virtual_size_usecase.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
@@ -393,9 +391,6 @@ void setup() {
 
   injector.registerSingleton<DatabaseManager>(createDatabaseManager());
 
-  injector.registerSingleton<AddressTxRepository>(AddressTxRepositoryImpl(
-    counterpartyClientFactory: GetIt.I.get<CounterpartyClientFactory>(),
-  ));
   injector.registerSingleton<ComposeRepository>(ComposeRepositoryImpl());
   injector.registerSingleton<EstimateXcpFeeRepository>(
       EstimateXcpFeeRepositoryImpl());
@@ -411,10 +406,10 @@ void setup() {
   injector.registerSingleton<GetAddressInfoEsploraUseCase>(
       GetAddressInfoEsploraUseCase());
   injector.registerSingleton<BalanceRepository>(BalanceRepositoryImpl(
-      counterpartyClientFactory: GetIt.I.get<CounterpartyClientFactory>(),
-      utxoRepository: GetIt.I.get<UtxoRepository>(),
-      getAddressInfoEsploraUseCase:
-          GetIt.I.get<GetAddressInfoEsploraUseCase>()));
+    counterpartyClientFactory: GetIt.I.get<CounterpartyClientFactory>(),
+    utxoRepository: GetIt.I.get<UtxoRepository>(),
+    bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
+  ));
 
   injector.registerSingleton<BlockRepository>(BlockRepositoryImpl());
 
@@ -501,10 +496,6 @@ void setup() {
   injector.registerSingleton<GetFeeEstimatesUseCase>(GetFeeEstimatesUseCase(
       feeEstimatesRepository: GetIt.I.get<FeeEstimatesRespository>()));
 
-  injector.registerSingleton<GetVirtualSizeUseCase>(GetVirtualSizeUseCase(
-    transactionService: GetIt.I.get<TransactionService>(),
-    errorService: GetIt.I.get<ErrorService>(),
-  ));
   injector.registerSingleton<GetTransactionEsploraUseCase>(
       GetTransactionEsploraUseCase());
 
@@ -517,9 +508,8 @@ void setup() {
   injector.registerSingleton<GetTransactionsEsploraUseCase>(
       GetTransactionsEsploraUseCase());
 
-  injector.registerSingleton<EventsRepository>(EventsRepositoryImpl(
-      getTransactionEsploraUseCase: GetIt.I.get<GetTransactionEsploraUseCase>(),
-      cacheProvider: GetIt.I.get<CacheProvider>()));
+  injector.registerSingleton<EventsRepository>(
+      EventsRepositoryImpl(cacheProvider: GetIt.I.get<CacheProvider>()));
 
   injector.registerSingleton<SeedService>(SeedServiceImpl());
 
@@ -701,6 +691,9 @@ void setup() {
   injector.registerSingleton<SearchAssetsUseCase>(SearchAssetsUseCase());
   injector.registerSingleton<GetAssetVerboseUseCase>(GetAssetVerboseUseCase());
   injector.registerSingleton<GetDetachDataUseCase>(GetDetachDataUseCase());
+
+  injector.registerSingleton<GetBalancesByAddressesUseCase>(
+      GetBalancesByAddressesUseCase());
 }
 
 class CustomDioException extends DioException {

@@ -1,5 +1,6 @@
 import "package:fpdart/fpdart.dart";
 import "package:get_it/get_it.dart";
+import "package:horizon/data/sources/repositories/network_error_helpers.dart";
 import "package:horizon/domain/entities/bitcoin_tx.dart";
 import "package:horizon/domain/entities/http_config.dart";
 import "package:horizon/domain/entities/network_error.dart";
@@ -38,30 +39,26 @@ class GetConfirmedTransactionsPaginatedUseCase
   @override
   TaskEither<String, List<BitcoinTx>> call(
       GetConfirmedTransactionsPaginateParams params) {
-    final task = _bitcoinRepository.getConfirmedTransactionsPaginated(
-      httpConfig: params.httpConfig,
-      address: params.address,
-      lastSeenTxid: params.lastSeenTxid,
-    );
+    final task = handleNetworkCall(() async {
+      return await _bitcoinRepository.getConfirmedTransactionsPaginated(
+        httpConfig: params.httpConfig,
+        address: params.address,
+        lastSeenTxid: params.lastSeenTxid,
+      );
+    });
 
     return task.tapError((error) {
       _errorService.captureException(
         error,
         message: "Failed to get confirmed transactions paginated",
-        context: error is NetworkError
-            ? {
-                "message": error.message,
-                "endpoint": error.endpoint,
-                "fullUrl": error.fullUrl,
-                "statusCode": error.statusCode,
-                "address": params.address,
-                "lastSeenTxid": params.lastSeenTxid,
-              }
-            : {
-                "message": error?.toString(),
-                "address": params.address,
-                "lastSeenTxid": params.lastSeenTxid,
-              },
+        context: {
+          "message": error.message,
+          "endpoint": error.endpoint,
+          "fullUrl": error.fullUrl,
+          "statusCode": error.statusCode,
+          "address": params.address,
+          "lastSeenTxid": params.lastSeenTxid,
+        },
       );
     }).mapLeft((error) => error.message);
   }
