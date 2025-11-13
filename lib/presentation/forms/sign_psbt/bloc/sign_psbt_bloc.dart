@@ -252,6 +252,16 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
 
   Future<void> _handleSignPsbtSubmitted(
       SignPsbtSubmitted event, Emitter<SignPsbtState> emit) async {
+    final currentAddress =
+        addresses.firstWhereOrNull((a) => signInputs.keys.contains(a.address));
+
+    if (currentAddress == null) {
+      emit(state.copyWith(
+          submissionStatus: FormzSubmissionStatus.failure,
+          error: "Address not found"));
+      return;
+    }
+
     final task = TaskEither<String, String>.Do(($) async {
       final inputPrivateKeyMap = await $(buildInputPrivateKeyMap(
         addresses,
@@ -267,7 +277,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
       if (embeddedWitnessData) {
         final utxoMap = await $(
             _getUtxoMapForAddressUseCase.call(GetUtxoMapForAddressParams(
-          address: addresses.first,
+          address: currentAddress,
           httpConfig: httpConfig,
         )));
 
@@ -293,10 +303,11 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
 
     final result = await task.run();
 
+    // TODO: this should be logged
     result.fold((msg) {
       emit(state.copyWith(
           submissionStatus: FormzSubmissionStatus.failure,
-          error: msg.toString()));
+          error: "An unexpected error occurred."));
     }, (success) {
       emit(state.copyWith(
         submissionStatus: FormzSubmissionStatus.success,

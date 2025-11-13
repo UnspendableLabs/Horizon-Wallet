@@ -22,8 +22,9 @@ import 'package:horizon/domain/repositories/account_configurations_repository.da
 
 class AccountAddressesTile extends StatefulWidget {
   final String addressPath; // e.g. m/84'/0'/0'/0/12
-  final String? p2pkhAddress;
-  final String? p2wpkhAddress;
+  final AddressV2? p2pkhAddress;
+  final AddressV2? p2wpkhAddress;
+  final AddressV2? p2trAddress;
   final WalletConfig walletConfig;
   final VoidCallback? onTap;
   final Widget? leading;
@@ -37,6 +38,7 @@ class AccountAddressesTile extends StatefulWidget {
     required this.walletConfig,
     this.p2pkhAddress,
     this.p2wpkhAddress,
+    this.p2trAddress,
     this.onTap,
     this.leading,
     this.onMenuAction,
@@ -60,7 +62,12 @@ class _AccountAddressesTileState extends State<AccountAddressesTile>
 
   double get _height {
     final kinds = widget.walletConfig.supportedKinds.length;
-    return kinds == 2 ? 126 : 104;
+    return switch (kinds) {
+      1 => 126,
+      2 => 148,
+      3 => 170,
+      _ => 126,
+    };
   }
 
   @override
@@ -90,28 +97,55 @@ class _AccountAddressesTileState extends State<AccountAddressesTile>
     final text = theme.textTheme;
 
     final rows = <Widget>[
-      _InfoRow(
-        label: 'Path',
-        value: widget.addressPath,
-        valueStyle:
-            const TextStyle(fontFeatures: [FontFeature.tabularFigures()]),
-      ),
-      if (widget.walletConfig.supportedKinds.contains(AddressV2Type.p2pkh))
-        _InfoRow(
-          label: 'P2PKH',
-          value: widget.p2pkhAddress ?? "",
-          monospace: true,
-          ellipsizeMiddle: true,
-          copyable: false,
-        ),
-      if (widget.walletConfig.supportedKinds.contains(AddressV2Type.p2wpkh))
+      if (widget.walletConfig.supportedKinds
+          .contains(AddressV2Type.p2wpkh)) ...[
         _InfoRow(
           label: 'P2WPKH',
-          value: widget.p2wpkhAddress ?? "",
+          value: widget.p2wpkhAddress?.address ?? "",
           monospace: true,
           ellipsizeMiddle: true,
           copyable: false,
         ),
+        _InfoRow(
+          label: '',
+          value: widget.p2wpkhAddress?.derivation.toString() ?? "",
+          monospace: true,
+          ellipsizeMiddle: false,
+          copyable: false,
+        )
+      ],
+      if (widget.walletConfig.supportedKinds.contains(AddressV2Type.p2pkh)) ...[
+        _InfoRow(
+          label: 'P2PKH',
+          value: widget.p2pkhAddress?.address ?? "",
+          monospace: true,
+          ellipsizeMiddle: true,
+          copyable: false,
+        ),
+        _InfoRow(
+          label: '',
+          value: widget.p2pkhAddress?.derivation.toString() ?? "",
+          monospace: true,
+          ellipsizeMiddle: false,
+          copyable: false,
+        )
+      ],
+      if (widget.walletConfig.supportedKinds.contains(AddressV2Type.p2tr)) ...[
+        _InfoRow(
+          label: 'P2TR',
+          value: widget.p2trAddress?.address ?? "",
+          monospace: true,
+          ellipsizeMiddle: true,
+          copyable: false,
+        ),
+        _InfoRow(
+          label: '',
+          value: widget.p2trAddress?.derivation.toString() ?? "",
+          monospace: true,
+          ellipsizeMiddle: false,
+          copyable: false,
+        )
+      ],
     ];
 
     return SizedBox(
@@ -136,7 +170,7 @@ class _AccountAddressesTileState extends State<AccountAddressesTile>
                         style: text.bodyMedium!,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: rows,
                         ),
                       ),
@@ -394,9 +428,10 @@ class Bip32AccountDetailView extends StatelessWidget {
                 isCurrent: false,
               ),
               onReplete: (set) {
-                final p2pkh = set.getByType(AddressV2Type.p2pkh)?.address;
-                final p2wpkh = set.getByType(AddressV2Type.p2wpkh)?.address;
-                final isCurrent = [p2pkh, p2wpkh]
+                final p2pkh = set.getByType(AddressV2Type.p2pkh);
+                final p2wpkh = set.getByType(AddressV2Type.p2wpkh);
+                final p2tr = set.getByType(AddressV2Type.p2tr);
+                final isCurrent = [p2pkh?.address, p2wpkh?.address]
                     .whereType<String>()
                     .any(currentAddrs.contains);
 
@@ -420,6 +455,7 @@ class Bip32AccountDetailView extends StatelessWidget {
                   onTap: onTap,
                   p2pkhAddress: p2pkh,
                   p2wpkhAddress: p2wpkh,
+                  p2trAddress: p2tr,
                   addressPath: addressPath,
                   walletConfig: session.walletConfig,
                   isCurrent: isCurrent, // ← passed down

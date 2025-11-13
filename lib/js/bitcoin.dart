@@ -7,8 +7,11 @@ import './signer.dart';
 
 /// ---------- UTXO containers ----------
 
+@anonymous
 extension type WitnessUTXO._(JSObject o) implements JSObject {
   external WitnessUTXO({Buffer script, int value});
+
+  external Buffer script;
 }
 
 /// ---------- PSBT Input / Output ----------
@@ -146,6 +149,8 @@ extension type PsbtInputData._(JSObject _) implements JSObject {
   external JSArray<TapLeafScript>? get tapLeafScript;
   external Buffer? get tapInternalKey; // x-only 32 bytes
   external Buffer? get tapMerkleRoot; // 32 bytes
+  external WitnessUTXO? get witnessUtxo;
+  external Buffer? get nonWitnessUtxo;
 }
 
 extension type PsbtData._(JSObject _) implements JSObject {
