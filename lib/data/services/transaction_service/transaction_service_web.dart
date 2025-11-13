@@ -11,8 +11,9 @@ import 'package:hex/hex.dart';
 import 'package:horizon/data/sources/repositories/network_error_helpers.dart';
 
 import 'package:horizon/domain/entities/utxo.dart';
-import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
 import 'package:horizon/domain/entities/http_config.dart';
+import 'package:horizon/domain/entities/network.dart';
+import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
 import "package:horizon/domain/entities/bitcoin_tx.dart";
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
@@ -26,6 +27,12 @@ import 'package:horizon/presentation/common/shared_util.dart';
 import 'dart:math';
 
 import 'package:convert/convert.dart' as conv;
+
+bool isP2TRAddress(String addr) {
+  return addr.startsWith('bc1p') ||
+      addr.startsWith('tb1p') ||
+      addr.startsWith('bcrt1p'); // regtest
+}
 
 bool isP2TRScript(Uint8List script) {
   return script.length == 34 &&
@@ -605,9 +612,40 @@ class TransactionServiceWeb implements TransactionService {
     HttpConfig httpConfig, [
     List<int>? sighashTypes,
   ]) {
-    print(
-        "['signPsbt'] Signing PSBT with inputPrivateKeyMap: $inputPrivateKeyMap");
+    if (httpConfig.network.isSignet) {
+      return _signPsbtSignet(
+        psbtHex,
+        inputPrivateKeyMap,
+        httpConfig,
+        sighashTypes,
+      );
+    }
 
+    bitcoin.Psbt psbt = bitcoin.Psbt.fromHex(psbtHex);
+
+    for (final entry in inputPrivateKeyMap.entries) {
+      final index = entry.key;
+      final privateKey = entry.value.$2;
+
+      Buffer privKeyJS =
+          Buffer.from(Uint8List.fromList(hex.decode(privateKey)).toJS);
+
+      final signer =
+          ecpairFactory.fromPrivateKey(privKeyJS, httpConfig.network.toJS);
+
+      psbt.signInput(
+          index, signer, sighashTypes?.map((e) => e.toJS).toList().toJS);
+    }
+
+    return psbt.toHex();
+  }
+
+  String _signPsbtSignet(
+    String psbtHex,
+    Map<int, (String, String)> inputPrivateKeyMap,
+    HttpConfig httpConfig, [
+    List<int>? sighashTypes,
+  ]) {
     final psbt = bitcoin.Psbt.fromHex(psbtHex);
     final inputs = psbt.data.inputs;
 
@@ -634,6 +672,8 @@ class TransactionServiceWeb implements TransactionService {
       final witnessScript = inp.witnessUtxo?.script.toDart;
       final isTaprootByScript =
           witnessScript != null && isP2TRScript(witnessScript);
+
+      final isTaprootByAddress = isP2TRAddress(pubHexMaybe);
 
       final isTaproot = hasTik || isTaprootByScript;
 
@@ -677,10 +717,10 @@ class TransactionServiceWeb implements TransactionService {
 
         final tweakedSigner =
             ecpairFactory.fromPrivateKey(tweakedPriv, httpConfig.network.toJS);
+
         psbt.signInput(index, tweakedSigner, sigTypes);
       } else {
         // legacy / segwit
-        print("leg / seg signer");
         psbt.signInput(index, baseSigner, sigTypes);
       }
     }
