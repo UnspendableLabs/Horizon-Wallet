@@ -148,9 +148,6 @@ class AddressServiceWeb implements AddressService {
     required Seed seed,
     required Network network,
   }) async {
-    print("deriveAddressPrivateKeyWIP");
-
-    print("path: ${path.value}");
     bip32.BIP32Interface root =
         _bip32.fromSeed(Buffer.from(seed.bytes.toJS), network.toJS);
 

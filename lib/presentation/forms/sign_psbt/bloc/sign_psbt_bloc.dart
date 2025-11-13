@@ -263,9 +263,6 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
     }
 
     final task = TaskEither<String, String>.Do(($) async {
-      print("addresses: $addresses");
-      print("signInputs: $signInputs");
-
       final inputPrivateKeyMap = await $(buildInputPrivateKeyMap(
         addresses,
         signInputs,
@@ -292,8 +289,6 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
             onError: (e, c) => c.toString()));
       }
 
-      print("before call signPsbt");
-
       String signedHex = await $(TaskEither.fromEither(
           _transactionService.signPsbtT(
               psbtHex: psbt,
@@ -308,11 +303,11 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
 
     final result = await task.run();
 
+    // TODO: this should be logged
     result.fold((msg) {
-      throw (msg);
-      // emit(state.copyWith(
-      //     submissionStatus: FormzSubmissionStatus.failure,
-      //     error: msg.toString()));
+      emit(state.copyWith(
+          submissionStatus: FormzSubmissionStatus.failure,
+          error: "An unexpected error occurred."));
     }, (success) {
       emit(state.copyWith(
         submissionStatus: FormzSubmissionStatus.success,
