@@ -3,6 +3,7 @@ import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/address_info.dart';
 import 'package:get_it/get_it.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:horizon/domain/usecases/esplora/get_address_info.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -19,16 +20,18 @@ import 'package:formz/formz.dart';
 import "./bloc/generate_account_bloc.dart";
 
 class AccountsScreen extends StatelessWidget {
-  final BitcoinRepository _bitcoinRepository;
   final AddressV2Repository _addressV2Repository;
+  final GetAddressInfoMultiEsploraUseCase _getAddressInfoMultiUseCase;
 
   AccountsScreen(
       {BitcoinRepository? bitcoinRepository,
       AddressV2Repository? addressV2Repository,
+      GetAddressInfoMultiEsploraUseCase? getAddressInfoMultiUseCase,
       super.key})
       : _addressV2Repository =
             addressV2Repository ?? GetIt.I<AddressV2Repository>(),
-        _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>();
+        _getAddressInfoMultiUseCase = getAddressInfoMultiUseCase ??
+            GetIt.I<GetAddressInfoMultiEsploraUseCase>();
 
   @override
   Widget build(BuildContext context) {
@@ -106,14 +109,12 @@ class AccountsScreen extends StatelessWidget {
                               onError: (e, _) =>
                                   "failed to generate account addresses"));
 
-                      return await $(_bitcoinRepository.getAddressInfoMultiT(
-                          httpConfig: session.httpConfig,
-                          addresses:
-                              addressSet.list.map((a) => a.address).toList(),
-                          onError: (
-                            e,
-                          ) =>
-                              "failed to fetch BTC balance"));
+                      return await $(_getAddressInfoMultiUseCase
+                          .call(GetAddressInfoMultiEsploraParams(
+                        httpConfig: session.httpConfig,
+                        addresses:
+                            addressSet.list.map((a) => a.address).toList(),
+                      )));
                     }), builder: (context, state, refresh) {
                       return state.fold3(
                           onNone: () => const SizedBox.shrink(),

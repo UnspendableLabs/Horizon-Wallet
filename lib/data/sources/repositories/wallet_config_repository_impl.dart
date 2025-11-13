@@ -14,13 +14,13 @@ import 'package:horizon/domain/entities/address_v2.dart';
 
 const int _p2pkhFlag = 1 << 0; // 1
 const int _p2wpkhFlag = 1 << 1; // 2
-// const int _p2trFlag = 1 << 2; // 4
+const int _p2trFlag = 1 << 2; // 4
 
 int flagsForKinds(Set<AddressV2Type> kinds) {
   var m = 0;
   if (kinds.contains(AddressV2Type.p2pkh)) m |= _p2pkhFlag;
   if (kinds.contains(AddressV2Type.p2wpkh)) m |= _p2wpkhFlag;
-  // if (kinds.contains(entity.AddressKind.p2tr)) m |= _p2trFlag;
+  if (kinds.contains(AddressV2Type.p2tr)) m |= _p2trFlag;
   return m;
 }
 
@@ -28,7 +28,7 @@ Set<AddressV2Type> kindsForFlags(int mask) {
   final s = <AddressV2Type>{};
   if ((mask & _p2pkhFlag) != 0) s.add(AddressV2Type.p2pkh);
   if ((mask & _p2wpkhFlag) != 0) s.add(AddressV2Type.p2wpkh);
-  // if ((mask & _p2trFlag) != 0) s.add(entity.AddressKind.p2tr);
+  if ((mask & _p2trFlag) != 0) s.add(AddressV2Type.p2tr);
   return s;
 }
 

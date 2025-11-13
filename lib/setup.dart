@@ -7,6 +7,32 @@ import 'package:horizon/data/services/secure_kv_service_impl.dart';
 import 'package:horizon/domain/entities/address_rpc.dart';
 import 'package:horizon/domain/services/mempool_price_service.dart';
 import 'package:horizon/domain/services/secure_kv_service.dart';
+import 'package:horizon/domain/usecases/esplora/get_address_info.dart';
+import 'package:horizon/domain/usecases/esplora/get_block_height.dart';
+import 'package:horizon/domain/usecases/esplora/get_confirmed_transactions_paginated.dart';
+import 'package:horizon/domain/usecases/esplora/get_mempool_transactions.dart';
+import 'package:horizon/domain/usecases/esplora/get_transaction.dart';
+import 'package:horizon/domain/usecases/esplora/get_transaction_hex.dart';
+import 'package:horizon/domain/usecases/esplora/get_transactions.dart';
+import 'package:horizon/domain/usecases/finalize_psbt_send_raw_txn.dart';
+import 'package:horizon/domain/usecases/get_asset_verbose.dart';
+import 'package:horizon/domain/usecases/get_balances_by_addresses.dart';
+import 'package:horizon/domain/usecases/get_detach_data.dart';
+import 'package:horizon/domain/usecases/get_fee_estimates.dart';
+import 'package:horizon/domain/usecases/atomic_swap_create.dart';
+import 'package:horizon/domain/usecases/atomic_swap_multi_buy.dart';
+import 'package:horizon/domain/usecases/create_on_chain_payment.dart';
+import 'package:horizon/domain/usecases/decode_raw_transaction.dart';
+import 'package:horizon/domain/usecases/get_order_by_pair.dart';
+import 'package:horizon/domain/usecases/get_royalty_by_asset.dart';
+import 'package:horizon/domain/usecases/get_swaps_by_asset.dart';
+import 'package:horizon/domain/usecases/get_utxo_swap_map.dart';
+import 'package:horizon/domain/usecases/get_utxo_map_for_address.dart';
+import 'package:horizon/domain/usecases/get_unattached_utxo_map_for_address.dart';
+import 'package:horizon/domain/usecases/get_augmented_psbt_data.dart';
+import 'package:horizon/domain/usecases/horizon_api_asset_search.dart';
+import 'package:horizon/domain/usecases/search_swaps.dart';
+import 'package:horizon/domain/usecases/send_raw_transaction.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 
 import 'package:horizon/data/sources/repositories/in_memory_key_repository_impl.dart';
@@ -37,23 +63,19 @@ import 'package:horizon/data/services/mnemonic_service/mnemonic_service_factory.
 import 'package:horizon/data/services/transaction_service/transaction_service_factory.dart';
 // import 'package:horizon/data/services/wallet_service_impl.dart';
 import 'package:horizon/data/sources/repositories/account_settings_repository_impl.dart';
-import 'package:horizon/data/sources/repositories/address_tx_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/balance_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/block_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/compose_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/fairminter_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/imported_address_repository_impl.dart';
-import 'package:horizon/data/sources/repositories/node_info_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/utxo_repository_impl.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
-import 'package:horizon/domain/repositories/address_tx_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/block_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/estimate_xcp_fee_repository.dart';
 import 'package:horizon/domain/repositories/fairminter_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
-import 'package:horizon/domain/repositories/node_info_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/bip39.dart';
@@ -128,11 +150,8 @@ import 'package:horizon/data/sources/network/mempool_space_client_factory.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/usecase/set_mnemonic_usecase.dart';
 
-import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
-import 'package:horizon/presentation/common/usecase/get_virtual_size_usecase.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
-import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:horizon/domain/usecases/get_utxo_balances.dart';
@@ -373,9 +392,6 @@ void setup() {
 
   injector.registerSingleton<DatabaseManager>(createDatabaseManager());
 
-  injector.registerSingleton<AddressTxRepository>(AddressTxRepositoryImpl(
-    counterpartyClientFactory: GetIt.I.get<CounterpartyClientFactory>(),
-  ));
   injector.registerSingleton<ComposeRepository>(ComposeRepositoryImpl());
   injector.registerSingleton<EstimateXcpFeeRepository>(
       EstimateXcpFeeRepositoryImpl());
@@ -386,10 +402,17 @@ void setup() {
   )));
   injector.registerSingleton<UtxoRepository>(
       UtxoRepositoryImpl(cacheProvider: GetIt.I.get<CacheProvider>()));
+  injector.registerSingleton<GetTransactionHexEsploraUseCase>(
+      GetTransactionHexEsploraUseCase());
+  injector.registerSingleton<GetAddressInfoEsploraUseCase>(
+      GetAddressInfoEsploraUseCase());
+  injector.registerSingleton<GetAddressInfoMultiEsploraUseCase>(
+      GetAddressInfoMultiEsploraUseCase());
   injector.registerSingleton<BalanceRepository>(BalanceRepositoryImpl(
-      counterpartyClientFactory: GetIt.I.get<CounterpartyClientFactory>(),
-      utxoRepository: GetIt.I.get<UtxoRepository>(),
-      bitcoinRepository: GetIt.I.get<BitcoinRepository>()));
+    counterpartyClientFactory: GetIt.I.get<CounterpartyClientFactory>(),
+    utxoRepository: GetIt.I.get<UtxoRepository>(),
+    bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
+  ));
 
   injector.registerSingleton<BlockRepository>(BlockRepositoryImpl());
 
@@ -408,6 +431,9 @@ void setup() {
       createMnemonicService(bip39Service: GetIt.I.get<Bip39Service>()));
   injector.registerSingleton<BitcoindService>(
       BitcoindServiceCounterpartyProxyImpl());
+
+  injector.registerSingleton<FinalizePsbtSendRawTxnUseCase>(
+      FinalizePsbtSendRawTxnUseCase());
 
   injector.registerSingleton<WalletConfigRepository>(
       WalletConfigRepositoryImpl(injector.get<DatabaseManager>().database));
@@ -440,6 +466,8 @@ void setup() {
 
   injector.registerSingleton<OrderRepository>(OrderRepositoryImpl());
 
+  injector.registerSingleton<GetOrderByPairUseCase>(GetOrderByPairUseCase());
+
   injector
       .registerSingleton<TransactionRepository>(TransactionRepositoryImpl());
 
@@ -469,18 +497,23 @@ void setup() {
       FeeEstimatesRespositoryMempoolSpaceImpl(
           mempoolSpaceClientFactory: GetIt.I.get<MempoolSpaceClientFactory>()));
 
-  injector.registerSingleton<NodeInfoRepository>(NodeInfoRepositoryImpl());
-
   injector.registerSingleton<GetFeeEstimatesUseCase>(GetFeeEstimatesUseCase(
       feeEstimatesRepository: GetIt.I.get<FeeEstimatesRespository>()));
 
-  injector.registerSingleton<GetVirtualSizeUseCase>(GetVirtualSizeUseCase(
-    transactionService: GetIt.I.get<TransactionService>(),
-  ));
+  injector.registerSingleton<GetTransactionEsploraUseCase>(
+      GetTransactionEsploraUseCase());
 
-  injector.registerSingleton<EventsRepository>(EventsRepositoryImpl(
-      bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
-      cacheProvider: GetIt.I.get<CacheProvider>()));
+  injector.registerSingleton<GetBlockHeightEsploraUseCase>(
+      GetBlockHeightEsploraUseCase());
+  injector.registerSingleton<GetMempoolTransactionsEsploraUseCase>(
+      GetMempoolTransactionsEsploraUseCase());
+  injector.registerSingleton<GetConfirmedTransactionsPaginatedUseCase>(
+      GetConfirmedTransactionsPaginatedUseCase());
+  injector.registerSingleton<GetTransactionsEsploraUseCase>(
+      GetTransactionsEsploraUseCase());
+
+  injector.registerSingleton<EventsRepository>(
+      EventsRepositoryImpl(cacheProvider: GetIt.I.get<CacheProvider>()));
 
   injector.registerSingleton<SeedService>(SeedServiceImpl());
 
@@ -493,12 +526,6 @@ void setup() {
 
   injector.registerSingleton<SignAndBroadcastTransactionUseCase>(
       SignAndBroadcastTransactionUseCase());
-
-  injector.registerSingleton<WriteLocalTransactionUseCase>(
-      WriteLocalTransactionUseCase(
-    transactionRepository: GetIt.I.get<TransactionRepository>(),
-    transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),
-  ));
 
   injector.registerSingleton<ActionRepository>(ActionRepositoryImpl());
 
@@ -526,7 +553,8 @@ void setup() {
                       "address": address.address,
                       "type": switch (address.type) {
                         AddressRpcType.p2wpkh => "p2wpkh",
-                        AddressRpcType.p2pkh => "p2pkh"
+                        AddressRpcType.p2pkh => "p2pkh",
+                        AddressRpcType.p2tr => "p2tr",
                       },
                       "publicKey": address.publicKey,
                     };
@@ -641,9 +669,36 @@ void setup() {
       mempoolSpaceClientFactory: GetIt.I.get<MempoolSpaceClientFactory>()));
 
   injector.registerSingleton<RoyaltiesRepository>(RoyaltiesRepositoryImpl());
+  injector
+      .registerSingleton<GetRoyaltyByAssetUseCase>(GetRoyaltyByAssetUseCase());
 
   injector.registerSingleton<GetUTXOBalancesUseCase>(GetUTXOBalancesUseCase());
+  injector.registerSingleton<GetAugmentedPsbtDataUseCase>(
+      GetAugmentedPsbtDataUseCase());
   injector.registerSingleton<GetAllBalancesUseCase>(GetAllBalancesUseCase());
+  injector
+      .registerSingleton<AtomicSwapCreateUseCase>(AtomicSwapCreateUseCase());
+  injector.registerSingleton<AtomicSwapMultiBuyUseCase>(
+      AtomicSwapMultiBuyUseCase());
+  injector.registerSingleton<CreateOnChainPaymentUseCase>(
+      CreateOnChainPaymentUseCase());
+  injector.registerSingleton<DecodeRawTransactionUseCase>(
+      DecodeRawTransactionUseCase());
+  injector.registerSingleton<GetSwapsByAssetUseCase>(GetSwapsByAssetUseCase());
+  injector.registerSingleton<SearchSwapsUseCase>(SearchSwapsUseCase());
+  injector.registerSingleton<SendRawTransactionUseCase>(
+      SendRawTransactionUseCase());
+  injector.registerSingleton<GetUtxoSwapMapUseCase>(GetUtxoSwapMapUseCase());
+  injector.registerSingleton<GetUtxoMapForAddressUseCase>(
+      GetUtxoMapForAddressUseCase());
+  injector.registerSingleton<GetUnattachedUtxoMapForAddressUseCase>(
+      GetUnattachedUtxoMapForAddressUseCase());
+  injector.registerSingleton<SearchAssetsUseCase>(SearchAssetsUseCase());
+  injector.registerSingleton<GetAssetVerboseUseCase>(GetAssetVerboseUseCase());
+  injector.registerSingleton<GetDetachDataUseCase>(GetDetachDataUseCase());
+
+  injector.registerSingleton<GetBalancesByAddressesUseCase>(
+      GetBalancesByAddressesUseCase());
 }
 
 class CustomDioException extends DioException {

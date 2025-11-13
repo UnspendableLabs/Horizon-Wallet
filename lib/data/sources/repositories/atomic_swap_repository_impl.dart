@@ -103,8 +103,8 @@ class AtomicSwapRepositoryImpl implements AtomicSwapRepository {
   Future<List<AtomicSwap>> searchSwaps({
     required HttpConfig httpConfig,
     required String search,
-    required String orderBy,
-    required String order,
+    String orderBy = "price",
+    String order = "asc",
   }) async {
     // TODO: handle pagination?
 

@@ -1,14 +1,11 @@
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
-import 'package:horizon/common/format.dart';
 import 'package:horizon/data/models/cursor.dart' as cursor_model;
 import 'package:horizon/data/models/event.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart' as api;
-import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/cursor.dart' as cursor_entity;
 import 'package:horizon/domain/entities/cursor.dart';
 import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/domain/entities/http_config.dart';
-import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 
 import 'package:get_it/get_it.dart';
@@ -24,10 +21,7 @@ class StateMapper {
 }
 
 class VerboseEventMapper {
-  final BitcoinRepository bitcoinRepository;
-  VerboseEventMapper({required this.bitcoinRepository});
-
-  Future<VerboseEvent> toDomain(api.VerboseEvent apiEvent) async {
+  VerboseEvent toDomain(api.VerboseEvent apiEvent) {
     switch (apiEvent.event) {
       case 'ENHANCED_SEND':
         return VerboseEnhancedSendEventMapper.toDomain(
@@ -95,8 +89,7 @@ class VerboseEventMapper {
       case "UTXO_MOVE":
         return VerboseMoveToUtxoEventMapper.toDomain(
             apiEvent as api.VerboseMoveToUtxoEvent);
-      // return parseSwapFromMoveToUtxo(
-      //     apiEvent as api.VerboseMoveToUtxoEvent, currentAddress);
+
       case "ASSET_DESTRUCTION":
         return AssetDestructionEventMapper.toDomain(
             apiEvent as api.VerboseAssetDestructionEvent);
@@ -110,9 +103,6 @@ class VerboseEventMapper {
         return VerboseBurnEventMapper.toDomain(
             apiEvent as api.VerboseBurnEvent);
 
-      // case 'NEW_TRANSACTION':
-      //   return VerboseNewTransactionEventMapper.toDomain(
-      //       apiEvent as api.VerboseNewTransactionEvent);
       default:
         return VerboseEvent(
           state: StateMapper.getVerbose(apiEvent),
@@ -124,57 +114,6 @@ class VerboseEventMapper {
           blockTime: apiEvent.blockTime,
         );
     }
-  }
-
-  bool _isAtomicSwap(BitcoinTx transactionInfo) {
-    // if a move has multiple inputs, then we can assume it is a swap
-    // this will cover most cases, except those were an address swaps with itself
-    // opting for simiplicity now, and we can improve later if needed
-    return transactionInfo.vin
-            .map((input) => input.prevout?.scriptpubkeyAddress)
-            .where((address) => address != null)
-            .toSet()
-            .length >
-        1;
-  }
-
-  Future<VerboseEvent> parseSwapFromMoveToUtxo(
-      api.VerboseMoveToUtxoEvent apiEvent,
-      String currentAddress,
-      HttpConfig httpConfig) async {
-    // Both moves and swaps are captured by the UTXO_MOVE event
-    // they can be distinguished by the input/output details of the transaction
-    if (apiEvent.txHash == null) {
-      return VerboseMoveToUtxoEventMapper.toDomain(apiEvent);
-    }
-
-    final BitcoinTx transactionInfo = await bitcoinRepository.getTransaction(
-        txid: apiEvent.txHash!, httpConfig: httpConfig);
-
-    // atomic swaps will have at least 2 different input sources
-    final isAtomicSwap = _isAtomicSwap(transactionInfo);
-
-    // the btc that was swapped for the asset is held in the vout of the _other_ holder's address
-    // the output with value 546 and 547 are the values for attaching utxos, so we exclude them
-    if (isAtomicSwap) {
-      final bitcoinSwapOutputs = transactionInfo.vout.where((output) {
-        return currentAddress != output.scriptpubkeyAddress &&
-            output.value != 546 &&
-            output.value != 547;
-      }).toList();
-      if (bitcoinSwapOutputs.length != 1) {
-        // if there is not exactly one bitcoin output to the other address, then it does not qualify as a swap
-        return VerboseMoveToUtxoEventMapper.toDomain(apiEvent);
-      }
-      final bitcoinSwapOutput = bitcoinSwapOutputs.first;
-      final bitcoinSwapAmount =
-          satoshisToBtc(bitcoinSwapOutput.value).toStringAsFixed(8);
-
-      // construct the swap from the move event
-      return VerboseAtomicSwapEventMapper.toDomain(apiEvent, bitcoinSwapAmount);
-    }
-
-    return VerboseMoveToUtxoEventMapper.toDomain(apiEvent);
   }
 }
 
@@ -1114,12 +1053,9 @@ class BurnParamsMapper {
 }
 
 class EventsRepositoryImpl implements EventsRepository {
-  final BitcoinRepository bitcoinRepository;
   final CacheProvider cacheProvider;
   final CounterpartyClientFactory _counterpartyClientFactory;
-
   EventsRepositoryImpl({
-    required this.bitcoinRepository,
     required this.cacheProvider,
     CounterpartyClientFactory? counterpartyClientFactory,
   }) : _counterpartyClientFactory =
@@ -1159,8 +1095,7 @@ class EventsRepositoryImpl implements EventsRepository {
 
     List<VerboseEvent> events_ =
         await Future.wait(response.result!.map((event) async {
-      return await VerboseEventMapper(bitcoinRepository: bitcoinRepository)
-          .toDomain(event);
+      return VerboseEventMapper().toDomain(event);
     }).toList());
     events.addAll(events_);
     // Invalidate cache for AttachToUtxoEvent
@@ -1256,8 +1191,7 @@ class EventsRepositoryImpl implements EventsRepository {
         cursor_model.CursorMapper.toDomain(response.nextCursor);
     List<VerboseEvent> events =
         await Future.wait(response.result!.map((event) async {
-      return await VerboseEventMapper(bitcoinRepository: bitcoinRepository)
-          .toDomain(event);
+      return VerboseEventMapper().toDomain(event);
     }).toList());
 
     return (events, nextCursor, response.resultCount);

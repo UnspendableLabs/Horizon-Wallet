@@ -22,6 +22,7 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
         type_: switch (address.type) {
           AddressV2Type.p2pkh => "p2pkh",
           AddressV2Type.p2wpkh => "p2wpkh",
+          AddressV2Type.p2tr => "p2tr",
         },
         encryptedWif: address.encryptedWif,
         network: address.network.name));
@@ -35,6 +36,7 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
             type_: switch (a.type) {
               AddressV2Type.p2pkh => "p2pkh",
               AddressV2Type.p2wpkh => "p2wpkh",
+              AddressV2Type.p2tr => "p2tr",
             },
             encryptedWif: a.encryptedWif,
             network: a.network.name))

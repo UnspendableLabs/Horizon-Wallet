@@ -57,20 +57,6 @@ extension BalanceRepositoryX on BalanceRepository {
     );
   }
 
-  TaskEither<E, List<MultiAddressBalance>> getBalancesForAddressesT<E>({
-    required HttpConfig httpConfig,
-    required List<String> addresses,
-    required E Function(Object error, StackTrace stack) onError,
-  }) {
-    return TaskEither.tryCatch(
-      () => getBalancesForAddresses(
-        httpConfig: httpConfig,
-        addresses: addresses,
-      ),
-      onError,
-    );
-  }
-
   TaskEither<E, MultiAddressBalance> getBalancesForAddressesAndAssetT<E>({
     required HttpConfig httpConfig,
     required List<String> addresses,

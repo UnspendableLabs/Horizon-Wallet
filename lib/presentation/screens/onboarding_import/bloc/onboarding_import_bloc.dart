@@ -127,8 +127,6 @@ class OnboardingImportBloc
 
         await _settingsRepository.setWalletConfigID(walletConfig.uuid);
 
-        // await accountV2Repository.insert(AccountV2(uuid: uuid.v4(), index: 0));
-
         emit(state.copyWith(importState: const ImportState.success()));
       } catch (e) {
         emit(state.copyWith(

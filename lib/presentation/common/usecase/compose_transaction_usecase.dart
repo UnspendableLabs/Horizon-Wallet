@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import "package:equatable/equatable.dart";
+import 'package:horizon/data/sources/repositories/network_error_helpers.dart';
 import 'package:horizon/domain/entities/compose_fn.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/domain/entities/utxo.dart';
@@ -125,14 +126,14 @@ class ComposeTransactionUseCase {
           required ComposeFunction<P, R> composeFn,
           required HttpConfig httpConfig,
           String Function(Object error, StackTrace callstack)? onError}) {
-    return TaskEither.tryCatch(
-        () => call(
-              feeRate: feeRate,
-              source: source,
-              params: params,
-              composeFn: composeFn,
-              httpConfig: httpConfig,
-            ),
-        onError ?? (e, _) => e.toString());
+    return handleNetworkCall(() async {
+      return await call(
+        feeRate: feeRate,
+        source: source,
+        params: params,
+        composeFn: composeFn,
+        httpConfig: httpConfig,
+      );
+    }).mapLeft((error) => error.message);
   }
 }

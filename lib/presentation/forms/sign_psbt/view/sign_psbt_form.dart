@@ -17,23 +17,20 @@ import 'package:horizon/presentation/screens/horizon/redesign_ui.dart'
     as HorizonUI;
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
-import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/utils/app_icons.dart';
 
 class SignPsbtForm extends StatefulWidget {
   final bool passwordRequired;
   final PsbtType psbtType;
-  final AssetRepository _assetRepository;
 
   final void Function(String) onSuccess;
 
-  SignPsbtForm({
+  const SignPsbtForm({
     super.key,
     required this.onSuccess,
     required this.passwordRequired,
     required this.psbtType,
-    AssetRepository? assetRepository,
-  }) : _assetRepository = assetRepository ?? GetIt.I<AssetRepository>();
+  });
 
   @override
   State<SignPsbtForm> createState() => _SignPsbtFormState();

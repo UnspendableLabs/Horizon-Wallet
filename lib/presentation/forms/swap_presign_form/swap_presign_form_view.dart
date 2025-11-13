@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/repositories/royalties_repository.dart';
+import 'package:horizon/domain/usecases/get_royalty_by_asset.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
@@ -24,8 +26,7 @@ class SwapPresignFormProvider extends StatelessWidget {
   final HttpConfig httpConfig;
   final List<AtomicSwap> atomicSwaps;
   final String assetName;
-  final RoyaltiesRepository _royaltiesRepository;
-
+  final GetRoyaltyByAssetUseCase _getRoyaltyByAssetUseCase;
   final Widget Function(
     SwapPresignFormActions actions,
     SwapPresignFormModel state,
@@ -37,17 +38,17 @@ class SwapPresignFormProvider extends StatelessWidget {
     required this.httpConfig,
     required this.atomicSwaps,
     required this.assetName,
-    RoyaltiesRepository? royaltiesRepository,
-  }) : _royaltiesRepository =
-            royaltiesRepository ?? GetIt.I<RoyaltiesRepository>();
+    GetRoyaltyByAssetUseCase? getRoyaltyByAssetUseCase,
+  }) : _getRoyaltyByAssetUseCase =
+            getRoyaltyByAssetUseCase ?? GetIt.I<GetRoyaltyByAssetUseCase>();
 
   @override
   Widget build(BuildContext context) {
     return RemoteDataTaskEitherBuilder(
-        task: _royaltiesRepository.getByAssetT(
-            assetName: assetName,
-            httpConfig: httpConfig,
-            onError: (_, __) => "Error fetching royalties"),
+        task: _getRoyaltyByAssetUseCase
+            .call(GetRoyaltyByAssetParams(
+                httpConfig: httpConfig, assetName: assetName))
+            .mapLeft((_) => "Error fetching royalties"),
         builder: (context, state, refresh) => state.fold3(
             onNone: () => const Center(child: CircularProgressIndicator()),
             onFailure: (error) => Center(

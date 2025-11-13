@@ -10,6 +10,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/domain/usecases/esplora/get_block_height.dart';
+import 'package:horizon/domain/usecases/esplora/get_confirmed_transactions_paginated.dart';
+import 'package:horizon/domain/usecases/esplora/get_mempool_transactions.dart';
 
 abstract class BTCActivityEvent extends Equatable {
   const BTCActivityEvent();
@@ -100,14 +103,29 @@ class BtcActivityBloc extends Bloc<BTCActivityEvent, BtcActivityState> {
   Logger? logger;
   Timer? timer;
   String address;
-  final BitcoinRepository _bitcoinRepository;
+  final GetBlockHeightEsploraUseCase _getBlockHeightEsploraUseCase;
+  final GetConfirmedTransactionsPaginatedUseCase
+      _getConfirmedTransactionsPaginatedUseCase;
+  final GetMempoolTransactionsEsploraUseCase
+      _getMempoolTransactionsEsploraUseCase;
 
   BtcActivityBloc({
     required this.httpConfig,
     this.logger,
     required this.address,
     BitcoinRepository? bitcoinRepository,
-  })  : _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>(),
+    GetBlockHeightEsploraUseCase? getBlockHeightEsploraUseCase,
+    GetConfirmedTransactionsPaginatedUseCase?
+        getConfirmedTransactionsPaginatedUseCase,
+    GetMempoolTransactionsEsploraUseCase? getMempoolTransactionsEsploraUseCase,
+  })  : _getBlockHeightEsploraUseCase = getBlockHeightEsploraUseCase ??
+            GetIt.I<GetBlockHeightEsploraUseCase>(),
+        _getConfirmedTransactionsPaginatedUseCase =
+            getConfirmedTransactionsPaginatedUseCase ??
+                GetIt.I<GetConfirmedTransactionsPaginatedUseCase>(),
+        _getMempoolTransactionsEsploraUseCase =
+            getMempoolTransactionsEsploraUseCase ??
+                GetIt.I<GetMempoolTransactionsEsploraUseCase>(),
         super(const BtcActivityState(remoteState: Initial())) {
     on<Load>(_onLoad);
     on<LoadMore>(_onLoadMore);
@@ -128,20 +146,16 @@ class BtcActivityBloc extends Bloc<BTCActivityEvent, BtcActivityState> {
     final lastHash = replete.lastHash!;
 
     final task = TaskEither<String, BtcFeedStateReplete>.Do(($) async {
-      final confirmedTask =
-          _bitcoinRepository.getConfirmedTransactionsPaginatedT(
-              address: address,
-              lastSeenTxid: lastHash,
-              httpConfig: httpConfig,
-              onError: (e) {
-                return "error fetching confirmed tx";
-              });
+      final confirmedTask = _getConfirmedTransactionsPaginatedUseCase
+          .call(GetConfirmedTransactionsPaginateParams(
+        httpConfig: httpConfig,
+        address: address,
+        lastSeenTxid: lastHash,
+      ));
 
-      final blockHeightTask = _bitcoinRepository.getBlockHeightT(
-          httpConfig: httpConfig,
-          onError: (e) {
-            return "error fetching block height";
-          });
+      final blockHeightTask = _getBlockHeightEsploraUseCase
+          .call(GetBlockHeightEsploraParams(httpConfig: httpConfig))
+          .mapLeft((_) => "error fetching block height");
 
       final [confirmedTxs as List<BitcoinTx>, blockHeight as int] =
           await $(TaskEither.sequenceList([confirmedTask, blockHeightTask]));
@@ -181,20 +195,23 @@ class BtcActivityBloc extends Bloc<BTCActivityEvent, BtcActivityState> {
     emit(state.copyWith(remoteState: nextState));
 
     final task = TaskEither<String, dynamic>.Do(($) async {
-      final mempoolTask = _bitcoinRepository.getMempoolTransactionsT(
-          addresses: [address],
-          httpConfig: httpConfig,
-          onError: (_) => "error fetching mempool tx");
+      final mempoolTask = _getMempoolTransactionsEsploraUseCase
+          .call(GetMempoolTransactionsEsploraParams(
+            httpConfig: httpConfig,
+            addresses: [address],
+          ))
+          .mapLeft((_) => "error fetching mempool tx");
 
-      final confirmedTask =
-          _bitcoinRepository.getConfirmedTransactionsPaginatedT(
-              address: address,
-              httpConfig: httpConfig,
-              onError: (_) => "error fetching confirmed tx");
+      final confirmedTask = _getConfirmedTransactionsPaginatedUseCase
+          .call(GetConfirmedTransactionsPaginateParams(
+            address: address,
+            httpConfig: httpConfig,
+          ))
+          .mapLeft((_) => "error fetching confirmed tx");
 
-      final blockHeightTask = _bitcoinRepository.getBlockHeightT(
-          httpConfig: httpConfig,
-          onError: (_) => "error fetching block height");
+      final blockHeightTask = _getBlockHeightEsploraUseCase
+          .call(GetBlockHeightEsploraParams(httpConfig: httpConfig))
+          .mapLeft((_) => "error fetching block height");
 
       final [
         mempoolTxs as List<BitcoinTx>,

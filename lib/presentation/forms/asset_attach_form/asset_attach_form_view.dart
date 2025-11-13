@@ -7,7 +7,7 @@ import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
-import 'package:horizon/domain/repositories/fee_estimates_repository.dart';
+import 'package:horizon/domain/usecases/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/transactions/transaction_fee_selection.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
@@ -39,7 +39,7 @@ class AssetAttachFormProvider extends StatelessWidget {
   final String quantityNormalized;
   final String? description;
   final bool divisible;
-  final FeeEstimatesRespository _feeEstimatesRepository;
+  final GetFeeEstimatesUseCase _getFeeEstimatesUseCase;
 
   final Widget Function(
       AssetAttachFormActions actions, AssetAttachFormModel state) child;
@@ -53,17 +53,17 @@ class AssetAttachFormProvider extends StatelessWidget {
     required this.quantityNormalized,
     required this.description,
     required this.divisible,
-    FeeEstimatesRespository? feeEstimatesRepository,
-  }) : _feeEstimatesRepository =
-            feeEstimatesRepository ?? GetIt.I<FeeEstimatesRespository>();
+    GetFeeEstimatesUseCase? getFeeEstimatesUseCase,
+  }) : _getFeeEstimatesUseCase =
+            getFeeEstimatesUseCase ?? GetIt.I<GetFeeEstimatesUseCase>();
 
   @override
   Widget build(BuildContext context) {
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
 
     return RemoteDataTaskEitherBuilder<String, FeeEstimates>(
-        task: _feeEstimatesRepository.getFeeEstimates(
-            httpConfig: session.httpConfig),
+        task: _getFeeEstimatesUseCase(
+            GetFeeEstimatesParams(httpConfig: session.httpConfig)),
         builder: (context, state, refresh) => state.fold(
             onInitial: () => const SizedBox.shrink(),
             onLoading: () => const Center(child: CircularProgressIndicator()),
