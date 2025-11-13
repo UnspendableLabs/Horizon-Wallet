@@ -252,6 +252,16 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
 
   Future<void> _handleSignPsbtSubmitted(
       SignPsbtSubmitted event, Emitter<SignPsbtState> emit) async {
+    final currentAddress =
+        addresses.firstWhereOrNull((a) => signInputs.keys.contains(a.address));
+
+    if (currentAddress == null) {
+      emit(state.copyWith(
+          submissionStatus: FormzSubmissionStatus.failure,
+          error: "Address not found"));
+      return;
+    }
+
     final task = TaskEither<String, String>.Do(($) async {
       print("addresses: $addresses");
       print("signInputs: $signInputs");
@@ -270,7 +280,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
       if (embeddedWitnessData) {
         final utxoMap = await $(
             _getUtxoMapForAddressUseCase.call(GetUtxoMapForAddressParams(
-          address: addresses.first,
+          address: currentAddress,
           httpConfig: httpConfig,
         )));
 
@@ -281,6 +291,8 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
             httpConfig: httpConfig,
             onError: (e, c) => c.toString()));
       }
+
+      print("before call signPsbt");
 
       String signedHex = await $(TaskEither.fromEither(
           _transactionService.signPsbtT(
@@ -297,9 +309,10 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
     final result = await task.run();
 
     result.fold((msg) {
-      emit(state.copyWith(
-          submissionStatus: FormzSubmissionStatus.failure,
-          error: msg.toString()));
+      throw (msg);
+      // emit(state.copyWith(
+      //     submissionStatus: FormzSubmissionStatus.failure,
+      //     error: msg.toString()));
     }, (success) {
       emit(state.copyWith(
         submissionStatus: FormzSubmissionStatus.success,

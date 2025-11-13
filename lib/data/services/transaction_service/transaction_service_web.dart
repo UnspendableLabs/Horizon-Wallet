@@ -27,6 +27,12 @@ import 'dart:math';
 
 import 'package:convert/convert.dart' as conv;
 
+bool isP2TRScript(Uint8List script) {
+  return script.length == 34 &&
+      script[0] == 0x51 && // OP_1
+      script[1] == 0x20; // PUSH32
+}
+
 extension ListToJSArray<T extends JSAny?> on List<T> {
   JSArray<T> toJSArray() {
     final jsArray = JSArray<T>();
@@ -625,14 +631,17 @@ class TransactionServiceWeb implements TransactionService {
           inp.tapLeafScript != null && inp.tapLeafScript!.length > 0;
       final hasTik = inp.tapInternalKey != null;
 
-      print("hasLeaf $hasLeaf");
-      print("hasTik $hasTik");
+      final witnessScript = inp.witnessUtxo?.script.toDart;
+      final isTaprootByScript =
+          witnessScript != null && isP2TRScript(witnessScript);
+
+      final isTaproot = hasTik || isTaprootByScript;
 
       if (hasLeaf) {
         // SCRIPT-PATH: sign with raw (untweaked) leaf key
         psbt.signInput(index, baseSigner, sigTypes);
         continue;
-      } else if (hasTik) {
+      } else if (isTaproot) {
         final merkle = inp.tapMerkleRoot; // can be null
         late Buffer tweakData;
         if (merkle != null) {
