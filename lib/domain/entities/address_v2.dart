@@ -24,7 +24,7 @@ class Bip32Path extends DerivationType {
 
   @override
   toString() {
-    return 'Bip32Path(value: $value)';
+    return value;
   }
 }
 

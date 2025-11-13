@@ -599,6 +599,9 @@ class TransactionServiceWeb implements TransactionService {
     HttpConfig httpConfig, [
     List<int>? sighashTypes,
   ]) {
+    print(
+        "['signPsbt'] Signing PSBT with inputPrivateKeyMap: $inputPrivateKeyMap");
+
     final psbt = bitcoin.Psbt.fromHex(psbtHex);
     final inputs = psbt.data.inputs;
 
@@ -621,6 +624,9 @@ class TransactionServiceWeb implements TransactionService {
       final hasLeaf =
           inp.tapLeafScript != null && inp.tapLeafScript!.length > 0;
       final hasTik = inp.tapInternalKey != null;
+
+      print("hasLeaf $hasLeaf");
+      print("hasTik $hasTik");
 
       if (hasLeaf) {
         // SCRIPT-PATH: sign with raw (untweaked) leaf key
@@ -665,6 +671,7 @@ class TransactionServiceWeb implements TransactionService {
         psbt.signInput(index, tweakedSigner, sigTypes);
       } else {
         // legacy / segwit
+        print("leg / seg signer");
         psbt.signInput(index, baseSigner, sigTypes);
       }
     }

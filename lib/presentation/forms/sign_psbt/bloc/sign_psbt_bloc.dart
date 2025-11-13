@@ -253,6 +253,9 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
   Future<void> _handleSignPsbtSubmitted(
       SignPsbtSubmitted event, Emitter<SignPsbtState> emit) async {
     final task = TaskEither<String, String>.Do(($) async {
+      print("addresses: $addresses");
+      print("signInputs: $signInputs");
+
       final inputPrivateKeyMap = await $(buildInputPrivateKeyMap(
         addresses,
         signInputs,

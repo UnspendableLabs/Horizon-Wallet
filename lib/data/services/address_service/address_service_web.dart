@@ -126,10 +126,16 @@ class AddressServiceWeb implements AddressService {
         _ => hex.encode(compressedPub), // compressed
       };
 
+      final derivationPath = switch (kind) {
+        AddressV2Type.p2wpkh => path,
+        AddressV2Type.p2pkh => path,
+        AddressV2Type.p2tr => _taprootPathFromBase(path, network),
+      };
+
       result[kind] = AddressV2(
           type: kind,
           address: address,
-          derivation: Bip32Path(value: _taprootPathFromBase(path, network)),
+          derivation: Bip32Path(value: derivationPath),
           publicKey: publicKeyHex);
     }
 
