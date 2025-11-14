@@ -130,6 +130,7 @@ class SendReviewSignHandler extends StatelessWidget {
                         //     style: Theme.of(context).textTheme.headlineSmall),
                         child: BlocProvider(
                             create: (context) => SignPsbtBloc(
+                                  sighashTypes: null,
                                   psbtType: psbtType,
                                   embeddedWitnessData: true,
                                   httpConfig: session.httpConfig,
@@ -152,9 +153,6 @@ class SendReviewSignHandler extends StatelessWidget {
                                             resp.numInputs(), (n) => n),
                                     }
                                   },
-                                  sighashTypes: [
-                                    0x01 // SIGHASH_ALL
-                                  ],
                                 ),
                             child: SignPsbtForm(
                               psbtType: psbtType,
