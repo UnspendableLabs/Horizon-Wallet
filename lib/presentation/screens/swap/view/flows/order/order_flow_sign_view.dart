@@ -386,9 +386,7 @@ class OrderSignHandler extends StatelessWidget {
                                             composeResponse.numInputs(),
                                             (index) => index)
                                       },
-                                      sighashTypes: [
-                                        0x01 // SIGHASH_ALL
-                                      ],
+                                      sighashTypes: null,
                                     ),
                                 child: SignPsbtForm(
                                   psbtType: OrderPsbt(
