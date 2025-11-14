@@ -28,17 +28,70 @@ import 'dart:math';
 
 import 'package:convert/convert.dart' as conv;
 
-bool isP2TRAddress(String addr) {
-  return addr.startsWith('bc1p') ||
-      addr.startsWith('tb1p') ||
-      addr.startsWith('bcrt1p'); // regtest
-}
-
 bool isP2TRScript(Uint8List script) {
   return script.length == 34 &&
       script[0] == 0x51 && // OP_1
       script[1] == 0x20; // PUSH32
 }
+
+bool isP2TRAddress(String addr) {
+  final a = addr.toLowerCase();
+  return a.startsWith('bc1p') || a.startsWith('tb1p') || a.startsWith('bcrt1p');
+}
+
+final _secp256k1N = BigInt.parse(
+  'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141',
+  radix: 16,
+);
+
+Buffer taprootTweakPrivKey(
+  Buffer privKey,
+  ecpair.ECPairInterface baseSigner, {
+  Buffer? merkleRoot,
+}) {
+  // seckey0 = bytesToNumberBE(privKey)
+  final seckey0 = BigInt.parse(
+    conv.hex.encode(privKey.toDart),
+    radix: 16,
+  );
+
+  // Compressed pubkey: 0x02/0x03 + 32-byte x
+  final pub33 = baseSigner.publicKey;
+  final pubBytes = pub33.toDart;
+  final prefix = pubBytes[0]; // 0x02 = even Y, 0x03 = odd Y
+
+  // seckey = seckey0 if has_even_y(P) else -seckey0 mod n
+  final isOddY = prefix == 0x03;
+  final seckey = isOddY ? (_secp256k1N - seckey0) : seckey0;
+
+  // x-only pubkey
+  final xOnly = pubBytes.sublist(1); // 32 bytes
+
+  // merkleRoot default: empty
+  final merkleBytes = merkleRoot?.toDart ?? Uint8List(0);
+
+  // tagged_hash("TapTweak", xOnly || merkleRoot)
+  final tweakInput = Uint8List(xOnly.length + merkleBytes.length)
+    ..setAll(0, xOnly)
+    ..setAll(xOnly.length, merkleBytes);
+  final tweakBuf = bitcoin.taggedHash('TapTweak', Buffer.from(tweakInput.toJS));
+
+  final t = BigInt.parse(
+    conv.hex.encode(tweakBuf.toDart),
+    radix: 16,
+  );
+  if (t >= _secp256k1N) {
+    throw Exception('tweak higher than curve order');
+  }
+
+  final tweaked = (seckey + t) % _secp256k1N;
+  final tweakedHex = tweaked.toRadixString(16).padLeft(64, '0');
+  final tweakedBytes = Uint8List.fromList(conv.hex.decode(tweakedHex));
+
+  return Buffer.from(tweakedBytes.toJS);
+}
+
+// secp256k1 order n (same as noble's CURVE_ORDER)
 
 extension ListToJSArray<T extends JSAny?> on List<T> {
   JSArray<T> toJSArray() {
@@ -660,69 +713,37 @@ class TransactionServiceWeb implements TransactionService {
       final baseSigner =
           ecpairFactory.fromPrivateKey(privBuf, httpConfig.network.toJS);
 
-      final basePub33 = baseSigner.publicKey; // compressed 33
-      final basePub33Prefix = basePub33.toDart[0];
-      final baseXOnly = Buffer.from(basePub33.toDart.sublist(1).toJS);
+      final inp = inputs[index];
 
-      final bitcoin.PsbtInputData inp = inputs[index];
       final hasLeaf =
           inp.tapLeafScript != null && inp.tapLeafScript!.length > 0;
       final hasTik = inp.tapInternalKey != null;
-
       final witnessScript = inp.witnessUtxo?.script.toDart;
       final isTaprootByScript =
           witnessScript != null && isP2TRScript(witnessScript);
-
-      final isTaprootByAddress = isP2TRAddress(pubHexMaybe);
-
       final isTaproot = hasTik || isTaprootByScript;
 
-      if (hasLeaf) {
-        // SCRIPT-PATH: sign with raw (untweaked) leaf key
+      // segwit / legacy / p2tr script spend
+      if (!isTaproot || hasLeaf) {
         psbt.signInput(index, baseSigner, sigTypes);
         continue;
-      } else if (isTaproot) {
-        final merkle = inp.tapMerkleRoot; // can be null
-        late Buffer tweakData;
-        if (merkle != null) {
-          final xb = baseXOnly.toDart, mb = merkle.toDart;
-          final concat = Uint8List(xb.length + mb.length)
-            ..setAll(0, xb)
-            ..setAll(xb.length, mb);
-          tweakData = Buffer.from(concat.toJS);
-        } else {
-          tweakData = baseXOnly;
-        }
-
-        final tweak = bitcoin.taggedHash('TapTweak', tweakData);
-        // secp256k1 order n
-        final n = BigInt.parse(
-            'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141',
-            radix: 16);
-
-        // Parse ints
-        final d0 = BigInt.parse(conv.hex.encode(privBuf.toDart), radix: 16);
-        final tw = BigInt.parse(conv.hex.encode(tweak.toDart), radix: 16);
-
-        // BIP340 parity: if pub33 is odd (0x03), flip d
-        final isOddY = basePub33Prefix == 0x03;
-        final d = isOddY ? (n - d0) : d0;
-
-        final tweaked = (d + tw) % n;
-        final tweakedPriv = Buffer.from(
-          Uint8List.fromList(
-                  conv.hex.decode(tweaked.toRadixString(16).padLeft(64, '0')))
-              .toJS,
-        );
-
-        final tweakedSigner =
-            ecpairFactory.fromPrivateKey(tweakedPriv, httpConfig.network.toJS);
-
-        psbt.signInput(index, tweakedSigner, sigTypes);
-      } else {
-        // legacy / segwit
-        psbt.signInput(index, baseSigner, sigTypes);
       }
+
+      // p2tr key path spend
+      if (witnessScript == null || !isP2TRScript(witnessScript)) {
+        throw Exception('Taproot input without valid P2TR scriptPubKey');
+      }
+
+      final tweakedPrivBuf = taprootTweakPrivKey(
+        privBuf,
+        baseSigner,
+        merkleRoot: inp.tapMerkleRoot,
+      );
+
+      final tweakedSigner =
+          ecpairFactory.fromPrivateKey(tweakedPrivBuf, httpConfig.network.toJS);
+
+      psbt.signInput(index, tweakedSigner, sigTypes);
     }
 
     return psbt.toHex();
@@ -1165,61 +1186,96 @@ class TransactionServiceWeb implements TransactionService {
   }
 
   @override
-  Future<String> embedWitnessData(
-      {required String psbtHex,
-      required Map<int, (String, String)> inputPrivateKeyMap,
-      required Map<String, Utxo> utxoMap,
-      required HttpConfig httpConfig}) async {
-    bitcoin.Transaction transaction =
-        bitcoin.Transaction.fromHex(psbtToUnsignedTransactionHex(psbtHex));
+  Future<String> embedWitnessData({
+    required String psbtHex,
+    required Map<int, (String, String)> inputPrivateKeyMap,
+    required Map<String, Utxo> utxoMap,
+    required HttpConfig httpConfig,
+  }) async {
+    final txHex = psbtToUnsignedTransactionHex(psbtHex);
+    bitcoin.Transaction transaction = bitcoin.Transaction.fromHex(txHex);
 
-    bitcoin.Psbt psbt = bitcoin.Psbt(bitcoin.PsbtOptions(
-      network: httpConfig.network.toJS,
-    ));
+    bitcoin.Psbt psbt = bitcoin.Psbt(
+      bitcoin.PsbtOptions(network: httpConfig.network.toJS),
+    );
 
     for (var i = 0; i < transaction.ins.toDart.length; i++) {
       final inputSignerData = inputPrivateKeyMap[i];
       if (inputSignerData == null) continue;
 
-      final source = inputSignerData.$1;
-      final privateKey = inputSignerData.$2;
+      final sourceAddress = inputSignerData.$1;
+      final privateKeyHex = inputSignerData.$2;
 
       final input = transaction.ins.toDart[i];
       final txHash = HEX.encode(input.hash.toDart.reversed.toList());
       final utxoID = "$txHash:${input.index}";
 
       final utxo = utxoMap[utxoID];
-
       if (utxo == null) {
         throw TransactionServiceException('Could not find output at $utxoID');
       }
 
-      Buffer privKeyJS =
-          Buffer.from(Uint8List.fromList(hex.decode(privateKey)).toJS);
-      dynamic signer =
+      final privKeyBytes = Uint8List.fromList(hex.decode(privateKeyHex));
+      final privKeyJS = Buffer.from(privKeyBytes.toJS);
+      final signer =
           ecpairFactory.fromPrivateKey(privKeyJS, httpConfig.network.toJS);
 
-      if (addressIsSegwit(source)) {
-        bitcoin.Payment script = bitcoin.p2wpkh(bitcoin.PaymentOptions(
-            pubkey: signer.publicKey, network: httpConfig.network.toJS));
+      // --- TAPROOT (P2TR) ---
+      if (isP2TRAddress(sourceAddress)) {
+        // x-only internal pubkey
+        final pub33 = signer.publicKey.toDart;
+        final xOnly = Buffer.from(pub33.sublist(1).toJS);
+
+        final p2tr = bitcoin.p2tr(bitcoin.PaymentOptionsTaproot(
+          internalPubkey: xOnly,
+          network: httpConfig.network.toJS,
+        ));
+
         input.witnessUtxo = bitcoin.WitnessUTXO(
-            script: Buffer.from(script.output), value: utxo.value);
-        psbt.addInput(input);
-      } else {
-        bitcoin.Payment script = bitcoin.p2pkh(bitcoin.PaymentOptions(
-            pubkey: signer.publicKey, network: httpConfig.network.toJS));
-        input.script = script.output;
-        final txHex =
-            await getTransactionHex(txid: utxo.txid, httpConfig: httpConfig);
-        input.nonWitnessUtxo =
-            Buffer.from(Uint8List.fromList(HEX.decode(txHex)).toJS);
+          script: Buffer.from(p2tr.output),
+          value: utxo.value,
+        );
+        input.tapInternalKey = xOnly;
 
         psbt.addInput(input);
+        continue;
       }
+
+      // --- NATIVE SEGWIT v0 (P2WPKH) ---
+      if (addressIsSegwit(sourceAddress)) {
+        final p2wpkh = bitcoin.p2wpkh(bitcoin.PaymentOptions(
+          pubkey: signer.publicKey,
+          network: httpConfig.network.toJS,
+        ));
+
+        input.witnessUtxo = bitcoin.WitnessUTXO(
+          script: Buffer.from(p2wpkh.output),
+          value: utxo.value,
+        );
+
+        psbt.addInput(input);
+        continue;
+      }
+
+      // --- LEGACY (P2PKH) ---
+      final p2pkh = bitcoin.p2pkh(bitcoin.PaymentOptions(
+        pubkey: signer.publicKey,
+        network: httpConfig.network.toJS,
+      ));
+
+      input.script = p2pkh.output;
+
+      final fundingTxHex =
+          await getTransactionHex(txid: utxo.txid, httpConfig: httpConfig);
+
+      input.nonWitnessUtxo =
+          Buffer.from(Uint8List.fromList(HEX.decode(fundingTxHex)).toJS);
+
+      psbt.addInput(input);
     }
 
     for (var i = 0; i < transaction.outs.toDart.length; i++) {
-      bitcoin.TxOutput output = transaction.outs.toDart[i];
+      final output = transaction.outs.toDart[i];
       psbt.addOutput(output);
     }
 
