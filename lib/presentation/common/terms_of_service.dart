@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:horizon/utils/horizon_market_referral.dart';
 
 class TermsOfService extends StatelessWidget {
   const TermsOfService({super.key});
@@ -8,7 +9,7 @@ class TermsOfService extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     void launchURL(String path) async {
-      final uri = Uri.parse("https://horizon.market/$path");
+      final uri = withWalletReferral(Uri.parse("https://horizon.market/$path"));
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       }
