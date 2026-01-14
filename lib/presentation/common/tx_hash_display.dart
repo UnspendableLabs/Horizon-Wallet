@@ -9,6 +9,8 @@ import 'package:horizon/presentation/session/bloc/session_state.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:horizon/utils/horizon_market_referral.dart';
+
 enum URIType { btcexplorer, hoex }
 
 class TxHashDisplay extends StatefulWidget {
@@ -41,8 +43,9 @@ class TxHashDisplayState extends State<TxHashDisplay> {
     final uri = switch (widget.uriType) {
       URIType.btcexplorer =>
         Uri.parse("${httpConfig.btcExplorer}/tx/${widget.hash}"),
-      URIType.hoex =>
-        Uri.parse("${httpConfig.horizonMarket}/explorer/tx/${widget.hash}")
+      URIType.hoex => withWalletReferral(
+          Uri.parse("${httpConfig.horizonMarket}/explorer/tx/${widget.hash}"),
+        )
     };
 
     // final uri =

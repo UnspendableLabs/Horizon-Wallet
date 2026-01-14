@@ -7,6 +7,7 @@ import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:horizon/utils/horizon_market_referral.dart';
 
 class Tool extends StatelessWidget {
   final String title;
@@ -52,7 +53,10 @@ class Tool extends StatelessWidget {
           hoverColor: transparentPurple8,
           highlightColor: transparentPurple8,
           onTap: () async {
-            final uri = Uri.parse(href);
+            final parsed = Uri.parse(href);
+            final uri = href.startsWith(session.httpConfig.horizonMarket)
+                ? withWalletReferral(parsed)
+                : parsed;
 
             if (!await launchUrl(uri)) {
               throw Exception('Could not launch $uri');
