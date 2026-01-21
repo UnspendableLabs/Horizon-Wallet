@@ -4,6 +4,7 @@ class Asset {
   final String? description;
   final bool? divisible;
   final bool? locked;
+  final bool? descriptionLocked;
   final String? issuer;
   final String? owner;
   final int? supply;
@@ -15,6 +16,7 @@ class Asset {
       this.description,
       this.divisible,
       this.locked,
+      this.descriptionLocked,
       this.issuer,
       this.owner,
       this.supply,

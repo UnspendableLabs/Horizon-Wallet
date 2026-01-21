@@ -689,7 +689,7 @@ class BalancesSliverState extends State<BalancesSliver> {
                     ),
                     PopupMenuItem<IssuanceActionType>(
                       value: IssuanceActionType.changeDescription,
-                      enabled: currentOwnedAsset?.locked != true &&
+                      enabled: currentOwnedAsset?.descriptionLocked != true &&
                           !fairminterAssets.contains(currentOwnedAsset?.asset),
                       child: const Text('Change Description'),
                     ),
