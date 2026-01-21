@@ -2919,6 +2919,7 @@ class AssetVerbose {
   final String? owner;
   final bool? divisible;
   final bool? locked;
+  final bool? descriptionLocked;
   final int? supply;
   final bool? confirmed;
   final String? supplyNormalized;
@@ -2929,6 +2930,7 @@ class AssetVerbose {
     this.description,
     this.divisible,
     this.locked,
+    this.descriptionLocked,
     this.issuer,
     this.owner,
     this.supply,
