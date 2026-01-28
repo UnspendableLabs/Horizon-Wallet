@@ -1,8 +1,9 @@
 import 'package:get_it/get_it.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
-import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/data/sources/network/esplora_client_factory.dart';
-import 'package:horizon/data/sources/network/counterparty_client_factory.dart';
+import 'package:horizon/data/sources/network/horizon_explorer_client.dart';
+import 'package:horizon/data/sources/network/horizon_explorer_client_factory.dart';
+import 'package:retrofit/retrofit.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
@@ -10,17 +11,18 @@ import 'package:horizon/domain/repositories/utxo_attach_repository.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 
 class UtxoRepositoryImpl implements UtxoRepository {
-  final CounterpartyClientFactory _counterpartyClientFactory =
-      GetIt.I<CounterpartyClientFactory>();
+  final HorizonExplorerClientFactory _horizonExplorerClientFactory;
   final EsploraClientFactory _esploraClientFactory;
   final UtxoAttachRepository _utxoAttachRepository;
   final CacheProvider cacheProvider;
   UtxoRepositoryImpl(
-      {CounterpartyClientFactory? counterpartyClientFactory,
+      {HorizonExplorerClientFactory? horizonExplorerClientFactory,
       UtxoAttachRepository? utxoAttachRepository,
       EsploraClientFactory? esploraClientFactory,
       required this.cacheProvider})
-      : _esploraClientFactory =
+      : _horizonExplorerClientFactory =
+            horizonExplorerClientFactory ?? GetIt.I<HorizonExplorerClientFactory>(),
+        _esploraClientFactory =
             esploraClientFactory ?? GetIt.I<EsploraClientFactory>(),
         _utxoAttachRepository =
             utxoAttachRepository ?? GetIt.I<UtxoAttachRepository>();
@@ -101,7 +103,7 @@ class UtxoRepositoryImpl implements UtxoRepository {
       final utxoIds = chunk.map((u) => '${u.txid}:${u.vout}').join(',');
 
       final Response<UtxoWithBalancesResponse> response =
-          await _counterpartyClientFactory
+          await _horizonExplorerClientFactory
               .getClient(httpConfig)
               .utxosWithBalances(utxoIds);
 
