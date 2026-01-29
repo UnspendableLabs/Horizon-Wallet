@@ -320,7 +320,7 @@ abstract class HorizonExplorerApii {
   factory HorizonExplorerApii(Dio dio, {String baseUrl}) = _HorizonExplorerApii;
 
   @GET('/counterparty/utxos/withbalances')
-  Future<Response<UtxoWithBalancesResponse>> utxosWithBalances(
+  Future<UtxoWithBalancesResponse> utxosWithBalances(
       @Query('utxos') String utxos);
 
   @GET('/explorer/asset-src')
@@ -377,7 +377,7 @@ class HorizonExplorerApi {
   HorizonExplorerApi(Dio dio)
       : _api = HorizonExplorerApii(dio, baseUrl: dio.options.baseUrl);
 
-  Future<Response<UtxoWithBalancesResponse>> utxosWithBalances(String utxos) {
+  Future<UtxoWithBalancesResponse> utxosWithBalances(String utxos) {
     return _api.utxosWithBalances(utxos);
   }
 

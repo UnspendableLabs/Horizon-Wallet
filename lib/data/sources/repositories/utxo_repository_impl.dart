@@ -3,7 +3,6 @@ import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:horizon/data/sources/network/esplora_client_factory.dart';
 import 'package:horizon/data/sources/network/horizon_explorer_client.dart';
 import 'package:horizon/data/sources/network/horizon_explorer_client_factory.dart';
-import 'package:retrofit/retrofit.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
@@ -102,14 +101,12 @@ class UtxoRepositoryImpl implements UtxoRepository {
 
       final utxoIds = chunk.map((u) => '${u.txid}:${u.vout}').join(',');
 
-      final Response<UtxoWithBalancesResponse> response =
+      final UtxoWithBalancesResponse balances =
           await _horizonExplorerClientFactory
               .getClient(httpConfig)
               .utxosWithBalances(utxoIds);
 
-      final balances = response.result;
-
-      if (balances == null || balances.result.isEmpty) break;
+      if (balances.result.isEmpty) break;
 
       final filteredChunk = chunk.where((utxo) {
         final key = '${utxo.txid}:${utxo.vout}';

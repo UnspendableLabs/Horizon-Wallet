@@ -280,14 +280,12 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
   final ParseErrorLogger? errorLogger;
 
   @override
-  Future<Response<UtxoWithBalancesResponse>> utxosWithBalances(
-    String utxos,
-  ) async {
+  Future<UtxoWithBalancesResponse> utxosWithBalances(String utxos) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{r'utxos': utxos};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<Response<UtxoWithBalancesResponse>>(
+    final _options = _setStreamType<UtxoWithBalancesResponse>(
       Options(method: 'GET', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
@@ -298,9 +296,9 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
           .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late Response<UtxoWithBalancesResponse> _value;
+    late UtxoWithBalancesResponse _value;
     try {
-      _value = Response<UtxoWithBalancesResponse>.fromJson(_result.data!);
+      _value = UtxoWithBalancesResponse.fromJson(_result.data!);
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);
       rethrow;
