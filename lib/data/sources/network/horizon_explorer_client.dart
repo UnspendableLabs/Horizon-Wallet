@@ -302,9 +302,26 @@ class RoyaltyByAssetResponse {
   }
 }
 
+@JsonSerializable()
+class UtxoWithBalancesResponse {
+  final Map<String, bool> result;
+
+  UtxoWithBalancesResponse({required this.result});
+
+  factory UtxoWithBalancesResponse.fromJson(Map<String, dynamic> json) =>
+      UtxoWithBalancesResponse(
+          result: json.map((k, v) => MapEntry(k, v as bool)));
+
+  Map<String, dynamic> toJson() => result;
+}
+
 @RestApi()
 abstract class HorizonExplorerApii {
   factory HorizonExplorerApii(Dio dio, {String baseUrl}) = _HorizonExplorerApii;
+
+  @GET('/counterparty/utxos/withbalances')
+  Future<UtxoWithBalancesResponse> utxosWithBalances(
+      @Query('utxos') String utxos);
 
   @GET('/explorer/asset-src')
   Future<AssetSrcResponse> getAssetSrc(
@@ -359,6 +376,10 @@ class HorizonExplorerApi {
 
   HorizonExplorerApi(Dio dio)
       : _api = HorizonExplorerApii(dio, baseUrl: dio.options.baseUrl);
+
+  Future<UtxoWithBalancesResponse> utxosWithBalances(String utxos) {
+    return _api.utxosWithBalances(utxos);
+  }
 
   Future<AssetSrcResponse> getAssetSrc({
     required String asset,

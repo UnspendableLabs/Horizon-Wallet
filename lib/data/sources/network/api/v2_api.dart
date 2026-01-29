@@ -5607,10 +5607,6 @@ abstract class V2Api {
     @Query("unconfirmed") bool? unconfirmed,
   ]);
 
-  @GET("/utxos/withbalances")
-  Future<Response<UtxoWithBalancesResponse>> utxosWithBalances(
-      @Query("utxos") String utxos);
-
   // public async getDetachData(
   //   destination: string,
   //   init?: FetchRetryInit,
@@ -5629,15 +5625,3 @@ abstract class V2Api {
   );
 }
 
-@JsonSerializable()
-class UtxoWithBalancesResponse {
-  final Map<String, bool> result;
-
-  UtxoWithBalancesResponse({required this.result});
-
-  factory UtxoWithBalancesResponse.fromJson(Map<String, dynamic> json) =>
-      UtxoWithBalancesResponse(
-          result: json.map((k, v) => MapEntry(k, v as bool)));
-
-  Map<String, dynamic> toJson() => result;
-}

@@ -252,6 +252,18 @@ Map<String, dynamic> _$RoyaltyByAssetResponseToJson(
       'issuer_address': instance.issuerAddress,
     };
 
+UtxoWithBalancesResponse _$UtxoWithBalancesResponseFromJson(
+        Map<String, dynamic> json) =>
+    UtxoWithBalancesResponse(
+      result: Map<String, bool>.from(json['result'] as Map),
+    );
+
+Map<String, dynamic> _$UtxoWithBalancesResponseToJson(
+        UtxoWithBalancesResponse instance) =>
+    <String, dynamic>{
+      'result': instance.result,
+    };
+
 // **************************************************************************
 // RetrofitGenerator
 // **************************************************************************
@@ -266,6 +278,33 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
   String? baseUrl;
 
   final ParseErrorLogger? errorLogger;
+
+  @override
+  Future<UtxoWithBalancesResponse> utxosWithBalances(String utxos) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'utxos': utxos};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<UtxoWithBalancesResponse>(
+      Options(method: 'GET', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/counterparty/utxos/withbalances',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late UtxoWithBalancesResponse _value;
+    try {
+      _value = UtxoWithBalancesResponse.fromJson(_result.data!);
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
+  }
 
   @override
   Future<AssetSrcResponse> getAssetSrc(
@@ -581,31 +620,6 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
       rethrow;
     }
     return _value;
-  }
-
-  RequestOptions newRequestOptions(Object? options) {
-    if (options is RequestOptions) {
-      return options as RequestOptions;
-    }
-    if (options is Options) {
-      return RequestOptions(
-        method: options.method,
-        sendTimeout: options.sendTimeout,
-        receiveTimeout: options.receiveTimeout,
-        extra: options.extra,
-        headers: options.headers,
-        responseType: options.responseType,
-        contentType: options.contentType.toString(),
-        validateStatus: options.validateStatus,
-        receiveDataWhenStatusError: options.receiveDataWhenStatusError,
-        followRedirects: options.followRedirects,
-        maxRedirects: options.maxRedirects,
-        requestEncoder: options.requestEncoder,
-        responseDecoder: options.responseDecoder,
-        path: '',
-      );
-    }
-    return RequestOptions(path: '');
   }
 
   RequestOptions _setStreamType<T>(RequestOptions requestOptions) {
