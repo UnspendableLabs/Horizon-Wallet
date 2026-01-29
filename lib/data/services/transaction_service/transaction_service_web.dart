@@ -237,6 +237,64 @@ class TransactionServiceWeb implements TransactionService {
 
   TransactionServiceWeb();
 
+  bool _applyPerInputSighashTypes(
+    bitcoin.Psbt psbt,
+    List<int>? sighashTypes,
+  ) {
+    if (sighashTypes == null) return false;
+
+    final inputs = psbt.data.inputs.toDart;
+    if (sighashTypes.length != inputs.length) return false;
+
+    final hasExplicitSighash =
+        inputs.any((input) => input.sighashType != null);
+    if (hasExplicitSighash) return false;
+
+    for (var i = 0; i < inputs.length; i++) {
+      inputs[i].sighashType = sighashTypes[i];
+    }
+
+    return true;
+  }
+
+  bool _hasTaprootDefaultSighash(bitcoin.Psbt psbt) {
+    final inputs = psbt.data.inputs.toDart;
+    for (final input in inputs) {
+      final hasTik = input.tapInternalKey != null;
+      final witnessScript = input.witnessUtxo?.script.toDart;
+      final isTaprootByScript =
+          witnessScript != null && isP2TRScript(witnessScript);
+      final isTaproot = hasTik || isTaprootByScript;
+      if (!isTaproot) continue;
+
+      final type = input.sighashType;
+      if (type == null || type == SIGHASH_DEFAULT) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  List<int>? _normalizeAllowedSighashTypes(
+    bitcoin.Psbt psbt,
+    List<int>? sighashTypes,
+  ) {
+    if (sighashTypes == null) return null;
+    if (sighashTypes.contains(SIGHASH_DEFAULT)) return sighashTypes;
+
+    if (_hasTaprootDefaultSighash(psbt)) {
+      return [...sighashTypes, SIGHASH_DEFAULT];
+    }
+
+    return sighashTypes;
+  }
+
+  JSArray<JSNumber>? _toSighashTypes(List<int>? sighashTypes) {
+    if (sighashTypes == null) return null;
+    return sighashTypes.map((e) => e.toJS).toList().toJS;
+  }
+
   @override
   Future<MakeBuyPsbtReturn> makeMultiBuyPsbt({
     required HttpConfig httpConfig,
@@ -702,7 +760,10 @@ class TransactionServiceWeb implements TransactionService {
     final psbt = bitcoin.Psbt.fromHex(psbtHex);
     final inputs = psbt.data.inputs;
 
-    final sigTypes = sighashTypes?.map((e) => e.toJS).toList().toJS;
+    final perInputSighash = _applyPerInputSighashTypes(psbt, sighashTypes);
+    final allowedSighashTypes =
+        perInputSighash ? null : _normalizeAllowedSighashTypes(psbt, sighashTypes);
+    final sigTypes = _toSighashTypes(allowedSighashTypes);
 
     for (final entry in inputPrivateKeyMap.entries) {
       final index = entry.key;
@@ -715,6 +776,11 @@ class TransactionServiceWeb implements TransactionService {
 
       final inp = inputs[index];
 
+      final inputSigTypes =
+          perInputSighash && index < sighashTypes!.length
+              ? _toSighashTypes([sighashTypes[index]])
+          : sigTypes;
+
       final hasLeaf =
           inp.tapLeafScript != null && inp.tapLeafScript!.length > 0;
       final hasTik = inp.tapInternalKey != null;
@@ -725,7 +791,7 @@ class TransactionServiceWeb implements TransactionService {
 
       // segwit / legacy / p2tr script spend
       if (!isTaproot || hasLeaf) {
-        psbt.signInput(index, baseSigner, sigTypes);
+        psbt.signInput(index, baseSigner, inputSigTypes);
         continue;
       }
 
@@ -743,7 +809,7 @@ class TransactionServiceWeb implements TransactionService {
       final tweakedSigner =
           ecpairFactory.fromPrivateKey(tweakedPrivBuf, httpConfig.network.toJS);
 
-      psbt.signInput(index, tweakedSigner, sigTypes);
+      psbt.signInput(index, tweakedSigner, inputSigTypes);
     }
 
     return psbt.toHex();

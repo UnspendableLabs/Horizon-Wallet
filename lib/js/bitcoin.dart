@@ -149,6 +149,8 @@ extension type PsbtInputData._(JSObject _) implements JSObject {
   external JSArray<TapLeafScript>? get tapLeafScript;
   external Buffer? get tapInternalKey; // x-only 32 bytes
   external Buffer? get tapMerkleRoot; // 32 bytes
+  external int? get sighashType;
+  external set sighashType(int? value);
   external WitnessUTXO? get witnessUtxo;
   external Buffer? get nonWitnessUtxo;
 }
