@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:horizon/domain/services/imported_address_service.dart';
 import "package:get_it/get_it.dart";
 import 'package:horizon/domain/entities/address_v2.dart';
 
@@ -74,6 +75,7 @@ class RBFBloc
   final WalletConfigRepository _walletConfigRepository;
   final GetTransactionEsploraUseCase _getTransactionEsploraUseCase;
   final GetTransactionHexEsploraUseCase _getTransactionHexEsploraUseCase;
+  final ImportedAddressService _importedAddressService;
 
   RBFBloc({
     required this.address,
@@ -94,6 +96,7 @@ class RBFBloc
     SendRawTransactionUseCase? sendRawTransactionUseCase,
     GetTransactionEsploraUseCase? getTransactionEsploraUseCase,
     GetTransactionHexEsploraUseCase? getTransactionHexEsploraUseCase,
+    ImportedAddressService? importedAddressService,
   })  : _inMemoryKeyRepository = inMemoryKeyRepository,
         _encryptionService = encryptionService,
         _addressService = addressService,
@@ -104,6 +107,8 @@ class RBFBloc
             sendRawTransactionUseCase ?? GetIt.I<SendRawTransactionUseCase>(),
         _getTransactionEsploraUseCase = getTransactionEsploraUseCase ??
             GetIt.I<GetTransactionEsploraUseCase>(),
+        _importedAddressService =
+            importedAddressService ?? GetIt.I<ImportedAddressService>(),
         _getTransactionHexEsploraUseCase = getTransactionHexEsploraUseCase ??
             GetIt.I<GetTransactionHexEsploraUseCase>(),
         super(TransactionState<RBFData, RBFComposeData>(
@@ -258,14 +263,20 @@ class RBFBloc
                     onError: (_, __) =>
                         "invariant: failed to read in memory key map")
                 .flatMap((map) => TaskEither.fromOption(
-                    Option.fromNullable(map[address.address]),
+                    Option.fromNullable(map[value]),
                     () =>
                         "invariant: decryption key not found for address: ${address.address}"))
                 .flatMap((decryptionKey) => _encryptionService.decryptWithKeyT(
                     data: value,
                     key: decryptionKey,
                     onError: (_, __) =>
-                        "failed to decrypt wif for address: ${address.address}")),
+                        "failed to decrypt wif for address: ${address.address}"))
+                .flatMap((wif) =>
+                    _importedAddressService.getAddressPrivateKeyFromWIFT(
+                        wif: wif,
+                        network: httpConfig.network,
+                        onError: (_, __) =>
+                            "Failed to get private key from WIF for address: ${address.address}")),
           })
       };
 

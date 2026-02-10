@@ -11,6 +11,7 @@ import 'package:horizon/domain/usecases/get_utxo_map_for_address.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:collection/collection.dart';
 import 'package:horizon/domain/entities/psbt_type.dart';
+import 'package:horizon/domain/services/imported_address_service.dart';
 
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/balance_v2.dart';
@@ -162,6 +163,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
   final TransactionService _transactionService;
   final EncryptionService _encryptionService;
   final AddressService _addressService;
+  final ImportedAddressService _importedAddressService;
 
   final GetAugmentedPsbtDataUseCase _getAugmentedPsbtDataUseCase;
   final GetUtxoMapForAddressUseCase _getUtxoMapForAddressUseCase;
@@ -181,6 +183,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
     BitcoinRepository? bitcoinRepository,
     InMemoryKeyRepository? inMemoryKeyRepository,
     TransactionService? transactionService,
+    ImportedAddressService? importedAddressService,
     WalletConfigRepository? walletConfigRepository,
     SeedService? seedService,
     UtxoRepository? utxoRepository,
@@ -204,6 +207,8 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
             GetIt.I<GetAugmentedPsbtDataUseCase>(),
         _getUtxoMapForAddressUseCase = getUtxoMapForAddressUseCase ??
             GetIt.I<GetUtxoMapForAddressUseCase>(),
+        _importedAddressService =
+            importedAddressService ?? GetIt.I<ImportedAddressService>(),
         super(SignPsbtState(
             addresses: addresses.map((addy) => addy.address).toList(),
             psbtType: psbtType)) {
@@ -357,14 +362,20 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
                           "invariant: failed to read in memory key map")
                   // TODO: this lookup needs to be consistent, either by encyptedWIF or address
                   .flatMap((map) => TaskEither.fromOption(
-                      Option.fromNullable(map[address.address]),
+                      Option.fromNullable(map[value]),
                       () =>
                           "invariant: decryption key not found for address: ${address.address}"))
                   .flatMap((decryptionKey) => _encryptionService.decryptWithKeyT(
                       data: value,
                       key: decryptionKey,
                       onError: (_, __) =>
-                          "failed to decrypt wif for address: ${address.address}")),
+                          "failed to decrypt wif for address: ${address.address}"))
+                  .flatMap((wif) =>
+                      _importedAddressService.getAddressPrivateKeyFromWIFT(
+                          wif: wif,
+                          network: httpConfig.network,
+                          onError: (_, __) =>
+                              "Failed to get private key from WIF for address: ${address.address}")),
             })
         };
         return {
