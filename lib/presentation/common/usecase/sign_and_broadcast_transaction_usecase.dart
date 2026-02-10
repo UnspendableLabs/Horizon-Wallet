@@ -1,25 +1,35 @@
-import "package:get_it/get_it.dart";
 import "package:flutter/foundation.dart";
 import "package:fpdart/fpdart.dart";
+import "package:get_it/get_it.dart";
 import 'package:horizon/data/sources/repositories/network_error_helpers.dart';
-
+import 'package:horizon/domain/entities/address_v2.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
+import 'package:horizon/domain/entities/http_config.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/wallet_config_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/domain/services/transaction_service.dart';
-import 'package:horizon/domain/entities/decryption_strategy.dart';
-import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
-import 'package:horizon/domain/entities/http_config.dart';
-import 'package:horizon/domain/entities/address_v2.dart';
+import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/domain/services/seed_service.dart';
+import 'package:horizon/domain/services/transaction_service.dart';
+import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/usecases/usecase.dart';
 import 'package:horizon/extensions.dart';
-import 'package:horizon/domain/services/error_service.dart';
 
 export 'package:horizon/domain/entities/decryption_strategy.dart';
 export 'package:horizon/domain/usecases/usecase.dart';
+
+class BroadcastResponse {
+  final String hex;
+  final String hash;
+
+  const BroadcastResponse({
+    required this.hex,
+    required this.hash,
+  });
+}
 
 class SignAndBroadcastTransactionParams {
   final AddressV2 source;
@@ -32,16 +42,6 @@ class SignAndBroadcastTransactionParams {
     required this.decryptionStrategy,
     required this.rawtransaction,
     required this.httpConfig,
-  });
-}
-
-class BroadcastResponse {
-  final String hex;
-  final String hash;
-
-  const BroadcastResponse({
-    required this.hex,
-    required this.hash,
   });
 }
 
@@ -58,6 +58,7 @@ class SignAndBroadcastTransactionUseCase
   final SeedService _seedService;
   final WalletConfigRepository _walletConfigRepository;
   final ErrorService _errorService;
+  final ImportedAddressService _importedAddressService;
 
   SignAndBroadcastTransactionUseCase({
     InMemoryKeyRepository? inMemoryKeyRepository,
@@ -69,6 +70,7 @@ class SignAndBroadcastTransactionUseCase
     SeedService? seedService,
     WalletConfigRepository? walletConfigRepository,
     ErrorService? errorService,
+    ImportedAddressService? importedAddressService,
   })  : _utxoRepository = utxoRepository ?? GetIt.I<UtxoRepository>(),
         _encryptionService = encryptionService ?? GetIt.I<EncryptionService>(),
         _addressService = addressService ?? GetIt.I<AddressService>(),
@@ -80,7 +82,9 @@ class SignAndBroadcastTransactionUseCase
         _seedService = seedService ?? GetIt.I<SeedService>(),
         _walletConfigRepository =
             walletConfigRepository ?? GetIt.I<WalletConfigRepository>(),
-        _errorService = errorService ?? GetIt.I<ErrorService>();
+        _errorService = errorService ?? GetIt.I<ErrorService>(),
+        _importedAddressService =
+            importedAddressService ?? GetIt.I<ImportedAddressService>();
 
   @override
   TaskEither<String, BroadcastResponse> call(
@@ -108,17 +112,26 @@ class SignAndBroadcastTransactionUseCase
                 .getMapT(
                     onError: (_, __) =>
                         "invariant: failed to read in memory key map")
-                .flatMap((map) => TaskEither.fromOption(
-                    Option.fromNullable(map[params.source.address]),
-                    () =>
-                        "invariant: decryption key not found for address: ${params.source.address}"))
+                .flatMap((map) {
+                  return TaskEither.fromOption(
+                      Option.fromNullable(map[value]),
+                      () =>
+                          "invariant: decryption key not found for address: ${params.source.address}");
+                })
                 .flatMap((decryptionKey) => _encryptionService.decryptWithKeyT(
                     data: value,
                     key: decryptionKey,
                     onError: (_, __) =>
-                        "failed to decrypt wif for address: ${params.source.address}")),
+                        "failed to decrypt wif for address: ${params.source.address}"))
+                .flatMap((wif) =>
+                    _importedAddressService.getAddressPrivateKeyFromWIFT(
+                        wif: wif,
+                        network: params.httpConfig.network,
+                        onError: (_, __) =>
+                            "Failed to get private key from WIF for address: ${params.source.address}"))
           })
       };
+
       final utxoMap = await $(handleNetworkCall(() async {
         return await _utxoRepository.getUTXOMapForAddress(
             params.source, params.httpConfig);
