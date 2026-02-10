@@ -12,6 +12,7 @@ import 'package:horizon/domain/repositories/wallet_config_repository.dart';
 import 'package:horizon/domain/services/seed_service.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/http_config.dart';
+import 'package:horizon/domain/services/imported_address_service.dart';
 
 import "./sign_message_state.dart";
 import "./sign_message_event.dart";
@@ -25,6 +26,7 @@ class SignMessageBloc extends Bloc<SignMessageEvent, SignMessageState> {
   final AddressService _addressService;
   final InMemoryKeyRepository _inMemoryKeyRepository;
   final WalletConfigRepository _walletConfigRepository;
+  final ImportedAddressService _importedAddressService;
   final SeedService _seedService;
   final HttpConfig httpConfig;
 
@@ -39,6 +41,7 @@ class SignMessageBloc extends Bloc<SignMessageEvent, SignMessageState> {
     WalletConfigRepository? walletConfigRepository,
     InMemoryKeyRepository? inMemoryKeyRepository,
     SeedService? seedService,
+    ImportedAddressService? importedAddressService,
   })  : _seedService = seedService ?? GetIt.I<SeedService>(),
         _walletConfigRepository =
             walletConfigRepository ?? GetIt.I<WalletConfigRepository>(),
@@ -46,6 +49,8 @@ class SignMessageBloc extends Bloc<SignMessageEvent, SignMessageState> {
             inMemoryKeyRepository ?? GetIt.I<InMemoryKeyRepository>(),
         _addressService = addressService ?? GetIt.I<AddressService>(),
         _encryptionService = encryptionService ?? GetIt.I<EncryptionService>(),
+        _importedAddressService =
+            importedAddressService ?? GetIt.I<ImportedAddressService>(),
         _transactionService =
             transactionService ?? GetIt.I<TransactionService>(),
         super(SignMessageState(
@@ -97,16 +102,21 @@ class SignMessageBloc extends Bloc<SignMessageEvent, SignMessageState> {
                 .getMapT(
                     onError: (_, __) =>
                         "invariant: failed to read in memory key map")
-                // TODO: this lookup needs to be consistent, either by encyptedWIF or address
                 .flatMap((map) => TaskEither.fromOption(
-                    Option.fromNullable(map[address.address]),
+                    Option.fromNullable(map[value]),
                     () =>
                         "invariant: decryption key not found for address: ${address.address}"))
                 .flatMap((decryptionKey) => _encryptionService.decryptWithKeyT(
                     data: value,
                     key: decryptionKey,
                     onError: (_, __) =>
-                        "failed to decrypt wif for address: ${address.address}")),
+                        "failed to decrypt wif for address: ${address.address}"))
+                .flatMap((wif) =>
+                    _importedAddressService.getAddressPrivateKeyFromWIFT(
+                        wif: wif,
+                        network: httpConfig.network,
+                        onError: (_, __) =>
+                            "Failed to get private key from WIF for address: ${address.address}"))
           })
       };
 
