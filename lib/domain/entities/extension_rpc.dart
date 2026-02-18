@@ -45,3 +45,20 @@ class RPCSignMessageSuccessCallbackArgs {
 
 typedef RPCSignMessageSuccessCallback = void Function(
     RPCSignMessageSuccessCallbackArgs);
+
+class RPCSignMessageBLSSuccessCallbackArgs {
+  final int tabId;
+  final String requestId;
+  final String signature;
+  final String publicKey;
+
+  RPCSignMessageBLSSuccessCallbackArgs({
+    required this.tabId,
+    required this.requestId,
+    required this.signature,
+    required this.publicKey,
+  });
+}
+
+typedef RPCSignMessageBLSSuccessCallback = void Function(
+    RPCSignMessageBLSSuccessCallbackArgs);

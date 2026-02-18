@@ -48,3 +48,12 @@ class RPCSignMessageAction extends RPCAction {
   RPCSignMessageAction(super.tabId, super.requestId, super.origin, super.title,
       super.favicon, this.message, this.address);
 }
+
+class RPCSignMessageBLSAction extends RPCAction {
+  @override
+  String get action => 'signMessageBLS';
+  final String message;
+  final String? dst;
+  RPCSignMessageBLSAction(super.tabId, super.requestId, super.origin,
+      super.title, super.favicon, this.message, this.dst);
+}

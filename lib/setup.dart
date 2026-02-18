@@ -91,6 +91,9 @@ import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/services/seed_service.dart';
 import 'package:horizon/data/services/seed_service_impl.dart';
 
+import 'package:horizon/domain/services/bls_service.dart';
+import 'package:horizon/data/services/bls_service_web.dart';
+
 import 'package:horizon/domain/repositories/version_repository.dart';
 import 'package:horizon/data/sources/repositories/version_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/version_repository_extension_impl.dart';
@@ -517,6 +520,8 @@ void setup() {
 
   injector.registerSingleton<SeedService>(SeedServiceImpl());
 
+  injector.registerSingleton<BlsService>(BlsServiceWeb());
+
   injector
       .registerSingleton<ComposeTransactionUseCase>(ComposeTransactionUseCase(
     utxoRepository: GetIt.I.get<UtxoRepository>(),
@@ -627,6 +632,29 @@ void setup() {
               signature: ${args.signature}
               messageHash: ${args.messageHash}
               address: ${args.address}
+      """));
+
+  injector.registerLazySingleton<RPCSignMessageBLSSuccessCallback>(
+      () => config.isWebExtension
+          ? (args) {
+              chrome.tabs.sendMessage(
+                args.tabId,
+                {
+                  "id": args.requestId,
+                  "signature": args.signature,
+                  "publicKey": args.publicKey,
+                },
+                null,
+              );
+
+              Future.delayed(const Duration(seconds: 0), html.window.close);
+            }
+          : (args) => GetIt.I<Logger>().debug("""
+           RPCSignMessageBLSSuccessCallback called with:
+              tabId: ${args.tabId}
+              requestId: ${args.requestId}
+              signature: ${args.signature}
+              publicKey: ${args.publicKey}
       """));
 
   injector.registerLazySingleton<VersionRepository>(() => config.isWebExtension

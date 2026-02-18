@@ -67,6 +67,9 @@ import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
 import 'package:horizon/presentation/forms/sign_message/bloc/sign_message_bloc.dart';
 import 'package:horizon/presentation/forms/sign_message/view/sign_message_form.dart';
 
+import 'package:horizon/presentation/forms/sign_message_bls/bloc/sign_message_bls_bloc.dart';
+import 'package:horizon/presentation/forms/sign_message_bls/view/sign_message_bls_form.dart';
+
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 class _NoAnimationPageTransitionsBuilder extends PageTransitionsBuilder {
@@ -463,10 +466,6 @@ class AppRouter {
                                     tabId: action.tabId,
                                     requestId: action.requestId,
                                     signedPsbt: signedPsbtHex));
-
-                                if (GetIt.I<Config>().isWebExtension) {
-                                  web.window.close();
-                                }
                               },
                             ),
                           ],
@@ -548,10 +547,58 @@ class AppRouter {
                                   signature: signature,
                                   messageHash: action.message,
                                 ));
+                              },
+                            ),
+                          ],
+                        ),
+                      )));
+                }),
+            GoRoute(
+                path: "/rpc/sign-message-bls",
+                builder: (context, state) {
+                  final session =
+                      context.watch<SessionStateCubit>().state.successOrThrow();
 
-                                if (GetIt.I<Config>().isWebExtension) {
-                                  web.window.close();
-                                }
+                  final actionRepository = GetIt.I<ActionRepository>();
+
+                  final action = actionRepository.dequeue().getOrThrow()
+                      as RPCSignMessageBLSAction;
+
+                  return BlocProvider(
+                      create: (_) => SignMessageBLSBloc(
+                            message: action.message,
+                            dst: action.dst,
+                            httpConfig: session.httpConfig,
+                            passwordRequired: GetIt.I<SettingsRepository>()
+                                .requirePasswordForCryptoOperations,
+                          ),
+                      child: ActionHandlerShell(
+                          child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            DAppInfoWidget(
+                              title: 'SIGN MESSAGE (BLS)',
+                              dappUrl: action.origin,
+                              dappTitle: action.title,
+                              dappFavicon: action.favicon,
+                            ),
+                            SignMessageBLSForm(
+                              key: Key(action.message),
+                              passwordRequired: GetIt.I<SettingsRepository>()
+                                  .requirePasswordForCryptoOperations,
+                              onSuccess: (signature, publicKey) {
+                                final callback =
+                                    GetIt.I<RPCSignMessageBLSSuccessCallback>();
+
+                                callback(RPCSignMessageBLSSuccessCallbackArgs(
+                                  tabId: action.tabId,
+                                  requestId: action.requestId,
+                                  signature: signature,
+                                  publicKey: publicKey,
+                                ));
                               },
                             ),
                           ],
@@ -824,6 +871,7 @@ class AppRouter {
                   (action) => switch (action) {
                         RPCGetAddressesAction() => "/rpc/get-addresses",
                         RPCSignMessageAction() => "/rpc/sign-message",
+                        RPCSignMessageBLSAction() => "/rpc/sign-message-bls",
                         RPCSignPsbtAction() => "/rpc/sign-psbt",
                         _ => null
                       });
@@ -842,6 +890,7 @@ class AppRouter {
                   (action) => switch (action) {
                         RPCGetAddressesAction() => "/rpc/get-addresses",
                         RPCSignMessageAction() => "/rpc/sign-message",
+                        RPCSignMessageBLSAction() => "/rpc/sign-message-bls",
                         RPCSignPsbtAction() => "/rpc/sign-psbt",
                         _ => null
                       });

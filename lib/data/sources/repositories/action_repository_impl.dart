@@ -526,6 +526,21 @@ class ActionRepositoryImpl implements ActionRepository {
           parts[7],
         );
 
+      case 'signMessageBLS':
+        if (parts.length != 7 && parts.length != 8) {
+          throw Exception(
+              'signMessageBLS expects 7 or 8 fields, got ${parts.length}');
+        }
+        return RPCSignMessageBLSAction(
+          int.parse(parts[1]),
+          parts[2],
+          Uri.decodeComponent(parts[3]),
+          Uri.decodeComponent(parts[4]),
+          Uri.decodeComponent(parts[5]),
+          Uri.decodeComponent(parts[6]),
+          parts.length == 8 ? Uri.decodeComponent(parts[7]) : null,
+        );
+
       default:
         throw Exception('Unknown action: ${parts[0]}');
     }
