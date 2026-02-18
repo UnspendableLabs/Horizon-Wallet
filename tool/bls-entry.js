@@ -1,5 +1,5 @@
 const { bls12_381 } = require("@noble/curves/bls12-381.js");
-const { bytesToHex, hexToBytes } = require("@noble/hashes/utils.js");
+const { hexToBytes } = require("@noble/hashes/utils.js");
 const { hkdf } = require("@noble/hashes/hkdf.js");
 const { sha256 } = require("@noble/hashes/sha2.js");
 
@@ -35,14 +35,14 @@ function deriveMasterSK(seed) {
 
 function sign(messageHex, privateKey, dst) {
   const msgBytes = hexToBytes(messageHex);
-  if (dst != null) {
-    return bytesToHex(bls12_381.sign(msgBytes, privateKey, { DST: dst }));
-  }
-  return bytesToHex(bls12_381.sign(msgBytes, privateKey));
+  const hashedMsg = bls12_381.longSignatures.hash(msgBytes, dst || undefined);
+  const sigPoint = bls12_381.longSignatures.sign(hashedMsg, privateKey);
+  return bls12_381.longSignatures.Signature.toHex(sigPoint);
 }
 
 function getPublicKey(privateKey) {
-  return bytesToHex(bls12_381.getPublicKey(privateKey));
+  const pubPoint = bls12_381.longSignatures.getPublicKey(privateKey);
+  return pubPoint.toHex();
 }
 
 module.exports = { sign, getPublicKey, deriveMasterSK };
