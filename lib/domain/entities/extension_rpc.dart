@@ -62,3 +62,24 @@ class RPCSignMessageBLSSuccessCallbackArgs {
 
 typedef RPCSignMessageBLSSuccessCallback = void Function(
     RPCSignMessageBLSSuccessCallbackArgs);
+
+class RPCGetBLSPoPSuccessCallbackArgs {
+  final int tabId;
+  final String requestId;
+  final String xpubkey;
+  final String blsPubkey;
+  final String schnorrSig;
+  final String blsSig;
+
+  RPCGetBLSPoPSuccessCallbackArgs({
+    required this.tabId,
+    required this.requestId,
+    required this.xpubkey,
+    required this.blsPubkey,
+    required this.schnorrSig,
+    required this.blsSig,
+  });
+}
+
+typedef RPCGetBLSPoPSuccessCallback = void Function(
+    RPCGetBLSPoPSuccessCallbackArgs);

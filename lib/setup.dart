@@ -94,6 +94,9 @@ import 'package:horizon/data/services/seed_service_impl.dart';
 import 'package:horizon/domain/services/bls_service.dart';
 import 'package:horizon/data/services/bls_service_web.dart';
 
+import 'package:horizon/domain/services/pop_service.dart';
+import 'package:horizon/data/services/pop_service_web.dart';
+
 import 'package:horizon/domain/repositories/version_repository.dart';
 import 'package:horizon/data/sources/repositories/version_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/version_repository_extension_impl.dart';
@@ -522,6 +525,8 @@ void setup() {
 
   injector.registerSingleton<BlsService>(BlsServiceWeb());
 
+  injector.registerSingleton<PopService>(PopServiceWeb());
+
   injector
       .registerSingleton<ComposeTransactionUseCase>(ComposeTransactionUseCase(
     utxoRepository: GetIt.I.get<UtxoRepository>(),
@@ -655,6 +660,33 @@ void setup() {
               requestId: ${args.requestId}
               signature: ${args.signature}
               publicKey: ${args.publicKey}
+      """));
+
+  injector.registerLazySingleton<RPCGetBLSPoPSuccessCallback>(
+      () => config.isWebExtension
+          ? (args) {
+              chrome.tabs.sendMessage(
+                args.tabId,
+                {
+                  "id": args.requestId,
+                  "xpubkey": args.xpubkey,
+                  "blsPubkey": args.blsPubkey,
+                  "schnorrSig": args.schnorrSig,
+                  "blsSig": args.blsSig,
+                },
+                null,
+              );
+
+              Future.delayed(const Duration(seconds: 0), html.window.close);
+            }
+          : (args) => GetIt.I<Logger>().debug("""
+           RPCGetBLSPoPSuccessCallback called with:
+              tabId: ${args.tabId}
+              requestId: ${args.requestId}
+              xpubkey: ${args.xpubkey}
+              blsPubkey: ${args.blsPubkey}
+              schnorrSig: ${args.schnorrSig}
+              blsSig: ${args.blsSig}
       """));
 
   injector.registerLazySingleton<VersionRepository>(() => config.isWebExtension

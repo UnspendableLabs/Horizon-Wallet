@@ -45,4 +45,34 @@ function getPublicKey(privateKey) {
   return pubPoint.toHex();
 }
 
-module.exports = { sign, getPublicKey, deriveMasterSK };
+const KONTOR_BLS_DST = "BLS_SIG_BLS12381G1_XMD:SHA-256_SSWU_RO_NUL_";
+const SCHNORR_BINDING_PREFIX = new TextEncoder().encode("KONTOR_XONLY_TO_BLS_V1");
+const BLS_BINDING_PREFIX = new TextEncoder().encode("KONTOR_BLS_TO_XONLY_V1");
+
+function getBlsPublicKeyMinSig(privateKey) {
+  const pubPoint = bls12_381.shortSignatures.getPublicKey(privateKey);
+  return pubPoint.toHex();
+}
+
+function signBlsBinding(blsPrivateKey, xOnlyPubkeyHex) {
+  const xOnlyBytes = hexToBytes(xOnlyPubkeyHex);
+  const msg = new Uint8Array(BLS_BINDING_PREFIX.length + xOnlyBytes.length);
+  msg.set(BLS_BINDING_PREFIX);
+  msg.set(xOnlyBytes, BLS_BINDING_PREFIX.length);
+  const hashedMsg = bls12_381.shortSignatures.hash(msg, KONTOR_BLS_DST);
+  const sigPoint = bls12_381.shortSignatures.sign(hashedMsg, blsPrivateKey);
+  return bls12_381.shortSignatures.Signature.toHex(sigPoint);
+}
+
+function schnorrBindingHash(blsPubkeyHex) {
+  const blsPubkeyBytes = hexToBytes(blsPubkeyHex);
+  const preimage = new Uint8Array(SCHNORR_BINDING_PREFIX.length + blsPubkeyBytes.length);
+  preimage.set(SCHNORR_BINDING_PREFIX);
+  preimage.set(blsPubkeyBytes, SCHNORR_BINDING_PREFIX.length);
+  return sha256(preimage);
+}
+
+module.exports = {
+  sign, getPublicKey, deriveMasterSK,
+  getBlsPublicKeyMinSig, signBlsBinding, schnorrBindingHash,
+};

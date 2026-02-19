@@ -5,6 +5,7 @@ const VALID_METHODS = [
   "signPsbt",
   "signMessage",
   "signMessageBLS",
+  "getBLSPoP",
   "fairmint",
   "dispense",
   "openOrder",
@@ -132,6 +133,16 @@ const methodValidators = {
     if (msg.params?.dst !== undefined && typeof msg.params.dst !== "string") {
       errors.push(
         "Invalid 'dst' parameter for 'signMessageBLS'. Expected a string.",
+      );
+    }
+    return errors;
+  },
+
+  getBLSPoP: (msg) => {
+    const errors = [];
+    if (!msg.params?.address || typeof msg.params.address !== "string") {
+      errors.push(
+        "Missing or invalid 'address' parameter for 'getBLSPoP'. Expected a string.",
       );
     }
     return errors;

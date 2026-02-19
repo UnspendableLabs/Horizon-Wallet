@@ -70,6 +70,10 @@ import 'package:horizon/presentation/forms/sign_message/view/sign_message_form.d
 import 'package:horizon/presentation/forms/sign_message_bls/bloc/sign_message_bls_bloc.dart';
 import 'package:horizon/presentation/forms/sign_message_bls/view/sign_message_bls_form.dart';
 
+import 'package:horizon/presentation/forms/get_bls_pop/bloc/get_bls_pop_bloc.dart';
+import 'package:horizon/presentation/forms/get_bls_pop/view/get_bls_pop_form.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
+
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 class _NoAnimationPageTransitionsBuilder extends PageTransitionsBuilder {
@@ -605,6 +609,92 @@ class AppRouter {
                         ),
                       )));
                 }),
+            GoRoute(
+                path: "/rpc/get-bls-pop",
+                builder: (context, state) {
+                  final session =
+                      context.watch<SessionStateCubit>().state.successOrThrow();
+
+                  final actionRepository = GetIt.I<ActionRepository>();
+
+                  final action = actionRepository.dequeue().getOrThrow()
+                      as RPCGetBLSPoPAction;
+
+                  final address =
+                      session.addressIndexSet.getByAddress(action.address);
+
+                  if (address == null) {
+                    return ActionHandlerShell(
+                        child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          DAppInfoWidget(
+                            title: 'BLS PROOF OF POSSESSION',
+                            dappUrl: action.origin,
+                            dappTitle: action.title,
+                            dappFavicon: action.favicon,
+                          ),
+                          Expanded(
+                            child: Center(
+                              child: Text(
+                                  "${action.address} not found in current account"),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ));
+                  }
+
+                  final derivationPath =
+                      (address.derivation as Bip32Path).value;
+
+                  return BlocProvider(
+                      create: (_) => GetBLSPoPBloc(
+                            address: action.address,
+                            taprootDerivationPath: derivationPath,
+                            network: session.httpConfig.network,
+                            httpConfig: session.httpConfig,
+                            passwordRequired: GetIt.I<SettingsRepository>()
+                                .requirePasswordForCryptoOperations,
+                          ),
+                      child: ActionHandlerShell(
+                          child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            DAppInfoWidget(
+                              title: 'BLS PROOF OF POSSESSION',
+                              dappUrl: action.origin,
+                              dappTitle: action.title,
+                              dappFavicon: action.favicon,
+                            ),
+                            GetBLSPoPForm(
+                              key: Key(action.address),
+                              passwordRequired: GetIt.I<SettingsRepository>()
+                                  .requirePasswordForCryptoOperations,
+                              onSuccess: (xpubkey, blsPubkey, schnorrSig, blsSig) {
+                                final callback =
+                                    GetIt.I<RPCGetBLSPoPSuccessCallback>();
+
+                                callback(RPCGetBLSPoPSuccessCallbackArgs(
+                                  tabId: action.tabId,
+                                  requestId: action.requestId,
+                                  xpubkey: xpubkey,
+                                  blsPubkey: blsPubkey,
+                                  schnorrSig: schnorrSig,
+                                  blsSig: blsSig,
+                                ));
+                              },
+                            ),
+                          ],
+                        ),
+                      )));
+                }),
             StatefulShellRoute.indexedStack(
                 builder: (BuildContext context, GoRouterState state,
                     StatefulNavigationShell nav) {
@@ -872,6 +962,7 @@ class AppRouter {
                         RPCGetAddressesAction() => "/rpc/get-addresses",
                         RPCSignMessageAction() => "/rpc/sign-message",
                         RPCSignMessageBLSAction() => "/rpc/sign-message-bls",
+                        RPCGetBLSPoPAction() => "/rpc/get-bls-pop",
                         RPCSignPsbtAction() => "/rpc/sign-psbt",
                         _ => null
                       });
@@ -891,6 +982,7 @@ class AppRouter {
                         RPCGetAddressesAction() => "/rpc/get-addresses",
                         RPCSignMessageAction() => "/rpc/sign-message",
                         RPCSignMessageBLSAction() => "/rpc/sign-message-bls",
+                        RPCGetBLSPoPAction() => "/rpc/get-bls-pop",
                         RPCSignPsbtAction() => "/rpc/sign-psbt",
                         _ => null
                       });

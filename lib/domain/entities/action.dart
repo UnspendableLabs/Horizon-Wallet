@@ -57,3 +57,11 @@ class RPCSignMessageBLSAction extends RPCAction {
   RPCSignMessageBLSAction(super.tabId, super.requestId, super.origin,
       super.title, super.favicon, this.message, this.dst);
 }
+
+class RPCGetBLSPoPAction extends RPCAction {
+  @override
+  String get action => 'getBLSPoP';
+  final String address;
+  RPCGetBLSPoPAction(super.tabId, super.requestId, super.origin,
+      super.title, super.favicon, this.address);
+}

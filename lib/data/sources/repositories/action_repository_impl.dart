@@ -541,6 +541,20 @@ class ActionRepositoryImpl implements ActionRepository {
           parts.length == 8 ? Uri.decodeComponent(parts[7]) : null,
         );
 
+      case 'getBLSPoP':
+        if (parts.length != 7) {
+          throw Exception(
+              'getBLSPoP expects 7 fields, got ${parts.length}');
+        }
+        return RPCGetBLSPoPAction(
+          int.parse(parts[1]),
+          parts[2],
+          Uri.decodeComponent(parts[3]),
+          Uri.decodeComponent(parts[4]),
+          Uri.decodeComponent(parts[5]),
+          Uri.decodeComponent(parts[6]),
+        );
+
       default:
         throw Exception('Unknown action: ${parts[0]}');
     }
