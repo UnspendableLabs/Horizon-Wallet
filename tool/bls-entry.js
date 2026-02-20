@@ -49,11 +49,6 @@ const KONTOR_BLS_DST = "BLS_SIG_BLS12381G1_XMD:SHA-256_SSWU_RO_NUL_";
 const SCHNORR_BINDING_PREFIX = new TextEncoder().encode("KONTOR_XONLY_TO_BLS_V1");
 const BLS_BINDING_PREFIX = new TextEncoder().encode("KONTOR_BLS_TO_XONLY_V1");
 
-function getBlsPublicKeyMinSig(privateKey) {
-  const pubPoint = bls12_381.shortSignatures.getPublicKey(privateKey);
-  return pubPoint.toHex();
-}
-
 function signBlsBinding(blsPrivateKey, xOnlyPubkeyHex) {
   const xOnlyBytes = hexToBytes(xOnlyPubkeyHex);
   const msg = new Uint8Array(BLS_BINDING_PREFIX.length + xOnlyBytes.length);
@@ -74,5 +69,5 @@ function schnorrBindingHash(blsPubkeyHex) {
 
 module.exports = {
   sign, getPublicKey, deriveMasterSK,
-  getBlsPublicKeyMinSig, signBlsBinding, schnorrBindingHash,
+  signBlsBinding, schnorrBindingHash,
 };

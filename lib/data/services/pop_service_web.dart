@@ -43,7 +43,7 @@ class PopServiceWeb implements PopService {
 
     final blsPrivateKey = bls.blsDeriveMasterSK(seed.toJS);
 
-    final blsPubkey = bls.blsGetPublicKeyMinSig(blsPrivateKey);
+    final blsPubkey = bls.blsGetPublicKey(blsPrivateKey);
 
     final schnorrHash = bls.blsSchnorrBindingHash(blsPubkey);
     final schnorrSigBytes = taprootChild.signSchnorr(schnorrHash);
