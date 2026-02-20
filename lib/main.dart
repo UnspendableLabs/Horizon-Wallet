@@ -572,6 +572,7 @@ class AppRouter {
                       create: (_) => SignMessageBLSBloc(
                             message: action.message,
                             dst: action.dst,
+                            messageHex: action.messageHex,
                             httpConfig: session.httpConfig,
                             passwordRequired: GetIt.I<SettingsRepository>()
                                 .requirePasswordForCryptoOperations,

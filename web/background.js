@@ -189,7 +189,7 @@ async function rpcSignMessage(requestId, port, message, address) {
   });
 }
 
-async function rpcSignMessageBLS(requestId, port, message, dst) {
+async function rpcSignMessageBLS(requestId, port, message, dst, messageHex) {
   const origin = getOriginFromPort(port);
   const tabId = getTabIdFromPort(port);
   const metadata = await getTabMetadata(tabId);
@@ -201,12 +201,10 @@ async function rpcSignMessageBLS(requestId, port, message, dst) {
     encodeURIComponent(origin),
     encodeURIComponent(metadata.title),
     encodeURIComponent(metadata.favicon),
-    encodeURIComponent(message),
+    encodeURIComponent(message || ""),
+    encodeURIComponent(dst || ""),
+    encodeURIComponent(messageHex || ""),
   ];
-
-  if (dst !== undefined) {
-    params.push(encodeURIComponent(dst));
-  }
 
   const window = await popup({
     url: `/index.html#?action=${params.join(",")}`,
@@ -283,6 +281,7 @@ async function rpcMessageHandler(message, port) {
         port,
         message["params"]["message"],
         message["params"]["dst"],
+        message["params"]["messageHex"],
       );
       break;
     case "getBLSPoP":

@@ -10,11 +10,13 @@ class SignMessageBLSState with FormzMixin {
   final String? publicKey;
   final String message;
   final String? dst;
+  final String? messageHex;
   final String? error;
 
   SignMessageBLSState({
     required this.message,
     this.dst,
+    this.messageHex,
     this.password = const PasswordInput.pure(),
     this.submissionStatus = FormzSubmissionStatus.initial,
     this.signature,
@@ -35,6 +37,7 @@ class SignMessageBLSState with FormzMixin {
     return SignMessageBLSState(
       message: message,
       dst: dst,
+      messageHex: messageHex,
       password: password ?? this.password,
       submissionStatus: submissionStatus ?? this.submissionStatus,
       signature: signature ?? this.signature,

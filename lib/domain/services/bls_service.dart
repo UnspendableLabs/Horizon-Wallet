@@ -5,5 +5,6 @@ abstract class BlsService {
     required Uint8List seed,
     required String message,
     String? dst,
+    String? messageHex,
   });
 }

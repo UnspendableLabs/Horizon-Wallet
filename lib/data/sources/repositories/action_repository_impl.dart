@@ -527,18 +527,24 @@ class ActionRepositoryImpl implements ActionRepository {
         );
 
       case 'signMessageBLS':
-        if (parts.length != 7 && parts.length != 8) {
+        if (parts.length < 7 || parts.length > 9) {
           throw Exception(
-              'signMessageBLS expects 7 or 8 fields, got ${parts.length}');
+              'signMessageBLS expects 7-9 fields, got ${parts.length}');
         }
+        final msgField = Uri.decodeComponent(parts[6]);
+        final dstField =
+            parts.length >= 8 ? Uri.decodeComponent(parts[7]) : null;
+        final msgHexField =
+            parts.length >= 9 ? Uri.decodeComponent(parts[8]) : null;
         return RPCSignMessageBLSAction(
           int.parse(parts[1]),
           parts[2],
           Uri.decodeComponent(parts[3]),
           Uri.decodeComponent(parts[4]),
           Uri.decodeComponent(parts[5]),
-          Uri.decodeComponent(parts[6]),
-          parts.length == 8 ? Uri.decodeComponent(parts[7]) : null,
+          msgField,
+          dstField != null && dstField.isNotEmpty ? dstField : null,
+          msgHexField != null && msgHexField.isNotEmpty ? msgHexField : null,
         );
 
       case 'getBLSPoP':

@@ -54,8 +54,9 @@ class RPCSignMessageBLSAction extends RPCAction {
   String get action => 'signMessageBLS';
   final String message;
   final String? dst;
+  final String? messageHex;
   RPCSignMessageBLSAction(super.tabId, super.requestId, super.origin,
-      super.title, super.favicon, this.message, this.dst);
+      super.title, super.favicon, this.message, this.dst, this.messageHex);
 }
 
 class RPCGetBLSPoPAction extends RPCAction {

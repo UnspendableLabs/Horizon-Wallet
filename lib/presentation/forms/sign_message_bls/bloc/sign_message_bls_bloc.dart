@@ -18,6 +18,7 @@ class SignMessageBLSBloc
   final bool passwordRequired;
   final String message;
   final String? dst;
+  final String? messageHex;
   final WalletConfigRepository _walletConfigRepository;
   final SeedService _seedService;
   final BlsService _blsService;
@@ -28,6 +29,7 @@ class SignMessageBLSBloc
     required this.passwordRequired,
     required this.message,
     this.dst,
+    this.messageHex,
     WalletConfigRepository? walletConfigRepository,
     SeedService? seedService,
     BlsService? blsService,
@@ -38,6 +40,7 @@ class SignMessageBLSBloc
         super(SignMessageBLSState(
           message: message,
           dst: dst,
+          messageHex: messageHex,
         )) {
     on<PasswordChanged>(_handlePasswordChanged);
     on<SignMessageBLSSubmitted>(_handleSubmitted);
@@ -78,6 +81,7 @@ class SignMessageBLSBloc
           seed: seed.bytes,
           message: state.message,
           dst: state.dst,
+          messageHex: state.messageHex,
         ),
         (e, _) => "Error signing message with BLS",
       ));

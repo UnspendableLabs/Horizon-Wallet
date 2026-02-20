@@ -66,6 +66,7 @@ void main() {
   SignMessageBLSBloc buildBloc({
     String message = 'Hello BLS',
     String? dst,
+    String? messageHex,
     bool passwordRequired = false,
   }) {
     return SignMessageBLSBloc(
@@ -73,6 +74,7 @@ void main() {
       passwordRequired: passwordRequired,
       message: message,
       dst: dst,
+      messageHex: messageHex,
       walletConfigRepository: mockWalletConfigRepository,
       seedService: mockSeedService,
       blsService: mockBlsService,
@@ -84,11 +86,18 @@ void main() {
       final bloc = buildBloc(message: 'Hello BLS', dst: 'custom-dst');
       expect(bloc.state.message, 'Hello BLS');
       expect(bloc.state.dst, 'custom-dst');
+      expect(bloc.state.messageHex, isNull);
       expect(bloc.state.password, const PasswordInput.pure());
       expect(bloc.state.submissionStatus, FormzSubmissionStatus.initial);
       expect(bloc.state.signature, isNull);
       expect(bloc.state.publicKey, isNull);
       expect(bloc.state.error, isNull);
+    });
+
+    test('initial state is correct with messageHex', () {
+      final bloc = buildBloc(message: '', messageHex: 'abcdef');
+      expect(bloc.state.message, '');
+      expect(bloc.state.messageHex, 'abcdef');
     });
 
     group('PasswordChanged', () {
@@ -136,6 +145,7 @@ void main() {
               seed: any(named: 'seed'),
               message: any(named: 'message'),
               dst: any(named: 'dst'),
+              messageHex: any(named: 'messageHex'),
             )).thenReturn(
           (signature: 'bls-signature-hex', publicKey: 'bls-pubkey-hex'),
         );
@@ -160,10 +170,12 @@ void main() {
                 seed: captureAny(named: 'seed'),
                 message: captureAny(named: 'message'),
                 dst: captureAny(named: 'dst'),
+                messageHex: captureAny(named: 'messageHex'),
               )).captured;
           expect(captured[0], testSeed.bytes);
           expect(captured[1], 'Hello BLS');
           expect(captured[2], isNull);
+          expect(captured[3], isNull);
         },
       );
 
@@ -187,6 +199,7 @@ void main() {
                 seed: any(named: 'seed'),
                 message: any(named: 'message'),
                 dst: 'BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_NUL_',
+                messageHex: any(named: 'messageHex'),
               )).called(1);
         },
       );
@@ -259,6 +272,31 @@ void main() {
       );
 
       blocTest<SignMessageBLSBloc, SignMessageBLSState>(
+        'passes messageHex to BlsService when provided',
+        build: () {
+          stubSuccessfulSign();
+          return buildBloc(
+            message: '',
+            messageHex: 'deadbeef0123',
+          );
+        },
+        act: (bloc) => bloc.add(SignMessageBLSSubmitted()),
+        expect: () => [
+          isA<SignMessageBLSState>()
+              .having((s) => s.submissionStatus, 'submissionStatus',
+                  FormzSubmissionStatus.success),
+        ],
+        verify: (_) {
+          verify(() => mockBlsService.signMessage(
+                seed: any(named: 'seed'),
+                message: '',
+                dst: any(named: 'dst'),
+                messageHex: 'deadbeef0123',
+              )).called(1);
+        },
+      );
+
+      blocTest<SignMessageBLSBloc, SignMessageBLSState>(
         'emits failure when BLS signing throws',
         build: () {
           when(() => mockWalletConfigRepository.getCurrent())
@@ -271,6 +309,7 @@ void main() {
                 seed: any(named: 'seed'),
                 message: any(named: 'message'),
                 dst: any(named: 'dst'),
+                messageHex: any(named: 'messageHex'),
               )).thenThrow(Exception('BLS sign failed'));
           return buildBloc();
         },

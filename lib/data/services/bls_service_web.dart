@@ -11,10 +11,12 @@ class BlsServiceWeb implements BlsService {
     required Uint8List seed,
     required String message,
     String? dst,
+    String? messageHex,
   }) {
     final privateKey = bls.blsDeriveMasterSK(seed.toJS);
-    final messageHex = convert.hex.encode(utf8.encode(message));
-    final signature = bls.blsSign(messageHex, privateKey, dst);
+    final hexPayload =
+        messageHex ?? convert.hex.encode(utf8.encode(message));
+    final signature = bls.blsSign(hexPayload, privateKey, dst);
     final publicKey = bls.blsGetPublicKey(privateKey);
     return (signature: signature, publicKey: publicKey);
   }

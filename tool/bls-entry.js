@@ -35,13 +35,13 @@ function deriveMasterSK(seed) {
 
 function sign(messageHex, privateKey, dst) {
   const msgBytes = hexToBytes(messageHex);
-  const hashedMsg = bls12_381.longSignatures.hash(msgBytes, dst || undefined);
-  const sigPoint = bls12_381.longSignatures.sign(hashedMsg, privateKey);
-  return bls12_381.longSignatures.Signature.toHex(sigPoint);
+  const hashedMsg = bls12_381.shortSignatures.hash(msgBytes, dst || undefined);
+  const sigPoint = bls12_381.shortSignatures.sign(hashedMsg, privateKey);
+  return bls12_381.shortSignatures.Signature.toHex(sigPoint);
 }
 
 function getPublicKey(privateKey) {
-  const pubPoint = bls12_381.longSignatures.getPublicKey(privateKey);
+  const pubPoint = bls12_381.shortSignatures.getPublicKey(privateKey);
   return pubPoint.toHex();
 }
 

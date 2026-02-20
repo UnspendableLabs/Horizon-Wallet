@@ -125,9 +125,18 @@ const methodValidators = {
 
   signMessageBLS: (msg) => {
     const errors = [];
-    if (!msg.params?.message || typeof msg.params.message !== "string") {
+    const hasMessage =
+      msg.params?.message && typeof msg.params.message === "string";
+    const hasMessageHex =
+      msg.params?.messageHex && typeof msg.params.messageHex === "string";
+    if (!hasMessage && !hasMessageHex) {
       errors.push(
-        "Missing or invalid 'message' parameter for 'signMessageBLS'. Expected a string.",
+        "Missing or invalid 'message' or 'messageHex' parameter for 'signMessageBLS'. Expected a string.",
+      );
+    }
+    if (hasMessageHex && !/^[0-9a-fA-F]*$/.test(msg.params.messageHex)) {
+      errors.push(
+        "Invalid 'messageHex' parameter for 'signMessageBLS'. Expected a hex string.",
       );
     }
     if (msg.params?.dst !== undefined && typeof msg.params.dst !== "string") {

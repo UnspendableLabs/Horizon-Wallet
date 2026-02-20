@@ -721,6 +721,7 @@ void main() {
           expect(action.favicon, 'https://example.com/favicon.ico');
           expect(action.message, 'Hello World');
           expect(action.dst, 'BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_NUL_');
+          expect(action.messageHex, isNull);
         },
       );
     });
@@ -749,6 +750,7 @@ void main() {
           expect(action.favicon, 'https://example.com/favicon.ico');
           expect(action.message, 'Hello World');
           expect(action.dst, isNull);
+          expect(action.messageHex, isNull);
         },
       );
     });
@@ -776,6 +778,60 @@ void main() {
           expect(action.favicon, '');
           expect(action.message, 'Hello World');
           expect(action.dst, isNull);
+          expect(action.messageHex, isNull);
+        },
+      );
+    });
+
+    test(
+        'should decode RPCSignMessageBLSAction with messageHex (9 fields)',
+        () {
+      // Arrange
+      const encodedString =
+          'signMessageBLS,1,def,https%3A%2F%2Fexample.com,Example%20Site,https%3A%2F%2Fexample.com%2Ffavicon.ico,,BLS_SIG_BLS12381G1_XMD%3ASHA-256_SSWU_RO_NUL_,deadbeef0123';
+
+      // Act
+      final result = actionRepository.fromString(encodedString);
+
+      // Assert
+      expect(result.isRight(), true);
+      result.match(
+        (l) => fail('Expected Right but got Left: $l'),
+        (r) {
+          expect(r, isA<RPCSignMessageBLSAction>());
+          final action = r as RPCSignMessageBLSAction;
+          expect(action.tabId, 1);
+          expect(action.requestId, 'def');
+          expect(action.origin, 'https://example.com');
+          expect(action.title, 'Example Site');
+          expect(action.favicon, 'https://example.com/favicon.ico');
+          expect(action.message, '');
+          expect(action.dst, 'BLS_SIG_BLS12381G1_XMD:SHA-256_SSWU_RO_NUL_');
+          expect(action.messageHex, 'deadbeef0123');
+        },
+      );
+    });
+
+    test(
+        'should decode RPCSignMessageBLSAction with messageHex and empty dst (9 fields)',
+        () {
+      // Arrange
+      const encodedString =
+          'signMessageBLS,1,def,https%3A%2F%2Fexample.com,Example%20Site,https%3A%2F%2Fexample.com%2Ffavicon.ico,,,deadbeef0123';
+
+      // Act
+      final result = actionRepository.fromString(encodedString);
+
+      // Assert
+      expect(result.isRight(), true);
+      result.match(
+        (l) => fail('Expected Right but got Left: $l'),
+        (r) {
+          expect(r, isA<RPCSignMessageBLSAction>());
+          final action = r as RPCSignMessageBLSAction;
+          expect(action.message, '');
+          expect(action.dst, isNull);
+          expect(action.messageHex, 'deadbeef0123');
         },
       );
     });
@@ -784,6 +840,18 @@ void main() {
       // Arrange
       const encodedString =
           'signMessageBLS,1,def,https%3A%2F%2Fexample.com,Example%20Site';
+
+      // Act
+      final result = actionRepository.fromString(encodedString);
+
+      // Assert
+      expect(result.isLeft(), true);
+    });
+
+    test('should fail with too many fields (10)', () {
+      // Arrange
+      const encodedString =
+          'signMessageBLS,1,def,https%3A%2F%2Fexample.com,Example%20Site,favicon,msg,dst,hex,extra';
 
       // Act
       final result = actionRepository.fromString(encodedString);

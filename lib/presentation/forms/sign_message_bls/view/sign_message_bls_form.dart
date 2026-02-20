@@ -53,7 +53,15 @@ class _SignMessageBLSFormState extends State<SignMessageBLSForm> {
                   style: theme.textTheme.labelSmall,
                 ),
                 const SizedBox(height: 20),
-                Text(state.message),
+                if (state.message.isNotEmpty)
+                  Text(state.message)
+                else if (state.messageHex != null)
+                  SelectableText(
+                    'Binary (hex): ${state.messageHex!.length > 64 ? '${state.messageHex!.substring(0, 64)}...' : state.messageHex!}',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontFamily: 'monospace',
+                    ),
+                  ),
                 if (state.dst != null) ...[
                   const SizedBox(height: 12),
                   Text(
