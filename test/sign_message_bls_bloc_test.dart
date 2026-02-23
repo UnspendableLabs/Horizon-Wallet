@@ -185,7 +185,7 @@ void main() {
           stubSuccessfulSign();
           return buildBloc(
             message: 'Hello BLS',
-            dst: 'BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_NUL_',
+            dst: 'BLS_SIG_BLS12381G1_XMD:SHA-256_SSWU_RO_NUL_',
           );
         },
         act: (bloc) => bloc.add(SignMessageBLSSubmitted()),
@@ -198,7 +198,7 @@ void main() {
           verify(() => mockBlsService.signMessage(
                 seed: any(named: 'seed'),
                 message: any(named: 'message'),
-                dst: 'BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_NUL_',
+                dst: 'BLS_SIG_BLS12381G1_XMD:SHA-256_SSWU_RO_NUL_',
                 messageHex: any(named: 'messageHex'),
               )).called(1);
         },

@@ -33,9 +33,13 @@ function deriveMasterSK(seed) {
   }
 }
 
+// min_sig (G1, 48 bytes): used by Kontor & Portal; signatures are aggregated on-chain so smaller = cheaper.
+const KONTOR_BLS_DST = "BLS_SIG_BLS12381G1_XMD:SHA-256_SSWU_RO_NUL_";
+
 function sign(messageHex, privateKey, dst) {
   const msgBytes = hexToBytes(messageHex);
-  const hashedMsg = bls12_381.shortSignatures.hash(msgBytes, dst || undefined);
+  const effectiveDst = dst || KONTOR_BLS_DST;
+  const hashedMsg = bls12_381.shortSignatures.hash(msgBytes, effectiveDst);
   const sigPoint = bls12_381.shortSignatures.sign(hashedMsg, privateKey);
   return bls12_381.shortSignatures.Signature.toHex(sigPoint);
 }
@@ -44,8 +48,6 @@ function getPublicKey(privateKey) {
   const pubPoint = bls12_381.shortSignatures.getPublicKey(privateKey);
   return pubPoint.toHex();
 }
-
-const KONTOR_BLS_DST = "BLS_SIG_BLS12381G1_XMD:SHA-256_SSWU_RO_NUL_";
 const SCHNORR_BINDING_PREFIX = new TextEncoder().encode("KONTOR_XONLY_TO_BLS_V1");
 const BLS_BINDING_PREFIX = new TextEncoder().encode("KONTOR_BLS_TO_XONLY_V1");
 

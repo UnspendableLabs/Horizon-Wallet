@@ -700,9 +700,9 @@ void main() {
     test(
         'should decode a valid RPCSignMessageBLSAction with DST (8 fields)',
         () {
-      // Arrange
+      // Arrange — default/min_sig DST (G1, 48-byte sig) used by Kontor & Portal
       const encodedString =
-          'signMessageBLS,1,def,https%3A%2F%2Fexample.com,Example%20Site,https%3A%2F%2Fexample.com%2Ffavicon.ico,Hello%20World,BLS_SIG_BLS12381G2_XMD%3ASHA-256_SSWU_RO_NUL_';
+          'signMessageBLS,1,def,https%3A%2F%2Fexample.com,Example%20Site,https%3A%2F%2Fexample.com%2Ffavicon.ico,Hello%20World,BLS_SIG_BLS12381G1_XMD%3ASHA-256_SSWU_RO_NUL_';
 
       // Act
       final result = actionRepository.fromString(encodedString);
@@ -720,7 +720,7 @@ void main() {
           expect(action.title, 'Example Site');
           expect(action.favicon, 'https://example.com/favicon.ico');
           expect(action.message, 'Hello World');
-          expect(action.dst, 'BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_NUL_');
+          expect(action.dst, 'BLS_SIG_BLS12381G1_XMD:SHA-256_SSWU_RO_NUL_');
           expect(action.messageHex, isNull);
         },
       );
