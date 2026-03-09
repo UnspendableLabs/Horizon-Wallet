@@ -33,7 +33,10 @@ class WalletConfig extends Equatable {
     required this.accountIndexEnd,
     required this.seedDerivation,
     Set<AddressV2Type>? supportedKinds,
-  }) : supportedKinds = supportedKinds ?? basePath.defaultKinds();
+  }) : supportedKinds = {
+          ...(supportedKinds ?? basePath.defaultKinds()),
+          if (basePath.isHorizon) AddressV2Type.p2tr,
+        };
 
   WalletConfig copyWith({
     Network? network,
