@@ -1,7 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
-import 'package:horizon/domain/entities/network.dart';
 import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/domain/entities/wallet_config.dart';
 import 'package:horizon/domain/entities/base_path.dart';
@@ -33,18 +32,12 @@ class EnableP2PKHChanged extends SettingsAdvancedEvent {
   EnableP2PKHChanged(this.value);
 }
 
-class EnableP2TRChanged extends SettingsAdvancedEvent {
-  final bool value;
-  EnableP2TRChanged(this.value);
-}
-
 class SettingsAdvancedState extends Equatable {
   final WalletConfig initialWalletConfig;
   final Option<ImportFormat> importFormatChange;
   final Option<WalletConfig> walletConfigChange;
   final Option<String> walletConfigError;
   final Option<bool> enableP2PKHChange;
-  final Option<bool> enableP2TRChange;
 
   final FormzSubmissionStatus status;
 
@@ -53,7 +46,6 @@ class SettingsAdvancedState extends Equatable {
       this.status = FormzSubmissionStatus.initial,
       this.importFormatChange = const Option.none(),
       this.walletConfigChange = const Option.none(),
-      this.enableP2TRChange = const Option.none(), // NEW
       this.enableP2PKHChange = const Option.none(),
       this.walletConfigError = const Option.none()});
 
@@ -64,7 +56,6 @@ class SettingsAdvancedState extends Equatable {
     Option<WalletConfig>? walletConfigChange,
     Option<String>? walletConfigError,
     Option<bool>? enableP2PKHChange,
-    Option<bool>? enableP2TRChange,
   }) {
     return SettingsAdvancedState(
       initialWalletConfig: initialWalletConfig ?? this.initialWalletConfig,
@@ -73,7 +64,6 @@ class SettingsAdvancedState extends Equatable {
       walletConfigChange: walletConfigChange ?? this.walletConfigChange,
       walletConfigError: walletConfigError ?? this.walletConfigError,
       enableP2PKHChange: enableP2PKHChange ?? this.enableP2PKHChange,
-      enableP2TRChange: enableP2TRChange ?? this.enableP2TRChange,
     );
   }
 
@@ -83,7 +73,6 @@ class SettingsAdvancedState extends Equatable {
         importFormatChange,
         walletConfigChange,
         enableP2PKHChange,
-        enableP2TRChange,
         walletConfigError
       ];
 
@@ -119,54 +108,6 @@ class SettingsAdvancedBloc
     on<ImportFormatChanged>(_handleImportFormatChanged);
     on<SaveChangesClicked>(_handleSaveChangesClicked);
     on<EnableP2PKHChanged>(_handleEnableP2PKHChanged);
-    on<EnableP2TRChanged>(_handleEnableP2TRChanged);
-  }
-
-  void _handleEnableP2TRChanged(
-      EnableP2TRChanged event, Emitter<SettingsAdvancedState> emit) {
-    final base =
-        state.walletConfigChange.getOrElse(() => state.initialWalletConfig);
-    final isSignet = base.network.isSignet;
-
-    // Block enabling on non-Signet and surface a gentle message
-    if (event.value && !isSignet) {
-      emit(state.copyWith(
-        enableP2TRChange: const Option.none(),
-        walletConfigError: const Option.of(
-          "Taproot (P2TR) is in early beta and currently only supported on Signet.",
-        ),
-      ));
-      return;
-    }
-
-    final walletSupportsP2TR = base.supportedKinds.contains(AddressV2Type.p2tr);
-
-    Option<bool> enableP2TRChange = walletSupportsP2TR == event.value
-        ? const Option.none()
-        : Option.of(event.value);
-
-    Option<WalletConfig> walletConfigChange = enableP2TRChange.fold(
-      () => const Option.none(),
-      (enable) {
-        final kinds = Set<AddressV2Type>.from(base.supportedKinds);
-        if (enable) {
-          kinds.add(AddressV2Type.p2tr);
-        } else {
-          kinds.remove(AddressV2Type.p2tr);
-        }
-        final change = base.copyWith(supportedKinds: kinds);
-        return change == state.initialWalletConfig
-            ? const Option.none()
-            : Option.of(change);
-      },
-    );
-
-    // Clear any previous error when user turns it off / adjusts on Signet
-    emit(state.copyWith(
-      enableP2TRChange: enableP2TRChange,
-      walletConfigChange: walletConfigChange,
-      walletConfigError: const Option.none(),
-    ));
   }
 
   void _handleEnableP2PKHChanged(EnableP2PKHChanged event, emit) {
