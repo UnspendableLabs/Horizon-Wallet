@@ -665,40 +665,6 @@ class TransactionServiceWeb implements TransactionService {
     HttpConfig httpConfig, [
     List<int>? sighashTypes,
   ]) {
-    if (httpConfig.network.isSignet) {
-      return _signPsbtSignet(
-        psbtHex,
-        inputPrivateKeyMap,
-        httpConfig,
-        sighashTypes,
-      );
-    }
-
-    bitcoin.Psbt psbt = bitcoin.Psbt.fromHex(psbtHex);
-
-    for (final entry in inputPrivateKeyMap.entries) {
-      final index = entry.key;
-      final privateKey = entry.value.$2;
-
-      Buffer privKeyJS =
-          Buffer.from(Uint8List.fromList(hex.decode(privateKey)).toJS);
-
-      final signer =
-          ecpairFactory.fromPrivateKey(privKeyJS, httpConfig.network.toJS);
-
-      psbt.signInput(
-          index, signer, sighashTypes?.map((e) => e.toJS).toList().toJS);
-    }
-
-    return psbt.toHex();
-  }
-
-  String _signPsbtSignet(
-    String psbtHex,
-    Map<int, (String, String)> inputPrivateKeyMap,
-    HttpConfig httpConfig, [
-    List<int>? sighashTypes,
-  ]) {
     final psbt = bitcoin.Psbt.fromHex(psbtHex);
     final inputs = psbt.data.inputs;
 
@@ -723,7 +689,6 @@ class TransactionServiceWeb implements TransactionService {
           witnessScript != null && isP2TRScript(witnessScript);
       final isTaproot = hasTik || isTaprootByScript;
 
-      // segwit / legacy / p2tr script spend
       if (!isTaproot || hasLeaf) {
         psbt.signInput(index, baseSigner, sigTypes);
         continue;

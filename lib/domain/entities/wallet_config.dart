@@ -8,13 +8,9 @@ extension BasePathX on BasePath {
   bool get isHorizon => serialize() == BasePath.horizonSerialized;
   bool get isLegacy => serialize() == BasePath.legacySerialized;
 
-  /// Defaults you asked for:
-  /// - legacy: {p2pkh, p2wpkh}
-  /// - horizon: {p2wpkh}
-  /// Plus sensible heuristics for other paths (84' => p2wpkh, 86' => p2tr).
   Set<AddressV2Type> defaultKinds() {
     if (isLegacy) return {AddressV2Type.p2pkh, AddressV2Type.p2wpkh};
-    if (isHorizon) return {AddressV2Type.p2wpkh};
+    if (isHorizon) return {AddressV2Type.p2wpkh, AddressV2Type.p2tr};
     return {};
   }
 }
