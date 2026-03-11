@@ -103,7 +103,7 @@ dependencies:
   sentry_dart_plugin: ^3.1.1
 
 dev_dependencies:
-  retrofit_generator: ^9.3.0
+  retrofit_generator: ^10.0.2
   build_runner: ^2.4.9
   integration_test:
     sdk: flutter
