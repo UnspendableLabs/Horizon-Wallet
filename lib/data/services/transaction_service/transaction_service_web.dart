@@ -699,6 +699,15 @@ class TransactionServiceWeb implements TransactionService {
         throw Exception('Taproot input without valid P2TR scriptPubKey');
       }
 
+      // bitcoinjs-lib requires tapInternalKey to route to Schnorr signing;
+      // if the PSBT didn't include it, derive it from the signer's pubkey.
+      if (!hasTik) {
+        final pub33 = baseSigner.publicKey.toDart;
+        final xOnly = Buffer.from(pub33.sublist(1).toJS);
+        psbt.updateInput(
+            index, bitcoin.PsbtInputUpdate(tapInternalKey: xOnly));
+      }
+
       final tweakedPrivBuf = taprootTweakPrivKey(
         privBuf,
         baseSigner,
