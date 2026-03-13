@@ -13,6 +13,7 @@ import 'package:horizon/domain/entities/address_rpc.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/address_v2_repository.dart';
 import 'package:horizon/domain/entities/http_config.dart';
+import 'package:collection/collection.dart';
 
 class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
   final bool passwordRequired;
@@ -69,13 +70,36 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
 
   Future<void> _handleGetAddressesSubmitted(
       GetAddressesSubmitted event, Emitter<GetAddressesState> emit) async {
-    // TODO: must handle this
-    if (state.addressSelectionMode != AddressSelectionMode.byAccount) {
-      throw GetAddressesException('Address selection mode not supported.');
-    }
-
     emit(state.copyWith(submissionStatus: FormzSubmissionStatus.inProgress));
 
+    if (state.addressSelectionMode == AddressSelectionMode.importedAddresses) {
+      final selectedAddress = state.importedAddress.value;
+      final importedList = state.importedAddresses;
+      if (importedList == null || selectedAddress.isEmpty) {
+        emit(state.copyWith(
+          submissionStatus: FormzSubmissionStatus.failure,
+          error: 'No imported address selected.',
+        ));
+        return;
+      }
+      final selected = importedList.firstWhereOrNull(
+          (a) => a.address == selectedAddress);
+      if (selected == null) {
+        emit(state.copyWith(
+          submissionStatus: FormzSubmissionStatus.failure,
+          error: 'Selected imported address not found.',
+        ));
+        return;
+      }
+      emit(state.copyWith(
+        submissionStatus: FormzSubmissionStatus.success,
+        addresses: [selected.toRpc()],
+        error: null,
+      ));
+      return;
+    }
+
+    // By-account mode
     AccountV2 account = accounts.firstWhere(
       (account) => account.hash == state.account.value,
     );

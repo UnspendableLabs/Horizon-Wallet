@@ -665,40 +665,6 @@ class TransactionServiceWeb implements TransactionService {
     HttpConfig httpConfig, [
     List<int>? sighashTypes,
   ]) {
-    if (httpConfig.network.isSignet) {
-      return _signPsbtSignet(
-        psbtHex,
-        inputPrivateKeyMap,
-        httpConfig,
-        sighashTypes,
-      );
-    }
-
-    bitcoin.Psbt psbt = bitcoin.Psbt.fromHex(psbtHex);
-
-    for (final entry in inputPrivateKeyMap.entries) {
-      final index = entry.key;
-      final privateKey = entry.value.$2;
-
-      Buffer privKeyJS =
-          Buffer.from(Uint8List.fromList(hex.decode(privateKey)).toJS);
-
-      final signer =
-          ecpairFactory.fromPrivateKey(privKeyJS, httpConfig.network.toJS);
-
-      psbt.signInput(
-          index, signer, sighashTypes?.map((e) => e.toJS).toList().toJS);
-    }
-
-    return psbt.toHex();
-  }
-
-  String _signPsbtSignet(
-    String psbtHex,
-    Map<int, (String, String)> inputPrivateKeyMap,
-    HttpConfig httpConfig, [
-    List<int>? sighashTypes,
-  ]) {
     final psbt = bitcoin.Psbt.fromHex(psbtHex);
     final inputs = psbt.data.inputs;
 
@@ -723,7 +689,6 @@ class TransactionServiceWeb implements TransactionService {
           witnessScript != null && isP2TRScript(witnessScript);
       final isTaproot = hasTik || isTaprootByScript;
 
-      // segwit / legacy / p2tr script spend
       if (!isTaproot || hasLeaf) {
         psbt.signInput(index, baseSigner, sigTypes);
         continue;
@@ -732,6 +697,15 @@ class TransactionServiceWeb implements TransactionService {
       // p2tr key path spend
       if (witnessScript == null || !isP2TRScript(witnessScript)) {
         throw Exception('Taproot input without valid P2TR scriptPubKey');
+      }
+
+      // bitcoinjs-lib requires tapInternalKey to route to Schnorr signing;
+      // if the PSBT didn't include it, derive it from the signer's pubkey.
+      if (!hasTik) {
+        final pub33 = baseSigner.publicKey.toDart;
+        final xOnly = Buffer.from(pub33.sublist(1).toJS);
+        psbt.updateInput(
+            index, bitcoin.PsbtInputUpdate(tapInternalKey: xOnly));
       }
 
       final tweakedPrivBuf = taprootTweakPrivKey(
