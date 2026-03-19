@@ -46,6 +46,7 @@ app.*.map.json
 chromedriver/
 build_release
 build_release_testnet
+node_modules/
 
 android/app/.cxx/
 

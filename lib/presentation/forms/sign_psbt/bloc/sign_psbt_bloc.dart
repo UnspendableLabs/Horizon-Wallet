@@ -308,11 +308,10 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
 
     final result = await task.run();
 
-    // TODO: this should be logged
     result.fold((msg) {
       emit(state.copyWith(
           submissionStatus: FormzSubmissionStatus.failure,
-          error: "An unexpected error occurred."));
+          error: msg));
     }, (success) {
       emit(state.copyWith(
         submissionStatus: FormzSubmissionStatus.success,
