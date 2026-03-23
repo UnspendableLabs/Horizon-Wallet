@@ -2059,6 +2059,10 @@ class HorizonPasswordPrompt extends StatefulWidget {
   final VoidCallback onCancel;
   final String buttonText;
   final String title;
+  /// Optional helper text shown below the title (e.g. export password guidance).
+  final String? subtitle;
+  /// When non-null, replaces [subtitle] for richer layout.
+  final Widget? description;
   final String? errorText;
   final bool isLoading;
 
@@ -2068,6 +2072,8 @@ class HorizonPasswordPrompt extends StatefulWidget {
     required this.onCancel,
     this.buttonText = 'Continue',
     this.title = 'Enter Password',
+    this.subtitle,
+    this.description,
     this.errorText,
     this.isLoading = false,
   });
@@ -2101,6 +2107,10 @@ class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
+    final baseSubtitleColor = theme.textTheme.bodySmall?.color;
+    final subtitleMutedColor = baseSubtitleColor?.withValues(
+      alpha: (baseSubtitleColor.a * 0.85).clamp(0.0, 1.0),
+    );
 
     return Material(
       type: MaterialType.transparency,
@@ -2120,59 +2130,83 @@ class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
           ),
           // Centered dialog content
           Center(
-            child: Container(
-              width: 335,
-              height: 234,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
-                border: GradientBoxBorder(
-                  context: context,
-                  width: 1,
-                ),
-                color: isDarkMode ? grey5 : grey1,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: 335,
+                maxHeight: MediaQuery.sizeOf(context).height * 0.9,
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    widget.title,
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  HorizonTextField(
-                    controller: _controller,
-                    hintText: 'Password',
-                    errorText: widget.errorText,
-                    obscureText: _obscurePassword,
-                    suffixIcon: AppIcons.iconButton(
+              child: SingleChildScrollView(
+                child: Container(
+                  width: 335,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18),
+                    border: GradientBoxBorder(
                       context: context,
-                      icon: _obscurePassword
-                          ? AppIcons.eyeClosedIcon(
-                              context: context,
-                              width: 24,
-                              height: 24,
-                            )
-                          : AppIcons.eyeOpenIcon(
-                              context: context,
-                              width: 24,
-                              height: 24,
-                            ),
-                      onPressed: _togglePasswordVisibility,
-                      padding: EdgeInsets.zero,
+                      width: 1,
                     ),
+                    color: isDarkMode ? grey5 : grey1,
                   ),
-                  SizedBox(
-                    height: 56,
-                    child: HorizonOutlinedButton(
-                      onPressed: widget.isLoading ? null : _handleSubmit,
-                      buttonText: widget.buttonText,
-                      isTransparent: false,
-                    ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        widget.title,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      if (widget.description != null) ...[
+                        const SizedBox(height: 12),
+                        widget.description!,
+                      ] else if (widget.subtitle != null) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          widget.subtitle!,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: subtitleMutedColor,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 16),
+                      HorizonTextField(
+                        controller: _controller,
+                        hintText: 'Password',
+                        errorText: widget.errorText,
+                        obscureText: _obscurePassword,
+                        suffixIcon: AppIcons.iconButton(
+                          context: context,
+                          icon: _obscurePassword
+                              ? AppIcons.eyeClosedIcon(
+                                  context: context,
+                                  width: 24,
+                                  height: 24,
+                                )
+                              : AppIcons.eyeOpenIcon(
+                                  context: context,
+                                  width: 24,
+                                  height: 24,
+                                ),
+                          onPressed: _togglePasswordVisibility,
+                          padding: EdgeInsets.zero,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: HorizonOutlinedButton(
+                          onPressed: widget.isLoading ? null : _handleSubmit,
+                          buttonText: widget.buttonText,
+                          isTransparent: false,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),

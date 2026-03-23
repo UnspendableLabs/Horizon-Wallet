@@ -7,17 +7,22 @@ import 'package:horizon/js/bls.dart' as bls;
 
 class BlsServiceWeb implements BlsService {
   @override
+  Uint8List deriveMasterPrivateKey(Uint8List seed) {
+    return bls.blsDeriveMasterSK(seed.toJS).toDart;
+  }
+
+  @override
   ({String signature, String publicKey}) signMessage({
     required Uint8List seed,
     required String message,
     String? dst,
     String? messageHex,
   }) {
-    final privateKey = bls.blsDeriveMasterSK(seed.toJS);
+    final privateKey = deriveMasterPrivateKey(seed);
     final hexPayload =
         messageHex ?? convert.hex.encode(utf8.encode(message));
-    final signature = bls.blsSign(hexPayload, privateKey, dst);
-    final publicKey = bls.blsGetPublicKey(privateKey);
+    final signature = bls.blsSign(hexPayload, privateKey.toJS, dst);
+    final publicKey = bls.blsGetPublicKey(privateKey.toJS);
     return (signature: signature, publicKey: publicKey);
   }
 }

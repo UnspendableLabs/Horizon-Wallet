@@ -23,6 +23,7 @@ import 'package:horizon/domain/usecases/atomic_swap_create.dart';
 import 'package:horizon/domain/usecases/atomic_swap_multi_buy.dart';
 import 'package:horizon/domain/usecases/create_on_chain_payment.dart';
 import 'package:horizon/domain/usecases/decode_raw_transaction.dart';
+import 'package:horizon/domain/usecases/export_encrypted_bls_private_key.dart';
 import 'package:horizon/domain/usecases/get_order_by_pair.dart';
 import 'package:horizon/domain/usecases/get_royalty_by_asset.dart';
 import 'package:horizon/domain/usecases/get_swaps_by_asset.dart';
@@ -756,6 +757,9 @@ void setup() {
   injector.registerSingleton<SearchAssetsUseCase>(SearchAssetsUseCase());
   injector.registerSingleton<GetAssetVerboseUseCase>(GetAssetVerboseUseCase());
   injector.registerSingleton<GetDetachDataUseCase>(GetDetachDataUseCase());
+
+  injector.registerSingleton<ExportEncryptedBlsPrivateKeyUseCase>(
+      ExportEncryptedBlsPrivateKeyUseCase());
 
   injector.registerSingleton<GetBalancesByAddressesUseCase>(
       GetBalancesByAddressesUseCase());
