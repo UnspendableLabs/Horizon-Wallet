@@ -89,6 +89,8 @@ Future<String?> _promptExportPasswordForBls(BuildContext rootContext) {
             title: 'Export password',
             subtitle:
                 'For stronger security, prefer a password that is different from your wallet password.',
+            requireConfirmation: true,
+            confirmationHintText: 'Confirm export password',
             onPasswordSubmitted: (password) async {
               setState(() {
                 isLoading = true;

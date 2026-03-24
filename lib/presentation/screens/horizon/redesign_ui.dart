@@ -2065,6 +2065,8 @@ class HorizonPasswordPrompt extends StatefulWidget {
   final Widget? description;
   final String? errorText;
   final bool isLoading;
+  final bool requireConfirmation;
+  final String confirmationHintText;
 
   const HorizonPasswordPrompt({
     super.key,
@@ -2076,6 +2078,8 @@ class HorizonPasswordPrompt extends StatefulWidget {
     this.description,
     this.errorText,
     this.isLoading = false,
+    this.requireConfirmation = false,
+    this.confirmationHintText = 'Confirm password',
   });
 
   @override
@@ -2084,10 +2088,22 @@ class HorizonPasswordPrompt extends StatefulWidget {
 
 class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
   final TextEditingController _controller = TextEditingController();
+  final TextEditingController _confirmController = TextEditingController();
   bool _obscurePassword = true;
+  String? _confirmationError;
 
   void _handleSubmit() async {
     if (widget.isLoading) return;
+    if (widget.requireConfirmation &&
+        _controller.text != _confirmController.text) {
+      setState(() {
+        _confirmationError = 'Passwords do not match';
+      });
+      return;
+    }
+    setState(() {
+      _confirmationError = null;
+    });
     await widget.onPasswordSubmitted(_controller.text);
   }
 
@@ -2100,6 +2116,7 @@ class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
   @override
   void dispose() {
     _controller.dispose();
+    _confirmController.dispose();
     super.dispose();
   }
 
@@ -2194,6 +2211,31 @@ class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
                           padding: EdgeInsets.zero,
                         ),
                       ),
+                      if (widget.requireConfirmation) ...[
+                        const SizedBox(height: 12),
+                        HorizonTextField(
+                          controller: _confirmController,
+                          hintText: widget.confirmationHintText,
+                          errorText: _confirmationError,
+                          obscureText: _obscurePassword,
+                          suffixIcon: AppIcons.iconButton(
+                            context: context,
+                            icon: _obscurePassword
+                                ? AppIcons.eyeClosedIcon(
+                                    context: context,
+                                    width: 24,
+                                    height: 24,
+                                  )
+                                : AppIcons.eyeOpenIcon(
+                                    context: context,
+                                    width: 24,
+                                    height: 24,
+                                  ),
+                            onPressed: _togglePasswordVisibility,
+                            padding: EdgeInsets.zero,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 16),
                       SizedBox(
                         width: double.infinity,
