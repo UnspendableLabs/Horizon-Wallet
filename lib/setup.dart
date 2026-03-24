@@ -690,6 +690,27 @@ void setup() {
               blsSig: ${args.blsSig}
       """));
 
+  injector.registerLazySingleton<RPCExportEncryptedBlsPrivateKeySuccessCallback>(
+      () => config.isWebExtension
+          ? (args) {
+              chrome.tabs.sendMessage(
+                args.tabId,
+                {
+                  "id": args.requestId,
+                  "encryptedBlsPrivateKey": args.encryptedBlsPrivateKey,
+                },
+                null,
+              );
+
+              Future.delayed(const Duration(seconds: 0), html.window.close);
+            }
+          : (args) => GetIt.I<Logger>().debug("""
+           RPCExportEncryptedBlsPrivateKeySuccessCallback called with:
+              tabId: ${args.tabId}
+              requestId: ${args.requestId}
+              encryptedBlsPrivateKey: ${args.encryptedBlsPrivateKey}
+      """));
+
   injector.registerLazySingleton<VersionRepository>(() => config.isWebExtension
       ? VersionRepositoryExtensionImpl(
           config: config, logger: GetIt.I<Logger>())

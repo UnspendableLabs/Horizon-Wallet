@@ -1,4 +1,53 @@
-# Decrypting an exported BLS private key blob (Rust / CLI)
+# BLS Private Key Export
+
+## Requesting an export from a connected dApp (RPC)
+
+When a user is connected to Horizon Wallet, any site can request the
+encrypted BLS private key via the injected provider.
+
+### JavaScript (dApp side)
+
+```js
+const response = await window.HorizonWalletProvider.request(
+  'exportEncryptedBlsPrivateKey',
+);
+
+const hex = response.result.encryptedBlsPrivateKey;
+```
+
+The call opens the wallet popup where the user:
+
+1. Enters their **wallet password** (if password-protected operations are
+   enabled in wallet settings).
+2. Chooses an **export password** used to encrypt the key blob.
+3. Clicks **Export BLS Key**.
+
+On success the promise resolves with `{ result: { encryptedBlsPrivateKey } }`
+where `encryptedBlsPrivateKey` is the hex-encoded encrypted payload described
+below. If the user closes the popup without exporting, the promise rejects
+with an error.
+
+### Example button
+
+```html
+<button id="get-bls-key">Get BLS Private Key</button>
+<script>
+  document.getElementById('get-bls-key').addEventListener('click', async () => {
+    try {
+      const { result } = await window.HorizonWalletProvider.request(
+        'exportEncryptedBlsPrivateKey',
+      );
+      console.log('Encrypted BLS key:', result.encryptedBlsPrivateKey);
+    } catch (err) {
+      console.error('Export cancelled or failed', err);
+    }
+  });
+</script>
+```
+
+---
+
+## Decrypting an exported BLS private key blob (Rust / CLI)
 
 Concise reference for implementing decryption outside the wallet. Sources: `lib/data/services/encryption_service/encryption_service_web.dart`, `web/encryption_worker.js`, `lib/domain/usecases/export_encrypted_bls_private_key.dart`, `tool/bls-entry.js`.
 
@@ -34,7 +83,7 @@ Match `hashPassword` in `web/encryption_worker.js`:
 | Iterations (`t`) | **6** |
 | Parallelism (`p`) | **4** |
 | Hash length | **32** bytes (AES-256 key) |
-| Password | UTF-8 bytes of the user’s export password |
+| Password | UTF-8 bytes of the user's export password |
 | Salt | Bytes from segment 2 (decoded from base64) |
 
 Use the **32-byte** digest as the AES key (not the full PHC `$argon2id$...` string). If you parse the PHC string instead, the **last `$`-separated field** is the raw hash in base64; pad base64 to a multiple of four before decoding (Dart uses `normalizeB64` for that).

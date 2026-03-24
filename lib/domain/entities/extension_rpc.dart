@@ -83,3 +83,18 @@ class RPCGetBLSPoPSuccessCallbackArgs {
 
 typedef RPCGetBLSPoPSuccessCallback = void Function(
     RPCGetBLSPoPSuccessCallbackArgs);
+
+class RPCExportEncryptedBlsPrivateKeySuccessCallbackArgs {
+  final int tabId;
+  final String requestId;
+  final String encryptedBlsPrivateKey;
+
+  RPCExportEncryptedBlsPrivateKeySuccessCallbackArgs({
+    required this.tabId,
+    required this.requestId,
+    required this.encryptedBlsPrivateKey,
+  });
+}
+
+typedef RPCExportEncryptedBlsPrivateKeySuccessCallback = void Function(
+    RPCExportEncryptedBlsPrivateKeySuccessCallbackArgs);

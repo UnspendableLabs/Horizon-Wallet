@@ -561,6 +561,19 @@ class ActionRepositoryImpl implements ActionRepository {
           Uri.decodeComponent(parts[6]),
         );
 
+      case 'exportEncryptedBlsPrivateKey':
+        if (parts.length != 6) {
+          throw Exception(
+              'exportEncryptedBlsPrivateKey expects 6 fields, got ${parts.length}');
+        }
+        return RPCExportEncryptedBlsPrivateKeyAction(
+          int.parse(parts[1]),
+          parts[2],
+          Uri.decodeComponent(parts[3]),
+          Uri.decodeComponent(parts[4]),
+          Uri.decodeComponent(parts[5]),
+        );
+
       default:
         throw Exception('Unknown action: ${parts[0]}');
     }

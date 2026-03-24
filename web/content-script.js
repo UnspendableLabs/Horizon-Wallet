@@ -6,6 +6,7 @@ const VALID_METHODS = [
   "signMessage",
   "signMessageBLS",
   "getBLSPoP",
+  "exportEncryptedBlsPrivateKey",
   "fairmint",
   "dispense",
   "openOrder",

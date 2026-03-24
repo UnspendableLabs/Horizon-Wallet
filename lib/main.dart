@@ -72,6 +72,8 @@ import 'package:horizon/presentation/forms/sign_message_bls/view/sign_message_bl
 
 import 'package:horizon/presentation/forms/get_bls_pop/bloc/get_bls_pop_bloc.dart';
 import 'package:horizon/presentation/forms/get_bls_pop/view/get_bls_pop_form.dart';
+import 'package:horizon/presentation/forms/export_encrypted_bls_private_key/bloc/export_encrypted_bls_private_key_bloc.dart';
+import 'package:horizon/presentation/forms/export_encrypted_bls_private_key/view/export_encrypted_bls_private_key_form.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -696,6 +698,53 @@ class AppRouter {
                         ),
                       )));
                 }),
+            GoRoute(
+                path: "/rpc/export-encrypted-bls-private-key",
+                builder: (context, state) {
+                  final actionRepository = GetIt.I<ActionRepository>();
+
+                  final action = actionRepository.dequeue().getOrThrow()
+                      as RPCExportEncryptedBlsPrivateKeyAction;
+
+                  final passwordRequired = GetIt.I<SettingsRepository>()
+                      .requirePasswordForCryptoOperations;
+
+                  return BlocProvider(
+                      create: (_) => ExportEncryptedBlsPrivateKeyBloc(
+                            passwordRequired: passwordRequired,
+                          ),
+                      child: ActionHandlerShell(
+                          child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            DAppInfoWidget(
+                              title: 'EXPORT ENCRYPTED BLS KEY',
+                              dappUrl: action.origin,
+                              dappTitle: action.title,
+                              dappFavicon: action.favicon,
+                            ),
+                            ExportEncryptedBlsPrivateKeyForm(
+                              passwordRequired: passwordRequired,
+                              onSuccess: (encryptedBlsPrivateKey) {
+                                final callback = GetIt.I<
+                                    RPCExportEncryptedBlsPrivateKeySuccessCallback>();
+
+                                callback(
+                                    RPCExportEncryptedBlsPrivateKeySuccessCallbackArgs(
+                                  tabId: action.tabId,
+                                  requestId: action.requestId,
+                                  encryptedBlsPrivateKey:
+                                      encryptedBlsPrivateKey,
+                                ));
+                              },
+                            ),
+                          ],
+                        ),
+                      )));
+                }),
             StatefulShellRoute.indexedStack(
                 builder: (BuildContext context, GoRouterState state,
                     StatefulNavigationShell nav) {
@@ -965,6 +1014,8 @@ class AppRouter {
                         RPCSignMessageBLSAction() => "/rpc/sign-message-bls",
                         RPCGetBLSPoPAction() => "/rpc/get-bls-pop",
                         RPCSignPsbtAction() => "/rpc/sign-psbt",
+                        RPCExportEncryptedBlsPrivateKeyAction() =>
+                          "/rpc/export-encrypted-bls-private-key",
                         _ => null
                       });
 
@@ -985,6 +1036,8 @@ class AppRouter {
                         RPCSignMessageBLSAction() => "/rpc/sign-message-bls",
                         RPCGetBLSPoPAction() => "/rpc/get-bls-pop",
                         RPCSignPsbtAction() => "/rpc/sign-psbt",
+                        RPCExportEncryptedBlsPrivateKeyAction() =>
+                          "/rpc/export-encrypted-bls-private-key",
                         _ => null
                       });
 

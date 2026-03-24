@@ -247,6 +247,33 @@ async function rpcGetBLSPoP(requestId, port, address) {
   });
 }
 
+async function rpcExportEncryptedBlsPrivateKey(requestId, port) {
+  const origin = getOriginFromPort(port);
+  const tabId = getTabIdFromPort(port);
+  const metadata = await getTabMetadata(tabId);
+
+  const params = [
+    "exportEncryptedBlsPrivateKey",
+    tabId,
+    requestId,
+    encodeURIComponent(origin),
+    encodeURIComponent(metadata.title),
+    encodeURIComponent(metadata.favicon),
+  ];
+
+  const window = await popup({
+    url: `/index.html#?action=${params.join(",")}`,
+  });
+  listenForPopupClose({
+    id: window?.id,
+    tabId: tabId,
+    response: {
+      id: requestId,
+      error: "User rejected `exportEncryptedBlsPrivateKey` request",
+    },
+  });
+}
+
 async function rpcMessageHandler(message, port) {
   const method = message["method"];
   const tabId = getTabIdFromPort(port);
@@ -290,6 +317,9 @@ async function rpcMessageHandler(message, port) {
         port,
         message["params"]["address"],
       );
+      break;
+    case "exportEncryptedBlsPrivateKey":
+      await rpcExportEncryptedBlsPrivateKey(message["id"], port);
       break;
     default:
       console.log(`Unknown method: ${message["method"]}`);

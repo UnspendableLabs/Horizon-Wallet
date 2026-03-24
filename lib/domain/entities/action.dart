@@ -66,3 +66,10 @@ class RPCGetBLSPoPAction extends RPCAction {
   RPCGetBLSPoPAction(super.tabId, super.requestId, super.origin,
       super.title, super.favicon, this.address);
 }
+
+class RPCExportEncryptedBlsPrivateKeyAction extends RPCAction {
+  @override
+  String get action => 'exportEncryptedBlsPrivateKey';
+  RPCExportEncryptedBlsPrivateKeyAction(
+      super.tabId, super.requestId, super.origin, super.title, super.favicon);
+}
