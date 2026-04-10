@@ -1,7 +1,7 @@
 {
   "name": "Horizon Wallet",
   "description": "Horizon Wallet is a wallet for Counterparty, the original DeFi and NFT protocol on Bitcoin.",
-  "version": "2.2.5",
+  "version": "2.3.0",
   "permissions": [
     "tabs"
   ],
