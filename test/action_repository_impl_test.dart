@@ -848,10 +848,33 @@ void main() {
       expect(result.isLeft(), true);
     });
 
-    test('should fail with too many fields (10)', () {
+    test('should decode RPCSignMessageBLSAction with address (10 fields)', () {
       // Arrange
       const encodedString =
-          'signMessageBLS,1,def,https%3A%2F%2Fexample.com,Example%20Site,favicon,msg,dst,hex,extra';
+          'signMessageBLS,1,def,https%3A%2F%2Fexample.com,Example%20Site,https%3A%2F%2Fexample.com%2Ffavicon.ico,Hello%20World,BLS_SIG_BLS12381G1_XMD%3ASHA-256_SSWU_RO_NUL_,,bc1qtest';
+
+      // Act
+      final result = actionRepository.fromString(encodedString);
+
+      // Assert
+      expect(result.isRight(), true);
+      result.match(
+        (l) => fail('Expected Right but got Left: $l'),
+        (r) {
+          expect(r, isA<RPCSignMessageBLSAction>());
+          final action = r as RPCSignMessageBLSAction;
+          expect(action.message, 'Hello World');
+          expect(action.dst, 'BLS_SIG_BLS12381G1_XMD:SHA-256_SSWU_RO_NUL_');
+          expect(action.messageHex, isNull);
+          expect(action.address, 'bc1qtest');
+        },
+      );
+    });
+
+    test('should fail with too many fields (11)', () {
+      // Arrange
+      const encodedString =
+          'signMessageBLS,1,def,https%3A%2F%2Fexample.com,Example%20Site,favicon,msg,dst,hex,addr,extra';
 
       // Act
       final result = actionRepository.fromString(encodedString);

@@ -9,8 +9,9 @@ external String blsSign(String messageHex, JSUint8Array privateKey, [String? dst
 @JS('getPublicKey')
 external String blsGetPublicKey(JSUint8Array privateKey);
 
-@JS('deriveMasterSK')
-external JSUint8Array blsDeriveMasterSK(JSUint8Array seed);
+@JS('deriveBlsKey')
+external JSUint8Array blsDeriveBlsKey(
+    JSUint8Array seed, int coinType, int account);
 
 @JS('signBlsBinding')
 external String blsSignBinding(JSUint8Array blsPrivateKey, String xOnlyPubkeyHex);

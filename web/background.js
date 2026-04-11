@@ -189,7 +189,7 @@ async function rpcSignMessage(requestId, port, message, address) {
   });
 }
 
-async function rpcSignMessageBLS(requestId, port, message, dst, messageHex) {
+async function rpcSignMessageBLS(requestId, port, message, dst, messageHex, address) {
   const origin = getOriginFromPort(port);
   const tabId = getTabIdFromPort(port);
   const metadata = await getTabMetadata(tabId);
@@ -204,6 +204,7 @@ async function rpcSignMessageBLS(requestId, port, message, dst, messageHex) {
     encodeURIComponent(message || ""),
     encodeURIComponent(dst || ""),
     encodeURIComponent(messageHex || ""),
+    encodeURIComponent(address || ""),
   ];
 
   const window = await popup({
@@ -247,7 +248,7 @@ async function rpcGetBLSPoP(requestId, port, address) {
   });
 }
 
-async function rpcExportEncryptedBlsPrivateKey(requestId, port) {
+async function rpcExportEncryptedBlsPrivateKey(requestId, port, address) {
   const origin = getOriginFromPort(port);
   const tabId = getTabIdFromPort(port);
   const metadata = await getTabMetadata(tabId);
@@ -259,6 +260,7 @@ async function rpcExportEncryptedBlsPrivateKey(requestId, port) {
     encodeURIComponent(origin),
     encodeURIComponent(metadata.title),
     encodeURIComponent(metadata.favicon),
+    encodeURIComponent(address || ""),
   ];
 
   const window = await popup({
@@ -309,6 +311,7 @@ async function rpcMessageHandler(message, port) {
         message["params"]["message"],
         message["params"]["dst"],
         message["params"]["messageHex"],
+        message["params"]["address"],
       );
       break;
     case "getBLSPoP":
@@ -319,7 +322,11 @@ async function rpcMessageHandler(message, port) {
       );
       break;
     case "exportEncryptedBlsPrivateKey":
-      await rpcExportEncryptedBlsPrivateKey(message["id"], port);
+      await rpcExportEncryptedBlsPrivateKey(
+        message["id"],
+        port,
+        message["params"]?.["address"],
+      );
       break;
     default:
       console.log(`Unknown method: ${message["method"]}`);

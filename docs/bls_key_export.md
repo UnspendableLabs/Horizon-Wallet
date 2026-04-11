@@ -96,13 +96,28 @@ Use the **32-byte** digest as the AES key (not the full PHC `$argon2id$...` stri
 
 ### Plaintext
 
-The decrypted UTF-8 string is a **hex encoding of the 32-byte BLS master private key** (64 hex characters, lowercase or as produced by the app). Validate length and hex if you want strict parsing.
+The decrypted UTF-8 string is a **hex encoding of the 32-byte BLS child private key** at path `m/12381/coin_type/account/0` (64 hex characters, lowercase or as produced by the app). Validate length and hex if you want strict parsing.
 
 ## BLS key vs wallet seed (derivation)
 
-The exported key is the **derived** BLS master secret key, not the raw mnemonic seed. Horizon/Kontor-style derivation from a seed is implemented in **`tool/bls-entry.js`** as `deriveMasterSK(seed)`:
+The exported key is a **child** BLS secret key derived per **EIP-2333 / EIP-2334**, not the raw mnemonic seed or the BLS master key. The derivation path is:
 
-- Salt starts as UTF-8 **`BLS-SIG-KEYGEN-SALT-`** (EIP-2333 style).
-- Loop: `salt = SHA256(salt)`, then HKDF-SHA256 with `ikm = seed || 0x00`, `info = [0, L]` with `L = 48`, reduce modulo the BLS12-381 scalar order; repeat until non-zero; serialize as **32-byte** big-endian.
+```
+m / 12381 / coin_type / account / 0
+```
 
-To verify a decryption against an expected seed, derive `deriveMasterSK(seed)` and compare to the hex you decrypted.
+| Level | Value |
+|-------|-------|
+| `12381` | EIP-2333 purpose |
+| `coin_type` | `0` for mainnet, `1` for testnet/signet |
+| `account` | Bitcoin account index (from the wallet's BIP-32 account) |
+| `0` | Key use (fixed: signing key) |
+
+Each level applies EIP-2333 `derive_child_SK(parent_SK, index)`:
+
+1. **Master key**: `hkdf_mod_r(seed)` — salt starts as UTF-8 `BLS-SIG-KEYGEN-SALT-`, loop: `salt = SHA256(salt)`, HKDF-SHA256 with `ikm = seed || 0x00`, `info = [0, L]` (`L = 48`), reduce modulo BLS12-381 scalar order; repeat until non-zero; serialize as 32-byte big-endian.
+2. **Child derivation** (`derive_child_SK`): compute a compressed Lamport public key from the parent SK and child index via two HKDF expansions (8160 bytes each), SHA-256 each 32-byte chunk, then SHA-256 the concatenation. Pass the result through `hkdf_mod_r`.
+
+Implementation: `deriveBlsKey(seed, coinType, account)` in **`tool/bls-entry.js`**.
+
+To verify a decryption against an expected seed, derive `deriveBlsKey(seed, coinType, accountIndex)` and compare to the hex you decrypted.

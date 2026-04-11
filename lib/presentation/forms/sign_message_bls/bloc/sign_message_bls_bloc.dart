@@ -19,6 +19,7 @@ class SignMessageBLSBloc
   final String message;
   final String? dst;
   final String? messageHex;
+  final int accountIndex;
   final WalletConfigRepository _walletConfigRepository;
   final SeedService _seedService;
   final BlsService _blsService;
@@ -28,6 +29,7 @@ class SignMessageBLSBloc
     required this.httpConfig,
     required this.passwordRequired,
     required this.message,
+    required this.accountIndex,
     this.dst,
     this.messageHex,
     WalletConfigRepository? walletConfigRepository,
@@ -79,6 +81,8 @@ class SignMessageBLSBloc
       return await $(TaskEither.tryCatch(
         () async => _blsService.signMessage(
           seed: seed.bytes,
+          network: httpConfig.network,
+          accountIndex: accountIndex,
           message: state.message,
           dst: state.dst,
           messageHex: state.messageHex,

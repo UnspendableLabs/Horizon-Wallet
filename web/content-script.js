@@ -145,6 +145,11 @@ const methodValidators = {
         "Invalid 'dst' parameter for 'signMessageBLS'. Expected a string.",
       );
     }
+    if (msg.params?.address !== undefined && typeof msg.params.address !== "string") {
+      errors.push(
+        "Invalid 'address' parameter for 'signMessageBLS'. Expected a string.",
+      );
+    }
     return errors;
   },
 
@@ -153,6 +158,16 @@ const methodValidators = {
     if (!msg.params?.address || typeof msg.params.address !== "string") {
       errors.push(
         "Missing or invalid 'address' parameter for 'getBLSPoP'. Expected a string.",
+      );
+    }
+    return errors;
+  },
+
+  exportEncryptedBlsPrivateKey: (msg) => {
+    const errors = [];
+    if (msg.params?.address !== undefined && typeof msg.params.address !== "string") {
+      errors.push(
+        "Invalid 'address' parameter for 'exportEncryptedBlsPrivateKey'. Expected a string.",
       );
     }
     return errors;

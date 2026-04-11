@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 
 import 'package:horizon/domain/entities/decryption_strategy.dart';
+import 'package:horizon/domain/entities/network.dart';
 import 'package:horizon/domain/repositories/wallet_config_repository.dart';
 import 'package:horizon/domain/usecases/export_encrypted_bls_private_key.dart';
 
@@ -13,11 +14,15 @@ import './export_encrypted_bls_private_key_event.dart';
 class ExportEncryptedBlsPrivateKeyBloc extends Bloc<
     ExportEncryptedBlsPrivateKeyEvent, ExportEncryptedBlsPrivateKeyState> {
   final bool passwordRequired;
+  final Network network;
+  final int accountIndex;
   final WalletConfigRepository _walletConfigRepository;
   final ExportEncryptedBlsPrivateKeyUseCase _useCase;
 
   ExportEncryptedBlsPrivateKeyBloc({
     required this.passwordRequired,
+    required this.network,
+    required this.accountIndex,
     WalletConfigRepository? walletConfigRepository,
     ExportEncryptedBlsPrivateKeyUseCase? useCase,
   })  : _walletConfigRepository =
@@ -97,6 +102,8 @@ class ExportEncryptedBlsPrivateKeyBloc extends Bloc<
         walletConfig: walletConfig,
         decryptionStrategy: decryptionStrategy,
         exportPassword: state.exportPassword.value.trim(),
+        network: network,
+        accountIndex: accountIndex,
       ));
 
       emit(state.copyWith(

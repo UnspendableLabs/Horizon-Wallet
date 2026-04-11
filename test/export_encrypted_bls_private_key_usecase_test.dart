@@ -42,6 +42,8 @@ void main() {
     walletConfig: testWalletConfig,
     decryptionStrategy: Password('export-password'),
     exportPassword: 'export-password',
+    network: Network.mainnet,
+    accountIndex: 0,
   );
 
   setUpAll(() {
@@ -94,7 +96,9 @@ void main() {
               walletConfig: any(named: 'walletConfig'),
               decryptionStrategy: any(named: 'decryptionStrategy'),
             ));
-        verifyNever(() => mockBlsService.deriveMasterPrivateKey(any()));
+        verifyNever(() => mockBlsService.derivePrivateKey(any(),
+              network: any(named: 'network'),
+              accountIndex: any(named: 'accountIndex')));
         verifyNever(() => mockEncryptionService.encrypt(any(), any()));
       },
     );

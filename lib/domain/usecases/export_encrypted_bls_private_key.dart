@@ -4,6 +4,7 @@ import 'package:convert/convert.dart' as convert;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/decryption_strategy.dart';
+import 'package:horizon/domain/entities/network.dart';
 import 'package:horizon/domain/entities/wallet_config.dart';
 import 'package:horizon/domain/services/bls_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
@@ -17,16 +18,21 @@ class ExportEncryptedBlsPrivateKeyParams {
   final WalletConfig walletConfig;
   final DecryptionStrategy decryptionStrategy;
   final String exportPassword;
+  final Network network;
+  final int accountIndex;
 
   const ExportEncryptedBlsPrivateKeyParams({
     required this.walletConfig,
     required this.decryptionStrategy,
     required this.exportPassword,
+    required this.network,
+    required this.accountIndex,
   });
 }
 
-/// Derives the BLS master private key from the wallet seed, encrypts its hex
-/// form with [exportPassword], then returns a hex-encoded UTF-8 display string.
+/// Derives the BLS child private key from the wallet seed at the EIP-2334
+/// path `m/12381/coin_type/account/0`, encrypts its hex form with
+/// [exportPassword], then returns a hex-encoded UTF-8 display string.
 ///
 /// Meaningful encryption is only available on web; on other platforms this use
 /// case throws [UnsupportedError].
@@ -57,7 +63,10 @@ class ExportEncryptedBlsPrivateKeyUseCase
       decryptionStrategy: params.decryptionStrategy,
     );
 
-    final sk = _blsService.deriveMasterPrivateKey(seed.bytes);
+    final sk = _blsService.derivePrivateKey(seed.bytes,
+      network: params.network,
+      accountIndex: params.accountIndex,
+    );
     final hexSk = convert.hex.encode(sk);
     final encryptedString =
         await _encryptionService.encrypt(hexSk, params.exportPassword);

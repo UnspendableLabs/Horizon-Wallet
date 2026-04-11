@@ -68,11 +68,13 @@ void main() {
     String? dst,
     String? messageHex,
     bool passwordRequired = false,
+    int accountIndex = 0,
   }) {
     return SignMessageBLSBloc(
       httpConfig: testHttpConfig,
       passwordRequired: passwordRequired,
       message: message,
+      accountIndex: accountIndex,
       dst: dst,
       messageHex: messageHex,
       walletConfigRepository: mockWalletConfigRepository,
@@ -143,6 +145,8 @@ void main() {
             )).thenAnswer((_) async => testSeed);
         when(() => mockBlsService.signMessage(
               seed: any(named: 'seed'),
+              network: any(named: 'network'),
+              accountIndex: any(named: 'accountIndex'),
               message: any(named: 'message'),
               dst: any(named: 'dst'),
               messageHex: any(named: 'messageHex'),
@@ -168,14 +172,18 @@ void main() {
         verify: (_) {
           final captured = verify(() => mockBlsService.signMessage(
                 seed: captureAny(named: 'seed'),
+                network: captureAny(named: 'network'),
+                accountIndex: captureAny(named: 'accountIndex'),
                 message: captureAny(named: 'message'),
                 dst: captureAny(named: 'dst'),
                 messageHex: captureAny(named: 'messageHex'),
               )).captured;
           expect(captured[0], testSeed.bytes);
-          expect(captured[1], 'Hello BLS');
-          expect(captured[2], isNull);
-          expect(captured[3], isNull);
+          expect(captured[1], Network.mainnet);
+          expect(captured[2], 0);
+          expect(captured[3], 'Hello BLS');
+          expect(captured[4], isNull);
+          expect(captured[5], isNull);
         },
       );
 
@@ -197,6 +205,8 @@ void main() {
         verify: (_) {
           verify(() => mockBlsService.signMessage(
                 seed: any(named: 'seed'),
+                network: any(named: 'network'),
+                accountIndex: any(named: 'accountIndex'),
                 message: any(named: 'message'),
                 dst: 'BLS_SIG_BLS12381G1_XMD:SHA-256_SSWU_RO_NUL_',
                 messageHex: any(named: 'messageHex'),
@@ -289,6 +299,8 @@ void main() {
         verify: (_) {
           verify(() => mockBlsService.signMessage(
                 seed: any(named: 'seed'),
+                network: any(named: 'network'),
+                accountIndex: any(named: 'accountIndex'),
                 message: '',
                 dst: any(named: 'dst'),
                 messageHex: 'deadbeef0123',
@@ -307,6 +319,8 @@ void main() {
               )).thenAnswer((_) async => testSeed);
           when(() => mockBlsService.signMessage(
                 seed: any(named: 'seed'),
+                network: any(named: 'network'),
+                accountIndex: any(named: 'accountIndex'),
                 message: any(named: 'message'),
                 dst: any(named: 'dst'),
                 messageHex: any(named: 'messageHex'),

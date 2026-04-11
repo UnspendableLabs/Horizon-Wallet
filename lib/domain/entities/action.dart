@@ -55,8 +55,10 @@ class RPCSignMessageBLSAction extends RPCAction {
   final String message;
   final String? dst;
   final String? messageHex;
+  final String? address;
   RPCSignMessageBLSAction(super.tabId, super.requestId, super.origin,
-      super.title, super.favicon, this.message, this.dst, this.messageHex);
+      super.title, super.favicon, this.message, this.dst, this.messageHex,
+      this.address);
 }
 
 class RPCGetBLSPoPAction extends RPCAction {
@@ -70,6 +72,8 @@ class RPCGetBLSPoPAction extends RPCAction {
 class RPCExportEncryptedBlsPrivateKeyAction extends RPCAction {
   @override
   String get action => 'exportEncryptedBlsPrivateKey';
+  final String? address;
   RPCExportEncryptedBlsPrivateKeyAction(
-      super.tabId, super.requestId, super.origin, super.title, super.favicon);
+      super.tabId, super.requestId, super.origin, super.title, super.favicon,
+      this.address);
 }

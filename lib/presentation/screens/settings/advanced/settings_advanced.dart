@@ -9,6 +9,7 @@ import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/repositories/wallet_config_repository.dart';
 import 'package:horizon/domain/entities/wallet_config.dart';
+import 'package:horizon/domain/entities/account_v2.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import "./bloc/settings_advanced_bloc.dart";
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
@@ -218,10 +219,18 @@ Future<void> _showExportBlsKeyFlow(BuildContext context) async {
         ? Password(walletPassword!)
         : InMemoryKey();
 
+    final session =
+        context.read<SessionStateCubit>().state.successOrThrow();
+    final accountIndex = (session.currentAccount is Bip32)
+        ? (session.currentAccount as Bip32).index
+        : 0;
+
     hex = await useCase(ExportEncryptedBlsPrivateKeyParams(
       walletConfig: walletConfig,
       decryptionStrategy: decryptionStrategy,
       exportPassword: exportPassword,
+      network: walletConfig.network,
+      accountIndex: accountIndex,
     ));
   } catch (e) {
     if (navigator.mounted && navigator.canPop()) {

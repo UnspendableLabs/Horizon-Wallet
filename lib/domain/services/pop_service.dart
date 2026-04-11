@@ -11,5 +11,6 @@ abstract class PopService {
     required Uint8List seed,
     required String taprootDerivationPath,
     required Network network,
+    required int accountIndex,
   });
 }

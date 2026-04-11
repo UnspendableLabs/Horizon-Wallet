@@ -256,6 +256,19 @@ class BottomNavItem extends StatelessWidget {
   }
 }
 
+int _resolveAccountIndex(SessionStateSuccess session, String? address) {
+  if (address != null) {
+    final addr = session.addressIndexSet.getByAddress(address);
+    if (addr != null) {
+      return int.parse(
+          (addr.derivation as Bip32Path).value.split('/')[3].replaceAll("'", ""));
+    }
+  }
+  return (session.currentAccount is Bip32)
+      ? (session.currentAccount as Bip32).index
+      : 0;
+}
+
 class AppRouter {
   static GoRouter router = GoRouter(
       navigatorKey: _rootNavigatorKey,
@@ -570,11 +583,15 @@ class AppRouter {
                   final action = actionRepository.dequeue().getOrThrow()
                       as RPCSignMessageBLSAction;
 
+                  final accountIndex =
+                      _resolveAccountIndex(session, action.address);
+
                   return BlocProvider(
                       create: (_) => SignMessageBLSBloc(
                             message: action.message,
                             dst: action.dst,
                             messageHex: action.messageHex,
+                            accountIndex: accountIndex,
                             httpConfig: session.httpConfig,
                             passwordRequired: GetIt.I<SettingsRepository>()
                                 .requirePasswordForCryptoOperations,
@@ -654,11 +671,15 @@ class AppRouter {
                   final derivationPath =
                       (address.derivation as Bip32Path).value;
 
+                  final accountIndex =
+                      _resolveAccountIndex(session, action.address);
+
                   return BlocProvider(
                       create: (_) => GetBLSPoPBloc(
                             address: action.address,
                             taprootDerivationPath: derivationPath,
                             network: session.httpConfig.network,
+                            accountIndex: accountIndex,
                             httpConfig: session.httpConfig,
                             passwordRequired: GetIt.I<SettingsRepository>()
                                 .requirePasswordForCryptoOperations,
@@ -701,6 +722,9 @@ class AppRouter {
             GoRoute(
                 path: "/rpc/export-encrypted-bls-private-key",
                 builder: (context, state) {
+                  final session =
+                      context.watch<SessionStateCubit>().state.successOrThrow();
+
                   final actionRepository = GetIt.I<ActionRepository>();
 
                   final action = actionRepository.dequeue().getOrThrow()
@@ -709,9 +733,14 @@ class AppRouter {
                   final passwordRequired = GetIt.I<SettingsRepository>()
                       .requirePasswordForCryptoOperations;
 
+                  final exportAccountIndex =
+                      _resolveAccountIndex(session, action.address);
+
                   return BlocProvider(
                       create: (_) => ExportEncryptedBlsPrivateKeyBloc(
                             passwordRequired: passwordRequired,
+                            network: session.httpConfig.network,
+                            accountIndex: exportAccountIndex,
                           ),
                       child: ActionHandlerShell(
                           child: Padding(

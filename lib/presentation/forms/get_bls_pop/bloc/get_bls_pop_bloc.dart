@@ -19,6 +19,7 @@ class GetBLSPoPBloc extends Bloc<GetBLSPoPEvent, GetBLSPoPState> {
   final String address;
   final String taprootDerivationPath;
   final Network network;
+  final int accountIndex;
   final WalletConfigRepository _walletConfigRepository;
   final SeedService _seedService;
   final PopService _popService;
@@ -30,6 +31,7 @@ class GetBLSPoPBloc extends Bloc<GetBLSPoPEvent, GetBLSPoPState> {
     required this.address,
     required this.taprootDerivationPath,
     required this.network,
+    required this.accountIndex,
     WalletConfigRepository? walletConfigRepository,
     SeedService? seedService,
     PopService? popService,
@@ -77,6 +79,7 @@ class GetBLSPoPBloc extends Bloc<GetBLSPoPEvent, GetBLSPoPState> {
           seed: seed.bytes,
           taprootDerivationPath: taprootDerivationPath,
           network: network,
+          accountIndex: accountIndex,
         ),
         (e, _) => "Error generating BLS Proof of Possession",
       ));

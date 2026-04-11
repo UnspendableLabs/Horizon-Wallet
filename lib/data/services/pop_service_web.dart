@@ -31,6 +31,7 @@ class PopServiceWeb implements PopService {
     required Uint8List seed,
     required String taprootDerivationPath,
     required Network network,
+    required int accountIndex,
   }) {
     final root = _bip32.fromSeed(Buffer.from(seed.toJS), network.toJS);
     final taprootChild = root.derivePath(taprootDerivationPath);
@@ -41,7 +42,8 @@ class PopServiceWeb implements PopService {
     final xOnlyBytes = compressedPub.sublist(1);
     final xOnlyHex = hex.encode(xOnlyBytes);
 
-    final blsPrivateKey = bls.blsDeriveMasterSK(seed.toJS);
+    final coinType = network.isMainnet ? 0 : 1;
+    final blsPrivateKey = bls.blsDeriveBlsKey(seed.toJS, coinType, accountIndex);
 
     final blsPubkey = bls.blsGetPublicKey(blsPrivateKey);
 

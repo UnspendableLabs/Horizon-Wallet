@@ -4146,20 +4146,20 @@ var __horizon_bls__ = (() => {
     "bls-entry.js"(exports, module) {
       var { bls12_381: bls12_3812 } = (init_bls12_381(), __toCommonJS(bls12_381_exports));
       var { hexToBytes: hexToBytes2 } = (init_utils(), __toCommonJS(utils_exports));
-      var { hkdf: hkdf2 } = (init_hkdf(), __toCommonJS(hkdf_exports));
+      var { hkdf: hkdf2, extract: extract2, expand: expand2 } = (init_hkdf(), __toCommonJS(hkdf_exports));
       var { sha256: sha2562 } = (init_sha2(), __toCommonJS(sha2_exports));
       var BLS_ORDER = BigInt(
         "0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000001"
       );
-      function deriveMasterSK(seed) {
+      function hkdfModR(ikm) {
         let salt = new TextEncoder().encode("BLS-SIG-KEYGEN-SALT-");
-        const ikm = new Uint8Array(seed.length + 1);
-        ikm.set(seed);
-        ikm[seed.length] = 0;
+        const ikmPadded = new Uint8Array(ikm.length + 1);
+        ikmPadded.set(ikm);
+        ikmPadded[ikm.length] = 0;
         const L = 48;
         while (true) {
           salt = sha2562(salt);
-          const okm = hkdf2(sha2562, ikm, salt, new Uint8Array([0, L]), L);
+          const okm = hkdf2(sha2562, ikmPadded, salt, new Uint8Array([0, L]), L);
           let sk = BigInt(0);
           for (let i = 0; i < okm.length; i++) {
             sk = (sk << BigInt(8)) + BigInt(okm[i]);
@@ -4174,6 +4174,42 @@ var __horizon_bls__ = (() => {
             return skBytes;
           }
         }
+      }
+      function deriveMasterSK(seed) {
+        return hkdfModR(seed);
+      }
+      function parentSKToLamportPK(parentSK, index) {
+        const salt = new Uint8Array(4);
+        new DataView(salt.buffer).setUint32(0, index, false);
+        const ikm = parentSK;
+        const prk0 = extract2(sha2562, ikm, salt);
+        const okm0 = expand2(sha2562, prk0, new Uint8Array(0), 8160);
+        const notIKM = new Uint8Array(ikm.length);
+        for (let i = 0; i < ikm.length; i++) notIKM[i] = ~ikm[i] & 255;
+        const prk1 = extract2(sha2562, notIKM, salt);
+        const okm1 = expand2(sha2562, prk1, new Uint8Array(0), 8160);
+        const lamportPK = new Uint8Array(255 * 32 * 2);
+        let offset = 0;
+        for (let i = 0; i < 255; i++) {
+          lamportPK.set(sha2562(okm0.subarray(i * 32, (i + 1) * 32)), offset);
+          offset += 32;
+        }
+        for (let i = 0; i < 255; i++) {
+          lamportPK.set(sha2562(okm1.subarray(i * 32, (i + 1) * 32)), offset);
+          offset += 32;
+        }
+        return sha2562(lamportPK);
+      }
+      function deriveChildSK(parentSK, index) {
+        const compressedLamportPK = parentSKToLamportPK(parentSK, index);
+        return hkdfModR(compressedLamportPK);
+      }
+      function deriveBlsKey(seed, coinType, account) {
+        let sk = deriveMasterSK(seed);
+        for (const idx of [12381, coinType, account, 0]) {
+          sk = deriveChildSK(sk, idx);
+        }
+        return sk;
       }
       var KONTOR_BLS_DST = "BLS_SIG_BLS12381G1_XMD:SHA-256_SSWU_RO_NUL_";
       function sign(messageHex, privateKey, dst) {
@@ -4209,6 +4245,7 @@ var __horizon_bls__ = (() => {
         sign,
         getPublicKey,
         deriveMasterSK,
+        deriveBlsKey,
         signBlsBinding,
         schnorrBindingHash
       };
