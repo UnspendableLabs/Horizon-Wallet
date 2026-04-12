@@ -189,6 +189,93 @@ async function rpcSignMessage(requestId, port, message, address) {
   });
 }
 
+async function rpcSignMessageBLS(requestId, port, message, dst, messageHex, address) {
+  const origin = getOriginFromPort(port);
+  const tabId = getTabIdFromPort(port);
+  const metadata = await getTabMetadata(tabId);
+
+  const params = [
+    "signMessageBLS",
+    tabId,
+    requestId,
+    encodeURIComponent(origin),
+    encodeURIComponent(metadata.title),
+    encodeURIComponent(metadata.favicon),
+    encodeURIComponent(message || ""),
+    encodeURIComponent(dst || ""),
+    encodeURIComponent(messageHex || ""),
+    encodeURIComponent(address || ""),
+  ];
+
+  const window = await popup({
+    url: `/index.html#?action=${params.join(",")}`,
+  });
+  listenForPopupClose({
+    id: window?.id,
+    tabId: tabId,
+    response: {
+      id: requestId,
+      error: "User rejected `signMessageBLS` request",
+    },
+  });
+}
+
+async function rpcGetBLSPoP(requestId, port, address) {
+  const origin = getOriginFromPort(port);
+  const tabId = getTabIdFromPort(port);
+  const metadata = await getTabMetadata(tabId);
+
+  const params = [
+    "getBLSPoP",
+    tabId,
+    requestId,
+    encodeURIComponent(origin),
+    encodeURIComponent(metadata.title),
+    encodeURIComponent(metadata.favicon),
+    encodeURIComponent(address),
+  ];
+
+  const window = await popup({
+    url: `/index.html#?action=${params.join(",")}`,
+  });
+  listenForPopupClose({
+    id: window?.id,
+    tabId: tabId,
+    response: {
+      id: requestId,
+      error: "User rejected `getBLSPoP` request",
+    },
+  });
+}
+
+async function rpcExportEncryptedBlsPrivateKey(requestId, port, address) {
+  const origin = getOriginFromPort(port);
+  const tabId = getTabIdFromPort(port);
+  const metadata = await getTabMetadata(tabId);
+
+  const params = [
+    "exportEncryptedBlsPrivateKey",
+    tabId,
+    requestId,
+    encodeURIComponent(origin),
+    encodeURIComponent(metadata.title),
+    encodeURIComponent(metadata.favicon),
+    encodeURIComponent(address || ""),
+  ];
+
+  const window = await popup({
+    url: `/index.html#?action=${params.join(",")}`,
+  });
+  listenForPopupClose({
+    id: window?.id,
+    tabId: tabId,
+    response: {
+      id: requestId,
+      error: "User rejected `exportEncryptedBlsPrivateKey` request",
+    },
+  });
+}
+
 async function rpcMessageHandler(message, port) {
   const method = message["method"];
   const tabId = getTabIdFromPort(port);
@@ -215,6 +302,30 @@ async function rpcMessageHandler(message, port) {
         port,
         message["params"]["message"],
         message["params"]["address"],
+      );
+      break;
+    case "signMessageBLS":
+      await rpcSignMessageBLS(
+        message["id"],
+        port,
+        message["params"]["message"],
+        message["params"]["dst"],
+        message["params"]["messageHex"],
+        message["params"]["address"],
+      );
+      break;
+    case "getBLSPoP":
+      await rpcGetBLSPoP(
+        message["id"],
+        port,
+        message["params"]["address"],
+      );
+      break;
+    case "exportEncryptedBlsPrivateKey":
+      await rpcExportEncryptedBlsPrivateKey(
+        message["id"],
+        port,
+        message["params"]?.["address"],
       );
       break;
     default:

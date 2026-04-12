@@ -45,3 +45,56 @@ class RPCSignMessageSuccessCallbackArgs {
 
 typedef RPCSignMessageSuccessCallback = void Function(
     RPCSignMessageSuccessCallbackArgs);
+
+class RPCSignMessageBLSSuccessCallbackArgs {
+  final int tabId;
+  final String requestId;
+  final String signature;
+  final String publicKey;
+
+  RPCSignMessageBLSSuccessCallbackArgs({
+    required this.tabId,
+    required this.requestId,
+    required this.signature,
+    required this.publicKey,
+  });
+}
+
+typedef RPCSignMessageBLSSuccessCallback = void Function(
+    RPCSignMessageBLSSuccessCallbackArgs);
+
+class RPCGetBLSPoPSuccessCallbackArgs {
+  final int tabId;
+  final String requestId;
+  final String xpubkey;
+  final String blsPubkey;
+  final String schnorrSig;
+  final String blsSig;
+
+  RPCGetBLSPoPSuccessCallbackArgs({
+    required this.tabId,
+    required this.requestId,
+    required this.xpubkey,
+    required this.blsPubkey,
+    required this.schnorrSig,
+    required this.blsSig,
+  });
+}
+
+typedef RPCGetBLSPoPSuccessCallback = void Function(
+    RPCGetBLSPoPSuccessCallbackArgs);
+
+class RPCExportEncryptedBlsPrivateKeySuccessCallbackArgs {
+  final int tabId;
+  final String requestId;
+  final String encryptedBlsPrivateKey;
+
+  RPCExportEncryptedBlsPrivateKeySuccessCallbackArgs({
+    required this.tabId,
+    required this.requestId,
+    required this.encryptedBlsPrivateKey,
+  });
+}
+
+typedef RPCExportEncryptedBlsPrivateKeySuccessCallback = void Function(
+    RPCExportEncryptedBlsPrivateKeySuccessCallbackArgs);

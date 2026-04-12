@@ -526,6 +526,62 @@ class ActionRepositoryImpl implements ActionRepository {
           parts[7],
         );
 
+      case 'signMessageBLS':
+        if (parts.length < 7 || parts.length > 10) {
+          throw Exception(
+              'signMessageBLS expects 7-10 fields, got ${parts.length}');
+        }
+        final msgField = Uri.decodeComponent(parts[6]);
+        final dstField =
+            parts.length >= 8 ? Uri.decodeComponent(parts[7]) : null;
+        final msgHexField =
+            parts.length >= 9 ? Uri.decodeComponent(parts[8]) : null;
+        final addrField =
+            parts.length >= 10 ? Uri.decodeComponent(parts[9]) : null;
+        return RPCSignMessageBLSAction(
+          int.parse(parts[1]),
+          parts[2],
+          Uri.decodeComponent(parts[3]),
+          Uri.decodeComponent(parts[4]),
+          Uri.decodeComponent(parts[5]),
+          msgField,
+          dstField != null && dstField.isNotEmpty ? dstField : null,
+          msgHexField != null && msgHexField.isNotEmpty ? msgHexField : null,
+          addrField != null && addrField.isNotEmpty ? addrField : null,
+        );
+
+      case 'getBLSPoP':
+        if (parts.length != 7) {
+          throw Exception(
+              'getBLSPoP expects 7 fields, got ${parts.length}');
+        }
+        return RPCGetBLSPoPAction(
+          int.parse(parts[1]),
+          parts[2],
+          Uri.decodeComponent(parts[3]),
+          Uri.decodeComponent(parts[4]),
+          Uri.decodeComponent(parts[5]),
+          Uri.decodeComponent(parts[6]),
+        );
+
+      case 'exportEncryptedBlsPrivateKey':
+        if (parts.length < 6 || parts.length > 7) {
+          throw Exception(
+              'exportEncryptedBlsPrivateKey expects 6-7 fields, got ${parts.length}');
+        }
+        final exportAddrField =
+            parts.length >= 7 ? Uri.decodeComponent(parts[6]) : null;
+        return RPCExportEncryptedBlsPrivateKeyAction(
+          int.parse(parts[1]),
+          parts[2],
+          Uri.decodeComponent(parts[3]),
+          Uri.decodeComponent(parts[4]),
+          Uri.decodeComponent(parts[5]),
+          exportAddrField != null && exportAddrField.isNotEmpty
+              ? exportAddrField
+              : null,
+        );
+
       default:
         throw Exception('Unknown action: ${parts[0]}');
     }

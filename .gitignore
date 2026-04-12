@@ -49,3 +49,5 @@ build_release_testnet
 node_modules/
 
 android/app/.cxx/
+
+tool/node_modules/

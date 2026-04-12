@@ -23,6 +23,7 @@ import 'package:horizon/domain/usecases/atomic_swap_create.dart';
 import 'package:horizon/domain/usecases/atomic_swap_multi_buy.dart';
 import 'package:horizon/domain/usecases/create_on_chain_payment.dart';
 import 'package:horizon/domain/usecases/decode_raw_transaction.dart';
+import 'package:horizon/domain/usecases/export_encrypted_bls_private_key.dart';
 import 'package:horizon/domain/usecases/get_order_by_pair.dart';
 import 'package:horizon/domain/usecases/get_royalty_by_asset.dart';
 import 'package:horizon/domain/usecases/get_swaps_by_asset.dart';
@@ -90,6 +91,12 @@ import 'package:horizon/domain/services/transaction_service.dart';
 
 import 'package:horizon/domain/services/seed_service.dart';
 import 'package:horizon/data/services/seed_service_impl.dart';
+
+import 'package:horizon/domain/services/bls_service.dart';
+import 'package:horizon/data/services/bls_service_web.dart';
+
+import 'package:horizon/domain/services/pop_service.dart';
+import 'package:horizon/data/services/pop_service_web.dart';
 
 import 'package:horizon/domain/repositories/version_repository.dart';
 import 'package:horizon/data/sources/repositories/version_repository_impl.dart';
@@ -517,6 +524,10 @@ void setup() {
 
   injector.registerSingleton<SeedService>(SeedServiceImpl());
 
+  injector.registerSingleton<BlsService>(BlsServiceWeb());
+
+  injector.registerSingleton<PopService>(PopServiceWeb());
+
   injector
       .registerSingleton<ComposeTransactionUseCase>(ComposeTransactionUseCase(
     utxoRepository: GetIt.I.get<UtxoRepository>(),
@@ -629,6 +640,77 @@ void setup() {
               address: ${args.address}
       """));
 
+  injector.registerLazySingleton<RPCSignMessageBLSSuccessCallback>(
+      () => config.isWebExtension
+          ? (args) {
+              chrome.tabs.sendMessage(
+                args.tabId,
+                {
+                  "id": args.requestId,
+                  "signature": args.signature,
+                  "publicKey": args.publicKey,
+                },
+                null,
+              );
+
+              Future.delayed(const Duration(seconds: 0), html.window.close);
+            }
+          : (args) => GetIt.I<Logger>().debug("""
+           RPCSignMessageBLSSuccessCallback called with:
+              tabId: ${args.tabId}
+              requestId: ${args.requestId}
+              signature: ${args.signature}
+              publicKey: ${args.publicKey}
+      """));
+
+  injector.registerLazySingleton<RPCGetBLSPoPSuccessCallback>(
+      () => config.isWebExtension
+          ? (args) {
+              chrome.tabs.sendMessage(
+                args.tabId,
+                {
+                  "id": args.requestId,
+                  "xpubkey": args.xpubkey,
+                  "blsPubkey": args.blsPubkey,
+                  "schnorrSig": args.schnorrSig,
+                  "blsSig": args.blsSig,
+                },
+                null,
+              );
+
+              Future.delayed(const Duration(seconds: 0), html.window.close);
+            }
+          : (args) => GetIt.I<Logger>().debug("""
+           RPCGetBLSPoPSuccessCallback called with:
+              tabId: ${args.tabId}
+              requestId: ${args.requestId}
+              xpubkey: ${args.xpubkey}
+              blsPubkey: ${args.blsPubkey}
+              schnorrSig: ${args.schnorrSig}
+              blsSig: ${args.blsSig}
+      """));
+
+  injector.registerLazySingleton<RPCExportEncryptedBlsPrivateKeySuccessCallback>(
+      () => config.isWebExtension
+          ? (args) {
+              chrome.tabs.sendMessage(
+                args.tabId,
+                {
+                  "id": args.requestId,
+                  "encryptedBlsPrivateKey": args.encryptedBlsPrivateKey,
+                },
+                null,
+              );
+
+              Future.delayed(const Duration(seconds: 0), html.window.close);
+            }
+          : (args) => GetIt.I<Logger>().debug("""
+           RPCExportEncryptedBlsPrivateKeySuccessCallback called with:
+              tabId: ${args.tabId}
+              requestId: ${args.requestId}
+              encryptedBlsPrivateKey: ${args.encryptedBlsPrivateKey}
+      """));
+
   injector.registerLazySingleton<VersionRepository>(() => config.isWebExtension
       ? VersionRepositoryExtensionImpl(
           config: config, logger: GetIt.I<Logger>())
@@ -696,6 +778,9 @@ void setup() {
   injector.registerSingleton<SearchAssetsUseCase>(SearchAssetsUseCase());
   injector.registerSingleton<GetAssetVerboseUseCase>(GetAssetVerboseUseCase());
   injector.registerSingleton<GetDetachDataUseCase>(GetDetachDataUseCase());
+
+  injector.registerSingleton<ExportEncryptedBlsPrivateKeyUseCase>(
+      ExportEncryptedBlsPrivateKeyUseCase());
 
   injector.registerSingleton<GetBalancesByAddressesUseCase>(
       GetBalancesByAddressesUseCase());

@@ -4,6 +4,9 @@ const VALID_METHODS = [
   "getAddresses",
   "signPsbt",
   "signMessage",
+  "signMessageBLS",
+  "getBLSPoP",
+  "exportEncryptedBlsPrivateKey",
   "fairmint",
   "dispense",
   "openOrder",
@@ -118,6 +121,55 @@ const methodValidators = {
       );
     }
 
+    return errors;
+  },
+
+  signMessageBLS: (msg) => {
+    const errors = [];
+    const hasMessage =
+      msg.params?.message && typeof msg.params.message === "string";
+    const hasMessageHex =
+      msg.params?.messageHex && typeof msg.params.messageHex === "string";
+    if (!hasMessage && !hasMessageHex) {
+      errors.push(
+        "Missing or invalid 'message' or 'messageHex' parameter for 'signMessageBLS'. Expected a string.",
+      );
+    }
+    if (hasMessageHex && !/^[0-9a-fA-F]*$/.test(msg.params.messageHex)) {
+      errors.push(
+        "Invalid 'messageHex' parameter for 'signMessageBLS'. Expected a hex string.",
+      );
+    }
+    if (msg.params?.dst !== undefined && typeof msg.params.dst !== "string") {
+      errors.push(
+        "Invalid 'dst' parameter for 'signMessageBLS'. Expected a string.",
+      );
+    }
+    if (msg.params?.address !== undefined && typeof msg.params.address !== "string") {
+      errors.push(
+        "Invalid 'address' parameter for 'signMessageBLS'. Expected a string.",
+      );
+    }
+    return errors;
+  },
+
+  getBLSPoP: (msg) => {
+    const errors = [];
+    if (!msg.params?.address || typeof msg.params.address !== "string") {
+      errors.push(
+        "Missing or invalid 'address' parameter for 'getBLSPoP'. Expected a string.",
+      );
+    }
+    return errors;
+  },
+
+  exportEncryptedBlsPrivateKey: (msg) => {
+    const errors = [];
+    if (msg.params?.address !== undefined && typeof msg.params.address !== "string") {
+      errors.push(
+        "Invalid 'address' parameter for 'exportEncryptedBlsPrivateKey'. Expected a string.",
+      );
+    }
     return errors;
   },
 

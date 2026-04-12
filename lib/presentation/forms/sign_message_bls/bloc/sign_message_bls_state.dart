@@ -1,43 +1,48 @@
 import "package:formz/formz.dart";
 import "package:horizon/presentation/common/password_input.dart";
 
-class SignMessageState with FormzMixin {
+class SignMessageBLSState with FormzMixin {
+  static const _sentinel = Object();
+
   final PasswordInput password;
   final FormzSubmissionStatus submissionStatus;
   final String? signature;
+  final String? publicKey;
   final String message;
-  // final String hash;
-  // final String address;
+  final String? dst;
+  final String? messageHex;
   final String? error;
 
-  SignMessageState({
+  SignMessageBLSState({
     required this.message,
+    this.dst,
+    this.messageHex,
     this.password = const PasswordInput.pure(),
     this.submissionStatus = FormzSubmissionStatus.initial,
     this.signature,
+    this.publicKey,
     this.error,
-    // required this.hash,
-    // required this.address
   });
 
   @override
   List<FormzInput> get inputs => [password];
 
-  SignMessageState copyWith({
+  SignMessageBLSState copyWith({
     PasswordInput? password,
     FormzSubmissionStatus? submissionStatus,
-    String? message,
     String? signature,
-    String? error,
-    String? hash,
-    String? address,
+    String? publicKey,
+    Object? error = _sentinel,
   }) {
-    return SignMessageState(
-      message: message ?? this.message,
+    return SignMessageBLSState(
+      message: message,
+      dst: dst,
+      messageHex: messageHex,
       password: password ?? this.password,
       submissionStatus: submissionStatus ?? this.submissionStatus,
       signature: signature ?? this.signature,
-      error: error ?? this.error,
+      publicKey: publicKey ?? this.publicKey,
+      error: error == _sentinel ? this.error : error as String?,
     );
   }
 }

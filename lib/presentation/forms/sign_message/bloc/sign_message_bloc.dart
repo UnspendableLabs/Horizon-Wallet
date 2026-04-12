@@ -14,6 +14,7 @@ import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 
+import "package:horizon/presentation/common/password_input.dart";
 import "./sign_message_state.dart";
 import "./sign_message_event.dart";
 

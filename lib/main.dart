@@ -67,6 +67,15 @@ import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
 import 'package:horizon/presentation/forms/sign_message/bloc/sign_message_bloc.dart';
 import 'package:horizon/presentation/forms/sign_message/view/sign_message_form.dart';
 
+import 'package:horizon/presentation/forms/sign_message_bls/bloc/sign_message_bls_bloc.dart';
+import 'package:horizon/presentation/forms/sign_message_bls/view/sign_message_bls_form.dart';
+
+import 'package:horizon/presentation/forms/get_bls_pop/bloc/get_bls_pop_bloc.dart';
+import 'package:horizon/presentation/forms/get_bls_pop/view/get_bls_pop_form.dart';
+import 'package:horizon/presentation/forms/export_encrypted_bls_private_key/bloc/export_encrypted_bls_private_key_bloc.dart';
+import 'package:horizon/presentation/forms/export_encrypted_bls_private_key/view/export_encrypted_bls_private_key_form.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
+
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 class _NoAnimationPageTransitionsBuilder extends PageTransitionsBuilder {
@@ -245,6 +254,19 @@ class BottomNavItem extends StatelessWidget {
       ),
     );
   }
+}
+
+int _resolveAccountIndex(SessionStateSuccess session, String? address) {
+  if (address != null) {
+    final addr = session.addressIndexSet.getByAddress(address);
+    if (addr != null) {
+      return int.parse(
+          (addr.derivation as Bip32Path).value.split('/')[3].replaceAll("'", ""));
+    }
+  }
+  return (session.currentAccount is Bip32)
+      ? (session.currentAccount as Bip32).index
+      : 0;
 }
 
 class AppRouter {
@@ -463,10 +485,6 @@ class AppRouter {
                                     tabId: action.tabId,
                                     requestId: action.requestId,
                                     signedPsbt: signedPsbtHex));
-
-                                if (GetIt.I<Config>().isWebExtension) {
-                                  web.window.close();
-                                }
                               },
                             ),
                           ],
@@ -548,10 +566,208 @@ class AppRouter {
                                   signature: signature,
                                   messageHash: action.message,
                                 ));
+                              },
+                            ),
+                          ],
+                        ),
+                      )));
+                }),
+            GoRoute(
+                path: "/rpc/sign-message-bls",
+                builder: (context, state) {
+                  final session =
+                      context.watch<SessionStateCubit>().state.successOrThrow();
 
-                                if (GetIt.I<Config>().isWebExtension) {
-                                  web.window.close();
-                                }
+                  final actionRepository = GetIt.I<ActionRepository>();
+
+                  final action = actionRepository.dequeue().getOrThrow()
+                      as RPCSignMessageBLSAction;
+
+                  final accountIndex =
+                      _resolveAccountIndex(session, action.address);
+
+                  return BlocProvider(
+                      create: (_) => SignMessageBLSBloc(
+                            message: action.message,
+                            dst: action.dst,
+                            messageHex: action.messageHex,
+                            accountIndex: accountIndex,
+                            httpConfig: session.httpConfig,
+                            passwordRequired: GetIt.I<SettingsRepository>()
+                                .requirePasswordForCryptoOperations,
+                          ),
+                      child: ActionHandlerShell(
+                          child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            DAppInfoWidget(
+                              title: 'SIGN MESSAGE (BLS)',
+                              dappUrl: action.origin,
+                              dappTitle: action.title,
+                              dappFavicon: action.favicon,
+                            ),
+                            SignMessageBLSForm(
+                              key: Key(action.message),
+                              passwordRequired: GetIt.I<SettingsRepository>()
+                                  .requirePasswordForCryptoOperations,
+                              onSuccess: (signature, publicKey) {
+                                final callback =
+                                    GetIt.I<RPCSignMessageBLSSuccessCallback>();
+
+                                callback(RPCSignMessageBLSSuccessCallbackArgs(
+                                  tabId: action.tabId,
+                                  requestId: action.requestId,
+                                  signature: signature,
+                                  publicKey: publicKey,
+                                ));
+                              },
+                            ),
+                          ],
+                        ),
+                      )));
+                }),
+            GoRoute(
+                path: "/rpc/get-bls-pop",
+                builder: (context, state) {
+                  final session =
+                      context.watch<SessionStateCubit>().state.successOrThrow();
+
+                  final actionRepository = GetIt.I<ActionRepository>();
+
+                  final action = actionRepository.dequeue().getOrThrow()
+                      as RPCGetBLSPoPAction;
+
+                  final address =
+                      session.addressIndexSet.getByAddress(action.address);
+
+                  if (address == null) {
+                    return ActionHandlerShell(
+                        child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          DAppInfoWidget(
+                            title: 'BLS PROOF OF POSSESSION',
+                            dappUrl: action.origin,
+                            dappTitle: action.title,
+                            dappFavicon: action.favicon,
+                          ),
+                          Expanded(
+                            child: Center(
+                              child: Text(
+                                  "${action.address} not found in current account"),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ));
+                  }
+
+                  final derivationPath =
+                      (address.derivation as Bip32Path).value;
+
+                  final accountIndex =
+                      _resolveAccountIndex(session, action.address);
+
+                  return BlocProvider(
+                      create: (_) => GetBLSPoPBloc(
+                            address: action.address,
+                            taprootDerivationPath: derivationPath,
+                            network: session.httpConfig.network,
+                            accountIndex: accountIndex,
+                            httpConfig: session.httpConfig,
+                            passwordRequired: GetIt.I<SettingsRepository>()
+                                .requirePasswordForCryptoOperations,
+                          ),
+                      child: ActionHandlerShell(
+                          child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            DAppInfoWidget(
+                              title: 'BLS PROOF OF POSSESSION',
+                              dappUrl: action.origin,
+                              dappTitle: action.title,
+                              dappFavicon: action.favicon,
+                            ),
+                            GetBLSPoPForm(
+                              key: Key(action.address),
+                              passwordRequired: GetIt.I<SettingsRepository>()
+                                  .requirePasswordForCryptoOperations,
+                              onSuccess: (xpubkey, blsPubkey, schnorrSig, blsSig) {
+                                final callback =
+                                    GetIt.I<RPCGetBLSPoPSuccessCallback>();
+
+                                callback(RPCGetBLSPoPSuccessCallbackArgs(
+                                  tabId: action.tabId,
+                                  requestId: action.requestId,
+                                  xpubkey: xpubkey,
+                                  blsPubkey: blsPubkey,
+                                  schnorrSig: schnorrSig,
+                                  blsSig: blsSig,
+                                ));
+                              },
+                            ),
+                          ],
+                        ),
+                      )));
+                }),
+            GoRoute(
+                path: "/rpc/export-encrypted-bls-private-key",
+                builder: (context, state) {
+                  final session =
+                      context.watch<SessionStateCubit>().state.successOrThrow();
+
+                  final actionRepository = GetIt.I<ActionRepository>();
+
+                  final action = actionRepository.dequeue().getOrThrow()
+                      as RPCExportEncryptedBlsPrivateKeyAction;
+
+                  final passwordRequired = GetIt.I<SettingsRepository>()
+                      .requirePasswordForCryptoOperations;
+
+                  final exportAccountIndex =
+                      _resolveAccountIndex(session, action.address);
+
+                  return BlocProvider(
+                      create: (_) => ExportEncryptedBlsPrivateKeyBloc(
+                            passwordRequired: passwordRequired,
+                            network: session.httpConfig.network,
+                            accountIndex: exportAccountIndex,
+                          ),
+                      child: ActionHandlerShell(
+                          child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            DAppInfoWidget(
+                              title: 'EXPORT ENCRYPTED BLS KEY',
+                              dappUrl: action.origin,
+                              dappTitle: action.title,
+                              dappFavicon: action.favicon,
+                            ),
+                            ExportEncryptedBlsPrivateKeyForm(
+                              passwordRequired: passwordRequired,
+                              onSuccess: (encryptedBlsPrivateKey) {
+                                final callback = GetIt.I<
+                                    RPCExportEncryptedBlsPrivateKeySuccessCallback>();
+
+                                callback(
+                                    RPCExportEncryptedBlsPrivateKeySuccessCallbackArgs(
+                                  tabId: action.tabId,
+                                  requestId: action.requestId,
+                                  encryptedBlsPrivateKey:
+                                      encryptedBlsPrivateKey,
+                                ));
                               },
                             ),
                           ],
@@ -824,7 +1040,11 @@ class AppRouter {
                   (action) => switch (action) {
                         RPCGetAddressesAction() => "/rpc/get-addresses",
                         RPCSignMessageAction() => "/rpc/sign-message",
+                        RPCSignMessageBLSAction() => "/rpc/sign-message-bls",
+                        RPCGetBLSPoPAction() => "/rpc/get-bls-pop",
                         RPCSignPsbtAction() => "/rpc/sign-psbt",
+                        RPCExportEncryptedBlsPrivateKeyAction() =>
+                          "/rpc/export-encrypted-bls-private-key",
                         _ => null
                       });
 
@@ -842,7 +1062,11 @@ class AppRouter {
                   (action) => switch (action) {
                         RPCGetAddressesAction() => "/rpc/get-addresses",
                         RPCSignMessageAction() => "/rpc/sign-message",
+                        RPCSignMessageBLSAction() => "/rpc/sign-message-bls",
+                        RPCGetBLSPoPAction() => "/rpc/get-bls-pop",
                         RPCSignPsbtAction() => "/rpc/sign-psbt",
+                        RPCExportEncryptedBlsPrivateKeyAction() =>
+                          "/rpc/export-encrypted-bls-private-key",
                         _ => null
                       });
 

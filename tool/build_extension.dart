@@ -31,6 +31,7 @@ void main(List<String> args) async {
     exit(1);
   }
 
+  await buildBLS();
   final originalIndexHtml = await buildIndexHtml();
   final originalManifest = await buildManifest(browser);
   await buildFlutter(analyticsEnabled, posthogApiKey, posthogApiHost,
@@ -99,6 +100,28 @@ Future<void> uploadSourceMaps(String version) async {
     '--sentry-define=auth_token=$sentryAuthToken',
   ]);
   print('Source maps uploaded successfully for release: $version');
+}
+
+Future<void> buildBLS() async {
+  print('Building BLS bundle...');
+  final toolDir = Directory('tool');
+  await _process.runProcess(
+    ['npm', 'install'],
+    workingDirectory: toolDir,
+  );
+  await _process.runProcess(
+    [
+      'npx',
+      'esbuild',
+      'bls-entry.js',
+      '--bundle',
+      '--format=iife',
+      '--global-name=__horizon_bls__',
+      '--outfile=../web/assets/noble-bls.js',
+    ],
+    workingDirectory: toolDir,
+  );
+  print('BLS bundle built successfully.');
 }
 
 Future<String> buildManifest(String browser) async {
