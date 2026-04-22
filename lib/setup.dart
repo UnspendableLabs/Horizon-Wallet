@@ -559,6 +559,7 @@ void setup() {
                 args.tabId,
                 {
                   "id": args.requestId,
+                  "network": args.network.name,
                   "addresses": args.addresses.map((address) {
                     return {
                       "address": address.address,
@@ -581,6 +582,7 @@ void setup() {
           tabId: ${args.tabId}
           requestId: ${args.requestId}
           addresses: ${args.addresses}
+          network: ${args.network}
   """));
 
   injector.registerLazySingleton<RPCSignPsbtSuccessCallback>(
