@@ -1,13 +1,18 @@
 import 'package:horizon/domain/entities/address_rpc.dart';
+import 'package:horizon/domain/entities/network.dart';
 import 'package:flutter/foundation.dart';
 
 class RPCGetAddressesSuccessCallbackArgs {
   final int tabId;
   final String requestId;
   final List<AddressRpc> addresses;
+  final Network network;
 
   RPCGetAddressesSuccessCallbackArgs(
-      {required this.tabId, required this.requestId, required this.addresses});
+      {required this.tabId,
+      required this.requestId,
+      required this.addresses,
+      required this.network});
 }
 
 typedef RPCCancelCallback = VoidCallback;

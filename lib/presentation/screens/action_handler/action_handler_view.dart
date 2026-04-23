@@ -78,7 +78,8 @@ class GetAddressesPage extends StatelessWidget {
                         RPCGetAddressesSuccessCallbackArgs(
                             tabId: action.tabId,
                             requestId: action.requestId,
-                            addresses: addresses));
+                            addresses: addresses,
+                            network: session.httpConfig.network));
                     if (GetIt.I<Config>().isWebExtension) {
                       web.window.close();
                     }
