@@ -49,7 +49,7 @@ with an error.
 
 ## Decrypting an exported BLS private key blob (Rust / CLI)
 
-Concise reference for implementing decryption outside the wallet. Sources: `lib/data/services/encryption_service/encryption_service_web.dart`, `web/encryption_worker.js`, `lib/domain/usecases/export_encrypted_bls_private_key.dart`, `tool/bls-entry.js`.
+Concise reference for implementing decryption outside the wallet. Sources: `lib/data/services/encryption_service/encryption_service_web.dart`, `web/encryption_worker.js`, `lib/domain/usecases/export_encrypted_bls_private_key.dart`, `tool/bls-entry.mjs` (re-exports `@unspendablelabs/kontor-portal-client/bls`).
 
 ## Input
 
@@ -118,6 +118,6 @@ Each level applies EIP-2333 `derive_child_SK(parent_SK, index)`:
 1. **Master key**: `hkdf_mod_r(seed)` — salt starts as UTF-8 `BLS-SIG-KEYGEN-SALT-`, loop: `salt = SHA256(salt)`, HKDF-SHA256 with `ikm = seed || 0x00`, `info = [0, L]` (`L = 48`), reduce modulo BLS12-381 scalar order; repeat until non-zero; serialize as 32-byte big-endian.
 2. **Child derivation** (`derive_child_SK`): compute a compressed Lamport public key from the parent SK and child index via two HKDF expansions (8160 bytes each), SHA-256 each 32-byte chunk, then SHA-256 the concatenation. Pass the result through `hkdf_mod_r`.
 
-Implementation: `deriveBlsKey(seed, coinType, account)` in **`tool/bls-entry.js`**.
+Implementation: `deriveBlsKey(seed, coinType, account)` from **`@unspendablelabs/kontor-portal-client/bls`** (re-exported by `tool/bls-entry.mjs`).
 
 To verify a decryption against an expected seed, derive `deriveBlsKey(seed, coinType, accountIndex)` and compare to the hex you decrypted.
