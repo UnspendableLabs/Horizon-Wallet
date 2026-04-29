@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:horizon/domain/entities/asset_quantity.dart';
@@ -881,6 +882,254 @@ void main() {
 
       // Assert
       expect(result.isLeft(), true);
+    });
+  });
+
+  // Regression tests for the bug where dApp page titles containing Unicode
+  // multi-byte chars (en-dash, accents) or URL-reserved chars (&) would crash
+  // the parser. The popup would silently fall back to PortfolioView instead
+  // of opening the requested RPC screen.
+  //
+  // Background: in production, the action string is read via
+  // `state.uri.queryParameters['action']`, which already URL-decodes values
+  // once. So values reaching `fromString` are either:
+  //   - newly tagged with "b64:" (URL-safe base64 of UTF-8) — the new format
+  //   - plain decoded text (e.g., "Bitcoin NFTs & Counterparty" with literal
+  //     "&", or "Marketplace – Ordinals" with literal en-dash) — legacy/path
+  //     after Uri.queryParameters has decoded
+  //
+  // The parser must handle both without throwing.
+  group("free-text decoding (Unicode/&/+ regression)", () {
+    String b64(String s) {
+      final std = base64.encode(utf8.encode(s));
+      final urlSafe = std
+          .replaceAll('+', '-')
+          .replaceAll('/', '_')
+          .replaceAll(RegExp(r'=+$'), '');
+      return 'b64:$urlSafe';
+    }
+
+    group('getAddresses', () {
+      test('decodes b64-tagged title with en-dash (U+2013)', () {
+        const title = 'Horizon Market | Bitcoin NFT Marketplace – Ordinals';
+        const favicon = 'https://localhost:3002/favicon.ico';
+        final encoded =
+            'getAddresses,1,abc,https%3A%2F%2Flocalhost%3A3002,${b64(title)},${b64(favicon)}';
+
+        final result = actionRepository.fromString(encoded);
+
+        expect(result.isRight(), isTrue);
+        result.match(
+          (l) => fail('Expected Right but got Left: $l'),
+          (r) {
+            final action = r as RPCGetAddressesAction;
+            expect(action.title, title);
+            expect(action.favicon, favicon);
+          },
+        );
+      });
+
+      test('decodes b64-tagged title with literal & and accents', () {
+        const title = 'Café & Tëst — em-dash';
+        final encoded =
+            'getAddresses,1,abc,https%3A%2F%2Fexample.com,${b64(title)},${b64("")}';
+
+        final result = actionRepository.fromString(encoded);
+
+        expect(result.isRight(), isTrue);
+        result.match(
+          (l) => fail('Expected Right but got Left: $l'),
+          (r) => expect((r as RPCGetAddressesAction).title, title),
+        );
+      });
+
+      test(
+          'legacy path: already-decoded Unicode title falls back to raw '
+          '(does not throw)', () {
+        // Simulates what state.uri.queryParameters['action']' produces when
+        // the JS side encoded "Marketplace – Ordinals" with encodeURIComponent
+        // (so on the wire it's "Marketplace%20%E2%80%93%20Ordinals") and
+        // GoRouter's Uri.queryParameters decoded it once before split.
+        const alreadyDecodedTitle = 'Marketplace – Ordinals';
+        final encoded =
+            'getAddresses,1,abc,https://example.com,$alreadyDecodedTitle,';
+
+        final result = actionRepository.fromString(encoded);
+
+        expect(result.isRight(), isTrue,
+            reason:
+                'Parser must not throw on already-decoded multi-byte chars');
+        result.match(
+          (l) => fail('Expected Right but got Left: $l'),
+          (r) => expect((r as RPCGetAddressesAction).title, alreadyDecodedTitle),
+        );
+      });
+
+      test(
+          'legacy path: already-decoded title with literal % falls back '
+          'to raw (does not throw)', () {
+        // Uri.decodeComponent("100% off") would throw "Invalid URL encoding".
+        const alreadyDecodedTitle = '100% off launch';
+        final encoded =
+            'getAddresses,1,abc,https://example.com,$alreadyDecodedTitle,';
+
+        final result = actionRepository.fromString(encoded);
+
+        expect(result.isRight(), isTrue);
+        result.match(
+          (l) => fail('Expected Right but got Left: $l'),
+          (r) => expect((r as RPCGetAddressesAction).title, alreadyDecodedTitle),
+        );
+      });
+
+      test('b64 with empty payload yields empty string', () {
+        final encoded =
+            'getAddresses,1,abc,https://example.com,${b64("")},${b64("")}';
+
+        final result = actionRepository.fromString(encoded);
+
+        expect(result.isRight(), isTrue);
+        result.match(
+          (l) => fail('Expected Right but got Left: $l'),
+          (r) {
+            final action = r as RPCGetAddressesAction;
+            expect(action.title, '');
+            expect(action.favicon, '');
+          },
+        );
+      });
+    });
+
+    group('signMessage', () {
+      test('decodes b64-tagged message containing reserved chars', () {
+        const message = 'Sign me & verify – ok? 50%';
+        const title = 'dApp – Tëst';
+        final encoded =
+            'signMessage,1,abc,https%3A%2F%2Fexample.com,${b64(title)},${b64("")},${b64(message)},bc1qaddress';
+
+        final result = actionRepository.fromString(encoded);
+
+        expect(result.isRight(), isTrue);
+        result.match(
+          (l) => fail('Expected Right but got Left: $l'),
+          (r) {
+            final action = r as RPCSignMessageAction;
+            expect(action.title, title);
+            expect(action.message, message);
+            expect(action.address, 'bc1qaddress');
+          },
+        );
+      });
+    });
+
+    group('signMessageBLS', () {
+      test('decodes b64-tagged title and message with Unicode', () {
+        const title = 'BLS dApp – signing';
+        const message = 'Hello – World & friends';
+        final encoded =
+            'signMessageBLS,1,abc,https%3A%2F%2Fexample.com,${b64(title)},${b64("")},${b64(message)}';
+
+        final result = actionRepository.fromString(encoded);
+
+        expect(result.isRight(), isTrue);
+        result.match(
+          (l) => fail('Expected Right but got Left: $l'),
+          (r) {
+            final action = r as RPCSignMessageBLSAction;
+            expect(action.title, title);
+            expect(action.message, message);
+          },
+        );
+      });
+    });
+
+    group('signPsbt', () {
+      test('decodes b64-tagged title with Unicode in real-style payload', () {
+        const title = 'Horizon Market | Trade Bitcoin NFTs – Ordinals & Pepes';
+        // Re-uses an existing valid signInputs/sighash/txInfo payload.
+        const signInputs =
+            'eyJiYzFxNHNoM3Nma3BwbGc1djgwZ2E5MDd6N2dubWhrdHlxcXZlN3k1bjIiOlswXX0=';
+        const sighashes = 'WzEzMSwxLDJd';
+        const txInfo = 'bnVsbA==';
+        const psbtHex = 'deadbeef';
+
+        final encoded =
+            'signPsbt,1,abc,https://horizon.market,${b64(title)},${b64("")},$psbtHex,$signInputs,$sighashes,$txInfo';
+
+        final result = actionRepository.fromString(encoded);
+
+        expect(result.isRight(), isTrue);
+        result.match(
+          (l) => fail('Expected Right but got Left: $l'),
+          (r) {
+            final action = r as RPCSignPsbtAction;
+            expect(action.title, title);
+            expect(action.origin, 'https://horizon.market');
+          },
+        );
+      });
+    });
+
+    // Full end-to-end simulation of the production data flow:
+    //   1. web/background.js builds the popup URL with `encodeFreeText` for
+    //      title/favicon and `encodeURIComponent` for origin.
+    //   2. Chrome opens the popup at that URL; GoRouter parses the fragment
+    //      via `Uri.parse(...).queryParameters['action']`, which decodes any
+    //      percent-escaped chars once.
+    //   3. The resulting string is passed to `actionRepository.fromString`.
+    //
+    // This test exercises (1)→(2)→(3) and asserts that the bug-report URL
+    // pattern (en-dash in title) now produces a real action instead of a
+    // silent failure.
+    test('end-to-end: bug-report URL with en-dash title resolves correctly',
+        () {
+      const tabId = 1262875154;
+      const requestId = '8b0cd14b-7b93-4f16-915f-859cf41a2251';
+      const origin = 'http://localhost:3002';
+      const title =
+          'Horizon Market | Bitcoin NFT Marketplace – Ordinals and Rare Pepes';
+      const favicon = 'http://localhost:3002/favicon.ico?favicon.66efc405.ico';
+
+      // Step 1: simulate background.js building the URL fragment.
+      String encodeFreeText(String s) {
+        final std = base64.encode(utf8.encode(s));
+        final urlSafe = std
+            .replaceAll('+', '-')
+            .replaceAll('/', '_')
+            .replaceAll(RegExp(r'=+$'), '');
+        return 'b64:$urlSafe';
+      }
+
+      final actionParam = [
+        'getAddresses',
+        '$tabId',
+        requestId,
+        Uri.encodeComponent(origin),
+        encodeFreeText(title),
+        encodeFreeText(favicon),
+      ].join(',');
+
+      final urlFragment = '?action=$actionParam';
+
+      // Step 2: simulate GoRouter's `state.uri.queryParameters['action']`.
+      final actionFromUri = Uri.parse(urlFragment).queryParameters['action']!;
+
+      // Step 3: parser must succeed and return the original strings round-tripped.
+      final result = actionRepository.fromString(actionFromUri);
+
+      expect(result.isRight(), isTrue,
+          reason: 'Parser must not fail on Unicode-bearing dApp titles');
+      result.match(
+        (l) => fail('Expected Right but got Left: $l'),
+        (r) {
+          final action = r as RPCGetAddressesAction;
+          expect(action.tabId, tabId);
+          expect(action.requestId, requestId);
+          expect(action.origin, origin);
+          expect(action.title, title);
+          expect(action.favicon, favicon);
+        },
+      );
     });
   });
 }
