@@ -113,7 +113,7 @@ Future<void> buildBLS() async {
     [
       'npx',
       'esbuild',
-      'bls-entry.js',
+      'bls-entry.mjs',
       '--bundle',
       '--format=iife',
       '--global-name=__horizon_bls__',
