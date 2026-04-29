@@ -8,6 +8,21 @@ function safeBtoaJson(value) {
   return btoa(unescape(encodeURIComponent(json)));
 }
 
+// URL-safe base64 of an arbitrary UTF-8 string. Uses the "b64:" prefix so the
+// Dart parser can unambiguously distinguish encoded payloads from legacy
+// percent-encoded values. The output never contains characters that would be
+// re-interpreted by URL parsers ("+", "/", "&", "%") so it survives any
+// re-encoding done by Chrome/GoRouter on the popup URL.
+function encodeFreeText(s) {
+  const str = s == null ? "" : String(s);
+  const stdB64 = btoa(unescape(encodeURIComponent(str)));
+  const urlSafe = stdB64
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+  return "b64:" + urlSafe;
+}
+
 function encodeTransactionInfo(transactionInfo) {
   if (!transactionInfo) return undefined;
   try {
@@ -109,7 +124,7 @@ async function rpcGetAddresses(requestId, port) {
   const metadata = await getTabMetadata(tabId);
 
   const window = await popup({
-    url: `/index.html#?action=getAddresses,${tabId},${requestId},${encodeURIComponent(origin)},${encodeURIComponent(metadata.title)},${encodeURIComponent(metadata.favicon)}`,
+    url: `/index.html#?action=getAddresses,${tabId},${requestId},${encodeURIComponent(origin)},${encodeFreeText(metadata.title)},${encodeFreeText(metadata.favicon)}`,
   });
 
   listenForPopupClose({
@@ -147,8 +162,8 @@ async function rpcSignPsbt(
     tabId,
     requestId,
     encodeURIComponent(origin ?? ""),
-    encodeURIComponent(metadata.title ?? ""),
-    encodeURIComponent(metadata.favicon ?? ""),
+    encodeFreeText(metadata.title),
+    encodeFreeText(metadata.favicon),
     hex, // already hex-safe for URLs
     encodedSignInputs,
   ];
@@ -177,7 +192,7 @@ async function rpcSignMessage(requestId, port, message, address) {
   const tabId = getTabIdFromPort(port);
   const metadata = await getTabMetadata(tabId);
   const window = await popup({
-    url: `/index.html#?action=signMessage,${tabId},${requestId},${encodeURIComponent(origin)},${encodeURIComponent(metadata.title)},${encodeURIComponent(metadata.favicon)},${message},${address}`,
+    url: `/index.html#?action=signMessage,${tabId},${requestId},${encodeURIComponent(origin)},${encodeFreeText(metadata.title)},${encodeFreeText(metadata.favicon)},${encodeFreeText(message)},${address}`,
   });
   listenForPopupClose({
     id: window?.id,
@@ -199,9 +214,9 @@ async function rpcSignMessageBLS(requestId, port, message, dst, messageHex, addr
     tabId,
     requestId,
     encodeURIComponent(origin),
-    encodeURIComponent(metadata.title),
-    encodeURIComponent(metadata.favicon),
-    encodeURIComponent(message || ""),
+    encodeFreeText(metadata.title),
+    encodeFreeText(metadata.favicon),
+    encodeFreeText(message || ""),
     encodeURIComponent(dst || ""),
     encodeURIComponent(messageHex || ""),
     encodeURIComponent(address || ""),
@@ -230,8 +245,8 @@ async function rpcGetBLSPoP(requestId, port, address) {
     tabId,
     requestId,
     encodeURIComponent(origin),
-    encodeURIComponent(metadata.title),
-    encodeURIComponent(metadata.favicon),
+    encodeFreeText(metadata.title),
+    encodeFreeText(metadata.favicon),
     encodeURIComponent(address),
   ];
 
@@ -258,8 +273,8 @@ async function rpcExportEncryptedBlsPrivateKey(requestId, port, address) {
     tabId,
     requestId,
     encodeURIComponent(origin),
-    encodeURIComponent(metadata.title),
-    encodeURIComponent(metadata.favicon),
+    encodeFreeText(metadata.title),
+    encodeFreeText(metadata.favicon),
     encodeURIComponent(address || ""),
   ];
 

@@ -14,7 +14,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
-import 'package:horizon/common/fn.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/repositories/action_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
@@ -1017,9 +1016,27 @@ class AppRouter {
         final ActionRepository actionRepository =
             GetIt.instance<ActionRepository>();
         if (actionParam != null) {
-          actionRepository
-              .fromString(actionParam)
-              .fold(noop1, (action) => actionRepository.enqueue(action));
+          actionRepository.fromString(actionParam).fold(
+            (failure) {
+              // Don't swallow the failure: a parser error here means the dApp
+              // popup just opened to the wrong screen (typically PortfolioView)
+              // because we couldn't decode the requested RPC. Surfacing this
+              // to logs + Sentry makes the failure debuggable instead of
+              // looking like the user simply rejected the request.
+              GetIt.I<Logger>().error(
+                'Failed to parse action param "$actionParam": $failure',
+              );
+              GetIt.I<ErrorService>().captureException(
+                Exception('ActionRepository.fromString failed: $failure'),
+                message: 'Failed to parse action param',
+                context: {
+                  'actionParam': actionParam,
+                  'failure': failure,
+                },
+              );
+            },
+            (action) => actionRepository.enqueue(action),
+          );
         }
 
         final path = session.state.maybeWhen(

@@ -15,6 +15,38 @@ const Set<String> originWhitelist = {
   "https://horizon-market-signet.vercel.app"
 };
 
+// Free-text fields that may contain arbitrary user-supplied content (dApp page
+// title, favicon URL, message-to-sign, etc.) are encoded by `web/background.js`
+// using `encodeFreeText`, which produces a "b64:" prefix followed by URL-safe
+// base64 of the UTF-8 bytes. This survives any URL re-encoding done by Chrome
+// or GoRouter on the popup URL (en-dashes, accents, "&", "+", "%", ...).
+//
+// For backward compatibility with older payloads (and existing test fixtures
+// that still pass percent-encoded values), we also accept legacy strings: if
+// the value isn't tagged with "b64:" we fall back to `Uri.decodeComponent`
+// (idempotent for plain ASCII), and on any percent-decoding failure we just
+// return the raw string — which is what `state.uri.queryParameters` has
+// already produced once.
+String _decodeFreeText(String raw) {
+  if (raw.startsWith('b64:')) {
+    var s = raw.substring(4);
+    s = s.replaceAll('-', '+').replaceAll('_', '/');
+    while (s.length % 4 != 0) {
+      s += '=';
+    }
+    try {
+      return utf8.decode(base64.decode(s));
+    } catch (_) {
+      return raw;
+    }
+  }
+  try {
+    return Uri.decodeComponent(raw);
+  } catch (_) {
+    return raw;
+  }
+}
+
 RPCSignPsbtAction _buildSignPsbtAction({
   required String tabId,
   required String requestId,
@@ -27,9 +59,9 @@ RPCSignPsbtAction _buildSignPsbtAction({
   required String txInfoB64,
 }) {
   final intTabId = int.parse(tabId);
-  final decOrigin = Uri.decodeComponent(origin);
-  final decTitle = Uri.decodeComponent(title);
-  final decFavicon = Uri.decodeComponent(favicon);
+  final decOrigin = _decodeFreeText(origin);
+  final decTitle = _decodeFreeText(title);
+  final decFavicon = _decodeFreeText(favicon);
 
   final signInputs =
       _parseSignInputs(signInputsB64); // throws on bad format (kept)
@@ -474,9 +506,9 @@ class ActionRepositoryImpl implements ActionRepository {
         return RPCGetAddressesAction(
           int.parse(parts[1]),
           parts[2],
-          Uri.decodeComponent(parts[3]),
-          Uri.decodeComponent(parts[4]),
-          Uri.decodeComponent(parts[5]),
+          _decodeFreeText(parts[3]),
+          _decodeFreeText(parts[4]),
+          _decodeFreeText(parts[5]),
         );
 
       case 'signPsbt':
@@ -518,11 +550,10 @@ class ActionRepositoryImpl implements ActionRepository {
         return RPCSignMessageAction(
           int.parse(parts[1]),
           parts[2],
-          Uri.decodeComponent(parts[3]),
-          Uri.decodeComponent(parts[4]),
-          Uri.decodeComponent(parts[5]),
-          // DECODE the message so "Hello%20World" => "Hello World"
-          Uri.decodeComponent(parts[6]),
+          _decodeFreeText(parts[3]),
+          _decodeFreeText(parts[4]),
+          _decodeFreeText(parts[5]),
+          _decodeFreeText(parts[6]),
           parts[7],
         );
 
@@ -531,19 +562,19 @@ class ActionRepositoryImpl implements ActionRepository {
           throw Exception(
               'signMessageBLS expects 7-10 fields, got ${parts.length}');
         }
-        final msgField = Uri.decodeComponent(parts[6]);
+        final msgField = _decodeFreeText(parts[6]);
         final dstField =
-            parts.length >= 8 ? Uri.decodeComponent(parts[7]) : null;
+            parts.length >= 8 ? _decodeFreeText(parts[7]) : null;
         final msgHexField =
-            parts.length >= 9 ? Uri.decodeComponent(parts[8]) : null;
+            parts.length >= 9 ? _decodeFreeText(parts[8]) : null;
         final addrField =
-            parts.length >= 10 ? Uri.decodeComponent(parts[9]) : null;
+            parts.length >= 10 ? _decodeFreeText(parts[9]) : null;
         return RPCSignMessageBLSAction(
           int.parse(parts[1]),
           parts[2],
-          Uri.decodeComponent(parts[3]),
-          Uri.decodeComponent(parts[4]),
-          Uri.decodeComponent(parts[5]),
+          _decodeFreeText(parts[3]),
+          _decodeFreeText(parts[4]),
+          _decodeFreeText(parts[5]),
           msgField,
           dstField != null && dstField.isNotEmpty ? dstField : null,
           msgHexField != null && msgHexField.isNotEmpty ? msgHexField : null,
@@ -558,10 +589,10 @@ class ActionRepositoryImpl implements ActionRepository {
         return RPCGetBLSPoPAction(
           int.parse(parts[1]),
           parts[2],
-          Uri.decodeComponent(parts[3]),
-          Uri.decodeComponent(parts[4]),
-          Uri.decodeComponent(parts[5]),
-          Uri.decodeComponent(parts[6]),
+          _decodeFreeText(parts[3]),
+          _decodeFreeText(parts[4]),
+          _decodeFreeText(parts[5]),
+          _decodeFreeText(parts[6]),
         );
 
       case 'exportEncryptedBlsPrivateKey':
@@ -570,13 +601,13 @@ class ActionRepositoryImpl implements ActionRepository {
               'exportEncryptedBlsPrivateKey expects 6-7 fields, got ${parts.length}');
         }
         final exportAddrField =
-            parts.length >= 7 ? Uri.decodeComponent(parts[6]) : null;
+            parts.length >= 7 ? _decodeFreeText(parts[6]) : null;
         return RPCExportEncryptedBlsPrivateKeyAction(
           int.parse(parts[1]),
           parts[2],
-          Uri.decodeComponent(parts[3]),
-          Uri.decodeComponent(parts[4]),
-          Uri.decodeComponent(parts[5]),
+          _decodeFreeText(parts[3]),
+          _decodeFreeText(parts[4]),
+          _decodeFreeText(parts[5]),
           exportAddrField != null && exportAddrField.isNotEmpty
               ? exportAddrField
               : null,
