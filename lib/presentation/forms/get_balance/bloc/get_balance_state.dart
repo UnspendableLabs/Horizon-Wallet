@@ -1,6 +1,8 @@
 enum GetBalanceStatus { loading, success, failure }
 
 class GetBalanceState {
+  static const _sentinel = Object();
+
   final GetBalanceStatus status;
 
   // Balances are in satoshis.
@@ -22,14 +24,14 @@ class GetBalanceState {
     int? confirmed,
     int? unconfirmed,
     int? total,
-    String? error,
+    Object? error = _sentinel,
   }) {
     return GetBalanceState(
       status: status ?? this.status,
       confirmed: confirmed ?? this.confirmed,
       unconfirmed: unconfirmed ?? this.unconfirmed,
       total: total ?? this.total,
-      error: error ?? this.error,
+      error: error == _sentinel ? this.error : error as String?,
     );
   }
 }

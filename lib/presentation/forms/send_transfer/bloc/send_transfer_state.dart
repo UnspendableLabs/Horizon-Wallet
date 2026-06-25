@@ -4,6 +4,8 @@ import 'package:horizon/presentation/common/password_input.dart';
 enum SendTransferStatus { composing, review, broadcasting, success, failure }
 
 class SendTransferState with FormzMixin {
+  static const _sentinel = Object();
+
   final SendTransferStatus status;
   final PasswordInput password;
 
@@ -27,15 +29,15 @@ class SendTransferState with FormzMixin {
     SendTransferStatus? status,
     PasswordInput? password,
     int? feeSats,
-    String? txid,
-    String? error,
+    Object? txid = _sentinel,
+    Object? error = _sentinel,
   }) {
     return SendTransferState(
       status: status ?? this.status,
       password: password ?? this.password,
       feeSats: feeSats ?? this.feeSats,
-      txid: txid ?? this.txid,
-      error: error ?? this.error,
+      txid: txid == _sentinel ? this.txid : txid as String?,
+      error: error == _sentinel ? this.error : error as String?,
     );
   }
 }

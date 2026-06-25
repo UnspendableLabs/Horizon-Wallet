@@ -66,7 +66,7 @@ class SendTransferBloc extends Bloc<SendTransferEvent, SendTransferState> {
 
   Future<void> _onComposeRequested(
       ComposeRequested event, Emitter<SendTransferState> emit) async {
-    emit(state.copyWith(status: SendTransferStatus.composing));
+    emit(state.copyWith(status: SendTransferStatus.composing, error: null));
 
     final feeResult = await _getFeeEstimatesUseCase
         .call(GetFeeEstimatesParams(httpConfig: httpConfig))
@@ -122,7 +122,7 @@ class SendTransferBloc extends Bloc<SendTransferEvent, SendTransferState> {
       return;
     }
 
-    emit(state.copyWith(status: SendTransferStatus.broadcasting));
+    emit(state.copyWith(status: SendTransferStatus.broadcasting, error: null));
 
     final decryptionStrategy =
         passwordRequired ? Password(state.password.value) : InMemoryKey();
