@@ -1,7 +1,18 @@
 import 'package:formz/formz.dart';
 import 'package:horizon/presentation/common/password_input.dart';
 
-enum SendTransferStatus { composing, review, broadcasting, success, failure }
+enum SendTransferStatus {
+  composing,
+  review,
+  broadcasting,
+  success,
+  // Fee fetch or compose failed — no transaction was built, so there is nothing
+  // to retry. Surfaced to the dApp and the popup closes.
+  composeFailure,
+  // The broadcast failed (e.g. wrong password, transient node error). The
+  // composed transaction is still cached, so the popup stays open for a retry.
+  broadcastFailure,
+}
 
 class SendTransferState with FormzMixin {
   static const _sentinel = Object();

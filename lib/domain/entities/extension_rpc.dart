@@ -137,3 +137,24 @@ class RPCSendTransferSuccessCallbackArgs {
 
 typedef RPCSendTransferSuccessCallback = void Function(
     RPCSendTransferSuccessCallbackArgs);
+
+// Shared failure payload for the sats-connect getBalance / sendTransfer routes.
+// Lets a fatal (non-retryable) failure return the real reason to the dApp and
+// close the popup, instead of leaving the request hanging until the user
+// manually closes the window — which the background then reports, misleadingly,
+// as a user rejection.
+class RPCErrorCallbackArgs {
+  final int tabId;
+  final String requestId;
+  final String error;
+
+  RPCErrorCallbackArgs({
+    required this.tabId,
+    required this.requestId,
+    required this.error,
+  });
+}
+
+typedef RPCGetBalanceErrorCallback = void Function(RPCErrorCallbackArgs);
+
+typedef RPCSendTransferErrorCallback = void Function(RPCErrorCallbackArgs);

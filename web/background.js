@@ -34,10 +34,20 @@ function encodeTransactionInfo(transactionInfo) {
 }
 
 function listenForPopupClose(args) {
-  chrome.windows.onRemoved.addListener((winId) => {
-    if (winId !== args.id || args.tabId == null) return;
-    chrome.tabs.sendMessage(args.tabId, args.response);
-  });
+  // Nothing to watch if the popup failed to open.
+  if (args.id == null) return;
+  const handler = (winId) => {
+    if (winId !== args.id) return;
+    // Our popup closed: detach this listener before doing anything else.
+    // Without removal every RPC call would leak a permanent onRemoved listener
+    // (they accumulate for the life of the service worker). Only the matching
+    // window's close removes it, so unrelated popups keep their own listeners.
+    chrome.windows.onRemoved.removeListener(handler);
+    if (args.tabId != null) {
+      chrome.tabs.sendMessage(args.tabId, args.response);
+    }
+  };
+  chrome.windows.onRemoved.addListener(handler);
 }
 
 function popup(options) {

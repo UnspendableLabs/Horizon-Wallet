@@ -756,6 +756,54 @@ void setup() {
               txid: ${args.txid}
       """));
 
+  // Error callbacks for the getBalance / sendTransfer routes. A structured
+  // JSON-RPC error (-32603, internal error) carries the real reason back to the
+  // dApp so it isn't mislabelled as a user rejection (the string-error shape the
+  // background's popup-close handler uses), then closes the popup. Sent before
+  // close, so the provider settles on this error and ignores the later
+  // popup-close rejection — mirroring the success path.
+  injector.registerLazySingleton<RPCGetBalanceErrorCallback>(
+      () => config.isWebExtension
+          ? (args) {
+              chrome.tabs.sendMessage(
+                args.tabId,
+                {
+                  "id": args.requestId,
+                  "error": {"code": -32603, "message": args.error},
+                },
+                null,
+              );
+
+              Future.delayed(const Duration(seconds: 0), html.window.close);
+            }
+          : (args) => GetIt.I<Logger>().debug("""
+           RPCGetBalanceErrorCallback called with:
+              tabId: ${args.tabId}
+              requestId: ${args.requestId}
+              error: ${args.error}
+      """));
+
+  injector.registerLazySingleton<RPCSendTransferErrorCallback>(
+      () => config.isWebExtension
+          ? (args) {
+              chrome.tabs.sendMessage(
+                args.tabId,
+                {
+                  "id": args.requestId,
+                  "error": {"code": -32603, "message": args.error},
+                },
+                null,
+              );
+
+              Future.delayed(const Duration(seconds: 0), html.window.close);
+            }
+          : (args) => GetIt.I<Logger>().debug("""
+           RPCSendTransferErrorCallback called with:
+              tabId: ${args.tabId}
+              requestId: ${args.requestId}
+              error: ${args.error}
+      """));
+
   injector.registerLazySingleton<VersionRepository>(() => config.isWebExtension
       ? VersionRepositoryExtensionImpl(
           config: config, logger: GetIt.I<Logger>())

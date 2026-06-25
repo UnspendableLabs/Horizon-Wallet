@@ -669,6 +669,14 @@ class AppRouter {
                                   total: total,
                                 ));
                               },
+                              onError: (error) {
+                                GetIt.I<RPCGetBalanceErrorCallback>()(
+                                    RPCErrorCallbackArgs(
+                                  tabId: action.tabId,
+                                  requestId: action.requestId,
+                                  error: error,
+                                ));
+                              },
                             ),
                           ],
                         ),
@@ -733,6 +741,14 @@ class AppRouter {
                                   tabId: action.tabId,
                                   requestId: action.requestId,
                                   txid: txid,
+                                ));
+                              },
+                              onError: (error) {
+                                GetIt.I<RPCSendTransferErrorCallback>()(
+                                    RPCErrorCallbackArgs(
+                                  tabId: action.tabId,
+                                  requestId: action.requestId,
+                                  error: error,
                                 ));
                               },
                             ),

@@ -83,7 +83,7 @@ class SendTransferBloc extends Bloc<SendTransferEvent, SendTransferState> {
     final num? feeRate = feeResult.fold((_) => null, (estimates) => estimates.medium);
     if (feeRate == null) {
       emit(state.copyWith(
-        status: SendTransferStatus.failure,
+        status: SendTransferStatus.composeFailure,
         error: 'Failed to fetch fee estimates',
       ));
       return;
@@ -106,7 +106,7 @@ class SendTransferBloc extends Bloc<SendTransferEvent, SendTransferState> {
 
     composeResult.fold(
       (error) => emit(state.copyWith(
-        status: SendTransferStatus.failure,
+        status: SendTransferStatus.composeFailure,
         error: error,
       )),
       (resp) {
@@ -133,8 +133,10 @@ class SendTransferBloc extends Bloc<SendTransferEvent, SendTransferState> {
 
     final raw = _rawtransaction;
     if (raw == null) {
+      // No composed transaction to broadcast — treat as a fatal compose failure
+      // so the dApp is notified and the popup closes.
       emit(state.copyWith(
-        status: SendTransferStatus.failure,
+        status: SendTransferStatus.composeFailure,
         error: 'Transaction not composed',
       ));
       return;
@@ -156,7 +158,9 @@ class SendTransferBloc extends Bloc<SendTransferEvent, SendTransferState> {
 
     result.fold(
       (error) => emit(state.copyWith(
-        status: SendTransferStatus.failure,
+        // Retryable: the transaction is still cached, so keep the popup open and
+        // let the user fix the cause (e.g. password) and resend.
+        status: SendTransferStatus.broadcastFailure,
         error: error,
       )),
       (broadcast) => emit(state.copyWith(

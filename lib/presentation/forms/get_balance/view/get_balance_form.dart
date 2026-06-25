@@ -11,8 +11,12 @@ import 'package:horizon/presentation/forms/get_balance/bloc/get_balance_state.da
 class GetBalanceForm extends StatelessWidget {
   final void Function(String confirmed, String unconfirmed, String total)
       onSuccess;
+  // A balance read can only fail fatally (network/unreachable); there is nothing
+  // to retry, so surface the real error to the dApp and let it close the popup.
+  final void Function(String error) onError;
 
-  const GetBalanceForm({super.key, required this.onSuccess});
+  const GetBalanceForm(
+      {super.key, required this.onSuccess, required this.onError});
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +28,8 @@ class GetBalanceForm extends StatelessWidget {
             state.unconfirmed.toString(),
             state.total.toString(),
           );
+        } else if (state.status == GetBalanceStatus.failure) {
+          onError(state.error ?? 'Failed to fetch balance');
         }
       },
       child: BlocBuilder<GetBalanceBloc, GetBalanceState>(

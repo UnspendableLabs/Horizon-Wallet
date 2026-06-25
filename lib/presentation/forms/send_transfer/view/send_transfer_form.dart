@@ -15,6 +15,9 @@ class SendTransferForm extends StatefulWidget {
   final int amount; // satoshis
   final String source;
   final void Function(String txid) onSuccess;
+  // Fired only for a fatal compose failure (nothing to retry): the dApp is
+  // notified and the popup closes. Broadcast failures stay on screen for retry.
+  final void Function(String error) onError;
 
   const SendTransferForm({
     super.key,
@@ -23,6 +26,7 @@ class SendTransferForm extends StatefulWidget {
     required this.amount,
     required this.source,
     required this.onSuccess,
+    required this.onError,
   });
 
   @override
@@ -45,6 +49,8 @@ class _SendTransferFormState extends State<SendTransferForm> {
       listener: (context, state) {
         if (state.status == SendTransferStatus.success && state.txid != null) {
           widget.onSuccess(state.txid!);
+        } else if (state.status == SendTransferStatus.composeFailure) {
+          widget.onError(state.error ?? 'Transaction failed');
         }
       },
       child: BlocBuilder<SendTransferBloc, SendTransferState>(
@@ -117,7 +123,8 @@ class _SendTransferFormState extends State<SendTransferForm> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                if (state.status == SendTransferStatus.failure)
+                if (state.status == SendTransferStatus.composeFailure ||
+                    state.status == SendTransferStatus.broadcastFailure)
                   Text(
                     state.error ?? 'Transaction failed',
                     style: const TextStyle(color: Colors.red),
