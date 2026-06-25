@@ -211,7 +211,15 @@ function filterPurposes(mapped, purposes) {
   return wanted ? mapped.filter((a) => wanted.has(a.purpose)) : mapped;
 }
 function networkObject(name) {
-  const bitcoin = BITCOIN_NETWORK[name] || "Mainnet";
+  const bitcoin = BITCOIN_NETWORK[name];
+  // Never silently coerce an unknown network to Mainnet: telling a dApp it is
+  // on Mainnet when the wallet is on a test network (or the reverse) would let
+  // it build/sign against the wrong chain. Surface it instead — every caller
+  // runs inside handleSatsConnect's try/catch, so this becomes a JSON-RPC
+  // internal error rather than a false network.
+  if (!bitcoin) {
+    throw new Error(`Unsupported wallet network: ${name}`);
+  }
   const isMain = bitcoin === "Mainnet";
   return {
     bitcoin: { name: bitcoin },

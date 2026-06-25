@@ -33,6 +33,10 @@ class GetBalanceBloc extends Bloc<GetBalanceEvent, GetBalanceState> {
           address: address, httpConfig: httpConfig);
       final confirmed =
           info.chainStats.fundedTxoSum - info.chainStats.spentTxoSum;
+      // Net mempool delta (Esplora model). Intentionally signed: an address
+      // spending in the mempool funds < spends, so `unconfirmed` is negative
+      // and `total` is the spendable balance net of that pending outflow. Do
+      // not clamp to 0 — it would make `total` inconsistent with the chain.
       final unconfirmed =
           info.mempoolStats.fundedTxoSum - info.mempoolStats.spentTxoSum;
       emit(state.copyWith(

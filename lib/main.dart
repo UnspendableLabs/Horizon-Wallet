@@ -274,36 +274,66 @@ int _resolveAccountIndex(SessionStateSuccess session, String? address) {
 }
 
 // Empty-state shell shown by the sats-connect getBalance / sendTransfer routes
-// when the active account has no usable address. Kept as a single helper so the
+// when the active account has no usable address. Kept as a single widget so the
 // two routes can't drift apart.
-Widget _noAddressActionShell({
-  required String title,
-  required String? dappUrl,
-  required String? dappTitle,
-  required String? dappFavicon,
-}) {
-  return ActionHandlerShell(
-    child: Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          DAppInfoWidget(
-            title: title,
-            dappUrl: dappUrl,
-            dappTitle: dappTitle,
-            dappFavicon: dappFavicon,
-          ),
-          const Expanded(
-            child: Center(
-              child: Text("No address available in current account"),
+//
+// Besides rendering the message, it surfaces a real error to the dApp (and
+// closes the popup) via [onError] once mounted — otherwise the request would
+// hang until the user manually closes the window, which the background then
+// misreports as a user rejection. Mirrors the form-driven error path.
+class _NoAddressActionShell extends StatefulWidget {
+  final String title;
+  final String? dappUrl;
+  final String? dappTitle;
+  final String? dappFavicon;
+  final void Function(String error) onError;
+
+  const _NoAddressActionShell({
+    required this.title,
+    required this.dappUrl,
+    required this.dappTitle,
+    required this.dappFavicon,
+    required this.onError,
+  });
+
+  @override
+  State<_NoAddressActionShell> createState() => _NoAddressActionShellState();
+}
+
+class _NoAddressActionShellState extends State<_NoAddressActionShell> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.onError('No address available in current account');
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ActionHandlerShell(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            DAppInfoWidget(
+              title: widget.title,
+              dappUrl: widget.dappUrl,
+              dappTitle: widget.dappTitle,
+              dappFavicon: widget.dappFavicon,
             ),
-          ),
-        ],
+            const Expanded(
+              child: Center(
+                child: Text("No address available in current account"),
+              ),
+            ),
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class AppRouter {
@@ -632,11 +662,19 @@ class AppRouter {
                           : (addresses.isNotEmpty ? addresses.first : null);
 
                   if (address == null) {
-                    return _noAddressActionShell(
+                    return _NoAddressActionShell(
                       title: 'VIEW BALANCE',
                       dappUrl: action.origin,
                       dappTitle: action.title,
                       dappFavicon: action.favicon,
+                      onError: (error) {
+                        GetIt.I<RPCGetBalanceErrorCallback>()(
+                            RPCErrorCallbackArgs(
+                          tabId: action.tabId,
+                          requestId: action.requestId,
+                          error: error,
+                        ));
+                      },
                     );
                   }
 
@@ -699,11 +737,19 @@ class AppRouter {
                   final source = addresses.isNotEmpty ? addresses.first : null;
 
                   if (source == null) {
-                    return _noAddressActionShell(
+                    return _NoAddressActionShell(
                       title: 'SEND BITCOIN',
                       dappUrl: action.origin,
                       dappTitle: action.title,
                       dappFavicon: action.favicon,
+                      onError: (error) {
+                        GetIt.I<RPCSendTransferErrorCallback>()(
+                            RPCErrorCallbackArgs(
+                          tabId: action.tabId,
+                          requestId: action.requestId,
+                          error: error,
+                        ));
+                      },
                     );
                   }
 
