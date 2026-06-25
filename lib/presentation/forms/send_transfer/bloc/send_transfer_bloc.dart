@@ -121,6 +121,16 @@ class SendTransferBloc extends Bloc<SendTransferEvent, SendTransferState> {
 
   Future<void> _onConfirmSend(
       ConfirmSend event, Emitter<SendTransferState> emit) async {
+    // Re-entrancy guard. Bloc's default (concurrent) transformer plus the
+    // window between the first tap and the Confirm button disabling on the
+    // broadcasting state means two ConfirmSend events can race. The cached
+    // `_rawtransaction` would then be broadcast twice, so refuse any confirm
+    // once a broadcast is in flight or has already succeeded.
+    if (state.status == SendTransferStatus.broadcasting ||
+        state.status == SendTransferStatus.success) {
+      return;
+    }
+
     final raw = _rawtransaction;
     if (raw == null) {
       emit(state.copyWith(
