@@ -81,6 +81,8 @@ class _SendTransferFormState extends State<SendTransferForm> {
                     padding: const EdgeInsets.fromLTRB(0, 16, 0, 16),
                     child: HorizonTextField(
                       controller: passwordController,
+                      enabled:
+                          state.status != SendTransferStatus.broadcasting,
                       onChanged: (password) => context
                           .read<SendTransferBloc>()
                           .add(PasswordChanged(password)),

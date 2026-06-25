@@ -58,6 +58,14 @@ class SendTransferBloc extends Bloc<SendTransferEvent, SendTransferState> {
 
   void _onPasswordChanged(
       PasswordChanged event, Emitter<SendTransferState> emit) {
+    // Never resurrect the review screen once a broadcast is in flight (or has
+    // succeeded): doing so would re-enable the Confirm button and let a stray
+    // keystroke in the still-mounted password field trigger a second
+    // sign-and-broadcast of the same transaction.
+    if (state.status == SendTransferStatus.broadcasting ||
+        state.status == SendTransferStatus.success) {
+      return;
+    }
     emit(state.copyWith(
       password: PasswordInput.dirty(event.password),
       status: SendTransferStatus.review,

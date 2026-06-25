@@ -289,20 +289,29 @@ async function addProviderToPage() {
 // Persist (or clear) the approved connection on behalf of the page-world
 // provider, which cannot reach chrome.storage. Keyed strictly by the page's own
 // origin, so a page can only read/write its own entry.
-document.addEventListener("horizon-provider-persist", async (event) => {
-  try {
-    const origin = window.location.origin;
-    const store = await chrome.storage.local.get(CONNECTION_STORE_KEY);
-    const map = store?.[CONNECTION_STORE_KEY] || {};
-    if (event.detail) {
-      map[origin] = event.detail;
-    } else {
-      delete map[origin];
+//
+// chrome.storage read-modify-write is not atomic, so events fired in quick
+// succession (e.g. wallet_connect immediately followed by wallet_disconnect)
+// could read the same pre-state and clobber each other. Serialise every write
+// through a single promise chain so they apply in order.
+let _persistChain = Promise.resolve();
+document.addEventListener("horizon-provider-persist", (event) => {
+  const detail = event.detail;
+  _persistChain = _persistChain.then(async () => {
+    try {
+      const origin = window.location.origin;
+      const store = await chrome.storage.local.get(CONNECTION_STORE_KEY);
+      const map = store?.[CONNECTION_STORE_KEY] || {};
+      if (detail) {
+        map[origin] = detail;
+      } else {
+        delete map[origin];
+      }
+      await chrome.storage.local.set({ [CONNECTION_STORE_KEY]: map });
+    } catch (e) {
+      // best-effort; silent retrieval just won't persist across reloads
     }
-    await chrome.storage.local.set({ [CONNECTION_STORE_KEY]: map });
-  } catch (e) {
-    // best-effort; silent retrieval just won't persist across reloads
-  }
+  });
 });
 
 document.onreadystatechange = () => {

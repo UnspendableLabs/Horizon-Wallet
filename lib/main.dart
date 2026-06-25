@@ -273,6 +273,39 @@ int _resolveAccountIndex(SessionStateSuccess session, String? address) {
       : 0;
 }
 
+// Empty-state shell shown by the sats-connect getBalance / sendTransfer routes
+// when the active account has no usable address. Kept as a single helper so the
+// two routes can't drift apart.
+Widget _noAddressActionShell({
+  required String title,
+  required String? dappUrl,
+  required String? dappTitle,
+  required String? dappFavicon,
+}) {
+  return ActionHandlerShell(
+    child: Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          DAppInfoWidget(
+            title: title,
+            dappUrl: dappUrl,
+            dappTitle: dappTitle,
+            dappFavicon: dappFavicon,
+          ),
+          const Expanded(
+            child: Center(
+              child: Text("No address available in current account"),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 class AppRouter {
   static GoRouter router = GoRouter(
       navigatorKey: _rootNavigatorKey,
@@ -599,28 +632,12 @@ class AppRouter {
                           : (addresses.isNotEmpty ? addresses.first : null);
 
                   if (address == null) {
-                    return ActionHandlerShell(
-                        child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          DAppInfoWidget(
-                            title: 'VIEW BALANCE',
-                            dappUrl: action.origin,
-                            dappTitle: action.title,
-                            dappFavicon: action.favicon,
-                          ),
-                          const Expanded(
-                            child: Center(
-                              child:
-                                  Text("No address available in current account"),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ));
+                    return _noAddressActionShell(
+                      title: 'VIEW BALANCE',
+                      dappUrl: action.origin,
+                      dappTitle: action.title,
+                      dappFavicon: action.favicon,
+                    );
                   }
 
                   return BlocProvider(
@@ -674,28 +691,12 @@ class AppRouter {
                   final source = addresses.isNotEmpty ? addresses.first : null;
 
                   if (source == null) {
-                    return ActionHandlerShell(
-                        child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          DAppInfoWidget(
-                            title: 'SEND BITCOIN',
-                            dappUrl: action.origin,
-                            dappTitle: action.title,
-                            dappFavicon: action.favicon,
-                          ),
-                          const Expanded(
-                            child: Center(
-                              child:
-                                  Text("No address available in current account"),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ));
+                    return _noAddressActionShell(
+                      title: 'SEND BITCOIN',
+                      dappUrl: action.origin,
+                      dappTitle: action.title,
+                      dappFavicon: action.favicon,
+                    );
                   }
 
                   return BlocProvider(
