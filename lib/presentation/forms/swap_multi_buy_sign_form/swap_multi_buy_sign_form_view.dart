@@ -5,7 +5,7 @@ import 'package:horizon/domain/entities/psbt_type.dart';
 import 'package:horizon/domain/usecases/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:formz/formz.dart';
