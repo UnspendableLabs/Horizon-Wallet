@@ -713,6 +713,49 @@ void setup() {
               encryptedBlsPrivateKey: ${args.encryptedBlsPrivateKey}
       """));
 
+  injector.registerLazySingleton<RPCGetBalanceSuccessCallback>(
+      () => config.isWebExtension
+          ? (args) {
+              chrome.tabs.sendMessage(
+                args.tabId,
+                {
+                  "id": args.requestId,
+                  "confirmed": args.confirmed,
+                  "unconfirmed": args.unconfirmed,
+                  "total": args.total,
+                },
+                null,
+              );
+
+              Future.delayed(const Duration(seconds: 0), html.window.close);
+            }
+          : (args) => GetIt.I<Logger>().debug("""
+           RPCGetBalanceSuccessCallback called with:
+              tabId: ${args.tabId}
+              requestId: ${args.requestId}
+              confirmed: ${args.confirmed}
+              unconfirmed: ${args.unconfirmed}
+              total: ${args.total}
+      """));
+
+  injector.registerLazySingleton<RPCSendTransferSuccessCallback>(
+      () => config.isWebExtension
+          ? (args) {
+              chrome.tabs.sendMessage(
+                args.tabId,
+                {"id": args.requestId, "txid": args.txid},
+                null,
+              );
+
+              Future.delayed(const Duration(seconds: 0), html.window.close);
+            }
+          : (args) => GetIt.I<Logger>().debug("""
+           RPCSendTransferSuccessCallback called with:
+              tabId: ${args.tabId}
+              requestId: ${args.requestId}
+              txid: ${args.txid}
+      """));
+
   injector.registerLazySingleton<VersionRepository>(() => config.isWebExtension
       ? VersionRepositoryExtensionImpl(
           config: config, logger: GetIt.I<Logger>())

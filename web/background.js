@@ -291,6 +291,63 @@ async function rpcExportEncryptedBlsPrivateKey(requestId, port, address) {
   });
 }
 
+async function rpcGetBalance(requestId, port, address) {
+  const origin = getOriginFromPort(port);
+  const tabId = getTabIdFromPort(port);
+  const metadata = await getTabMetadata(tabId);
+
+  const params = [
+    "getBalance",
+    tabId,
+    requestId,
+    encodeURIComponent(origin ?? ""),
+    encodeFreeText(metadata.title),
+    encodeFreeText(metadata.favicon),
+    encodeFreeText(address || ""),
+  ];
+
+  const window = await popup({
+    url: `/index.html#?action=${params.join(",")}`,
+  });
+  listenForPopupClose({
+    id: window?.id,
+    tabId: tabId,
+    response: {
+      id: requestId,
+      error: "User rejected `getBalance` request",
+    },
+  });
+}
+
+async function rpcSendTransfer(requestId, port, destination, amount) {
+  const origin = getOriginFromPort(port);
+  const tabId = getTabIdFromPort(port);
+  const metadata = await getTabMetadata(tabId);
+
+  const params = [
+    "sendTransfer",
+    tabId,
+    requestId,
+    encodeURIComponent(origin ?? ""),
+    encodeFreeText(metadata.title),
+    encodeFreeText(metadata.favicon),
+    encodeFreeText(destination || ""),
+    amount, // integer (satoshis), URL-safe as-is
+  ];
+
+  const window = await popup({
+    url: `/index.html#?action=${params.join(",")}`,
+  });
+  listenForPopupClose({
+    id: window?.id,
+    tabId: tabId,
+    response: {
+      id: requestId,
+      error: "User rejected `sendTransfer` request",
+    },
+  });
+}
+
 async function rpcMessageHandler(message, port) {
   const method = message["method"];
   const tabId = getTabIdFromPort(port);
@@ -341,6 +398,21 @@ async function rpcMessageHandler(message, port) {
         message["id"],
         port,
         message["params"]?.["address"],
+      );
+      break;
+    case "getBalance":
+      await rpcGetBalance(
+        message["id"],
+        port,
+        message["params"]?.["address"],
+      );
+      break;
+    case "sendTransfer":
+      await rpcSendTransfer(
+        message["id"],
+        port,
+        message["params"]?.["destination"],
+        message["params"]?.["amount"],
       );
       break;
     default:

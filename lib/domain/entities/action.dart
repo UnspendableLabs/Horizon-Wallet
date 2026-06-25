@@ -77,3 +77,23 @@ class RPCExportEncryptedBlsPrivateKeyAction extends RPCAction {
       super.tabId, super.requestId, super.origin, super.title, super.favicon,
       this.address);
 }
+
+// sats-connect `getBalance`. `address` is optional: when null the wallet uses
+// its payment (native-segwit) address.
+class RPCGetBalanceAction extends RPCAction {
+  @override
+  String get action => 'getBalance';
+  final String? address;
+  RPCGetBalanceAction(super.tabId, super.requestId, super.origin, super.title,
+      super.favicon, this.address);
+}
+
+// sats-connect `sendTransfer` (single recipient). `amount` is in satoshis.
+class RPCSendTransferAction extends RPCAction {
+  @override
+  String get action => 'sendTransfer';
+  final String destination;
+  final int amount;
+  RPCSendTransferAction(super.tabId, super.requestId, super.origin, super.title,
+      super.favicon, this.destination, this.amount);
+}

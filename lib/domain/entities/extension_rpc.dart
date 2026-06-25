@@ -103,3 +103,37 @@ class RPCExportEncryptedBlsPrivateKeySuccessCallbackArgs {
 
 typedef RPCExportEncryptedBlsPrivateKeySuccessCallback = void Function(
     RPCExportEncryptedBlsPrivateKeySuccessCallbackArgs);
+
+class RPCGetBalanceSuccessCallbackArgs {
+  final int tabId;
+  final String requestId;
+  final String confirmed;
+  final String unconfirmed;
+  final String total;
+
+  RPCGetBalanceSuccessCallbackArgs({
+    required this.tabId,
+    required this.requestId,
+    required this.confirmed,
+    required this.unconfirmed,
+    required this.total,
+  });
+}
+
+typedef RPCGetBalanceSuccessCallback = void Function(
+    RPCGetBalanceSuccessCallbackArgs);
+
+class RPCSendTransferSuccessCallbackArgs {
+  final int tabId;
+  final String requestId;
+  final String txid;
+
+  RPCSendTransferSuccessCallbackArgs({
+    required this.tabId,
+    required this.requestId,
+    required this.txid,
+  });
+}
+
+typedef RPCSendTransferSuccessCallback = void Function(
+    RPCSendTransferSuccessCallbackArgs);

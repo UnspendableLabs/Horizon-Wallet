@@ -66,6 +66,11 @@ import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
 import 'package:horizon/presentation/forms/sign_message/bloc/sign_message_bloc.dart';
 import 'package:horizon/presentation/forms/sign_message/view/sign_message_form.dart';
 
+import 'package:horizon/presentation/forms/get_balance/bloc/get_balance_bloc.dart';
+import 'package:horizon/presentation/forms/get_balance/view/get_balance_form.dart';
+import 'package:horizon/presentation/forms/send_transfer/bloc/send_transfer_bloc.dart';
+import 'package:horizon/presentation/forms/send_transfer/view/send_transfer_form.dart';
+
 import 'package:horizon/presentation/forms/sign_message_bls/bloc/sign_message_bls_bloc.dart';
 import 'package:horizon/presentation/forms/sign_message_bls/view/sign_message_bls_form.dart';
 
@@ -572,6 +577,169 @@ class AppRouter {
                       )));
                 }),
             GoRoute(
+                path: "/rpc/get-balance",
+                builder: (context, state) {
+                  final session =
+                      context.watch<SessionStateCubit>().state.successOrThrow();
+
+                  final actionRepository = GetIt.I<ActionRepository>();
+
+                  final action = actionRepository.dequeue().getOrThrow()
+                      as RPCGetBalanceAction;
+
+                  final addresses = session.addressIndexSet.list;
+                  // sats-connect `getBalance` carries no address, so the
+                  // provider always omits it and we fall back to the payment
+                  // (native-segwit) address — `addresses.first`. The explicit
+                  // address branch only fires for a house caller that passes
+                  // one; an unknown address resolves to null below.
+                  final address =
+                      (action.address != null && action.address!.isNotEmpty)
+                          ? session.addressIndexSet.getByAddress(action.address!)
+                          : (addresses.isNotEmpty ? addresses.first : null);
+
+                  if (address == null) {
+                    return ActionHandlerShell(
+                        child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          DAppInfoWidget(
+                            title: 'VIEW BALANCE',
+                            dappUrl: action.origin,
+                            dappTitle: action.title,
+                            dappFavicon: action.favicon,
+                          ),
+                          const Expanded(
+                            child: Center(
+                              child:
+                                  Text("No address available in current account"),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ));
+                  }
+
+                  return BlocProvider(
+                      create: (_) => GetBalanceBloc(
+                            address: address.address,
+                            httpConfig: session.httpConfig,
+                          ),
+                      child: ActionHandlerShell(
+                          child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            DAppInfoWidget(
+                              title: 'VIEW BALANCE',
+                              dappUrl: action.origin,
+                              dappTitle: action.title,
+                              dappFavicon: action.favicon,
+                            ),
+                            GetBalanceForm(
+                              onSuccess: (confirmed, unconfirmed, total) {
+                                GetIt.I<RPCGetBalanceSuccessCallback>()(
+                                    RPCGetBalanceSuccessCallbackArgs(
+                                  tabId: action.tabId,
+                                  requestId: action.requestId,
+                                  confirmed: confirmed,
+                                  unconfirmed: unconfirmed,
+                                  total: total,
+                                ));
+                              },
+                            ),
+                          ],
+                        ),
+                      )));
+                }),
+            GoRoute(
+                path: "/rpc/send-transfer",
+                builder: (context, state) {
+                  final session =
+                      context.watch<SessionStateCubit>().state.successOrThrow();
+
+                  final actionRepository = GetIt.I<ActionRepository>();
+
+                  final action = actionRepository.dequeue().getOrThrow()
+                      as RPCSendTransferAction;
+
+                  final addresses = session.addressIndexSet.list;
+                  // Send from the wallet's payment address (native segwit is
+                  // first by AddressIndexSet priority).
+                  final source = addresses.isNotEmpty ? addresses.first : null;
+
+                  if (source == null) {
+                    return ActionHandlerShell(
+                        child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          DAppInfoWidget(
+                            title: 'SEND BITCOIN',
+                            dappUrl: action.origin,
+                            dappTitle: action.title,
+                            dappFavicon: action.favicon,
+                          ),
+                          const Expanded(
+                            child: Center(
+                              child:
+                                  Text("No address available in current account"),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ));
+                  }
+
+                  return BlocProvider(
+                      create: (_) => SendTransferBloc(
+                            source: source,
+                            destination: action.destination,
+                            amount: action.amount,
+                            httpConfig: session.httpConfig,
+                            passwordRequired: GetIt.I<SettingsRepository>()
+                                .requirePasswordForCryptoOperations,
+                          ),
+                      child: ActionHandlerShell(
+                          child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            DAppInfoWidget(
+                              title: 'SEND BITCOIN',
+                              dappUrl: action.origin,
+                              dappTitle: action.title,
+                              dappFavicon: action.favicon,
+                            ),
+                            SendTransferForm(
+                              passwordRequired: GetIt.I<SettingsRepository>()
+                                  .requirePasswordForCryptoOperations,
+                              destination: action.destination,
+                              amount: action.amount,
+                              source: source.address,
+                              onSuccess: (txid) {
+                                GetIt.I<RPCSendTransferSuccessCallback>()(
+                                    RPCSendTransferSuccessCallbackArgs(
+                                  tabId: action.tabId,
+                                  requestId: action.requestId,
+                                  txid: txid,
+                                ));
+                              },
+                            ),
+                          ],
+                        ),
+                      )));
+                }),
+            GoRoute(
                 path: "/rpc/sign-message-bls",
                 builder: (context, state) {
                   final session =
@@ -1062,6 +1230,8 @@ class AppRouter {
                         RPCSignPsbtAction() => "/rpc/sign-psbt",
                         RPCExportEncryptedBlsPrivateKeyAction() =>
                           "/rpc/export-encrypted-bls-private-key",
+                        RPCGetBalanceAction() => "/rpc/get-balance",
+                        RPCSendTransferAction() => "/rpc/send-transfer",
                         _ => null
                       });
 
@@ -1084,6 +1254,8 @@ class AppRouter {
                         RPCSignPsbtAction() => "/rpc/sign-psbt",
                         RPCExportEncryptedBlsPrivateKeyAction() =>
                           "/rpc/export-encrypted-bls-private-key",
+                        RPCGetBalanceAction() => "/rpc/get-balance",
+                        RPCSendTransferAction() => "/rpc/send-transfer",
                         _ => null
                       });
 

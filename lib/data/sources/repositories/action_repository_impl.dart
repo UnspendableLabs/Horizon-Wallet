@@ -613,6 +613,38 @@ class ActionRepositoryImpl implements ActionRepository {
               : null,
         );
 
+      case 'getBalance':
+        if (parts.length != 7) {
+          throw Exception('getBalance expects 7 fields, got ${parts.length}');
+        }
+        final balanceAddr = _decodeFreeText(parts[6]);
+        return RPCGetBalanceAction(
+          int.parse(parts[1]),
+          parts[2],
+          _decodeFreeText(parts[3]),
+          _decodeFreeText(parts[4]),
+          _decodeFreeText(parts[5]),
+          balanceAddr.isNotEmpty ? balanceAddr : null,
+        );
+
+      case 'sendTransfer':
+        if (parts.length != 8) {
+          throw Exception('sendTransfer expects 8 fields, got ${parts.length}');
+        }
+        final amount = int.tryParse(parts[7]);
+        if (amount == null || amount <= 0) {
+          throw Exception('sendTransfer: invalid amount "${parts[7]}"');
+        }
+        return RPCSendTransferAction(
+          int.parse(parts[1]),
+          parts[2],
+          _decodeFreeText(parts[3]),
+          _decodeFreeText(parts[4]),
+          _decodeFreeText(parts[5]),
+          _decodeFreeText(parts[6]),
+          amount,
+        );
+
       default:
         throw Exception('Unknown action: ${parts[0]}');
     }
