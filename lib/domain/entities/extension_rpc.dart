@@ -155,6 +155,7 @@ class RPCErrorCallbackArgs {
   });
 }
 
-typedef RPCGetBalanceErrorCallback = void Function(RPCErrorCallbackArgs);
-
-typedef RPCSendTransferErrorCallback = void Function(RPCErrorCallbackArgs);
+// One error shape for every sats-connect RPC route: the JSON-RPC error is
+// identical regardless of which method failed, so a single callback type backs
+// them all (registered once, resolved by every route).
+typedef RPCErrorCallback = void Function(RPCErrorCallbackArgs);

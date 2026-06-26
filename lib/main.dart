@@ -273,6 +273,46 @@ int _resolveAccountIndex(SessionStateSuccess session, String? address) {
       : 0;
 }
 
+// Standard chrome for a sats-connect RPC popup: the dApp banner followed by the
+// route's body. Shared by getBalance / sendTransfer (and the no-address shell)
+// so the scaffolding lives in exactly one place.
+Widget _rpcActionScaffold({
+  required String title,
+  required String? dappUrl,
+  required String? dappTitle,
+  required String? dappFavicon,
+  required Widget child,
+}) {
+  return ActionHandlerShell(
+    child: Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          DAppInfoWidget(
+            title: title,
+            dappUrl: dappUrl,
+            dappTitle: dappTitle,
+            dappFavicon: dappFavicon,
+          ),
+          child,
+        ],
+      ),
+    ),
+  );
+}
+
+// Hand a fatal error for [action] back to the dApp (and close the popup) through
+// the shared error callback. Identical for every sats-connect RPC route.
+void _emitRpcError(RPCAction action, String error) {
+  GetIt.I<RPCErrorCallback>()(RPCErrorCallbackArgs(
+    tabId: action.tabId,
+    requestId: action.requestId,
+    error: error,
+  ));
+}
+
 // Empty-state shell shown by the sats-connect getBalance / sendTransfer routes
 // when the active account has no usable address. Kept as a single widget so the
 // two routes can't drift apart.
@@ -311,25 +351,14 @@ class _NoAddressActionShellState extends State<_NoAddressActionShell> {
 
   @override
   Widget build(BuildContext context) {
-    return ActionHandlerShell(
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            DAppInfoWidget(
-              title: widget.title,
-              dappUrl: widget.dappUrl,
-              dappTitle: widget.dappTitle,
-              dappFavicon: widget.dappFavicon,
-            ),
-            const Expanded(
-              child: Center(
-                child: Text("No address available in current account"),
-              ),
-            ),
-          ],
+    return _rpcActionScaffold(
+      title: widget.title,
+      dappUrl: widget.dappUrl,
+      dappTitle: widget.dappTitle,
+      dappFavicon: widget.dappFavicon,
+      child: const Expanded(
+        child: Center(
+          child: Text("No address available in current account"),
         ),
       ),
     );
@@ -667,14 +696,7 @@ class AppRouter {
                       dappUrl: action.origin,
                       dappTitle: action.title,
                       dappFavicon: action.favicon,
-                      onError: (error) {
-                        GetIt.I<RPCGetBalanceErrorCallback>()(
-                            RPCErrorCallbackArgs(
-                          tabId: action.tabId,
-                          requestId: action.requestId,
-                          error: error,
-                        ));
-                      },
+                      onError: (error) => _emitRpcError(action, error),
                     );
                   }
 
@@ -683,42 +705,25 @@ class AppRouter {
                             address: address.address,
                             httpConfig: session.httpConfig,
                           ),
-                      child: ActionHandlerShell(
-                          child: Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            DAppInfoWidget(
-                              title: 'VIEW BALANCE',
-                              dappUrl: action.origin,
-                              dappTitle: action.title,
-                              dappFavicon: action.favicon,
-                            ),
-                            GetBalanceForm(
-                              onSuccess: (confirmed, unconfirmed, total) {
-                                GetIt.I<RPCGetBalanceSuccessCallback>()(
-                                    RPCGetBalanceSuccessCallbackArgs(
-                                  tabId: action.tabId,
-                                  requestId: action.requestId,
-                                  confirmed: confirmed,
-                                  unconfirmed: unconfirmed,
-                                  total: total,
-                                ));
-                              },
-                              onError: (error) {
-                                GetIt.I<RPCGetBalanceErrorCallback>()(
-                                    RPCErrorCallbackArgs(
-                                  tabId: action.tabId,
-                                  requestId: action.requestId,
-                                  error: error,
-                                ));
-                              },
-                            ),
-                          ],
+                      child: _rpcActionScaffold(
+                        title: 'VIEW BALANCE',
+                        dappUrl: action.origin,
+                        dappTitle: action.title,
+                        dappFavicon: action.favicon,
+                        child: GetBalanceForm(
+                          onSuccess: (confirmed, unconfirmed, total) {
+                            GetIt.I<RPCGetBalanceSuccessCallback>()(
+                                RPCGetBalanceSuccessCallbackArgs(
+                              tabId: action.tabId,
+                              requestId: action.requestId,
+                              confirmed: confirmed,
+                              unconfirmed: unconfirmed,
+                              total: total,
+                            ));
+                          },
+                          onError: (error) => _emitRpcError(action, error),
                         ),
-                      )));
+                      ));
                 }),
             GoRoute(
                 path: "/rpc/send-transfer",
@@ -742,14 +747,7 @@ class AppRouter {
                       dappUrl: action.origin,
                       dappTitle: action.title,
                       dappFavicon: action.favicon,
-                      onError: (error) {
-                        GetIt.I<RPCSendTransferErrorCallback>()(
-                            RPCErrorCallbackArgs(
-                          tabId: action.tabId,
-                          requestId: action.requestId,
-                          error: error,
-                        ));
-                      },
+                      onError: (error) => _emitRpcError(action, error),
                     );
                   }
 
@@ -762,45 +760,28 @@ class AppRouter {
                             passwordRequired: GetIt.I<SettingsRepository>()
                                 .requirePasswordForCryptoOperations,
                           ),
-                      child: ActionHandlerShell(
-                          child: Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            DAppInfoWidget(
-                              title: 'SEND BITCOIN',
-                              dappUrl: action.origin,
-                              dappTitle: action.title,
-                              dappFavicon: action.favicon,
-                            ),
-                            SendTransferForm(
-                              passwordRequired: GetIt.I<SettingsRepository>()
-                                  .requirePasswordForCryptoOperations,
-                              destination: action.destination,
-                              amount: action.amount,
-                              source: source.address,
-                              onSuccess: (txid) {
-                                GetIt.I<RPCSendTransferSuccessCallback>()(
-                                    RPCSendTransferSuccessCallbackArgs(
-                                  tabId: action.tabId,
-                                  requestId: action.requestId,
-                                  txid: txid,
-                                ));
-                              },
-                              onError: (error) {
-                                GetIt.I<RPCSendTransferErrorCallback>()(
-                                    RPCErrorCallbackArgs(
-                                  tabId: action.tabId,
-                                  requestId: action.requestId,
-                                  error: error,
-                                ));
-                              },
-                            ),
-                          ],
+                      child: _rpcActionScaffold(
+                        title: 'SEND BITCOIN',
+                        dappUrl: action.origin,
+                        dappTitle: action.title,
+                        dappFavicon: action.favicon,
+                        child: SendTransferForm(
+                          passwordRequired: GetIt.I<SettingsRepository>()
+                              .requirePasswordForCryptoOperations,
+                          destination: action.destination,
+                          amount: action.amount,
+                          source: source.address,
+                          onSuccess: (txid) {
+                            GetIt.I<RPCSendTransferSuccessCallback>()(
+                                RPCSendTransferSuccessCallbackArgs(
+                              tabId: action.tabId,
+                              requestId: action.requestId,
+                              txid: txid,
+                            ));
+                          },
+                          onError: (error) => _emitRpcError(action, error),
                         ),
-                      )));
+                      ));
                 }),
             GoRoute(
                 path: "/rpc/sign-message-bls",
