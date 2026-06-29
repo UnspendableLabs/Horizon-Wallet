@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:timeago_flutter/timeago_flutter.dart';
 import 'package:horizon/utils/app_icons.dart';
 

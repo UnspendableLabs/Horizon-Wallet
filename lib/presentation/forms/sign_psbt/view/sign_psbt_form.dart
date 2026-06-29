@@ -847,7 +847,7 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                             ),
                             Expanded(
                                 child: Text(
-                                    "A third party has requested that you sign this transaction.  It will not be broadcasted from your wallet, but may be broadcasted by the requesting party.  It is recommended that you verify the transaction inputs and outputs.",
+                                    "A third party requested this signature. Review the details before signing.",
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodySmall!

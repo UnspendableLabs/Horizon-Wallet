@@ -66,6 +66,11 @@ import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
 import 'package:horizon/presentation/forms/sign_message/bloc/sign_message_bloc.dart';
 import 'package:horizon/presentation/forms/sign_message/view/sign_message_form.dart';
 
+import 'package:horizon/presentation/forms/get_balance/bloc/get_balance_bloc.dart';
+import 'package:horizon/presentation/forms/get_balance/view/get_balance_form.dart';
+import 'package:horizon/presentation/forms/send_transfer/bloc/send_transfer_bloc.dart';
+import 'package:horizon/presentation/forms/send_transfer/view/send_transfer_form.dart';
+
 import 'package:horizon/presentation/forms/sign_message_bls/bloc/sign_message_bls_bloc.dart';
 import 'package:horizon/presentation/forms/sign_message_bls/view/sign_message_bls_form.dart';
 
@@ -266,6 +271,98 @@ int _resolveAccountIndex(SessionStateSuccess session, String? address) {
   return (session.currentAccount is Bip32)
       ? (session.currentAccount as Bip32).index
       : 0;
+}
+
+// Standard chrome for a sats-connect RPC popup: the dApp banner followed by the
+// route's body. Shared by getBalance / sendTransfer (and the no-address shell)
+// so the scaffolding lives in exactly one place.
+Widget _rpcActionScaffold({
+  required String title,
+  required String? dappUrl,
+  required String? dappTitle,
+  required String? dappFavicon,
+  required Widget child,
+}) {
+  return ActionHandlerShell(
+    child: Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          DAppInfoWidget(
+            title: title,
+            dappUrl: dappUrl,
+            dappTitle: dappTitle,
+            dappFavicon: dappFavicon,
+          ),
+          child,
+        ],
+      ),
+    ),
+  );
+}
+
+// Hand a fatal error for [action] back to the dApp (and close the popup) through
+// the shared error callback. Identical for every sats-connect RPC route.
+void _emitRpcError(RPCAction action, String error) {
+  GetIt.I<RPCErrorCallback>()(RPCErrorCallbackArgs(
+    tabId: action.tabId,
+    requestId: action.requestId,
+    error: error,
+  ));
+}
+
+// Empty-state shell shown by the sats-connect getBalance / sendTransfer routes
+// when the active account has no usable address. Kept as a single widget so the
+// two routes can't drift apart.
+//
+// Besides rendering the message, it surfaces a real error to the dApp (and
+// closes the popup) via [onError] once mounted — otherwise the request would
+// hang until the user manually closes the window, which the background then
+// misreports as a user rejection. Mirrors the form-driven error path.
+class _NoAddressActionShell extends StatefulWidget {
+  final String title;
+  final String? dappUrl;
+  final String? dappTitle;
+  final String? dappFavicon;
+  final void Function(String error) onError;
+
+  const _NoAddressActionShell({
+    required this.title,
+    required this.dappUrl,
+    required this.dappTitle,
+    required this.dappFavicon,
+    required this.onError,
+  });
+
+  @override
+  State<_NoAddressActionShell> createState() => _NoAddressActionShellState();
+}
+
+class _NoAddressActionShellState extends State<_NoAddressActionShell> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.onError('No address available in current account');
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _rpcActionScaffold(
+      title: widget.title,
+      dappUrl: widget.dappUrl,
+      dappTitle: widget.dappTitle,
+      dappFavicon: widget.dappFavicon,
+      child: const Expanded(
+        child: Center(
+          child: Text("No address available in current account"),
+        ),
+      ),
+    );
+  }
 }
 
 class AppRouter {
@@ -570,6 +667,121 @@ class AppRouter {
                           ],
                         ),
                       )));
+                }),
+            GoRoute(
+                path: "/rpc/get-balance",
+                builder: (context, state) {
+                  final session =
+                      context.watch<SessionStateCubit>().state.successOrThrow();
+
+                  final actionRepository = GetIt.I<ActionRepository>();
+
+                  final action = actionRepository.dequeue().getOrThrow()
+                      as RPCGetBalanceAction;
+
+                  final addresses = session.addressIndexSet.list;
+                  // sats-connect `getBalance` carries no address, so the
+                  // provider always omits it and we fall back to the payment
+                  // (native-segwit) address — `addresses.first`. The explicit
+                  // address branch only fires for a house caller that passes
+                  // one; an unknown address resolves to null below.
+                  final address =
+                      (action.address != null && action.address!.isNotEmpty)
+                          ? session.addressIndexSet.getByAddress(action.address!)
+                          : (addresses.isNotEmpty ? addresses.first : null);
+
+                  if (address == null) {
+                    return _NoAddressActionShell(
+                      title: 'VIEW BALANCE',
+                      dappUrl: action.origin,
+                      dappTitle: action.title,
+                      dappFavicon: action.favicon,
+                      onError: (error) => _emitRpcError(action, error),
+                    );
+                  }
+
+                  return BlocProvider(
+                      create: (_) => GetBalanceBloc(
+                            address: address.address,
+                            httpConfig: session.httpConfig,
+                          ),
+                      child: _rpcActionScaffold(
+                        title: 'VIEW BALANCE',
+                        dappUrl: action.origin,
+                        dappTitle: action.title,
+                        dappFavicon: action.favicon,
+                        child: GetBalanceForm(
+                          onSuccess: (confirmed, unconfirmed, total) {
+                            GetIt.I<RPCGetBalanceSuccessCallback>()(
+                                RPCGetBalanceSuccessCallbackArgs(
+                              tabId: action.tabId,
+                              requestId: action.requestId,
+                              confirmed: confirmed,
+                              unconfirmed: unconfirmed,
+                              total: total,
+                            ));
+                          },
+                          onError: (error) => _emitRpcError(action, error),
+                        ),
+                      ));
+                }),
+            GoRoute(
+                path: "/rpc/send-transfer",
+                builder: (context, state) {
+                  final session =
+                      context.watch<SessionStateCubit>().state.successOrThrow();
+
+                  final actionRepository = GetIt.I<ActionRepository>();
+
+                  final action = actionRepository.dequeue().getOrThrow()
+                      as RPCSendTransferAction;
+
+                  final addresses = session.addressIndexSet.list;
+                  // Send from the wallet's payment address (native segwit is
+                  // first by AddressIndexSet priority).
+                  final source = addresses.isNotEmpty ? addresses.first : null;
+
+                  if (source == null) {
+                    return _NoAddressActionShell(
+                      title: 'SEND BITCOIN',
+                      dappUrl: action.origin,
+                      dappTitle: action.title,
+                      dappFavicon: action.favicon,
+                      onError: (error) => _emitRpcError(action, error),
+                    );
+                  }
+
+                  return BlocProvider(
+                      create: (_) => SendTransferBloc(
+                            source: source,
+                            destination: action.destination,
+                            amount: action.amount,
+                            httpConfig: session.httpConfig,
+                            passwordRequired: GetIt.I<SettingsRepository>()
+                                .requirePasswordForCryptoOperations,
+                          ),
+                      child: _rpcActionScaffold(
+                        title: 'SEND BITCOIN',
+                        dappUrl: action.origin,
+                        dappTitle: action.title,
+                        dappFavicon: action.favicon,
+                        child: SendTransferForm(
+                          passwordRequired: GetIt.I<SettingsRepository>()
+                              .requirePasswordForCryptoOperations,
+                          destination: action.destination,
+                          amount: action.amount,
+                          source: source.address,
+                          onSuccess: (txid) {
+                            GetIt.I<RPCSendTransferSuccessCallback>()(
+                                RPCSendTransferSuccessCallbackArgs(
+                              tabId: action.tabId,
+                              requestId: action.requestId,
+                              txid: txid,
+                            ));
+                          },
+                          onError: (error) => _emitRpcError(action, error),
+                        ),
+                      ));
                 }),
             GoRoute(
                 path: "/rpc/sign-message-bls",
@@ -1062,6 +1274,8 @@ class AppRouter {
                         RPCSignPsbtAction() => "/rpc/sign-psbt",
                         RPCExportEncryptedBlsPrivateKeyAction() =>
                           "/rpc/export-encrypted-bls-private-key",
+                        RPCGetBalanceAction() => "/rpc/get-balance",
+                        RPCSendTransferAction() => "/rpc/send-transfer",
                         _ => null
                       });
 
@@ -1084,6 +1298,8 @@ class AppRouter {
                         RPCSignPsbtAction() => "/rpc/sign-psbt",
                         RPCExportEncryptedBlsPrivateKeyAction() =>
                           "/rpc/export-encrypted-bls-private-key",
+                        RPCGetBalanceAction() => "/rpc/get-balance",
+                        RPCSendTransferAction() => "/rpc/send-transfer",
                         _ => null
                       });
 

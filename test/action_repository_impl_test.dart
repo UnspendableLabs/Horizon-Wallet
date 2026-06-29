@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:horizon/domain/entities/asset_quantity.dart';
 import "package:horizon/common/constants.dart";
@@ -1130,6 +1129,123 @@ void main() {
           expect(action.favicon, favicon);
         },
       );
+    });
+  });
+
+  group(RPCGetBalanceAction, () {
+    test('should decode a valid RPCGetBalanceAction with an explicit address',
+        () {
+      // Arrange
+      const encodedString =
+          'getBalance,1,def,https%3A%2F%2Fexample.com,Example%20Site,https%3A%2F%2Fexample.com%2Ffavicon.ico,bc1qtest';
+
+      // Act
+      final result = actionRepository.fromString(encodedString);
+
+      // Assert
+      expect(result.isRight(), true);
+      result.match(
+        (l) => fail('Expected Right but got Left: $l'),
+        (r) {
+          expect(r, isA<RPCGetBalanceAction>());
+          final action = r as RPCGetBalanceAction;
+          expect(action.tabId, 1);
+          expect(action.requestId, 'def');
+          expect(action.origin, 'https://example.com');
+          expect(action.title, 'Example Site');
+          expect(action.favicon, 'https://example.com/favicon.ico');
+          expect(action.address, 'bc1qtest');
+        },
+      );
+    });
+
+    test(
+        'should decode RPCGetBalanceAction with an empty address as null (sats-connect default)',
+        () {
+      // Arrange: the sats-connect `getBalance` carries no address, so the
+      // provider sends an empty address field, which must resolve to null.
+      const encodedString =
+          'getBalance,1,def,https%3A%2F%2Fexample.com,Example%20Site,https%3A%2F%2Fexample.com%2Ffavicon.ico,';
+
+      // Act
+      final result = actionRepository.fromString(encodedString);
+
+      // Assert
+      expect(result.isRight(), true);
+      result.match(
+        (l) => fail('Expected Right but got Left: $l'),
+        (r) {
+          final action = r as RPCGetBalanceAction;
+          expect(action.address, isNull);
+        },
+      );
+    });
+
+    test('should fail when field count is wrong (6 fields)', () {
+      // Arrange
+      const encodedString =
+          'getBalance,1,def,https%3A%2F%2Fexample.com,Example%20Site,https%3A%2F%2Fexample.com%2Ffavicon.ico';
+
+      // Act
+      final result = actionRepository.fromString(encodedString);
+
+      // Assert
+      expect(result.isLeft(), true);
+    });
+  });
+
+  group(RPCSendTransferAction, () {
+    test('should decode a valid RPCSendTransferAction', () {
+      // Arrange
+      const encodedString =
+          'sendTransfer,1,def,https%3A%2F%2Fexample.com,Example%20Site,https%3A%2F%2Fexample.com%2Ffavicon.ico,bc1qdest,100000';
+
+      // Act
+      final result = actionRepository.fromString(encodedString);
+
+      // Assert
+      expect(result.isRight(), true);
+      result.match(
+        (l) => fail('Expected Right but got Left: $l'),
+        (r) {
+          expect(r, isA<RPCSendTransferAction>());
+          final action = r as RPCSendTransferAction;
+          expect(action.tabId, 1);
+          expect(action.requestId, 'def');
+          expect(action.origin, 'https://example.com');
+          expect(action.title, 'Example Site');
+          expect(action.favicon, 'https://example.com/favicon.ico');
+          expect(action.destination, 'bc1qdest');
+          expect(action.amount, 100000);
+        },
+      );
+    });
+
+    test('should fail when amount is not a positive integer', () {
+      // Arrange
+      const zeroAmount =
+          'sendTransfer,1,def,https%3A%2F%2Fexample.com,Example%20Site,https%3A%2F%2Fexample.com%2Ffavicon.ico,bc1qdest,0';
+      const negativeAmount =
+          'sendTransfer,1,def,https%3A%2F%2Fexample.com,Example%20Site,https%3A%2F%2Fexample.com%2Ffavicon.ico,bc1qdest,-5';
+      const nonNumericAmount =
+          'sendTransfer,1,def,https%3A%2F%2Fexample.com,Example%20Site,https%3A%2F%2Fexample.com%2Ffavicon.ico,bc1qdest,abc';
+
+      // Act + Assert
+      expect(actionRepository.fromString(zeroAmount).isLeft(), true);
+      expect(actionRepository.fromString(negativeAmount).isLeft(), true);
+      expect(actionRepository.fromString(nonNumericAmount).isLeft(), true);
+    });
+
+    test('should fail when field count is wrong (7 fields)', () {
+      // Arrange
+      const encodedString =
+          'sendTransfer,1,def,https%3A%2F%2Fexample.com,Example%20Site,https%3A%2F%2Fexample.com%2Ffavicon.ico,bc1qdest';
+
+      // Act
+      final result = actionRepository.fromString(encodedString);
+
+      // Assert
+      expect(result.isLeft(), true);
     });
   });
 }

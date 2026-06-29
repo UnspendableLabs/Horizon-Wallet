@@ -3,7 +3,8 @@
   "description": "A wallet for Bitcoin metaprotocols — assets, NFTs, fair mints, and the apps built on them. Counterparty, Ordinals, Kontor.",
   "version": "2.3.1",
   "permissions": [
-    "tabs"
+    "tabs",
+    "storage"
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"

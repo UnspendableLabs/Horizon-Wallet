@@ -51,3 +51,6 @@ node_modules/
 android/app/.cxx/
 
 tool/node_modules/
+
+# Packaged extension build artifacts
+horizon_wallet_extension_chrome-*.zip

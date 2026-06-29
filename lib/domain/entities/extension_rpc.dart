@@ -103,3 +103,59 @@ class RPCExportEncryptedBlsPrivateKeySuccessCallbackArgs {
 
 typedef RPCExportEncryptedBlsPrivateKeySuccessCallback = void Function(
     RPCExportEncryptedBlsPrivateKeySuccessCallbackArgs);
+
+class RPCGetBalanceSuccessCallbackArgs {
+  final int tabId;
+  final String requestId;
+  final String confirmed;
+  final String unconfirmed;
+  final String total;
+
+  RPCGetBalanceSuccessCallbackArgs({
+    required this.tabId,
+    required this.requestId,
+    required this.confirmed,
+    required this.unconfirmed,
+    required this.total,
+  });
+}
+
+typedef RPCGetBalanceSuccessCallback = void Function(
+    RPCGetBalanceSuccessCallbackArgs);
+
+class RPCSendTransferSuccessCallbackArgs {
+  final int tabId;
+  final String requestId;
+  final String txid;
+
+  RPCSendTransferSuccessCallbackArgs({
+    required this.tabId,
+    required this.requestId,
+    required this.txid,
+  });
+}
+
+typedef RPCSendTransferSuccessCallback = void Function(
+    RPCSendTransferSuccessCallbackArgs);
+
+// Shared failure payload for the sats-connect getBalance / sendTransfer routes.
+// Lets a fatal (non-retryable) failure return the real reason to the dApp and
+// close the popup, instead of leaving the request hanging until the user
+// manually closes the window — which the background then reports, misleadingly,
+// as a user rejection.
+class RPCErrorCallbackArgs {
+  final int tabId;
+  final String requestId;
+  final String error;
+
+  RPCErrorCallbackArgs({
+    required this.tabId,
+    required this.requestId,
+    required this.error,
+  });
+}
+
+// One error shape for every sats-connect RPC route: the JSON-RPC error is
+// identical regardless of which method failed, so a single callback type backs
+// them all (registered once, resolved by every route).
+typedef RPCErrorCallback = void Function(RPCErrorCallbackArgs);

@@ -7,6 +7,8 @@ const VALID_METHODS = [
   "signMessageBLS",
   "getBLSPoP",
   "exportEncryptedBlsPrivateKey",
+  "getBalance",
+  "sendTransfer",
   "fairmint",
   "dispense",
   "openOrder",
@@ -173,6 +175,31 @@ const methodValidators = {
     return errors;
   },
 
+  getBalance: (msg) => {
+    const errors = [];
+    if (msg.params?.address !== undefined && typeof msg.params.address !== "string") {
+      errors.push(
+        "Invalid 'address' parameter for 'getBalance'. Expected a string.",
+      );
+    }
+    return errors;
+  },
+
+  sendTransfer: (msg) => {
+    const errors = [];
+    if (!msg.params?.destination || typeof msg.params.destination !== "string") {
+      errors.push(
+        "Missing or invalid 'destination' parameter for 'sendTransfer'. Expected a string.",
+      );
+    }
+    if (!Number.isInteger(msg.params?.amount) || msg.params.amount <= 0) {
+      errors.push(
+        "Missing or invalid 'amount' parameter for 'sendTransfer'. Expected a positive integer (satoshis).",
+      );
+    }
+    return errors;
+  },
+
   dispense: (msg) => {
     const errors = ["This is no longer supported.  Please use horizon tool."];
     return errors;
@@ -232,12 +259,60 @@ document.addEventListener("horizon-provider-request", (event) => {
   sendMessageToBackground({ source: MESSAGE_SOURCE, ...event.detail });
 });
 
-function addProviderToPage() {
+// Per-origin map of the last approved connection: { [origin]: { addresses, network } }.
+const CONNECTION_STORE_KEY = "horizonConnections";
+
+async function addProviderToPage() {
   const inpage = document.createElement("script");
   inpage.src = chrome.runtime.getURL("horizon-provider.js");
   inpage.id = "horizon-wallet-provider";
+  // Surface the extension version to the page-world provider (which has no
+  // chrome.runtime access) so `getInfo` can report it.
+  try {
+    inpage.dataset.walletVersion = chrome.runtime.getManifest().version;
+  } catch (e) {
+    // best-effort; provider falls back to "0.0.0"
+  }
+  // Seed the previously-approved connection for this origin so the provider can
+  // answer wallet_getAccount / getNetwork silently (no popup) across reloads.
+  // Awaited before append so the dataset is set before the script executes.
+  try {
+    const store = await chrome.storage.local.get(CONNECTION_STORE_KEY);
+    const conn = store?.[CONNECTION_STORE_KEY]?.[window.location.origin];
+    if (conn) inpage.dataset.horizonConnection = JSON.stringify(conn);
+  } catch (e) {
+    // best-effort; provider just won't have a cached connection
+  }
   document.body.appendChild(inpage);
 }
+
+// Persist (or clear) the approved connection on behalf of the page-world
+// provider, which cannot reach chrome.storage. Keyed strictly by the page's own
+// origin, so a page can only read/write its own entry.
+//
+// chrome.storage read-modify-write is not atomic, so events fired in quick
+// succession (e.g. wallet_connect immediately followed by wallet_disconnect)
+// could read the same pre-state and clobber each other. Serialise every write
+// through a single promise chain so they apply in order.
+let _persistChain = Promise.resolve();
+document.addEventListener("horizon-provider-persist", (event) => {
+  const detail = event.detail;
+  _persistChain = _persistChain.then(async () => {
+    try {
+      const origin = window.location.origin;
+      const store = await chrome.storage.local.get(CONNECTION_STORE_KEY);
+      const map = store?.[CONNECTION_STORE_KEY] || {};
+      if (detail) {
+        map[origin] = detail;
+      } else {
+        delete map[origin];
+      }
+      await chrome.storage.local.set({ [CONNECTION_STORE_KEY]: map });
+    } catch (e) {
+      // best-effort; silent retrieval just won't persist across reloads
+    }
+  });
+});
 
 document.onreadystatechange = () => {
   if (document.readyState === "complete") {
