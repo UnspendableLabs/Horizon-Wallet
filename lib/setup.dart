@@ -126,6 +126,7 @@ import 'package:horizon/presentation/screens/compose_fairminter/usecase/fetch_fo
 import 'package:horizon/presentation/screens/compose_issuance/usecase/fetch_form_data.dart';
 
 import 'package:logger/logger.dart' as logger;
+import 'package:horizon/core/logging/dio_error_reporter.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/data/logging/logger_impl.dart';
 import 'package:horizon/domain/entities/extension_rpc.dart';
@@ -163,30 +164,12 @@ void setup() {
 
   injector.registerLazySingleton<Config>(() => config);
 
-  bool dioRetryEvaluatorFunc(error, retryCount) {
-// the retry function is called on each retry, and it logs a single issue in sentry per error (rather than multiple entries for the same error)
-// it provides a single, customizable place to catch all dio errors
-// we are able to catch the original error + message without the need to parse the dio specific data
-// we should eventually move this to a more generic onError handler but for now we get enough info from the original error to be able to address the error
-    GetIt.I<ErrorService>().captureException(
-      error,
-      message: """
-            Original error before retry:
-            Status Code: ${error.response?.statusCode ?? 'No status code (connection failed)'}
-            URL: ${error.requestOptions.uri}
-            Type: ${error.type}
-            Response: ${error.response?.data ?? 'No response (connection failed)'}
-            App Version: ${config.version}
-          """,
-      context: {
-        'errorType': error.type.toString(),
-        'statusCode':
-            error.response?.statusCode?.toString() ?? 'connection_failed',
-        'path': error.requestOptions.path,
-        'retryCount': retryCount.toString(),
-        'response': error.response,
-        'appVersion': config.version,
-      },
+  bool dioRetryEvaluatorFunc(DioException error, int retryCount) {
+    reportDioErrorOnce(
+      error: error,
+      retryCount: retryCount,
+      appVersion: config.version.toString(),
+      errorService: GetIt.I<ErrorService>(),
     );
 
     final shouldRetry = error.response?.statusCode == 400 ||
@@ -211,9 +194,11 @@ void setup() {
     onRequest: (options, handler) {
       String username = config.counterpartyApiUsername;
       String password = config.counterpartyApiPassword;
-      String basicAuth =
-          'Basic ${base64Encode(utf8.encode('$username:$password'))}';
-      options.headers['Authorization'] = basicAuth;
+      if (username.isNotEmpty && password.isNotEmpty) {
+        String basicAuth =
+            'Basic ${base64Encode(utf8.encode('$username:$password'))}';
+        options.headers['Authorization'] = basicAuth;
+      }
       return handler.next(options);
     },
   ));
@@ -539,6 +524,7 @@ void setup() {
     bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
     mnemonicService: GetIt.I.get<MnemonicService>(),
     eventsRepository: GetIt.I.get<EventsRepository>(),
+    errorService: GetIt.I.get<ErrorService>(),
   ));
 
   injector.registerLazySingleton<RPCGetAddressesSuccessCallback>(

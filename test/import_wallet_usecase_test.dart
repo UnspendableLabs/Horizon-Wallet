@@ -14,6 +14,7 @@ import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
@@ -41,6 +42,8 @@ class MockEventsRepository extends Mock implements EventsRepository {}
 
 class MockConfig extends Mock implements Config {}
 
+class MockErrorService extends Mock implements ErrorService {}
+
 // Fake classes for fallback values
 class FakeWallet extends Fake implements Wallet {}
 
@@ -59,6 +62,7 @@ void main() {
   late MockBitcoinRepository mockBitcoinRepository;
   late MockMnemonicService mockMnemonicService;
   late MockEventsRepository mockEventsRepository;
+  late MockErrorService mockErrorService;
 
   late MockConfig mockConfig;
   late MockWalletService mockWalletService;
@@ -80,6 +84,7 @@ void main() {
     mockWalletService = MockWalletService();
     mockInMemoryKeyRepository = MockInMemoryKeyRepository();
     mockEventsRepository = MockEventsRepository();
+    mockErrorService = MockErrorService();
 
     mockBitcoinRepository = MockBitcoinRepository();
     mockMnemonicService = MockMnemonicService();
@@ -95,6 +100,7 @@ void main() {
       bitcoinRepository: mockBitcoinRepository,
       mnemonicService: mockMnemonicService,
       eventsRepository: mockEventsRepository,
+      errorService: mockErrorService,
     );
   });
 
@@ -819,6 +825,17 @@ void main() {
       verify(() => mockWalletRepository.getCurrentWallet()).called(2);
       verifyNever(() => mockEncryptionService.getDecryptionKey(any(), any()));
       verifyNever(() => mockInMemoryKeyRepository.set(key: any(named: 'key')));
+      final captured = verify(() => mockErrorService.captureException(
+            captureAny(),
+            stackTrace: captureAny(named: 'stackTrace'),
+            message: 'Unexpected wallet import failure',
+            context: captureAny(named: 'context'),
+          )).captured;
+      expect(captured[0], isA<UnexpectedWalletImportException>());
+      expect(captured[2], {
+        'errorType': '_Exception',
+        'walletType': 'Horizon',
+      });
     });
 
     test('throws MultipleWalletsException when wallet already exists',

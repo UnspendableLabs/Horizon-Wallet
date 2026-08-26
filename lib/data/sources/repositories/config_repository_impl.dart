@@ -130,6 +130,15 @@ class ConfigImpl implements Config {
       };
 
   @override
+  String get sentryEnvironment {
+    const envValue = String.fromEnvironment('HORIZON_SENTRY_ENVIRONMENT');
+    if (envValue.isNotEmpty) {
+      return envValue;
+    }
+    return isWebExtension ? 'extension' : 'production';
+  }
+
+  @override
   double get sentrySampleRate {
     const envValue = String.fromEnvironment('HORIZON_SENTRY_SAMPLE_RATE');
     return envValue.isNotEmpty ? double.parse(envValue) : 1.0;
