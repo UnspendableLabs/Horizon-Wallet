@@ -8,9 +8,6 @@ void main(List<String> args) async {
   final browser =
       Platform.environment['TARGET_BROWSER']?.toLowerCase() ?? "chromium";
   final network = Platform.environment['HORIZON_NETWORK'] ?? 'mainnet';
-  final apiBase = Platform.environment['HORIZON_COUNTERPARTY_API_BASE'];
-  final apiUsername = Platform.environment['HORIZON_COUNTERPARTY_API_USERNAME'];
-  final apiPassword = Platform.environment['HORIZON_COUNTERPARTY_API_PASSWORD'];
   final analyticsEnabled =
       Platform.environment['HORIZON_ANALYTICS_ENABLED'] ?? 'false';
 
@@ -22,7 +19,7 @@ void main(List<String> args) async {
       Platform.environment['HORIZON_SENTRY_ENABLED'] ?? 'false';
   final sentryDsn = Platform.environment['HORIZON_SENTRY_DSN'] ?? '';
   final sentrySampleRate =
-      Platform.environment['HORIZON_SENTRY_SAMPLE_RATE'] ?? '1.0';
+      Platform.environment['HORIZON_SENTRY_SAMPLE_RATE'] ?? '0.01';
 
   if (browser != "chromium") {
     print(
@@ -35,8 +32,9 @@ void main(List<String> args) async {
   await buildFlutter(network, analyticsEnabled, posthogApiKey, posthogApiHost,
       isSentryEnabled, sentryDsn, sentrySampleRate);
 
-  // reset index.html
+  // Restore source files changed temporarily for the extension build.
   await resetFile('web/index.html', originalIndexHtml);
+  await resetFile('web/manifest.json', originalManifest);
 }
 
 Future<void> buildFlutter(
