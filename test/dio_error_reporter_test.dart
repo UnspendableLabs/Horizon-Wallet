@@ -33,14 +33,18 @@ void main() {
       errorService: errorService,
     );
 
-    final captured = verify(
+    final verification = verify(
       () => errorService.captureException(
         captureAny(),
         stackTrace: any(named: 'stackTrace'),
         message: captureAny(named: 'message'),
         context: captureAny(named: 'context'),
       ),
-    ).captured;
+    );
+    // The retry must not produce a second event.
+    verification.called(1);
+
+    final captured = verification.captured;
     expect(captured[0], isA<NetworkRequestException>());
     expect(captured[1], isNot(contains('1BoatSLRHtKNngkdXEeobR76b53LETtpyT')));
     expect(captured[1], contains(redactedWalletAddress));

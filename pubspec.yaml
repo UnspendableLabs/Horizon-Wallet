@@ -177,9 +177,11 @@ flutter_native_splash:
 sentry:
   upload_debug_symbols: false
   upload_source_maps: true
-  upload_sources: true
+  # Source maps are enough to symbolicate; do not ship the application source
+  # itself to a third party.
+  upload_sources: false
   org: unspendablelabs
   project: horizon-wallet
   ignore_missing: true
-  wait_for_processing: true
+  wait_for_processing: false
   log_level: warn

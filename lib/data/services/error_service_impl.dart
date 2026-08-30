@@ -1,4 +1,5 @@
 import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/core/logging/sentry_event_sanitizer.dart';
 import 'package:horizon/core/logging/sentry_sanitizer.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/services/error_service.dart';
@@ -24,6 +25,28 @@ class ErrorServiceImpl implements ErrorService {
         options.environment = config.sentryEnvironment;
         options.sendDefaultPii = false;
         options.tracesSampleRate = config.sentrySampleRate;
+        // Scrub every payload at the SDK boundary rather than at each call
+        // site, so an exception captured anywhere in the app cannot carry a
+        // wallet address out in its `toString()`.
+        options.beforeSend = (event, hint) {
+          try {
+            return sanitizeSentryEvent(event);
+          } catch (e) {
+            // Fail closed: an unscrubbable event is dropped, not sent raw.
+            logger.info('Dropping Sentry event: sanitization failed ($e)');
+            return null;
+          }
+        };
+        options.beforeSendTransaction = sanitizeSentryTransaction;
+        options.beforeBreadcrumb = (breadcrumb, hint) {
+          try {
+            return sanitizeSentryBreadcrumb(breadcrumb);
+          } catch (e) {
+            // Fail closed: the SDK keeps the raw breadcrumb if we rethrow.
+            logger.info('Dropping Sentry breadcrumb: sanitization failed ($e)');
+            return null;
+          }
+        };
       });
       _isInitialized = true;
       logger.info('Sentry initialized successfully');

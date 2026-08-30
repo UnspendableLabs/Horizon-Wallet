@@ -194,7 +194,7 @@ void setup() {
     onRequest: (options, handler) {
       String username = config.counterpartyApiUsername;
       String password = config.counterpartyApiPassword;
-      if (username.isNotEmpty && password.isNotEmpty) {
+      if (username.isNotEmpty || password.isNotEmpty) {
         String basicAuth =
             'Basic ${base64Encode(utf8.encode('$username:$password'))}';
         options.headers['Authorization'] = basicAuth;
