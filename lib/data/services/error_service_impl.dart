@@ -1,4 +1,6 @@
 import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/core/logging/sentry_event_sanitizer.dart';
+import 'package:horizon/core/logging/sentry_sanitizer.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/services/error_service.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -18,12 +20,34 @@ class ErrorServiceImpl implements ErrorService {
     }
 
     try {
-      await SentryFlutter.init(
-        (options) {
-          options.dsn = config.sentryDsn;
-          options.tracesSampleRate = config.sentrySampleRate;
-        },
-      );
+      await SentryFlutter.init((options) {
+        options.dsn = config.sentryDsn;
+        options.environment = config.sentryEnvironment;
+        options.sendDefaultPii = false;
+        options.tracesSampleRate = config.sentrySampleRate;
+        // Scrub every payload at the SDK boundary rather than at each call
+        // site, so an exception captured anywhere in the app cannot carry a
+        // wallet address out in its `toString()`.
+        options.beforeSend = (event, hint) {
+          try {
+            return sanitizeSentryEvent(event);
+          } catch (e) {
+            // Fail closed: an unscrubbable event is dropped, not sent raw.
+            logger.info('Dropping Sentry event: sanitization failed ($e)');
+            return null;
+          }
+        };
+        options.beforeSendTransaction = sanitizeSentryTransaction;
+        options.beforeBreadcrumb = (breadcrumb, hint) {
+          try {
+            return sanitizeSentryBreadcrumb(breadcrumb);
+          } catch (e) {
+            // Fail closed: the SDK keeps the raw breadcrumb if we rethrow.
+            logger.info('Dropping Sentry breadcrumb: sanitization failed ($e)');
+            return null;
+          }
+        };
+      });
       _isInitialized = true;
       logger.info('Sentry initialized successfully');
     } catch (e, stack) {
@@ -32,8 +56,12 @@ class ErrorServiceImpl implements ErrorService {
   }
 
   @override
-  Future<void> captureException(dynamic exception,
-      {String? message, Map<String, dynamic>? context}) async {
+  Future<void> captureException(
+    dynamic exception, {
+    StackTrace? stackTrace,
+    String? message,
+    Map<String, dynamic>? context,
+  }) async {
     if (!config.isSentryEnabled || !_isInitialized) return;
 
     try {
@@ -42,8 +70,8 @@ class ErrorServiceImpl implements ErrorService {
         Breadcrumb(
           type: 'error',
           category: 'error',
-          message: message ?? exception.toString(),
-          data: context,
+          message: sanitizeTelemetryText(message ?? exception.toString()),
+          data: sanitizeTelemetryValue(context),
         ),
       );
       logger.info('Breadcrumb error added to Sentry');
@@ -52,7 +80,10 @@ class ErrorServiceImpl implements ErrorService {
     }
 
     try {
-      final result = await Sentry.captureException(exception);
+      final result = await Sentry.captureException(
+        exception,
+        stackTrace: stackTrace,
+      );
       logger.info('Exception captured in Sentry: ${result.toString()}');
     } catch (e) {
       logger.error('Failed to capture exception in Sentry', e as Error);
@@ -73,8 +104,8 @@ class ErrorServiceImpl implements ErrorService {
         Breadcrumb(
           type: type,
           category: category,
-          message: message,
-          data: data,
+          message: sanitizeTelemetryText(message),
+          data: sanitizeTelemetryValue(data),
         ),
       );
       logger.info('Breadcrumb added to Sentry');

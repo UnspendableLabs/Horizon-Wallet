@@ -27,6 +27,7 @@ import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/bip39.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
@@ -38,12 +39,15 @@ class MockBitcoinRepository extends Mock implements BitcoinRepository {}
 
 class MockEventsRepository extends Mock implements EventsRepository {}
 
+class MockErrorService extends Mock implements ErrorService {}
+
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   // Register the mock
   late MockBitcoinRepository mockBitcoinRepository;
   late MockEventsRepository mockEventsRepository;
+  late MockErrorService mockErrorService;
   var btcTransactionCallCount = 0; // Separate counter for BTC transactions
   var cpTransactionCallCount = 0; // Separate counter for Counterparty events
 
@@ -182,9 +186,11 @@ void main() {
       // Create the mock instance
       mockBitcoinRepository = MockBitcoinRepository();
       mockEventsRepository = MockEventsRepository();
+      mockErrorService = MockErrorService();
       // Register our mock BEFORE running setup
       injector.registerSingleton<BitcoinRepository>(mockBitcoinRepository);
       injector.registerSingleton<EventsRepository>(mockEventsRepository);
+      injector.registerSingleton<ErrorService>(mockErrorService);
 
       // Now run the regular setup
 
@@ -231,6 +237,7 @@ void main() {
         bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
         mnemonicService: GetIt.I.get<MnemonicService>(),
         eventsRepository: GetIt.I.get<EventsRepository>(),
+        errorService: GetIt.I.get<ErrorService>(),
       ));
     });
 

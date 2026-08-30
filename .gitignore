@@ -31,6 +31,9 @@ migrate_working_dir/
 .pub/
 /build/
 
+# Pinned SDK installed by tool/install_flutter.sh
+/flutter/
+
 # Symbolication related
 app.*.symbols
 

@@ -13,6 +13,7 @@ import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 
@@ -27,6 +28,16 @@ class PasswordException implements Exception {
 class MultipleWalletsException implements Exception {
   final String message;
   MultipleWalletsException(this.message);
+}
+
+class UnexpectedWalletImportException implements Exception {
+  final String originalErrorType;
+
+  const UnexpectedWalletImportException(this.originalErrorType);
+
+  @override
+  String toString() =>
+      'UnexpectedWalletImportException: unexpected $originalErrorType';
 }
 
 // ImportWalletUseCase.call handles two wallet import types:
@@ -69,6 +80,7 @@ class ImportWalletUseCase {
   final BitcoinRepository bitcoinRepository;
   final MnemonicService mnemonicService;
   final EventsRepository eventsRepository;
+  final ErrorService errorService;
 
   ImportWalletUseCase({
     required this.inMemoryKeyRepository,
@@ -82,6 +94,7 @@ class ImportWalletUseCase {
     required this.bitcoinRepository,
     required this.mnemonicService,
     required this.eventsRepository,
+    required this.errorService,
   });
 
   Future<Map<Account, List<Address>>> createHorizonWallet({
@@ -387,8 +400,15 @@ class ImportWalletUseCase {
       } else if (e is MultipleWalletsException) {
         onError(e.message);
       } else {
-        print(e);
-        print(callstack);
+        errorService.captureException(
+          UnexpectedWalletImportException(e.runtimeType.toString()),
+          stackTrace: callstack,
+          message: 'Unexpected wallet import failure',
+          context: {
+            'errorType': e.runtimeType.toString(),
+            'walletType': walletType.name,
+          },
+        );
 
         onError('An unexpected error occurred importing wallet');
       }
