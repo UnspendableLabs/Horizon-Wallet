@@ -4,6 +4,7 @@ import 'package:horizon/common/constants.dart';
 import "package:horizon/domain/entities/wallet_config.dart";
 import "package:horizon/domain/entities/seed_derivation.dart";
 
+import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 
 import 'package:horizon/domain/repositories/account_v2_repository.dart';
@@ -14,6 +15,18 @@ import 'package:horizon/presentation/common/usecase/set_mnemonic_usecase.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
 
+/// Raised so an unexpected import failure reaches Sentry without carrying the
+/// seed phrase, the password, or the original exception's message.
+class UnexpectedWalletImportException implements Exception {
+  final String originalErrorType;
+
+  const UnexpectedWalletImportException(this.originalErrorType);
+
+  @override
+  String toString() =>
+      'UnexpectedWalletImportException: unexpected $originalErrorType';
+}
+
 class OnboardingImportBloc
     extends Bloc<OnboardingImportEvent, OnboardingImportState> {
   final MnemonicService mnemonicService;
@@ -21,18 +34,21 @@ class OnboardingImportBloc
   final AccountV2Repository accountV2Repository;
   final WalletConfigRepository _walletConfigRepository;
   final SettingsRepository _settingsRepository;
+  final ErrorService _errorService;
   OnboardingImportBloc(
       {required this.mnemonicService,
       required this.accountV2Repository,
       SetMnemonicUseCase? setMnemonicUseCase,
       WalletConfigRepository? walletConfigRepository,
-      SettingsRepository? settingsRepository})
+      SettingsRepository? settingsRepository,
+      ErrorService? errorService})
       : _setMnemonicUseCase =
             setMnemonicUseCase ?? GetIt.I<SetMnemonicUseCase>(),
         _walletConfigRepository =
             walletConfigRepository ?? GetIt.I<WalletConfigRepository>(),
         _settingsRepository =
             settingsRepository ?? GetIt.I<SettingsRepository>(),
+        _errorService = errorService ?? GetIt.I<ErrorService>(),
         super(const OnboardingImportState()) {
     on<MnemonicChanged>((event, emit) async {
       if (event.mnemonic.isEmpty) {
@@ -128,7 +144,16 @@ class OnboardingImportBloc
         await _settingsRepository.setWalletConfigID(walletConfig.uuid);
 
         emit(state.copyWith(importState: const ImportState.success()));
-      } catch (e) {
+      } catch (e, stackTrace) {
+        _errorService.captureException(
+          UnexpectedWalletImportException(e.runtimeType.toString()),
+          stackTrace: stackTrace,
+          message: 'Unexpected wallet import failure',
+          context: {
+            'errorType': e.runtimeType.toString(),
+            'walletType': state.walletType?.name ?? 'unknown',
+          },
+        );
         emit(state.copyWith(
             importState: ImportState.error(message: e.toString())));
       }
