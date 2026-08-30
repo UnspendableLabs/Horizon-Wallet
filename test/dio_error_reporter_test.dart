@@ -22,13 +22,11 @@ void main() {
 
     reportDioErrorOnce(
       error: error,
-      retryCount: 0,
       appVersion: '2.3.1',
       errorService: errorService,
     );
     reportDioErrorOnce(
       error: error,
-      retryCount: 1,
       appVersion: '2.3.1',
       errorService: errorService,
     );

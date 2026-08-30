@@ -231,10 +231,11 @@ void setup() {
 
   injector.registerLazySingleton<Config>(() => config);
 
+  // `retryCount` is part of the `RetryEvaluator` signature; the report is
+  // deduplicated per request so it is deliberately not forwarded.
   bool dioRetryEvaluatorFunc(DioException error, int retryCount) {
     reportDioErrorOnce(
       error: error,
-      retryCount: retryCount,
       appVersion: config.version.toString(),
       errorService: GetIt.I<ErrorService>(),
     );

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:pub_semver/pub_semver.dart';
 
@@ -45,6 +46,9 @@ class ConfigImpl implements Config {
     if (envValue.isNotEmpty) {
       return envValue;
     }
+    if (!kReleaseMode) {
+      return 'development';
+    }
     return isWebExtension ? 'extension' : 'production';
   }
 
@@ -58,8 +62,10 @@ class ConfigImpl implements Config {
   bool get isSentryEnabled {
     const configured =
         bool.fromEnvironment('HORIZON_SENTRY_ENABLED', defaultValue: false);
-    return configured &&
-        (sentryEnvironment == 'production' || sentryEnvironment == 'extension');
+    // Only release builds report. Gating on `sentryEnvironment` instead would
+    // be vacuous — it defaults to a shipping value — and would silently drop
+    // any deliberate environment such as `staging`.
+    return configured && kReleaseMode;
   }
 
   @override

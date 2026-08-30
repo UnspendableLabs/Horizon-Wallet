@@ -23,6 +23,7 @@ class ErrorServiceImpl implements ErrorService {
         options.dsn = config.sentryDsn;
         options.environment = config.sentryEnvironment;
         options.sendDefaultPii = false;
+        options.beforeSend = (event, hint) => sanitizeSentryEvent(event);
         options.tracesSampleRate = config.sentrySampleRate;
         options.release = config.version.toString();
       });
@@ -49,7 +50,7 @@ class ErrorServiceImpl implements ErrorService {
           type: 'error',
           category: 'error',
           message: sanitizeTelemetryText(message ?? exception.toString()),
-          data: sanitizeTelemetryValue(context),
+          data: sanitizeNullableTelemetryMap(context),
         ),
       );
       logger.info('Breadcrumb error added to Sentry');
@@ -83,7 +84,7 @@ class ErrorServiceImpl implements ErrorService {
           type: type,
           category: category,
           message: sanitizeTelemetryText(message),
-          data: sanitizeTelemetryValue(data),
+          data: sanitizeNullableTelemetryMap(data),
         ),
       );
       logger.info('Breadcrumb added to Sentry');

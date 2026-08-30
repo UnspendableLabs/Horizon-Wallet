@@ -13,9 +13,13 @@ class NetworkRequestException implements Exception {
   String toString() => 'NetworkRequestException: $message';
 }
 
+/// Reports a failed request to Sentry at most once, no matter how many times
+/// the retry evaluator is consulted for it.
+///
+/// The event therefore always describes the *first* observed failure, which is
+/// why no retry counter is attached: it could only ever read zero.
 void reportDioErrorOnce({
   required DioException error,
-  required int retryCount,
   required String appVersion,
   required ErrorService errorService,
 }) {
@@ -41,7 +45,6 @@ void reportDioErrorOnce({
       'statusCode': status,
       'method': request.method,
       'url': safeUri,
-      'retryCount': retryCount,
       'appVersion': appVersion,
     },
   );

@@ -34,16 +34,19 @@ void main(List<String> args) async {
   await buildBLS();
   final originalIndexHtml = await buildIndexHtml();
   final originalManifest = await buildManifest(browser);
-  await buildFlutter(analyticsEnabled, posthogApiKey, posthogApiHost,
-      isSentryEnabled, sentryDsn, sentrySampleRate, version);
+  try {
+    await buildFlutter(analyticsEnabled, posthogApiKey, posthogApiHost,
+        isSentryEnabled, sentryDsn, sentrySampleRate, version);
 
-  // Source maps are uploaded to Sentry from buildFlutter; they must not ship
-  // inside the extension package we upload to the Chrome Web Store.
-  await deletePublicSourceMaps();
-
-  // Restore source files changed temporarily for the extension build.
-  await resetFile('web/index.html', originalIndexHtml);
-  await resetFile('web/manifest.json', originalManifest);
+    // Source maps are uploaded to Sentry from buildFlutter; they must not ship
+    // inside the extension package we upload to the Chrome Web Store.
+    await deletePublicSourceMaps();
+  } finally {
+    // Restore source files changed temporarily for the extension build, even
+    // when the build or the source map cleanup fails.
+    await resetFile('web/index.html', originalIndexHtml);
+    await resetFile('web/manifest.json', originalManifest);
+  }
 }
 
 Future<void> deletePublicSourceMaps() async {
