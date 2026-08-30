@@ -1,4 +1,5 @@
 import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/core/logging/sentry_sanitizer.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/services/error_service.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -18,13 +19,14 @@ class ErrorServiceImpl implements ErrorService {
     }
 
     try {
-      await SentryFlutter.init(
-        (options) {
-          options.dsn = config.sentryDsn;
-          options.tracesSampleRate = config.sentrySampleRate;
-          options.release = config.version.toString();
-        },
-      );
+      await SentryFlutter.init((options) {
+        options.dsn = config.sentryDsn;
+        options.environment = config.sentryEnvironment;
+        options.sendDefaultPii = false;
+        options.beforeSend = (event, hint) => sanitizeSentryEvent(event);
+        options.tracesSampleRate = config.sentrySampleRate;
+        options.release = config.version.toString();
+      });
       _isInitialized = true;
       logger.info('Sentry initialized successfully');
     } catch (e, stack) {
@@ -33,8 +35,12 @@ class ErrorServiceImpl implements ErrorService {
   }
 
   @override
-  Future<void> captureException(dynamic exception,
-      {String? message, Map<String, dynamic>? context}) async {
+  Future<void> captureException(
+    dynamic exception, {
+    StackTrace? stackTrace,
+    String? message,
+    Map<String, dynamic>? context,
+  }) async {
     if (!config.isSentryEnabled || !_isInitialized) return;
 
     try {
@@ -43,8 +49,8 @@ class ErrorServiceImpl implements ErrorService {
         Breadcrumb(
           type: 'error',
           category: 'error',
-          message: message ?? exception.toString(),
-          data: context,
+          message: sanitizeTelemetryText(message ?? exception.toString()),
+          data: sanitizeNullableTelemetryMap(context),
         ),
       );
       logger.info('Breadcrumb error added to Sentry');
@@ -53,7 +59,10 @@ class ErrorServiceImpl implements ErrorService {
     }
 
     try {
-      final result = await Sentry.captureException(exception);
+      final result = await Sentry.captureException(
+        exception,
+        stackTrace: stackTrace,
+      );
       logger.info('Exception captured in Sentry: ${result.toString()}');
     } catch (e) {
       logger.error('Failed to capture exception in Sentry', e as Error);
@@ -74,8 +83,8 @@ class ErrorServiceImpl implements ErrorService {
         Breadcrumb(
           type: type,
           category: category,
-          message: message,
-          data: data,
+          message: sanitizeTelemetryText(message),
+          data: sanitizeNullableTelemetryMap(data),
         ),
       );
       logger.info('Breadcrumb added to Sentry');
