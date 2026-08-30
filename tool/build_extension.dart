@@ -18,7 +18,7 @@ void main(List<String> args) async {
       Platform.environment['HORIZON_SENTRY_ENABLED'] ?? 'false';
   final sentryDsn = Platform.environment['HORIZON_SENTRY_DSN'] ?? '';
   final sentrySampleRate =
-      Platform.environment['HORIZON_SENTRY_SAMPLE_RATE'] ?? '1.0';
+      Platform.environment['HORIZON_SENTRY_SAMPLE_RATE'] ?? '0.01';
 
   // Read version from manifest.json
   final manifestContent = await File('web/manifest.json').readAsString();
@@ -37,8 +37,27 @@ void main(List<String> args) async {
   await buildFlutter(analyticsEnabled, posthogApiKey, posthogApiHost,
       isSentryEnabled, sentryDsn, sentrySampleRate, version);
 
-  // reset index.html
+  // Source maps are uploaded to Sentry from buildFlutter; they must not ship
+  // inside the extension package we upload to the Chrome Web Store.
+  await deletePublicSourceMaps();
+
+  // Restore source files changed temporarily for the extension build.
   await resetFile('web/index.html', originalIndexHtml);
+  await resetFile('web/manifest.json', originalManifest);
+}
+
+Future<void> deletePublicSourceMaps() async {
+  final buildDirectory = Directory('build/web');
+  if (!buildDirectory.existsSync()) {
+    return;
+  }
+
+  await for (final entity in buildDirectory.list(recursive: true)) {
+    if (entity is File && entity.path.endsWith('.map')) {
+      await entity.delete();
+    }
+  }
+  print('Removed source maps from the published extension artifact.');
 }
 
 Future<void> buildFlutter(
