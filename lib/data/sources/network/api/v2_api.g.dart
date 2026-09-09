@@ -5587,7 +5587,7 @@ class _V2Api implements V2Api {
       r'lock': lock,
       r'reset': reset,
       r'description': description,
-      r'unconfirmed': unconfirmed,
+      r'allow_unconfirmed_inputs': unconfirmed,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,
     };
     queryParameters.removeWhere((k, v) => v == null);
@@ -5642,7 +5642,7 @@ class _V2Api implements V2Api {
       r'lock': lock,
       r'reset': reset,
       r'description': description,
-      r'unconfirmed': unconfirmed,
+      r'allow_unconfirmed_inputs': unconfirmed,
       r'sat_per_vbyte': satPerVbyte,
       r'inputs_set': inputsSet,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,

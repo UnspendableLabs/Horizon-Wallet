@@ -5234,7 +5234,7 @@ abstract class V2Api {
     @Query("lock") bool? lock,
     @Query("reset") bool? reset,
     @Query("description") String? description,
-    @Query("unconfirmed") bool? unconfirmed,
+    @Query("allow_unconfirmed_inputs") bool? unconfirmed,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
   ]);
 
@@ -5248,7 +5248,7 @@ abstract class V2Api {
     @Query("lock") bool? lock,
     @Query("reset") bool? reset,
     @Query("description") String? description,
-    @Query("unconfirmed") bool? unconfirmed,
+    @Query("allow_unconfirmed_inputs") bool? unconfirmed,
     @Query("sat_per_vbyte") num? satPerVbyte,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
