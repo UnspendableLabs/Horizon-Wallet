@@ -13,7 +13,6 @@ import 'package:horizon/data/services/bip39_service_impl.dart';
 import 'package:horizon/data/services/bitcoind_service_impl.dart';
 import 'package:horizon/data/services/cache_provider_impl.dart';
 import 'package:horizon/data/services/encryption_service_web_worker_impl.dart';
-import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:horizon/data/services/imported_address_service_impl.dart';
 import 'package:chrome_extension/tabs.dart';
 import 'package:horizon/data/services/platform_service_extension_impl.dart';
@@ -164,22 +163,6 @@ void setup() {
 
   injector.registerLazySingleton<Config>(() => config);
 
-  bool dioRetryEvaluatorFunc(DioException error, int retryCount) {
-    reportDioErrorOnce(
-      error: error,
-      retryCount: retryCount,
-      appVersion: config.version.toString(),
-      errorService: GetIt.I<ErrorService>(),
-    );
-
-    final shouldRetry = error.response?.statusCode == 400 ||
-        error.type == DioExceptionType.connectionTimeout ||
-        error.type == DioExceptionType.receiveTimeout ||
-        error.type == DioExceptionType.connectionError;
-
-    return shouldRetry;
-  }
-
   final dio = Dio(BaseOptions(
     baseUrl: config.counterpartyApiBase,
     headers: {
@@ -209,7 +192,7 @@ void setup() {
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
     SimpleLogInterceptor(),
-    RetryInterceptor(
+    ...networkRetryInterceptors(
       dio: dio,
       retries: 3,
       retryDelays: const [
@@ -218,7 +201,8 @@ void setup() {
         Duration(seconds: 1), // wait 2 sec before second retry
         Duration(seconds: 1), // wait 3 sec before third retry
       ],
-      retryEvaluator: dioRetryEvaluatorFunc,
+      appVersion: config.version.toString(),
+      errorService: () => GetIt.I<ErrorService>(),
     )
   ]);
 
@@ -236,8 +220,8 @@ void setup() {
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
     SimpleLogInterceptor(),
-    RetryInterceptor(
-      dio: dio,
+    ...networkRetryInterceptors(
+      dio: esploraDio,
       retries: 4,
       retryDelays: const [
         Duration(seconds: 1), // wait 1 sec before first retry
@@ -245,7 +229,8 @@ void setup() {
         Duration(seconds: 3), // wait 3 sec before third retry
         Duration(seconds: 4), // wait 4 sec before fourth retry
       ],
-      retryEvaluator: dioRetryEvaluatorFunc,
+      appVersion: config.version.toString(),
+      errorService: () => GetIt.I<ErrorService>(),
     ),
   ]);
 
@@ -256,7 +241,7 @@ void setup() {
   ));
 
   mempoolspaceDio.interceptors.addAll([
-    RetryInterceptor(
+    ...networkRetryInterceptors(
       dio: mempoolspaceDio,
       retries: 3,
       retryDelays: const [
@@ -264,7 +249,8 @@ void setup() {
         Duration(seconds: 1), // wait 2 sec before second retry
         Duration(seconds: 1), // wait 3 sec before third retry
       ],
-      retryEvaluator: dioRetryEvaluatorFunc,
+      appVersion: config.version.toString(),
+      errorService: () => GetIt.I<ErrorService>(),
     ), // Add the RetryInterceptor here
   ]);
 
