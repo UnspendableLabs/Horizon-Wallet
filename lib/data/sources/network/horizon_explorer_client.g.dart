@@ -164,7 +164,8 @@ AtomicSwapModel _$AtomicSwapModelFromJson(Map<String, dynamic> json) =>
       assetUtxoId: json['asset_utxo_id'] as String,
       assetUtxoValue: (json['asset_utxo_value'] as num).toInt(),
       assetName: json['asset_name'] as String,
-      assetQuantity: (json['asset_quantity'] as num).toInt(),
+      assetQuantity:
+          const AtomicSwapQuantityConverter().fromJson(json['asset_quantity']),
       price: json['price'] as num,
       pricePerUnit: json['price_per_unit'] as num,
       createdAt: DateTime.parse(json['created_at'] as String),
@@ -191,7 +192,8 @@ Map<String, dynamic> _$AtomicSwapModelToJson(AtomicSwapModel instance) =>
       'asset_utxo_id': instance.assetUtxoId,
       'asset_utxo_value': instance.assetUtxoValue,
       'asset_name': instance.assetName,
-      'asset_quantity': instance.assetQuantity,
+      'asset_quantity':
+          const AtomicSwapQuantityConverter().toJson(instance.assetQuantity),
       'price': instance.price,
       'price_per_unit': instance.pricePerUnit,
       'created_at': instance.createdAt.toIso8601String(),
@@ -263,6 +265,8 @@ Map<String, dynamic> _$UtxoWithBalancesResponseToJson(
     <String, dynamic>{
       'result': instance.result,
     };
+
+// dart format off
 
 // **************************************************************************
 // RetrofitGenerator
@@ -649,3 +653,5 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
     return Uri.parse(dioBaseUrl).resolveUri(url).toString();
   }
 }
+
+// dart format on

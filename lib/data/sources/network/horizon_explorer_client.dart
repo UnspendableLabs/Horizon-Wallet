@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'dart:convert';
+import 'package:horizon/data/sources/network/atomic_swap_quantity_converter.dart';
 import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:horizon/domain/entities/asset_search_result.dart';
 import 'package:horizon/domain/entities/atomic_swap/on_chain_payment.dart';
@@ -178,7 +179,8 @@ class AtomicSwapModel {
   final String assetUtxoId;
   final int assetUtxoValue;
   final String assetName;
-  final int assetQuantity;
+  @AtomicSwapQuantityConverter()
+  final BigInt assetQuantity;
   final num price;
   final num pricePerUnit;
   final DateTime createdAt;
@@ -224,7 +226,7 @@ class AtomicSwapModel {
         vout: int.parse(assetUtxoId.split(':')[1]),
       ),
       assetQuantity: AssetQuantity(
-        quantity: BigInt.from(assetQuantity),
+        quantity: assetQuantity,
         divisible:
             true, // all quantities from atomic swaps are considered divisible ( e.g. expressed in sats)
       ),
