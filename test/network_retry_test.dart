@@ -211,7 +211,8 @@ void main() {
       verifyNothingReported();
     });
 
-    test('does not alert on requests that opted out of retries', () async {
+    test('does not alert on a 404, the expected answer for an unknown asset',
+        () async {
       final adapter = FailingAdapter(
         alwaysFails,
         type: DioExceptionType.badResponse,
@@ -226,6 +227,24 @@ void main() {
 
       expect(adapter.requests, hasLength(1));
       verifyNothingReported();
+    });
+
+    test(
+        'still alerts when a request that opted out of retries cannot reach '
+        'the server', () async {
+      final adapter = FailingAdapter(alwaysFails);
+      dio.httpClientAdapter = adapter;
+
+      await expectLater(
+        dio.get('/assets/XCP', options: Options()..disableRetry = true),
+        throwsA(isA<DioException>()),
+      );
+
+      expect(adapter.requests, hasLength(1));
+      final contexts = reportedContexts();
+      expect(contexts, hasLength(1));
+      expect(contexts.single['errorType'], 'connectionError');
+      expect(contexts.single['retryCount'], 0);
     });
   });
 

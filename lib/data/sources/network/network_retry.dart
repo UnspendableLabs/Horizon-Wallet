@@ -10,12 +10,14 @@ bool isTransientNetworkFailure(DioException error) =>
     error.type == DioExceptionType.receiveTimeout ||
     error.type == DioExceptionType.connectionError;
 
-/// Requests that opted out of retries expect to fail (asset lookups on user
-/// input) and cancelled requests were abandoned by the user, so neither is
-/// alerted on. Dio delivers a cancellation to every remaining error interceptor
-/// as a cancel-typed error, even one that arrives during the retry back-off.
+/// A 404 is an expected answer (asset lookups on user-typed names fail by
+/// design) and cancelled requests were abandoned by the user, so neither is
+/// alerted on. Opting out of retries does not opt out of reporting: a request
+/// that skips retries still fails for real when the server is unreachable.
+/// Dio delivers a cancellation to every remaining error interceptor as a
+/// cancel-typed error, even one that arrives during the retry back-off.
 bool isReportableNetworkFailure(DioException error) =>
-    !error.requestOptions.disableRetry && error.type != DioExceptionType.cancel;
+    error.type != DioExceptionType.cancel && error.response?.statusCode != 404;
 
 /// Retries [dio] requests on transient failures and reports the ones that still
 /// fail afterwards. Retries go through [dio] itself so each client keeps its own
