@@ -23,6 +23,11 @@ class ComposeTransactionException implements Exception {
   final String message;
   final StackTrace? stackTrace;
   ComposeTransactionException(this.message, [this.stackTrace]);
+
+  // NetworkError.fromError and the send UI stringify this wrapper. Preserve the
+  // underlying failure message instead of exposing a (minified) class name.
+  @override
+  String toString() => message;
 }
 
 class ComposeTransactionUseCase {
