@@ -13,6 +13,8 @@ class NetworkRequestException implements Exception {
   String toString() => 'NetworkRequestException: $message';
 }
 
+/// Reports a failed request to Sentry at most once per request, no matter how
+/// many interceptors observe the same [DioException] on its way out.
 void reportDioErrorOnce({
   required DioException error,
   required int retryCount,

@@ -13,7 +13,6 @@ import 'package:horizon/data/services/bip39_service_impl.dart';
 import 'package:horizon/data/services/bitcoind_service_impl.dart';
 import 'package:horizon/data/services/cache_provider_impl.dart';
 import 'package:horizon/data/services/encryption_service_web_worker_impl.dart';
-import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:horizon/data/services/imported_address_service_impl.dart';
 import 'package:chrome_extension/tabs.dart';
 import 'package:horizon/data/services/platform_service_extension_impl.dart';
@@ -126,7 +125,7 @@ import 'package:horizon/presentation/screens/compose_fairminter/usecase/fetch_fo
 import 'package:horizon/presentation/screens/compose_issuance/usecase/fetch_form_data.dart';
 
 import 'package:logger/logger.dart' as logger;
-import 'package:horizon/core/logging/dio_error_reporter.dart';
+import 'package:horizon/data/sources/network/network_retry.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/data/logging/logger_impl.dart';
 import 'package:horizon/domain/entities/extension_rpc.dart';
@@ -164,21 +163,18 @@ void setup() {
 
   injector.registerLazySingleton<Config>(() => config);
 
-  bool dioRetryEvaluatorFunc(DioException error, int retryCount) {
-    reportDioErrorOnce(
-      error: error,
-      retryCount: retryCount,
-      appVersion: config.version.toString(),
-      errorService: GetIt.I<ErrorService>(),
-    );
-
-    final shouldRetry = error.response?.statusCode == 400 ||
-        error.type == DioExceptionType.connectionTimeout ||
-        error.type == DioExceptionType.receiveTimeout ||
-        error.type == DioExceptionType.connectionError;
-
-    return shouldRetry;
-  }
+  List<Interceptor> retryFor(
+    Dio client, {
+    required int retries,
+    required List<Duration> retryDelays,
+  }) =>
+      networkRetryInterceptors(
+        dio: client,
+        retries: retries,
+        retryDelays: retryDelays,
+        appVersion: config.version.toString(),
+        errorService: () => GetIt.I<ErrorService>(),
+      );
 
   final dio = Dio(BaseOptions(
     baseUrl: config.counterpartyApiBase,
@@ -209,17 +205,11 @@ void setup() {
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
     SimpleLogInterceptor(),
-    RetryInterceptor(
-      dio: dio,
-      retries: 3,
-      retryDelays: const [
-        // set delays between retries (optional)
-        Duration(seconds: 1), // wait 1 sec before first retry
-        Duration(seconds: 1), // wait 2 sec before second retry
-        Duration(seconds: 1), // wait 3 sec before third retry
-      ],
-      retryEvaluator: dioRetryEvaluatorFunc,
-    )
+    ...retryFor(dio, retries: 3, retryDelays: const [
+      Duration(seconds: 1),
+      Duration(seconds: 1),
+      Duration(seconds: 1),
+    ]),
   ]);
 
   injector.registerLazySingleton<V2Api>(() => V2Api(dio));
@@ -236,17 +226,12 @@ void setup() {
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
     SimpleLogInterceptor(),
-    RetryInterceptor(
-      dio: dio,
-      retries: 4,
-      retryDelays: const [
-        Duration(seconds: 1), // wait 1 sec before first retry
-        Duration(seconds: 2), // wait 2 sec before second retry
-        Duration(seconds: 3), // wait 3 sec before third retry
-        Duration(seconds: 4), // wait 4 sec before fourth retry
-      ],
-      retryEvaluator: dioRetryEvaluatorFunc,
-    ),
+    ...retryFor(esploraDio, retries: 4, retryDelays: const [
+      Duration(seconds: 1),
+      Duration(seconds: 2),
+      Duration(seconds: 3),
+      Duration(seconds: 4),
+    ]),
   ]);
 
   final mempoolspaceDio = Dio(BaseOptions(
@@ -256,16 +241,11 @@ void setup() {
   ));
 
   mempoolspaceDio.interceptors.addAll([
-    RetryInterceptor(
-      dio: mempoolspaceDio,
-      retries: 3,
-      retryDelays: const [
-        Duration(seconds: 1), // wait 1 sec before first retry
-        Duration(seconds: 1), // wait 2 sec before second retry
-        Duration(seconds: 1), // wait 3 sec before third retry
-      ],
-      retryEvaluator: dioRetryEvaluatorFunc,
-    ), // Add the RetryInterceptor here
+    ...retryFor(mempoolspaceDio, retries: 3, retryDelays: const [
+      Duration(seconds: 1),
+      Duration(seconds: 1),
+      Duration(seconds: 1),
+    ]),
   ]);
 
 //   final blockCypherDio = Dio(BaseOptions(
