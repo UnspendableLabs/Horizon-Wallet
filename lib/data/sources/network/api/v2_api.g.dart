@@ -5612,7 +5612,7 @@ class _V2Api implements V2Api {
     bool? lock,
     bool? reset,
     String? description,
-    bool? unconfirmed,
+    bool? allowUnconfirmedInputs,
     bool? excludeUtxosWithBalances,
   ]) async {
     final _extra = <String, dynamic>{};
@@ -5624,7 +5624,7 @@ class _V2Api implements V2Api {
       r'lock': lock,
       r'reset': reset,
       r'description': description,
-      r'allow_unconfirmed_inputs': unconfirmed,
+      r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,
     };
     queryParameters.removeWhere((k, v) => v == null);
@@ -5664,7 +5664,7 @@ class _V2Api implements V2Api {
     bool? lock,
     bool? reset,
     String? description,
-    bool? unconfirmed,
+    bool? allowUnconfirmedInputs,
     num? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
@@ -5679,7 +5679,7 @@ class _V2Api implements V2Api {
       r'lock': lock,
       r'reset': reset,
       r'description': description,
-      r'allow_unconfirmed_inputs': unconfirmed,
+      r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
       r'sat_per_vbyte': satPerVbyte,
       r'inputs_set': inputsSet,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,
@@ -6076,7 +6076,6 @@ class _V2Api implements V2Api {
     num? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
-    bool? unconfirmed,
     bool? validate,
     bool? disableUtxoLocks,
   ]) async {
@@ -6094,7 +6093,6 @@ class _V2Api implements V2Api {
       r'sat_per_vbyte': satPerVbyte,
       r'inputs_set': inputsSet,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,
-      r'unconfirmed': unconfirmed,
       r'validate': validate,
       r'disable_utxo_locks': disableUtxoLocks,
     };
@@ -6140,7 +6138,6 @@ class _V2Api implements V2Api {
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
-    bool? unconfirmed,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -6155,7 +6152,6 @@ class _V2Api implements V2Api {
       r'inputs_set': inputsSet,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'disable_utxo_locks': disableUtxoLocks,
-      r'unconfirmed': unconfirmed,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
@@ -6194,7 +6190,6 @@ class _V2Api implements V2Api {
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
-    bool? unconfirmed,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -6204,7 +6199,6 @@ class _V2Api implements V2Api {
       r'inputs_set': inputsSet,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'disable_utxo_locks': disableUtxoLocks,
-      r'unconfirmed': unconfirmed,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
@@ -6290,7 +6284,6 @@ class _V2Api implements V2Api {
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
-    bool? unconfirmed,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -6301,7 +6294,6 @@ class _V2Api implements V2Api {
       r'inputs_set': inputsSet,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'disable_utxo_locks': disableUtxoLocks,
-      r'unconfirmed': unconfirmed,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
@@ -6748,7 +6740,6 @@ class _V2Api implements V2Api {
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
-    bool? unconfirmed,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -6762,7 +6753,6 @@ class _V2Api implements V2Api {
       r'inputs_set': inputsSet,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'disable_utxo_locks': disableUtxoLocks,
-      r'unconfirmed': unconfirmed,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
@@ -6803,7 +6793,6 @@ class _V2Api implements V2Api {
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
-    bool? unconfirmed,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -6814,7 +6803,6 @@ class _V2Api implements V2Api {
       r'inputs_set': inputsSet,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'disable_utxo_locks': disableUtxoLocks,
-      r'unconfirmed': unconfirmed,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
@@ -6855,7 +6843,6 @@ class _V2Api implements V2Api {
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
-    bool? unconfirmed,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -6866,7 +6853,6 @@ class _V2Api implements V2Api {
       r'inputs_set': inputsSet,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'disable_utxo_locks': disableUtxoLocks,
-      r'unconfirmed': unconfirmed,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
@@ -7276,7 +7262,6 @@ class _V2Api implements V2Api {
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
-    bool? unconfirmed,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -7285,7 +7270,6 @@ class _V2Api implements V2Api {
       r'inputs_set': inputsSet,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'disable_utxo_locks': disableUtxoLocks,
-      r'unconfirmed': unconfirmed,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
