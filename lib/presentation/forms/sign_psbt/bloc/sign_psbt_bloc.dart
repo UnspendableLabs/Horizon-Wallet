@@ -74,6 +74,11 @@ class AugmentedInput {
   });
 
   bool isUserOwned(Set<String> userAddresses) {
+    // An input the wallet signs is the user's even when its prevout is not
+    // one of their addresses: the reveal of a Counterparty taproot envelope
+    // spends the commit output, a P2TR address holding the envelope, with the
+    // source key.
+    if (signatureRequired) return true;
     if (address == null) return false;
     return userAddresses.contains(address);
   }

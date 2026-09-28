@@ -42,6 +42,26 @@ class MakeBuyPsbtReturn {
   }
 }
 
+/// The output a PSBT input spends, as the PSBT itself describes it in its
+/// `witnessUtxo` field.
+class PsbtInputPrevout {
+  final String scriptPubKeyHex;
+  final int value;
+  final String? address;
+
+  /// The input carries a `tapLeafScript`: it is a taproot script path spend
+  /// (e.g. the reveal of a Counterparty taproot envelope), not a spend of an
+  /// address of the wallet.
+  final bool isTapscriptSpend;
+
+  const PsbtInputPrevout({
+    required this.scriptPubKeyHex,
+    required this.value,
+    required this.address,
+    required this.isTapscriptSpend,
+  });
+}
+
 abstract class TransactionService {
   String finalizePsbtAndExtractTransaction({required String psbtHex});
 
@@ -50,6 +70,11 @@ abstract class TransactionService {
       [List<int>? sighashTypes]);
 
   String psbtToUnsignedTransactionHex(String psbtHex);
+
+  /// One entry per input: the prevout the PSBT embeds in `witnessUtxo`, or
+  /// null when the input has none.
+  List<PsbtInputPrevout?> getPsbtInputPrevouts(
+      String psbtHex, HttpConfig httpConfig);
 
   // TODO: this doesn't totally belong here
   String signMessage(String message, String privateKey, HttpConfig httpConfig);

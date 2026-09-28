@@ -110,13 +110,24 @@ class GetAugmentedPsbtDataUseCase
             }
 
             // TODO: don't go chasin' waterfalls.
-            final getTransactionTask = TaskEither.tryCatch(
+            final getPrevoutTask = TaskEither.tryCatch(
               () => _bitcoinRepository.getTransaction(
                 txid: vin.txid,
                 httpConfig: params.httpConfig,
               ),
               (error, stackTrace) => error.toString(),
-            ).mapLeft((s) => UnexpectedFailure(message: s));
+            )
+                .mapLeft((s) => UnexpectedFailure(message: s))
+                .map((transaction) => (
+                      confirmed: transaction.status.confirmed,
+                      prevout: transaction.vout[vin.vout],
+                    ))
+                // The explorer does not know a transaction that has not been
+                // broadcast yet: the reveal of a Counterparty taproot
+                // envelope spends the commit output before the commit is
+                // sent. The PSBT carries that prevout itself.
+                .orElse((failure) => TaskEither.fromOption(
+                    _prevoutFromPsbt(params, index), () => failure));
 
             final utxoID = UtxoID.fromString("${vin.txid}:${vin.vout}");
             final utxoBalancesTask = _getUtxoBalances(
@@ -126,21 +137,24 @@ class GetAugmentedPsbtDataUseCase
             );
 
             final results = await $(TaskEither.sequenceList([
-              getTransactionTask,
+              getPrevoutTask,
               utxoBalancesTask,
             ]));
 
-            final transaction = results[0] as BitcoinTx;
+            final (:confirmed, :prevout) =
+                results[0] as ({bool confirmed, Vout prevout});
             final balances = results[1] as List<UtxoBalance>;
 
-            final prevout = transaction.vout[vin.vout];
             final address = prevout.scriptpubkeyAddress;
 
-            final signatureRequired =
-                params.signInputs[address]?.contains(index) ?? false;
+            // The dApp names the wallet address whose key signs each input.
+            // For a taproot script path spend (a reveal) the prevout address
+            // is the commit address, not that wallet address.
+            final signatureRequired = params.signInputs.values
+                .any((indexes) => indexes.contains(index));
 
             return $(TaskEither.right(Option.of(AugmentedInput(
-                confirmed: transaction.status.confirmed,
+                confirmed: confirmed,
                 address: address,
                 vin: vin,
                 prevOut: prevout,
@@ -232,6 +246,30 @@ class GetAugmentedPsbtDataUseCase
         },
       );
     }).mapLeft((error) => error.message);
+  }
+
+  /// The prevout the PSBT embeds for input `index` (`witnessUtxo`), when the
+  /// transaction it spends cannot be fetched.
+  Option<({bool confirmed, Vout prevout})> _prevoutFromPsbt(
+      GetAugmentedPsbtDataParams params, int index) {
+    try {
+      final prevouts = _transactionService.getPsbtInputPrevouts(
+          params.unsignedPsbt, params.httpConfig);
+      final prevout = index < prevouts.length ? prevouts[index] : null;
+      if (prevout == null) return const Option.none();
+      return Option.of((
+        confirmed: false,
+        prevout: Vout(
+          scriptpubkey: prevout.scriptPubKeyHex,
+          scriptpubkeyAsm: "",
+          scriptpubkeyType: prevout.isTapscriptSpend ? "v1_p2tr" : "",
+          scriptpubkeyAddress: prevout.address,
+          value: prevout.value,
+        ),
+      ));
+    } catch (_) {
+      return const Option.none();
+    }
   }
 
   TaskEither<Failure, List<UtxoBalance>> _getUtxoBalances({

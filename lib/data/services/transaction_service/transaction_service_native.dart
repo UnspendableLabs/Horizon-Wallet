@@ -154,6 +154,12 @@ class TransactionServiceNative implements TransactionService {
   }
 
   @override
+  List<PsbtInputPrevout?> getPsbtInputPrevouts(
+      String psbtHex, HttpConfig httpConfig) {
+    _unimplemented('getPsbtInputPrevouts');
+  }
+
+  @override
   String signMessage(String message, String privateKey, HttpConfig httpConfig) {
     _unimplemented('signMessage');
   }
