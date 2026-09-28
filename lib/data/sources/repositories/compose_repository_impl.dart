@@ -222,7 +222,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final lock = params.lock;
         final reset = params.reset;
         final description = params.description;
-        const unconfirmed = true;
+        const allowUnconfirmedInputs = true;
         const excludeUtxosWithBalances = true;
         const disableUtxoLocks = false;
         final inputsSetString =
@@ -239,7 +239,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
                 lock,
                 reset,
                 description,
-                unconfirmed,
+                allowUnconfirmedInputs,
                 satPerVbyte,
                 inputsSetString,
                 excludeUtxosWithBalances,
@@ -313,6 +313,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
                 satPerVbyte,
                 inputsSetString,
                 excludeUtxosWithBalances,
+                null, // validate: keep the server default
                 disableUtxoLocks);
 
         if (response.result == null) {

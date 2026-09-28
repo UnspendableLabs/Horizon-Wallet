@@ -5254,7 +5254,7 @@ abstract class V2Api {
     @Query("lock") bool? lock,
     @Query("reset") bool? reset,
     @Query("description") String? description,
-    @Query("unconfirmed") bool? unconfirmed,
+    @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
   ]);
 
@@ -5268,7 +5268,7 @@ abstract class V2Api {
     @Query("lock") bool? lock,
     @Query("reset") bool? reset,
     @Query("description") String? description,
-    @Query("unconfirmed") bool? unconfirmed,
+    @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
     @Query("sat_per_vbyte") num? satPerVbyte,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
@@ -5363,7 +5363,6 @@ abstract class V2Api {
     @Query("sat_per_vbyte") num? satPerVbyte,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
-    @Query("unconfirmed") bool? unconfirmed,
     @Query("validate") bool? validate,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
   ]);
@@ -5382,7 +5381,6 @@ abstract class V2Api {
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
-    @Query("unconfirmed") bool? unconfirmed,
   ]);
 
   @GET("/addresses/{address}/compose/cancel?verbose=true")
@@ -5394,7 +5392,6 @@ abstract class V2Api {
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
-    @Query("unconfirmed") bool? unconfirmed,
   ]);
 
   @GET("/addresses/{address}/dispensers")
@@ -5415,7 +5412,6 @@ abstract class V2Api {
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
-    @Query("unconfirmed") bool? unconfirmed,
   ]);
 
   @GET("/addresses/{address}/transactions")
@@ -5498,7 +5494,6 @@ abstract class V2Api {
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
-    @Query("unconfirmed") bool? unconfirmed,
   ]);
 
   @GET("/utxos/{utxo}/compose/detach?verbose=true")
@@ -5511,7 +5506,6 @@ abstract class V2Api {
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
-    @Query("unconfirmed") bool? unconfirmed,
   ]);
 
   @GET("/utxos/{utxo}/compose/movetoutxo?verbose=true")
@@ -5524,7 +5518,6 @@ abstract class V2Api {
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
-    @Query("unconfirmed") bool? unconfirmed,
   ]);
   @GET("/bitcoin/addresses/{address}/utxos")
   Future<Response<List<UTXO>>> getUnspentUTXOs(
@@ -5604,7 +5597,6 @@ abstract class V2Api {
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
-    @Query("unconfirmed") bool? unconfirmed,
   ]);
 
   // public async getDetachData(
