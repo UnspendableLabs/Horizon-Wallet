@@ -308,11 +308,18 @@ class GetAugmentedPsbtDataUseCase
       final sourceKeyMatches =
           source != null && _keyBelongsToAddress(envelopeKey, source);
 
-      // any output paying an address other than the source: for an issuance
-      // it is the ownership transfer destination
-      final paysOtherAddress = decoded.vout.any((o) =>
-          o.scriptPubKey.address != null &&
-          o.scriptPubKey.address != sourceAddress);
+      // The parser (counterparty-rs indexer, gettxinfo.get_tx_info_new)
+      // takes as destinations only the address outputs placed BEFORE the
+      // `OP_RETURN CNTRPRTY` data output; after the data, the first address
+      // output is change and the rest is ignored. The composer always puts
+      // the OP_RETURN first, so a node-built reveal never has a destination:
+      // one can only come from a hand-built PSBT. For an issuance that
+      // destination becomes the asset's issuer (an ownership transfer).
+      final dataIndex = decoded.vout.indexWhere((o) =>
+          isCounterpartyRevealOutput(_bytesFromHex(o.scriptPubKey.hex)));
+      final hasDestination = decoded.vout
+          .take(dataIndex)
+          .any((o) => o.scriptPubKey.address != null);
 
       var messageHex = "";
       CounterpartyMessage? message;
@@ -329,8 +336,8 @@ class GetAugmentedPsbtDataUseCase
         decodeError = e.toString();
       }
 
-      final classification = classifyRevealMessage(message,
-          paysOtherAddress: paysOtherAddress);
+      final classification =
+          classifyRevealMessage(message, hasDestination: hasDestination);
 
       return CounterpartyRevealInfo(
         sourceAddress: sourceAddress,

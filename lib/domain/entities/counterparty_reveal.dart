@@ -126,13 +126,15 @@ class CounterpartyRevealInfo extends Equatable {
       ];
 }
 
-/// Classifies a decoded reveal message. `paysOtherAddress` is true when the
-/// reveal transaction has an output to an address other than the source: for
-/// an issuance that output is the ownership transfer destination, which the
-/// composer never produces for a taproot encoding but a hand-built PSBT can.
+/// Classifies a decoded reveal message. `hasDestination` is true when the
+/// reveal transaction has a Counterparty destination, i.e. an address output
+/// placed before the `OP_RETURN CNTRPRTY` output (the parser ignores address
+/// outputs after the data, beyond the change). The composer never produces
+/// one for a taproot encoding, a hand-built PSBT can; for an issuance the
+/// destination becomes the asset's issuer.
 ({RevealRisk risk, String reason}) classifyRevealMessage(
   CounterpartyMessage? message, {
-  required bool paysOtherAddress,
+  required bool hasDestination,
 }) {
   if (message == null || message.messageType == "unknown") {
     return (
@@ -149,11 +151,11 @@ class CounterpartyRevealInfo extends Equatable {
             "A sweep transfers every balance and/or asset ownership of the source address to the destination.",
       );
     case "issuance":
-      if (paysOtherAddress) {
+      if (hasDestination) {
         return (
           risk: RevealRisk.high,
           reason:
-              "This issuance pays another address: that address becomes the owner of the asset.",
+              "This issuance has a destination: that address becomes the owner of the asset.",
         );
       }
       if (data["reset"] == true) {

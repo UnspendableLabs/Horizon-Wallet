@@ -285,7 +285,42 @@ void main() {
       });
     }
 
-    test("flags an issuance whose reveal pays another address (ownership transfer)",
+    test("flags an issuance with a destination before the data output (ownership transfer)",
+        () async {
+      // an address output placed BEFORE the OP_RETURN CNTRPRTY is a
+      // Counterparty destination; the parser makes it the asset's issuer
+      when(() => bitcoindService.decoderawtransaction(
+              raw: any(named: "raw"), httpConfig: any(named: "httpConfig")))
+          .thenAnswer((_) async => decoded([
+                vout(0, "0014a3df8a5a83d4e2827b59b43f5ce6ce5d2e52093f",
+                    address: otherAddress, value: 0.00000546),
+                vout(1, opReturnCntrprty),
+              ]));
+      when(() => transactionService.getPsbtInputPrevouts(any(), any()))
+          .thenReturn([
+        PsbtInputPrevout(
+          scriptPubKeyHex: source["reveal_lock_scripts"][0] as String,
+          value: source["reveal_inputs_values"][0] as int,
+          address: source["commit_address"] as String,
+          isTapscriptSpend: true,
+          tapLeafScriptHex: vector("issuance_raw")["envelope_script"] as String,
+        )
+      ]);
+      when(() => transactionRepository.unpackMessage(
+              datahex: any(named: "datahex"),
+              httpConfig: any(named: "httpConfig")))
+          .thenAnswer((_) async => const CounterpartyMessage(
+                messageType: "issuance",
+                messageTypeId: 22,
+                messageData: {"asset": "A95428956661682189", "reset": false},
+              ));
+
+      final reveal = (await run()).counterpartyReveal!;
+      expect(reveal.risk, RevealRisk.high);
+      expect(reveal.riskReason, contains("owner"));
+    });
+
+    test("an address output after the data output is change, not a destination",
         () async {
       givenRevealPsbt("issuance_raw", extraOutputs: [
         vout(1, "0014a3df8a5a83d4e2827b59b43f5ce6ce5d2e52093f",
@@ -301,8 +336,7 @@ void main() {
               ));
 
       final reveal = (await run()).counterpartyReveal!;
-      expect(reveal.risk, RevealRisk.high);
-      expect(reveal.riskReason, contains("owner"));
+      expect(reveal.risk, RevealRisk.normal);
     });
 
     test("warns when the message cannot be decoded", () async {
@@ -387,44 +421,44 @@ void main() {
 
     test("high impact types", () {
       for (final type in ["sweep", "order", "dispenser", "attach", "detach"]) {
-        expect(classifyRevealMessage(msg(type), paysOtherAddress: false).risk,
+        expect(classifyRevealMessage(msg(type), hasDestination: false).risk,
             RevealRisk.high,
             reason: type);
       }
       expect(
           classifyRevealMessage(msg("broadcast", {"value": 1.5}),
-                  paysOtherAddress: false)
+                  hasDestination: false)
               .risk,
           RevealRisk.high);
       expect(
           classifyRevealMessage(msg("issuance", {"reset": true}),
-                  paysOtherAddress: false)
+                  hasDestination: false)
               .risk,
           RevealRisk.high);
     });
 
     test("ordinary types", () {
       for (final type in ["enhanced_send", "fairmint", "fairminter", "dividend", "cancel", "destroy"]) {
-        expect(classifyRevealMessage(msg(type), paysOtherAddress: false).risk,
+        expect(classifyRevealMessage(msg(type), hasDestination: false).risk,
             RevealRisk.normal,
             reason: type);
       }
       expect(
           classifyRevealMessage(msg("broadcast", {"value": 0, "text": "hi"}),
-                  paysOtherAddress: false)
+                  hasDestination: false)
               .risk,
           RevealRisk.normal);
       expect(
           classifyRevealMessage(msg("issuance", {"reset": false}),
-                  paysOtherAddress: false)
+                  hasDestination: false)
               .risk,
           RevealRisk.normal);
     });
 
     test("unrecognized", () {
-      expect(classifyRevealMessage(null, paysOtherAddress: false).risk,
+      expect(classifyRevealMessage(null, hasDestination: false).risk,
           RevealRisk.unrecognized);
-      expect(classifyRevealMessage(msg("unknown"), paysOtherAddress: false).risk,
+      expect(classifyRevealMessage(msg("unknown"), hasDestination: false).risk,
           RevealRisk.unrecognized);
     });
   });
