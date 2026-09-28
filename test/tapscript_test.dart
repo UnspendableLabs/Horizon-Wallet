@@ -214,6 +214,60 @@ void main() {
     });
   });
 
+  group("counterpartyMessageFromEnvelope", () {
+    // Envelopes built by the composer's generate_envelope_script and
+    // generate_ordinal_envelope_script around real sweep and issuance
+    // messages; `message` is what the consensus parser rebuilds.
+    final messages = json.decode(
+            File("test/fixtures/counterparty_reveal_messages.json")
+                .readAsStringSync())
+        as Map<String, dynamic>;
+    final vectors =
+        (messages["vectors"] as List).cast<Map<String, dynamic>>();
+
+    for (final v in vectors) {
+      test("rebuilds the ${v["name"]} message", () {
+        final script = h(v["envelope_script"]);
+        expect(hex.encode(envelopeLeafKey(script)!), messages["envelope_key"]);
+        final message = counterpartyMessageFromEnvelope(script)!;
+        expect(hex.encode(message), v["message"]);
+        expect(message[0], v["message_type_id"]);
+      });
+    }
+
+    test("returns null outside a canonical envelope", () {
+      final key = messages["envelope_key"] as String;
+      expect(counterpartyMessageFromEnvelope(h("20$key" "ac")), isNull);
+      expect(counterpartyMessageFromEnvelope(h("0063" "0101" "75" "68" "20$key" "ac")),
+          isNull);
+    });
+
+    test("rejects a malformed ordinals envelope", () {
+      final key = messages["envelope_key"] as String;
+      // "ord" 0x07 "xcp" 0x01 mime, then no metadata at all
+      expect(
+          () => counterpartyMessageFromEnvelope(h("0063"
+              "036f7264" "0107" "03786370" "0101" "0a746578742f706c61696e"
+              "00" "0568656c6c6f"
+              "68" "20$key" "ac")),
+          throwsA(isA<TapscriptException>()));
+      // metadata that is not CBOR
+      expect(
+          () => counterpartyMessageFromEnvelope(h("0063"
+              "036f7264" "0107" "03786370" "0101" "0a746578742f706c61696e"
+              "0105" "03ffffff"
+              "68" "20$key" "ac")),
+          throwsA(isA<TapscriptException>()));
+      // a metadata map without the xcp key
+      expect(
+          () => counterpartyMessageFromEnvelope(h("0063"
+              "036f7264" "0107" "03786370" "0101" "0a746578742f706c61696e"
+              "0105" "04a1616101"
+              "68" "20$key" "ac")),
+          throwsA(isA<TapscriptException>()));
+    });
+  });
+
   group("planTapLeafSigning", () {
     TapLeafSigningPlan plan(Map<String, dynamic> c,
         {List<Uint8List>? outputs, int inputCount = 1, int? sighash}) {

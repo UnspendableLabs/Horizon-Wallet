@@ -220,6 +220,16 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
     on<FetchFormEvent>(_handleFetchForm);
     on<PasswordChanged>(_handlePasswordChanged);
     on<SignPsbtSubmitted>(_handleSignPsbtSubmitted);
+    on<RevealAcknowledgementChanged>(_handleRevealAcknowledgementChanged);
+  }
+
+  void _handleRevealAcknowledgementChanged(
+      RevealAcknowledgementChanged event, Emitter<SignPsbtState> emit) {
+    emit(state.copyWith(
+      revealAcknowledged: event.acknowledged,
+      error: null,
+      submissionStatus: FormzSubmissionStatus.initial,
+    ));
   }
 
   Future<void> _handleFetchForm(
@@ -244,6 +254,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
         credits: data.credits,
         augmentedInputs: data.augmentedInputs,
         augmentedOutputs: data.augmentedOutputs,
+        counterpartyReveal: data.counterpartyReveal,
         isFormDataLoaded: true,
       ));
     });
@@ -269,6 +280,17 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
       emit(state.copyWith(
           submissionStatus: FormzSubmissionStatus.failure,
           error: "Address not found"));
+      return;
+    }
+
+    // Signing the reveal of a Counterparty envelope is the consent to the
+    // message it carries: a high-impact or unrecognized message is never
+    // signed without the user's explicit acknowledgement.
+    if (state.revealAcknowledgementPending) {
+      emit(state.copyWith(
+          submissionStatus: FormzSubmissionStatus.failure,
+          error:
+              "Acknowledge the Counterparty message this reveal carries before signing"));
       return;
     }
 

@@ -16,6 +16,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
+import 'package:horizon/common/cbor.dart';
 import 'package:pointycastle/ecc/api.dart';
 import 'package:pointycastle/ecc/curves/secp256k1.dart';
 
@@ -472,4 +473,103 @@ TapLeafSigningPlan? planTapLeafSigning({
     signerKey: chosenSigner!,
     isCounterpartyReveal: isReveal,
   );
+}
+
+bool _bytesEqualAscii(Uint8List bytes, String text) {
+  final t = ascii.encode(text);
+  if (bytes.length != t.length) return false;
+  for (var i = 0; i < t.length; i++) {
+    if (bytes[i] != t[i]) return false;
+  }
+  return true;
+}
+
+/// The Counterparty message carried by a canonical envelope, rebuilt the way
+/// the consensus parser does (`counterparty-rs/src/indexer/bitcoin_client.rs`):
+///
+/// * generic envelope: the concatenation of every push between `OP_IF` and
+///   `OP_ENDIF`;
+/// * ordinals envelope, `"ord" 0x07 "xcp" 0x01 mime [0x05 metadata]* OP_0
+///   content*`: the metadata is a CBOR array `[type_id, fields...]` (or a map
+///   whose `"xcp"` key holds that array), re-encoded as
+///   `type_id || cbor(fields + [mime] + [content])`.
+///
+/// Returns null when the script is not a canonical envelope and throws a
+/// [TapscriptException] when an ordinals envelope is malformed. The result
+/// has no `CNTRPRTY` prefix, like the `datahex` the node's `unpack` accepts.
+Uint8List? counterpartyMessageFromEnvelope(Uint8List script) {
+  if (envelopeLeafKey(script) == null) return null;
+  final ins = parseScript(script)!;
+  // between OP_IF and OP_ENDIF <key> OP_CHECKSIG
+  final body = ins.sublist(2, ins.length - 3);
+
+  final isOrd = body.length >= 5 &&
+      body[0].isPush &&
+      _bytesEqualAscii(body[0].push!, "ord") &&
+      body[1].isPush &&
+      body[1].push!.length == 1 &&
+      body[1].push![0] == 7;
+
+  if (!isOrd) {
+    final out = BytesBuilder();
+    for (final i in body) {
+      if (i.isPush) out.add(i.push!);
+    }
+    return out.toBytes();
+  }
+
+  final mime = body[4].isPush
+      ? utf8.decode(body[4].push!, allowMalformed: true)
+      : "";
+  final metadata = BytesBuilder();
+  final content = BytesBuilder();
+  var section = 0; // 0 none, 1 metadata, 2 content
+  for (var i = 5; i < body.length; i++) {
+    final cur = body[i];
+    if (!cur.isPush) continue; // OP_1..OP_16 carry no data
+    final p = cur.push!;
+    if (p.length == 1 && p[0] == 5) {
+      section = 1;
+      continue;
+    }
+    if (p.isEmpty || (p.length == 1 && p[0] == 0)) {
+      section = 2;
+      continue;
+    }
+    if (section == 1) metadata.add(p);
+    if (section == 2) content.add(p);
+  }
+  if (metadata.isEmpty) {
+    throw const TapscriptException("ordinals envelope without metadata");
+  }
+
+  Object? decoded;
+  try {
+    decoded = cborDecode(metadata.toBytes());
+  } on CborException catch (e) {
+    throw TapscriptException("ordinals metadata is not valid CBOR: ${e.message}");
+  }
+  List<Object?> fields;
+  if (decoded is List) {
+    fields = List.of(decoded);
+  } else if (decoded is Map) {
+    final xcp = decoded["xcp"];
+    if (xcp is! List || xcp.isEmpty) {
+      throw const TapscriptException(
+          "ordinals metadata map has no `xcp` message array");
+    }
+    fields = List.of(xcp);
+  } else {
+    throw const TapscriptException("ordinals metadata is not a CBOR array");
+  }
+  if (fields.isEmpty) {
+    throw const TapscriptException("ordinals metadata array is empty");
+  }
+  final typeId = fields.removeAt(0);
+  if (typeId is! int || typeId < 0 || typeId > 255) {
+    throw const TapscriptException("ordinals metadata has no message type id");
+  }
+  fields.add(mime);
+  if (content.isNotEmpty) fields.add(content.toBytes());
+  return Uint8List.fromList([typeId, ...cborEncode(fields)]);
 }

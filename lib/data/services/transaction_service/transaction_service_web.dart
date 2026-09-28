@@ -799,12 +799,14 @@ class TransactionServiceWeb implements TransactionService {
       } catch (_) {
         address = null;
       }
+      final leaves = input.tapLeafScript?.toDart ?? const [];
       return PsbtInputPrevout(
         scriptPubKeyHex: conv.hex.encode(script),
         value: witnessUtxo.value,
         address: address,
-        isTapscriptSpend:
-            input.tapLeafScript != null && input.tapLeafScript!.length > 0,
+        isTapscriptSpend: leaves.isNotEmpty,
+        tapLeafScriptHex:
+            leaves.isEmpty ? null : conv.hex.encode(leaves.first.script.toDart),
       );
     }).toList();
   }

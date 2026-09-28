@@ -54,11 +54,16 @@ class PsbtInputPrevout {
   /// address of the wallet.
   final bool isTapscriptSpend;
 
+  /// The script of the first `tapLeafScript` entry, hex (the envelope of a
+  /// Counterparty reveal), when there is one.
+  final String? tapLeafScriptHex;
+
   const PsbtInputPrevout({
     required this.scriptPubKeyHex,
     required this.value,
     required this.address,
     required this.isTapscriptSpend,
+    this.tapLeafScriptHex,
   });
 }
 
