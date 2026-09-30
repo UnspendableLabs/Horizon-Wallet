@@ -8,6 +8,7 @@ import 'package:convert/convert.dart';
 import 'dart:convert';
 import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
+import 'package:horizon/common/tapscript.dart';
 import 'package:horizon/data/sources/repositories/network_error_helpers.dart';
 
 import 'package:horizon/domain/entities/utxo.dart';
@@ -689,8 +690,24 @@ class TransactionServiceWeb implements TransactionService {
           witnessScript != null && isP2TRScript(witnessScript);
       final isTaproot = hasTik || isTaprootByScript;
 
-      if (!isTaproot || hasLeaf) {
+      if (!isTaproot) {
         psbt.signInput(index, baseSigner, sigTypes);
+        continue;
+      }
+
+      if (hasLeaf) {
+        // p2tr script path spend, e.g. the reveal of a Counterparty taproot
+        // envelope: the leaf is checked before it is signed (tapscript.dart)
+        // and signed with the raw key, or the BIP86-tweaked key when the
+        // leaf was closed with the output key.
+        final signer = _tapLeafSigner(
+          psbt: psbt,
+          input: inp,
+          privBuf: privBuf,
+          baseSigner: baseSigner,
+          httpConfig: httpConfig,
+        );
+        psbt.signInput(index, signer, sigTypes);
         continue;
       }
 
@@ -721,6 +738,77 @@ class TransactionServiceWeb implements TransactionService {
     }
 
     return psbt.toHex();
+  }
+
+  /// The key pair a tapscript input must be signed with, once the leaf has
+  /// passed the checks of [planTapLeafSigning]: the source key itself, or its
+  /// BIP86-tweaked key when the envelope was closed with the P2TR output key.
+  /// Throws a [TapscriptException] when the input must not be signed.
+  ecpair.ECPairInterface _tapLeafSigner({
+    required bitcoin.Psbt psbt,
+    required bitcoin.PsbtInputData input,
+    required Buffer privBuf,
+    required ecpair.ECPairInterface baseSigner,
+    required HttpConfig httpConfig,
+  }) {
+    final leaves = input.tapLeafScript!.toDart
+        .map((leaf) => TapLeafScriptEntry(
+              leafVersion: leaf.leafVersion,
+              script: leaf.script.toDart,
+              controlBlock: leaf.controlBlock.toDart,
+            ))
+        .toList();
+    final outputScripts = psbt.data.globalMap.unsignedTx.outs.toDart
+        .map((out) => out.script.toDart)
+        .toList();
+    final pub33 = baseSigner.publicKey.toDart;
+
+    final plan = planTapLeafSigning(
+      xOnly: Uint8List.fromList(pub33.sublist(1)),
+      leaves: leaves,
+      spentScriptPubKey: input.witnessUtxo?.script.toDart,
+      outputScripts: outputScripts,
+      inputCount: psbt.inputCount,
+      inputSighashType: input.sighashType,
+    );
+
+    return switch (plan?.signerKey) {
+      // not a Counterparty reveal and no leaf of a known shape: as before,
+      // bitcoinjs signs the leaf that contains the raw key, if any
+      null => baseSigner,
+      RevealSignerKey.raw => baseSigner,
+      RevealSignerKey.tweaked => ecpairFactory.fromPrivateKey(
+          taprootTweakPrivKey(privBuf, baseSigner),
+          httpConfig.network.toJS,
+        ),
+    };
+  }
+
+  @override
+  List<PsbtInputPrevout?> getPsbtInputPrevouts(
+      String psbtHex, HttpConfig httpConfig) {
+    final psbt = bitcoin.Psbt.fromHex(psbtHex);
+    return psbt.data.inputs.toDart.map((input) {
+      final witnessUtxo = input.witnessUtxo;
+      if (witnessUtxo == null) return null;
+      final script = witnessUtxo.script.toDart;
+      String? address;
+      try {
+        address = bitcoin.Address.fromOutputScript(
+            script.toJS, httpConfig.network.toJS);
+      } catch (_) {
+        address = null;
+      }
+      final leaves = input.tapLeafScript?.toDart ?? const [];
+      return PsbtInputPrevout(
+        scriptPubKeyHex: conv.hex.encode(script),
+        value: witnessUtxo.value,
+        address: address,
+        isTapscriptSpend: leaves.isNotEmpty,
+        tapLeafScriptHex:
+            leaves.isEmpty ? null : conv.hex.encode(leaves.first.script.toDart),
+      );
+    }).toList();
   }
 
   @override

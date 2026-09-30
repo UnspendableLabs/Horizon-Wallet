@@ -5146,6 +5146,14 @@ abstract class V2Api {
     @Query("verbose") bool? verbose,
   ]);
 
+  // Same endpoint, with the message fields kept as the node returns them,
+  // whatever the message type (the reveal of a taproot envelope can carry
+  // any message).
+  @GET("/transactions/unpack?verbose=true")
+  Future<Response<CounterpartyMessageModel>> unpackCounterpartyMessage(
+    @Query("datahex") String datahex,
+  );
+
   //     Get Transaction By Hash
   // Addresses
   //     Get Address Balances
@@ -5617,3 +5625,27 @@ abstract class V2Api {
   );
 }
 
+
+/// A decoded Counterparty message (`GET /v2/transactions/unpack?verbose=true`)
+/// with its fields kept as the node returns them, whatever the message type.
+class CounterpartyMessageModel {
+  final String messageType;
+  final int? messageTypeId;
+  final Map<String, dynamic> messageData;
+
+  const CounterpartyMessageModel({
+    required this.messageType,
+    required this.messageTypeId,
+    required this.messageData,
+  });
+
+  factory CounterpartyMessageModel.fromJson(Map<String, dynamic> json) {
+    final typeId = json["message_type_id"];
+    final data = json["message_data"];
+    return CounterpartyMessageModel(
+      messageType: (json["message_type"] ?? "unknown").toString(),
+      messageTypeId: typeId is num ? typeId.toInt() : null,
+      messageData: data is Map ? Map<String, dynamic>.from(data) : const {},
+    );
+  }
+}

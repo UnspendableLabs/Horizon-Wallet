@@ -19,6 +19,11 @@ class TransactionServiceStub implements TransactionService {
       _unsupported('psbtToUnsignedTransactionHex');
 
   @override
+  List<PsbtInputPrevout?> getPsbtInputPrevouts(
+          String psbtHex, HttpConfig httpConfig) =>
+      _unsupported('getPsbtInputPrevouts');
+
+  @override
   String signMessage(String message, String privateKey, HttpConfig config) =>
       _unsupported('signMessage');
 

@@ -1,7 +1,14 @@
+import "dart:typed_data";
+
+import "package:convert/convert.dart";
 import "package:fpdart/fpdart.dart";
 import "package:get_it/get_it.dart";
 import "package:collection/collection.dart";
 import "package:decimal/decimal.dart";
+import "package:horizon/common/tapscript.dart";
+import "package:horizon/domain/entities/bitcoin_decoded_tx.dart" as dbtc;
+import "package:horizon/domain/entities/counterparty_reveal.dart";
+import "package:horizon/domain/repositories/transaction_repository.dart";
 import "package:horizon/data/sources/repositories/network_error_helpers.dart";
 import "package:horizon/domain/entities/http_config.dart";
 import "package:horizon/domain/entities/address_v2.dart";
@@ -36,11 +43,17 @@ class AugmentedPsbtData {
   final List<AugmentedInput> augmentedInputs;
   final List<AugmentedOutput> augmentedOutputs;
 
+  /// The Counterparty message this PSBT reveals, when it is the reveal of a
+  /// taproot envelope (an `OP_RETURN CNTRPRTY` output spending an envelope
+  /// leaf); null otherwise.
+  final CounterpartyRevealInfo? counterpartyReveal;
+
   const AugmentedPsbtData({
     required this.debits,
     required this.credits,
     required this.augmentedInputs,
     required this.augmentedOutputs,
+    this.counterpartyReveal,
   });
 }
 
@@ -68,6 +81,7 @@ class GetAugmentedPsbtDataUseCase
   final EventsRepository _eventsRepository;
   final UtxoAttachRepository _utxoAttachRepository;
   final ErrorService _errorService;
+  final TransactionRepository _transactionRepository;
 
   GetAugmentedPsbtDataUseCase({
     TransactionService? transactionService,
@@ -77,7 +91,10 @@ class GetAugmentedPsbtDataUseCase
     EventsRepository? eventsRepository,
     UtxoAttachRepository? utxoAttachRepository,
     ErrorService? errorService,
-  })  : _transactionService =
+    TransactionRepository? transactionRepository,
+  })  : _transactionRepository =
+            transactionRepository ?? GetIt.I<TransactionRepository>(),
+        _transactionService =
             transactionService ?? GetIt.I<TransactionService>(),
         _bitcoindService = bitcoindService ?? GetIt.I<BitcoindService>(),
         _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>(),
@@ -110,13 +127,24 @@ class GetAugmentedPsbtDataUseCase
             }
 
             // TODO: don't go chasin' waterfalls.
-            final getTransactionTask = TaskEither.tryCatch(
+            final getPrevoutTask = TaskEither.tryCatch(
               () => _bitcoinRepository.getTransaction(
                 txid: vin.txid,
                 httpConfig: params.httpConfig,
               ),
               (error, stackTrace) => error.toString(),
-            ).mapLeft((s) => UnexpectedFailure(message: s));
+            )
+                .mapLeft((s) => UnexpectedFailure(message: s))
+                .map((transaction) => (
+                      confirmed: transaction.status.confirmed,
+                      prevout: transaction.vout[vin.vout],
+                    ))
+                // The explorer does not know a transaction that has not been
+                // broadcast yet: the reveal of a Counterparty taproot
+                // envelope spends the commit output before the commit is
+                // sent. The PSBT carries that prevout itself.
+                .orElse((failure) => TaskEither.fromOption(
+                    _prevoutFromPsbt(params, index), () => failure));
 
             final utxoID = UtxoID.fromString("${vin.txid}:${vin.vout}");
             final utxoBalancesTask = _getUtxoBalances(
@@ -126,21 +154,24 @@ class GetAugmentedPsbtDataUseCase
             );
 
             final results = await $(TaskEither.sequenceList([
-              getTransactionTask,
+              getPrevoutTask,
               utxoBalancesTask,
             ]));
 
-            final transaction = results[0] as BitcoinTx;
+            final (:confirmed, :prevout) =
+                results[0] as ({bool confirmed, Vout prevout});
             final balances = results[1] as List<UtxoBalance>;
 
-            final prevout = transaction.vout[vin.vout];
             final address = prevout.scriptpubkeyAddress;
 
-            final signatureRequired =
-                params.signInputs[address]?.contains(index) ?? false;
+            // The dApp names the wallet address whose key signs each input.
+            // For a taproot script path spend (a reveal) the prevout address
+            // is the commit address, not that wallet address.
+            final signatureRequired = params.signInputs.values
+                .any((indexes) => indexes.contains(index));
 
             return $(TaskEither.right(Option.of(AugmentedInput(
-                confirmed: transaction.status.confirmed,
+                confirmed: confirmed,
                 address: address,
                 vin: vin,
                 prevOut: prevout,
@@ -211,11 +242,15 @@ class GetAugmentedPsbtDataUseCase
                   quantity: e.value.map((value) => value.abs()),
                 ));
 
+        final counterpartyReveal =
+            await _describeCounterpartyReveal(params, decoded);
+
         return AugmentedPsbtData(
           debits: netDebits.toList(),
           credits: netCredits.toList(),
           augmentedInputs: augmentedInputs,
           augmentedOutputs: augmentedOutputs,
+          counterpartyReveal: counterpartyReveal,
         );
       },
       maxRetries: maxRetries,
@@ -232,6 +267,134 @@ class GetAugmentedPsbtDataUseCase
         },
       );
     }).mapLeft((error) => error.message);
+  }
+
+  /// The Counterparty message a reveal PSBT carries, decoded by the node, or
+  /// null when the PSBT is not the reveal of a taproot envelope.
+  ///
+  /// With `require_reveal_source_signature` the wallet's signature is the
+  /// consent to that message, so it is shown before signing: a dApp can hand
+  /// the wallet a well-formed reveal whose envelope holds a sweep, an order,
+  /// a dispenser... The reveal input is the one whose leaf is a canonical
+  /// envelope; its source is the wallet address the dApp designated to sign
+  /// it, and that address' key must be the one closing the envelope.
+  Future<CounterpartyRevealInfo?> _describeCounterpartyReveal(
+      GetAugmentedPsbtDataParams params, dbtc.DecodedTx decoded) async {
+    final isReveal = decoded.vout.any((o) =>
+        isCounterpartyRevealOutput(_bytesFromHex(o.scriptPubKey.hex)));
+    if (!isReveal) return null;
+
+    List<PsbtInputPrevout?> prevouts;
+    try {
+      prevouts = _transactionService.getPsbtInputPrevouts(
+          params.unsignedPsbt, params.httpConfig);
+    } catch (_) {
+      return null;
+    }
+
+    for (var index = 0; index < prevouts.length; index++) {
+      final leafHex = prevouts[index]?.tapLeafScriptHex;
+      if (leafHex == null) continue;
+      final leaf = _bytesFromHex(leafHex);
+      final envelopeKey = envelopeLeafKey(leaf);
+      if (envelopeKey == null) continue;
+
+      final sourceAddress = params.signInputs.entries
+              .firstWhereOrNull((e) => e.value.contains(index))
+              ?.key ??
+          "";
+      final source =
+          params.addresses.firstWhereOrNull((a) => a.address == sourceAddress);
+      final sourceKeyMatches =
+          source != null && _keyBelongsToAddress(envelopeKey, source);
+
+      // The parser (counterparty-rs indexer, gettxinfo.get_tx_info_new)
+      // takes as destinations only the address outputs placed BEFORE the
+      // `OP_RETURN CNTRPRTY` data output; after the data, the first address
+      // output is change and the rest is ignored. The composer always puts
+      // the OP_RETURN first, so a node-built reveal never has a destination:
+      // one can only come from a hand-built PSBT. For an issuance that
+      // destination becomes the asset's issuer (an ownership transfer).
+      final dataIndex = decoded.vout.indexWhere((o) =>
+          isCounterpartyRevealOutput(_bytesFromHex(o.scriptPubKey.hex)));
+      final hasDestination = decoded.vout
+          .take(dataIndex)
+          .any((o) => o.scriptPubKey.address != null);
+
+      var messageHex = "";
+      CounterpartyMessage? message;
+      String? decodeError;
+      try {
+        final bytes = counterpartyMessageFromEnvelope(leaf);
+        if (bytes == null) {
+          throw const TapscriptException("not a canonical envelope");
+        }
+        messageHex = hex.encode(bytes);
+        message = await _transactionRepository.unpackMessage(
+            datahex: messageHex, httpConfig: params.httpConfig);
+      } catch (e) {
+        decodeError = e.toString();
+      }
+
+      final classification =
+          classifyRevealMessage(message, hasDestination: hasDestination);
+
+      return CounterpartyRevealInfo(
+        sourceAddress: sourceAddress,
+        sourceKeyMatches: sourceKeyMatches,
+        messageHex: messageHex,
+        message: message,
+        decodeError: decodeError,
+        risk: classification.risk,
+        riskReason: classification.reason,
+      );
+    }
+    return null;
+  }
+
+  /// Whether `envelopeKey` is the key of `address`: its public key (x-only for
+  /// a P2TR address, compressed otherwise), or its BIP86 output key.
+  static bool _keyBelongsToAddress(Uint8List envelopeKey, AddressV2 address) {
+    final pub = _bytesFromHex(address.publicKey);
+    final xOnly = switch (pub.length) {
+      32 => pub,
+      33 => Uint8List.fromList(pub.sublist(1)),
+      _ => null,
+    };
+    if (xOnly == null) return false;
+    return revealSignerKeyFor(leafKey: envelopeKey, xOnly: xOnly) != null;
+  }
+
+  static Uint8List _bytesFromHex(String s) {
+    try {
+      return Uint8List.fromList(hex.decode(s));
+    } catch (_) {
+      return Uint8List(0);
+    }
+  }
+
+  /// The prevout the PSBT embeds for input `index` (`witnessUtxo`), when the
+  /// transaction it spends cannot be fetched.
+  Option<({bool confirmed, Vout prevout})> _prevoutFromPsbt(
+      GetAugmentedPsbtDataParams params, int index) {
+    try {
+      final prevouts = _transactionService.getPsbtInputPrevouts(
+          params.unsignedPsbt, params.httpConfig);
+      final prevout = index < prevouts.length ? prevouts[index] : null;
+      if (prevout == null) return const Option.none();
+      return Option.of((
+        confirmed: false,
+        prevout: Vout(
+          scriptpubkey: prevout.scriptPubKeyHex,
+          scriptpubkeyAsm: "",
+          scriptpubkeyType: prevout.isTapscriptSpend ? "v1_p2tr" : "",
+          scriptpubkeyAddress: prevout.address,
+          value: prevout.value,
+        ),
+      ));
+    } catch (_) {
+      return const Option.none();
+    }
   }
 
   TaskEither<Failure, List<UtxoBalance>> _getUtxoBalances({

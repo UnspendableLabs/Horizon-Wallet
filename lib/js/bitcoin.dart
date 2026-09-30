@@ -12,6 +12,7 @@ extension type WitnessUTXO._(JSObject o) implements JSObject {
   external WitnessUTXO({Buffer script, int value});
 
   external Buffer script;
+  external int value;
 }
 
 /// ---------- PSBT Input / Output ----------
@@ -151,6 +152,7 @@ extension type PsbtInputData._(JSObject _) implements JSObject {
   external Buffer? get tapMerkleRoot; // 32 bytes
   external WitnessUTXO? get witnessUtxo;
   external Buffer? get nonWitnessUtxo;
+  external int? get sighashType;
 }
 
 extension type PsbtData._(JSObject _) implements JSObject {
