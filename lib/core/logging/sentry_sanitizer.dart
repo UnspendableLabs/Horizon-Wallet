@@ -2,6 +2,20 @@ const redactedWalletAddress = '[wallet-address-redacted]';
 const redactedExtendedKey = '[extended-key-redacted]';
 const redactedPrivateKey = '[private-key-redacted]';
 
+const redactedTransactionPayload = '[transaction-payload-redacted]';
+final _transactionQueryPattern = RegExp(
+  r'((?:signedhex|unsignedhex|tx_hex|psbt_hex|psbt_base64|psbt)=)[^&\s#]+',
+  caseSensitive: false,
+);
+const _transactionPayloadKeys = {
+  'signedhex',
+  'unsignedhex',
+  'tx_hex',
+  'psbt_hex',
+  'psbt_base64',
+  'psbt',
+};
+
 const _base58 = r'[1-9A-HJ-NP-Za-km-z]';
 
 /// Redacts wallet-identifying secrets out of anything on its way to telemetry.
@@ -29,7 +43,8 @@ final _secretPatterns = <RegExp, String>{
 };
 
 String sanitizeTelemetryText(String value) {
-  var sanitized = value;
+  var sanitized = value.replaceAllMapped(_transactionQueryPattern,
+      (match) => (match.group(1) ?? '') + redactedTransactionPayload);
   for (final entry in _secretPatterns.entries) {
     final source = sanitized;
     sanitized = source.replaceAllMapped(entry.key, (match) {
@@ -81,7 +96,9 @@ dynamic sanitizeTelemetryValue(dynamic value) {
     return value.map(
       (key, nestedValue) => MapEntry(
         sanitizeTelemetryText(key.toString()),
-        sanitizeTelemetryValue(nestedValue),
+        _transactionPayloadKeys.contains(key.toString().toLowerCase())
+            ? redactedTransactionPayload
+            : sanitizeTelemetryValue(nestedValue),
       ),
     );
   }
@@ -106,6 +123,8 @@ bool containsWalletSecret(dynamic value) {
   if (value is Map) {
     return value.entries.any(
       (entry) =>
+          _transactionPayloadKeys
+              .contains(entry.key.toString().toLowerCase()) ||
           containsWalletSecret(entry.key.toString()) ||
           containsWalletSecret(entry.value),
     );
