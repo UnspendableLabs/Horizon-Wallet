@@ -20,12 +20,35 @@ void main() {
       );
     });
 
+    test('redacts signed transaction and PSBT query payloads', () {
+      final result = sanitizeTelemetryText(
+          'POST /v2/bitcoin/transactions?signedhex=deadbeef&network=mainnet psbt_base64=abcsDEF== status=offline');
+      expect(result, isNot(contains('deadbeef')));
+      expect(result, isNot(contains('abcsDEF==')));
+      expect(result, contains('signedhex=$redactedTransactionPayload'));
+      expect(result, contains('network=mainnet'));
+      expect(result, contains('status=offline'));
+    });
+
     test('leaves transaction hashes and ordinary text intact', () {
       const value =
           'GET /tx/4d3f43a4e365968b2cbbf64347b62564928cf4b590cb9f14d5c01710c86c33a5';
 
       expect(sanitizeTelemetryText(value), value);
     });
+  });
+
+  test('redacts payload fields in nested telemetry maps', () {
+    final result = sanitizeTelemetryValue({
+      'request': {
+        'signedhex': 'deadbeef',
+        'psbt_hex': '70736274',
+        'txid': 'public-id'
+      },
+    }) as Map;
+    expect(result['request']['signedhex'], redactedTransactionPayload);
+    expect(result['request']['psbt_hex'], redactedTransactionPayload);
+    expect(result['request']['txid'], 'public-id');
   });
 
   test('recursively sanitizes breadcrumb context', () {
