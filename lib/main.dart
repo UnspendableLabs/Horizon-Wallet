@@ -1436,13 +1436,15 @@ void main() {
       final errorMessage = 'Type Error: ${error.toString()}';
       logger.error(errorMessage, error, stackTrace);
       GetIt.I<ErrorService>().captureException(error,
+          stackTrace: stackTrace,
           message: errorMessage,
           context: {'runtimeType': error.runtimeType.toString()});
     } else {
       // Add more specific error type handling here as needed
       const errorMessage = 'An unexpected error occurred';
       logger.error(errorMessage, null, stackTrace);
-      GetIt.I<ErrorService>().captureException(FlutterError(errorMessage),
+      GetIt.I<ErrorService>().captureException(error,
+          stackTrace: stackTrace,
           message: errorMessage,
           context: {'errorType': error.runtimeType.toString()});
     }
