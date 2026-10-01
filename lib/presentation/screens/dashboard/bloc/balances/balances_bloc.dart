@@ -79,11 +79,9 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
           .run();
       final balances =
           result.fold((error) => throw Exception(error), (result) => result);
-      // Only update state if the new data is different
-      if (_cachedBalances == null ||
-          !MultiAddressBalance.equals(_cachedBalances!, balances)) {
-        _cachedBalances = balances;
-      }
+      // Keep address allocation and asset metadata current even when totals
+      // are unchanged; subsequent reloads and starred toggles use this cache.
+      _cachedBalances = balances;
       // End the reloading state even when the server returned unchanged data.
       if (!emit.isDone) {
         emit(BalancesState.complete(Result.ok(balances, starredAssetsList)));

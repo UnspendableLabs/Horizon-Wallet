@@ -4,6 +4,7 @@ import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:horizon/domain/entities/http_config.dart';
+import 'package:horizon/domain/entities/asset_info.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/usecases/get_balances_by_addresses.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
@@ -69,6 +70,42 @@ void main() {
     bloc.add(Fetch());
     await pumpEventQueue();
     verify(() => useCase.call(any())).called(1);
+  });
+
+  test('metadata-only changes remain current in subsequent reloads', () async {
+    MultiAddressBalance balance(String owner) => MultiAddressBalance(
+        asset: 'TOKEN',
+        assetLongname: null,
+        total: 1,
+        totalNormalized: '1',
+        entries: [],
+        assetInfo: AssetInfo(
+            assetLongname: null,
+            description: '',
+            divisible: false,
+            owner: owner,
+            locked: false));
+    final oldBalance = balance('old');
+    final newBalance = balance('new');
+    when(() => useCase.call(any())).thenReturn(TaskEither.right([oldBalance]));
+    bloc.add(Fetch());
+    await pumpEventQueue();
+    when(() => useCase.call(any())).thenReturn(TaskEither.right([newBalance]));
+    bloc.add(Fetch());
+    await pumpEventQueue();
+    final pending = Completer<Either<String, List<MultiAddressBalance>>>();
+    when(() => useCase.call(any()))
+        .thenReturn(TaskEither(() => pending.future));
+    bloc.add(Fetch());
+    await pumpEventQueue();
+    final owner = bloc.state.maybeWhen(
+        reloading: (result) => result.maybeWhen(
+            ok: (balances, _) => balances.first.assetInfo.owner,
+            orElse: () => null),
+        orElse: () => null);
+    expect(owner, 'new');
+    pending.complete(Right([newBalance]));
+    await pumpEventQueue();
   });
 
   test('a failed refresh releases the in-flight guard', () async {
