@@ -3,12 +3,37 @@ import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:horizon/core/logging/dio_error_reporter.dart';
 import 'package:horizon/domain/services/error_service.dart';
 
-/// Only transport-level failures are worth retrying. HTTP responses, including
-/// 400s, are deterministic answers from the server and would not change.
+/// Only known read endpoints may be replayed. Counterparty compose uses GET
+/// too, so the HTTP method alone is not a sufficient safety boundary.
+bool isRetryableNetworkRead(RequestOptions request) {
+  if (request.method.toUpperCase() != 'GET') return false;
+  final path = request.uri.path.replaceFirst(RegExp(r'^/v2(?=/|$)'), '');
+  return path == '/blocks/tip/height' ||
+      path == '/fee-estimates' ||
+      path == '/api/v1/fees/recommended' ||
+      path == '/bitcoin/estimatesmartfee' ||
+      RegExp(r'^/address/[^/]+(?:/utxo|/txs(?:/mempool|/chain(?:/[^/]+)?)?)?$')
+          .hasMatch(path) ||
+      RegExp(r'^/tx/[^/]+(?:/hex)?$').hasMatch(path) ||
+      RegExp(r'^/addresses/(?:balances|events|mempool|transactions)$')
+          .hasMatch(path) ||
+      RegExp(r'^/addresses/[^/]+/(?:balances(?:/[^/]+)?|fairminters|assets/owned)$')
+          .hasMatch(path) ||
+      RegExp(r'^/assets/[^/]+$').hasMatch(path) ||
+      RegExp(r'^/utxos/[^/]+/balances$').hasMatch(path) ||
+      RegExp(r'^/bitcoin/addresses(?:/[^/]+)?/utxos$').hasMatch(path);
+}
+
+/// Caller cancellation, TLS failures, validation/auth errors and unknown GET
+/// endpoints are terminal. Temporary service responses share the existing
+/// bounded retry count/delays; no new client or fallback host is introduced.
 bool isTransientNetworkFailure(DioException error) =>
-    error.type == DioExceptionType.connectionTimeout ||
-    error.type == DioExceptionType.receiveTimeout ||
-    error.type == DioExceptionType.connectionError;
+    isRetryableNetworkRead(error.requestOptions) &&
+    (error.type == DioExceptionType.connectionTimeout ||
+        error.type == DioExceptionType.receiveTimeout ||
+        error.type == DioExceptionType.connectionError ||
+        (error.type == DioExceptionType.badResponse &&
+            const {429, 502, 503, 504}.contains(error.response?.statusCode)));
 
 /// A 404 is an expected answer (asset lookups on user-typed names fail by
 /// design) and cancelled requests were abandoned by the user, so neither is
