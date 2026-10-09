@@ -592,11 +592,16 @@ void main() {
         expect(c.risk, RevealRisk.high, reason: type);
         expect(c.reason, isNotEmpty, reason: type);
       }
-      expect(
-          classifyRevealMessage(msg("broadcast", {"value": 1.5}),
-                  hasDestination: false)
-              .risk,
-          RevealRisk.high);
+      // broadcast.parse settles the feed's bet matches from 0 up and cancels
+      // its bets at -2 and -3
+      for (final value in [1.5, 0, 0.0, -2, -3.0]) {
+        expect(
+            classifyRevealMessage(msg("broadcast", {"value": value}),
+                    hasDestination: false)
+                .risk,
+            RevealRisk.high,
+            reason: "$value");
+      }
       expect(
           classifyRevealMessage(msg("issuance", {"reset": true}),
                   hasDestination: false)
@@ -615,11 +620,16 @@ void main() {
             RevealRisk.normal,
             reason: type);
       }
-      expect(
-          classifyRevealMessage(msg("broadcast", {"value": 0, "text": "hi"}),
-                  hasDestination: false)
-              .risk,
-          RevealRisk.normal);
+      // no value, or a negative one that leaves the bets alone
+      for (final value in [null, -1, -1.5]) {
+        expect(
+            classifyRevealMessage(
+                    msg("broadcast", {"value": value, "text": "hi"}),
+                    hasDestination: false)
+                .risk,
+            RevealRisk.normal,
+            reason: "$value");
+      }
       expect(
           classifyRevealMessage(msg("issuance", {"reset": false}),
                   hasDestination: false)

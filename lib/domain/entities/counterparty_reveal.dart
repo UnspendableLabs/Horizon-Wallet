@@ -200,11 +200,21 @@ class CounterpartyRevealInfo extends Equatable {
       }
       return normal;
     case "broadcast":
+      // broadcast.parse leaves the bets on the feed alone only for no value
+      // or a negative one: -2 cancels its open bets, -3 its pending bet
+      // matches, and any value from 0 up settles its bet matches.
       final value = data["value"];
-      if (value == null || (value is num && value == 0)) return normal;
+      if (value == null ||
+          (value is num && value < 0 && value != -2 && value != -3)) {
+        return normal;
+      }
       return (
         risk: RevealRisk.high,
-        reason: "A broadcast with a value can settle bets on this feed.",
+        reason: switch (value) {
+          -2 => "This broadcast cancels the open bets on this feed.",
+          -3 => "This broadcast cancels the pending bet matches on this feed.",
+          _ => "A broadcast with a value can settle bets on this feed.",
+        },
       );
     case "fairminter":
     case "cancel":
