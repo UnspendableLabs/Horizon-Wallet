@@ -1,3 +1,4 @@
+import "dart:convert";
 import "dart:typed_data";
 
 import "package:convert/convert.dart";
@@ -86,6 +87,11 @@ class GetAugmentedPsbtDataUseCase
   final UtxoAttachRepository _utxoAttachRepository;
   final ErrorService _errorService;
   final TransactionRepository _transactionRepository;
+
+  /// The longest message (bytes) the node is asked to unpack. The message
+  /// goes in the URL of a GET: the public nodes answer 414 or 431 beyond
+  /// about 7,000 bytes, and nginx' default limit is an 8 KB request line.
+  static const _maxUnpackedMessageLength = 3500;
 
   GetAugmentedPsbtDataUseCase({
     TransactionService? transactionService,
@@ -352,19 +358,37 @@ class GetAugmentedPsbtDataUseCase
     var messageHex = "";
     CounterpartyMessage? message;
     String? decodeError;
+    OmittedContent? omittedContent;
     try {
-      final bytes = counterpartyMessageFromEnvelope(plan.script);
-      if (bytes == null) {
+      final envelope = counterpartyEnvelopeMessage(plan.script);
+      if (envelope == null) {
         throw const TapscriptException("not a canonical envelope");
       }
-      messageHex = hex.encode(bytes);
-      // The node strips a leading CNTRPRTY from the data it unpacks; the
-      // parser does not strip it from the data of an envelope. With the
-      // prefix added, the node reads the message as the parser does.
-      message = await _transactionRepository.unpackMessage(
-          datahex: hex.encode(counterpartyPrefix) + messageHex,
-          httpConfig: params.httpConfig);
-      decodeError = message.unpackError;
+      messageHex = hex.encode(envelope.bytes);
+      // The content of an ordinals envelope, the inscription itself, fills a
+      // single field of the message: when it makes the message too long for
+      // the node's URL, the node decodes every other field without it.
+      var toUnpack = envelope.bytes;
+      final content = envelope.content;
+      if (toUnpack.length > _maxUnpackedMessageLength &&
+          content != null &&
+          _nodeDecodesContent(content, envelope.mimeType!)) {
+        toUnpack = envelope.bytesWithoutContent;
+        omittedContent = OmittedContent(
+            length: content.length, mimeType: envelope.mimeType!);
+      }
+      if (toUnpack.length > _maxUnpackedMessageLength) {
+        decodeError =
+            "the message is too long (${toUnpack.length} bytes) to be decoded by the node";
+      } else {
+        // The node strips a leading CNTRPRTY from the data it unpacks; the
+        // parser does not strip it from the data of an envelope. With the
+        // prefix added, the node reads the message as the parser does.
+        message = await _transactionRepository.unpackMessage(
+            datahex: hex.encode(counterpartyPrefix) + hex.encode(toUnpack),
+            httpConfig: params.httpConfig);
+        decodeError = message.unpackError;
+      }
     } on TapscriptException catch (e) {
       decodeError = e.message;
     } catch (e) {
@@ -380,11 +404,55 @@ class GetAugmentedPsbtDataUseCase
       messageHex: messageHex,
       message: message,
       decodeError: decodeError,
+      omittedContent: omittedContent,
       destinations: destinations,
       risk: classification.risk,
       riskReason: classification.reason,
     );
   }
+
+  /// Whether the node decodes this content of an issuance, a fairminter or a
+  /// broadcast (`helpers.bytes_to_content`): as hex when it takes the mime
+  /// type for binary, as text when it is valid UTF-8. Otherwise the message
+  /// falls back to its legacy decoding, of the whole message, which the
+  /// message without its content would not reproduce.
+  static bool _nodeDecodesContent(Uint8List content, String mimeType) {
+    if (!_nodeMayReadAsText(mimeType)) return true;
+    try {
+      utf8.decode(content);
+      return true;
+    } on FormatException {
+      return false;
+    }
+  }
+
+  /// Whether the node may take content of this mime type for text
+  /// (`helpers.classify_mime_type`, before and after
+  /// `extended_mime_types_support`; an empty mime type reads as
+  /// `text/plain`). A superset: the patterns are looked for anywhere in the
+  /// raw string, which the node strips of parameters and whitespace.
+  static bool _nodeMayReadAsText(String mimeType) =>
+      mimeType.isEmpty ||
+      const [
+        "text/",
+        "message/",
+        "+xml",
+        "+json",
+        "application/xml",
+        "application/javascript",
+        "application/ecmascript",
+        "application/x-javascript",
+        "application/json",
+        "application/x-python-code",
+        "application/x-sh",
+        "application/x-csh",
+        "application/x-tex",
+        "application/x-latex",
+        "application/postscript",
+        "application/yaml",
+        "application/x-yaml",
+        "application/sql",
+      ].any(mimeType.contains);
 
   /// The x-only key of an address' public key: x-only already for a P2TR
   /// address, compressed otherwise. Null when it is neither.

@@ -38,6 +38,26 @@ enum RevealRisk {
   unrecognized,
 }
 
+/// The content of an ordinals envelope (the inscription itself) left out of
+/// the message the node decoded, because it made it too long to send.
+class OmittedContent extends Equatable {
+  /// The content length, in bytes.
+  final int length;
+
+  /// The mime type of the envelope, "" when it has none.
+  final String mimeType;
+
+  const OmittedContent({required this.length, required this.mimeType});
+
+  String get label => [
+        if (mimeType.isNotEmpty) mimeType,
+        "$length bytes, too long to decode: not shown",
+      ].join(", ");
+
+  @override
+  List<Object?> get props => [length, mimeType];
+}
+
 /// What the wallet knows about the Counterparty message carried by a reveal
 /// PSBT before the user signs it. With `require_reveal_source_signature` the
 /// signature IS the consent to this message: a dApp can hand the wallet a
@@ -59,6 +79,10 @@ class CounterpartyRevealInfo extends Equatable {
   /// Why the message could not be decoded, when it could not.
   final String? decodeError;
 
+  /// The inscription content the node decoded the message without, when it
+  /// was left out: the field it fills reads empty in [message].
+  final OmittedContent? omittedContent;
+
   /// The Counterparty destinations of the reveal: the addresses of the
   /// outputs placed before its `CNTRPRTY` output.
   final List<String> destinations;
@@ -72,6 +96,7 @@ class CounterpartyRevealInfo extends Equatable {
     required this.messageHex,
     required this.message,
     required this.decodeError,
+    required this.omittedContent,
     required this.destinations,
     required this.risk,
     required this.riskReason,
@@ -85,15 +110,27 @@ class CounterpartyRevealInfo extends Equatable {
 
   /// The message fields as label/value pairs for display: normalized
   /// quantities replace raw ones, nested objects and nulls are skipped, sweep
-  /// flags are spelled out, each send of an MPMA send gets its own line.
+  /// flags are spelled out, each send of an MPMA send gets its own line. An
+  /// omitted content is described in the field it fills (the description of
+  /// an issuance or a fairminter, the text of a broadcast), or on its own
+  /// line.
   List<MapEntry<String, String>> get entries {
     final m = message;
     if (m == null) return const [];
     final data = m.messageData;
     final out = <MapEntry<String, String>>[];
+    var contentShown = false;
     for (final key in data.keys) {
       final value = data[key];
       if (value == null) continue;
+      if (omittedContent != null &&
+          !contentShown &&
+          value == "" &&
+          (key == "description" || key == "text")) {
+        out.add(MapEntry(key, omittedContent!.label));
+        contentShown = true;
+        continue;
+      }
       if (key == "sends" && value is List) {
         for (final send in value.whereType<Map>()) {
           out.add(MapEntry("send", _describeSend(send)));
@@ -113,6 +150,9 @@ class CounterpartyRevealInfo extends Equatable {
       }
       if (key == "asset_id" || key == "status" || key == "error") continue;
       out.add(MapEntry(_label(key), _truncate(value.toString())));
+    }
+    if (omittedContent != null && !contentShown) {
+      out.add(MapEntry("content", omittedContent!.label));
     }
     return out;
   }
@@ -147,6 +187,7 @@ class CounterpartyRevealInfo extends Equatable {
         messageHex,
         message,
         decodeError,
+        omittedContent,
         destinations,
         risk,
         riskReason,

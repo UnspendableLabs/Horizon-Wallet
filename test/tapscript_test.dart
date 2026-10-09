@@ -405,6 +405,42 @@ void main() {
     }
   });
 
+  group("counterpartyEnvelopeMessage", () {
+    Map<String, dynamic> envelope(String name) =>
+        (parserVectors["envelopes"] as List)
+            .cast<Map<String, dynamic>>()
+            .firstWhere((v) => v["name"] == name);
+
+    test("keeps the content of an ordinals envelope apart", () {
+      final v = envelope("ord_with_content");
+      final message = counterpartyEnvelopeMessage(h(v["envelope_script"]))!;
+      expect(hex.encode(message.bytes), v["message"]);
+      expect(utf8.decode(message.content!), "hello world");
+      expect(message.mimeType, "text/plain");
+      // [5, "text/plain", h''] after the type byte: the content field keeps
+      // its place, empty
+      expect(hex.encode(message.bytesWithoutContent),
+          "16" "83" "05" "6a746578742f706c61696e" "40");
+      expect(hex.encode(message.bytes),
+          startsWith("16" "83" "05" "6a746578742f706c61696e" "4b"));
+    });
+
+    test("leaves the message whole without content", () {
+      for (final name in ["ord_array", "generic_concatenates_pushes"]) {
+        final v = envelope(name);
+        final message = counterpartyEnvelopeMessage(h(v["envelope_script"]))!;
+        expect(hex.encode(message.bytes), v["message"]);
+        expect(message.content, isNull);
+        expect(message.bytesWithoutContent, message.bytes);
+      }
+      expect(
+          counterpartyEnvelopeMessage(h(
+                  envelope("generic_concatenates_pushes")["envelope_script"]))!
+              .mimeType,
+          isNull);
+    });
+  });
+
   group("planTapLeafSigning", () {
     final commitTxid = h(byName("p2wpkh_source_key")["commit_txid"] as String);
     final arc4Marker = Uint8List.fromList(

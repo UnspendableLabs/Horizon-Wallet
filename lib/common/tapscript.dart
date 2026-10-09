@@ -782,7 +782,38 @@ TapLeafSigningPlan? planTapLeafSigning({
 /// Returns null when the script is not a canonical envelope and throws a
 /// [TapscriptException] when the parser would reject the envelope. The result
 /// is the data the parser substitutes for the reveal's `CNTRPRTY` output.
-Uint8List? counterpartyMessageFromEnvelope(Uint8List script) {
+Uint8List? counterpartyMessageFromEnvelope(Uint8List script) =>
+    counterpartyEnvelopeMessage(script)?.bytes;
+
+/// The Counterparty message of a canonical envelope, with the content of an
+/// ordinals envelope (the inscription itself) also kept apart.
+class EnvelopeMessage {
+  /// The message, as [counterpartyMessageFromEnvelope] rebuilds it.
+  final Uint8List bytes;
+
+  /// The content of an ordinals envelope, the last field of [bytes]; null for
+  /// a generic envelope and for an ordinals envelope without content.
+  final Uint8List? content;
+
+  /// The mime type of an ordinals envelope, null for a generic envelope.
+  final String? mimeType;
+
+  /// [bytes] with [content] replaced by an empty byte string: the field keeps
+  /// its place and every other field its encoding, so the message unpacks to
+  /// the same fields with an empty description. [bytes] itself when there is
+  /// no content.
+  final Uint8List bytesWithoutContent;
+
+  const EnvelopeMessage({
+    required this.bytes,
+    required this.content,
+    required this.mimeType,
+    required this.bytesWithoutContent,
+  });
+}
+
+/// See [counterpartyMessageFromEnvelope].
+EnvelopeMessage? counterpartyEnvelopeMessage(Uint8List script) {
   if (envelopeLeafKey(script) == null) return null;
   final ins = parseScript(script)!;
   // between OP_IF and OP_ENDIF <key> OP_CHECKSIG
@@ -799,7 +830,12 @@ Uint8List? counterpartyMessageFromEnvelope(Uint8List script) {
     for (final i in body) {
       if (i.isPush) out.add(i.push!);
     }
-    return out.toBytes();
+    final bytes = out.toBytes();
+    return EnvelopeMessage(
+        bytes: bytes,
+        content: null,
+        mimeType: null,
+        bytesWithoutContent: bytes);
   }
 
   // the parser reads the mime type at the fifth element of the body and the
@@ -860,13 +896,27 @@ Uint8List? counterpartyMessageFromEnvelope(Uint8List script) {
     throw const TapscriptException("ordinals metadata has no message type id");
   }
   fields.add(mime);
-  if (content.isNotEmpty) fields.add(content.toBytes());
+  final contentBytes = content.isEmpty ? null : content.toBytes();
   // `id as u8`: the low byte of the integer, two's complement
   final typeByte = ((typeId is BigInt ? typeId : BigInt.from(typeId as int)) &
           BigInt.from(0xff))
       .toInt();
   try {
-    return Uint8List.fromList([typeByte, ...cborEncode(fields)]);
+    final bytes = Uint8List.fromList([
+      typeByte,
+      ...cborEncode([...fields, if (contentBytes != null) contentBytes])
+    ]);
+    return EnvelopeMessage(
+      bytes: bytes,
+      content: contentBytes,
+      mimeType: mime,
+      bytesWithoutContent: contentBytes == null
+          ? bytes
+          : Uint8List.fromList([
+              typeByte,
+              ...cborEncode([...fields, Uint8List(0)])
+            ]),
+    );
   } on CborException catch (e) {
     throw TapscriptException(
         "cannot re-encode the ordinals metadata: ${e.message}");

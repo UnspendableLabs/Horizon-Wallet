@@ -196,17 +196,43 @@ void main() {
   Uint8List envelopeOf(String name) =>
       h(vector(name)["envelope_script"] as String);
 
-  /// `OP_FALSE OP_IF <data> OP_ENDIF <source key> OP_CHECKSIG`
-  Uint8List genericEnvelope(List<int> data) => Uint8List.fromList([
-        0x00,
-        0x63,
-        data.length,
+  Uint8List push(List<int> data) => Uint8List.fromList([
+        if (data.length < 0x4c)
+          data.length
+        else if (data.length < 0x100) ...[
+          0x4c,
+          data.length
+        ] else ...[
+          0x4d,
+          data.length & 0xff,
+          data.length >> 8
+        ],
         ...data,
-        0x68,
-        32,
-        ...sourceXOnly,
-        0xac,
       ]);
+
+  /// `OP_FALSE OP_IF <items> OP_ENDIF <source key> OP_CHECKSIG`, each item
+  /// pushed in chunks of 520 bytes at most; an int item is a raw opcode.
+  Uint8List envelopeWith(List<Object> items) {
+    final b = BytesBuilder()..add([0x00, 0x63]);
+    for (final item in items) {
+      if (item is int) {
+        b.addByte(item);
+        continue;
+      }
+      final data = item as List<int>;
+      if (data.isEmpty) b.add(push(data));
+      for (var i = 0; i < data.length; i += 520) {
+        b.add(push(
+            data.sublist(i, i + 520 < data.length ? i + 520 : data.length)));
+      }
+    }
+    return (b
+          ..addByte(0x68)
+          ..add(push(sourceXOnly))
+          ..addByte(0xac))
+        .toBytes();
+  }
+
   final arc4Marker = Uint8List.fromList([
     0x6a,
     16,
@@ -526,7 +552,9 @@ void main() {
       // the parser reads this message from its first byte; the node would
       // strip the prefix and decode what follows
       givenPsbt([
-        genericEnvelope([...counterpartyPrefix, 4, 0x78])
+        envelopeWith([
+          [...counterpartyPrefix, 4, 0x78]
+        ])
       ]);
       givenUnpacked(const CounterpartyMessage(
         messageType: "unknown",
@@ -539,6 +567,103 @@ void main() {
           datahex: "$prefixHex${prefixHex}0478",
           httpConfig: any(named: "httpConfig"))).called(1);
       expect(reveal.messageHex, "${prefixHex}0478");
+      expect(reveal.risk, RevealRisk.unrecognized);
+    });
+
+    test("decodes a long inscription without its content", () async {
+      // [22, 1000, 100, true, false, false]: an issuance, whose description
+      // is the 10 KB content
+      final envelope = envelopeWith([
+        ascii.encode("ord"),
+        [7],
+        ascii.encode("xcp"),
+        [1],
+        ascii.encode("image/png"),
+        [5],
+        h("86" "16" "1903e8" "1864" "f5" "f4" "f4"),
+        0x00,
+        List.filled(10000, 0xab),
+      ]);
+      givenPsbt([envelope]);
+      givenUnpacked(const CounterpartyMessage(
+        messageType: "issuance",
+        messageTypeId: 22,
+        messageData: {
+          "asset": "A95428956661682189",
+          "reset": false,
+          "mime_type": "image/png",
+          "description": "",
+        },
+      ));
+
+      final reveal = (await run()).counterpartyReveal!;
+      final message = counterpartyEnvelopeMessage(envelope)!;
+      // the content field keeps its place, empty
+      verify(() => transactionRepository.unpackMessage(
+          datahex: "$prefixHex${hex.encode(message.bytesWithoutContent)}",
+          httpConfig: any(named: "httpConfig"))).called(1);
+      expect(hex.encode(message.bytesWithoutContent), endsWith("40"));
+      // the message shown and signed is the whole one
+      expect(reveal.messageHex, hex.encode(message.bytes));
+      expect(message.bytes.length, greaterThan(10000));
+      expect(reveal.omittedContent,
+          const OmittedContent(length: 10000, mimeType: "image/png"));
+      expect(Map.fromEntries(reveal.entries)["description"],
+          "image/png, 10000 bytes, too long to decode: not shown");
+      expect(reveal.risk, RevealRisk.normal);
+    });
+
+    test("keeps a text content the node would not decode", () async {
+      // a text content that is not UTF-8 sends the node back to the legacy
+      // decoding of the whole message: without it, the node would read
+      // another message
+      Uint8List inscription(String mime, List<int> content) => envelopeWith([
+            ascii.encode("ord"),
+            [7],
+            ascii.encode("xcp"),
+            [1],
+            ascii.encode(mime),
+            [5],
+            h("86" "16" "1903e8" "1864" "f5" "f4" "f4"),
+            0x00,
+            content,
+          ]);
+      givenUnpacked(issuance);
+
+      for (final mime in ["text/plain", "", "application/json; x", "a+xml"]) {
+        givenPsbt([inscription(mime, List.filled(5000, 0xff))]);
+        final reveal = (await run()).counterpartyReveal!;
+        expect(reveal.omittedContent, isNull, reason: mime);
+        expect(reveal.decodeError, contains("too long"), reason: mime);
+        expect(reveal.risk, RevealRisk.unrecognized, reason: mime);
+      }
+      verifyNever(() => transactionRepository.unpackMessage(
+          datahex: any(named: "datahex"),
+          httpConfig: any(named: "httpConfig")));
+
+      // valid UTF-8 text, or content of a binary type, is left out
+      for (final (mime, content) in [
+        ("text/plain", List.filled(5000, 0x61)),
+        ("image/webp", List.filled(5000, 0xff)),
+      ]) {
+        givenPsbt([inscription(mime, content)]);
+        final reveal = (await run()).counterpartyReveal!;
+        expect(reveal.omittedContent,
+            OmittedContent(length: 5000, mimeType: mime));
+        expect(reveal.decodeError, isNull);
+      }
+    });
+
+    test("does not send the node a message too long for its URL", () async {
+      givenPsbt([
+        envelopeWith([List.filled(4000, 0x14)])
+      ]);
+
+      final reveal = (await run()).counterpartyReveal!;
+      verifyNever(() => transactionRepository.unpackMessage(
+          datahex: any(named: "datahex"),
+          httpConfig: any(named: "httpConfig")));
+      expect(reveal.decodeError, contains("too long (4000 bytes)"));
       expect(reveal.risk, RevealRisk.unrecognized);
     });
 
@@ -682,5 +807,26 @@ void main() {
               .risk,
           RevealRisk.unrecognized);
     });
+  });
+
+  test("describes an omitted content on its own line without a field for it",
+      () {
+    const reveal = CounterpartyRevealInfo(
+      sourceAddress: "a",
+      leafHashHex: "",
+      messageHex: "",
+      message: CounterpartyMessage(
+          messageType: "sweep",
+          messageTypeId: 4,
+          messageData: {"destination": "b", "memo": ""}),
+      decodeError: null,
+      omittedContent: OmittedContent(length: 5000, mimeType: ""),
+      destinations: [],
+      risk: RevealRisk.high,
+      riskReason: "",
+    );
+    final entries = Map.fromEntries(reveal.entries);
+    expect(entries["memo"], "");
+    expect(entries["content"], "5000 bytes, too long to decode: not shown");
   });
 }
