@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
-import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/usecases/get_balances_by_addresses.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
@@ -15,6 +14,7 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
   final List<String> addresses;
   final CacheProvider cacheProvider;
   Timer? _pollingTimer;
+  bool _isFetching = false;
   List<MultiAddressBalance>? _cachedBalances;
   final HttpConfig httpConfig;
 
@@ -34,6 +34,17 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
   }
 
   Future<void> _onFetch(Fetch event, Emitter<BalancesState> emit) async {
+    // A slow request must not start another full retry chain on each poll.
+    if (_isFetching) return;
+    _isFetching = true;
+    try {
+      await _fetchBalances(emit);
+    } finally {
+      _isFetching = false;
+    }
+  }
+
+  Future<void> _fetchBalances(Emitter<BalancesState> emit) async {
     if (addresses.isEmpty) {
       emit(const BalancesState.complete(Result.ok([], [])));
       return;
@@ -68,13 +79,13 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
           .run();
       final balances =
           result.fold((error) => throw Exception(error), (result) => result);
-      // Only update state if the new data is different
-      if (_cachedBalances == null ||
-          !MultiAddressBalance.equals(_cachedBalances!, balances)) {
-        _cachedBalances = balances;
+      // Keep address allocation and asset metadata current even when totals
+      // are unchanged; subsequent reloads and starred toggles use this cache.
+      _cachedBalances = balances;
+      // End the reloading state even when the server returned unchanged data.
+      if (!emit.isDone) {
         emit(BalancesState.complete(Result.ok(balances, starredAssetsList)));
       }
-      // If data is the same, we don't emit a new state
     } catch (e) {
       emit(BalancesState.complete(
           Result.error('Error fetching balances: ${e.toString()}')));
