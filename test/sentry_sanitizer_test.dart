@@ -20,12 +20,49 @@ void main() {
       );
     });
 
+    test('redacts signed transaction and PSBT query payloads', () {
+      final result = sanitizeTelemetryText(
+          'POST /v2/bitcoin/transactions?signedhex=deadbeef&network=mainnet psbt_base64=abcsDEF== status=offline');
+      expect(result, isNot(contains('deadbeef')));
+      expect(result, isNot(contains('abcsDEF==')));
+      expect(result, contains('signedhex=$redactedTransactionPayload'));
+      expect(result, contains('network=mainnet'));
+      expect(result, contains('status=offline'));
+    });
+
+    test('redacts raw transactions sent to the decode and info endpoints', () {
+      final decode = sanitizeTelemetryText(
+          'GET /v2/bitcoin/transactions/decode?rawtx=0200000001aabbccdd');
+      final info = sanitizeTelemetryText(
+          'GET /v2/transactions/info?verbose=true&rawtransaction=0200000001aabbccdd');
+      expect(decode, isNot(contains('0200000001aabbccdd')));
+      expect(decode, contains('rawtx=$redactedTransactionPayload'));
+      expect(info, isNot(contains('0200000001aabbccdd')));
+      expect(info, contains('verbose=true'));
+      expect(info, contains('rawtransaction=$redactedTransactionPayload'));
+    });
+
     test('leaves transaction hashes and ordinary text intact', () {
       const value =
           'GET /tx/4d3f43a4e365968b2cbbf64347b62564928cf4b590cb9f14d5c01710c86c33a5';
 
       expect(sanitizeTelemetryText(value), value);
     });
+  });
+
+  test('redacts payload fields in nested telemetry maps', () {
+    final result = sanitizeTelemetryValue({
+      'request': {
+        'signedhex': 'deadbeef',
+        'psbt_hex': '70736274',
+        'rawTransaction': '0200000001aabbccdd',
+        'txid': 'public-id'
+      },
+    }) as Map;
+    expect(result['request']['signedhex'], redactedTransactionPayload);
+    expect(result['request']['psbt_hex'], redactedTransactionPayload);
+    expect(result['request']['rawTransaction'], redactedTransactionPayload);
+    expect(result['request']['txid'], 'public-id');
   });
 
   test('recursively sanitizes breadcrumb context', () {
