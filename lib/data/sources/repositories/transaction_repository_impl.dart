@@ -1,6 +1,7 @@
 import 'package:horizon/data/models/transaction_unpacked.dart';
 import 'package:horizon/data/models/transaction_info.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart' as api;
+import 'package:horizon/domain/entities/counterparty_reveal.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/transaction_unpacked.dart'
     as unpacked_entity;
@@ -32,6 +33,26 @@ class TransactionRepositoryImpl implements TransactionRepository {
     }
 
     return UnpackedVerboseMapper.toDomain(response.result!);
+  }
+
+  @override
+  Future<CounterpartyMessage> unpackMessage(
+      {required String datahex, required HttpConfig httpConfig}) async {
+    final response = await _counterpartyClientFactory
+        .getClient(httpConfig)
+        .unpackCounterpartyMessage(datahex);
+
+    final result = response.result;
+    if (result == null) {
+      throw Exception(
+          "Failed to unpack Counterparty message: ${response.error ?? "no result"}");
+    }
+
+    return CounterpartyMessage(
+      messageType: result.messageType,
+      messageTypeId: result.messageTypeId,
+      messageData: result.messageData,
+    );
   }
 
   @override

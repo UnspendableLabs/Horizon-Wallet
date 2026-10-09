@@ -1,6 +1,7 @@
 import "package:decimal/decimal.dart";
 import "package:formz/formz.dart";
 import "package:horizon/domain/entities/asset_quantity.dart";
+import 'package:horizon/domain/entities/counterparty_reveal.dart';
 import 'package:horizon/domain/entities/psbt_type.dart';
 import "./sign_psbt_bloc.dart";
 
@@ -121,6 +122,18 @@ class SignPsbtState with FormzMixin {
   final List<AugmentedOutput>? augmentedOutputs;
   final bool isFormDataLoaded;
 
+  /// The Counterparty message this PSBT reveals, when the wallet is asked to
+  /// sign a taproot envelope with one of its keys.
+  final CounterpartyRevealInfo? counterpartyReveal;
+
+  /// The user ticked the acknowledgement a high-impact or unrecognized
+  /// reveal message requires.
+  final bool revealAcknowledged;
+
+  /// Why the wallet refuses to sign a tapscript input of this PSBT, when it
+  /// does.
+  final String? tapscriptRefusal;
+
   SignPsbtState({
     required this.psbtType,
     required this.addresses,
@@ -133,7 +146,28 @@ class SignPsbtState with FormzMixin {
     this.signedPsbt,
     this.error,
     this.isFormDataLoaded = false,
+    this.counterpartyReveal,
+    this.revealAcknowledged = false,
+    this.tapscriptRefusal,
   });
+
+  /// Whether the reveal message, if any, still needs the user's
+  /// acknowledgement before the PSBT can be signed.
+  bool get revealAcknowledgementPending =>
+      counterpartyReveal != null &&
+      counterpartyReveal!.requiresAcknowledgement &&
+      !revealAcknowledged;
+
+  /// Whether the PSBT cannot be signed as it stands: the wallet refuses one
+  /// of its tapscript inputs, or the reveal message is not acknowledged yet.
+  bool get signingBlocked =>
+      tapscriptRefusal != null || revealAcknowledgementPending;
+
+  /// The `TapLeaf` hashes of the reveals the user was shown and may sign.
+  Set<String> get approvedRevealLeafHashes => {
+        if (counterpartyReveal != null && !revealAcknowledgementPending)
+          counterpartyReveal!.leafHashHex,
+      };
 
   @override
   List<FormzInput> get inputs => [password];
@@ -425,6 +459,9 @@ class SignPsbtState with FormzMixin {
     List<AugmentedOutput>? augmentedOutputs,
     BigInt? networkFee,
     BigInt? change,
+    CounterpartyRevealInfo? counterpartyReveal,
+    bool? revealAcknowledged,
+    String? tapscriptRefusal,
   }) {
     return SignPsbtState(
       addresses: addresses ?? this.addresses,
@@ -438,6 +475,9 @@ class SignPsbtState with FormzMixin {
       signedPsbt: signedPsbt ?? this.signedPsbt,
       error: error ?? this.error,
       isFormDataLoaded: isFormDataLoaded ?? this.isFormDataLoaded,
+      counterpartyReveal: counterpartyReveal ?? this.counterpartyReveal,
+      revealAcknowledged: revealAcknowledged ?? this.revealAcknowledged,
+      tapscriptRefusal: tapscriptRefusal ?? this.tapscriptRefusal,
     );
   }
 }

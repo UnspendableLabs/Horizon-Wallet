@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import "package:horizon/domain/entities/decryption_strategy.dart";
 import "package:horizon/domain/entities/address_v2.dart";
+import "package:horizon/domain/entities/network.dart";
 import "package:horizon/domain/entities/account_v2.dart";
 import "package:horizon/domain/repositories/address_v2_repository.dart";
 import "package:horizon/domain/repositories/wallet_config_repository.dart";
@@ -17,6 +18,28 @@ import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 bool addressIsSegwit(String address) {
   return address.startsWith('bc1') || address.startsWith('tb1');
+}
+
+bool _addressIsTaproot(String address) {
+  final a = address.toLowerCase();
+  return a.startsWith('bc1p') || a.startsWith('tb1p') || a.startsWith('bcrt1p');
+}
+
+/// The type of an imported address, from its encoding.
+AddressV2Type importedAddressType(String address) {
+  if (_addressIsTaproot(address)) return AddressV2Type.p2tr;
+  return addressIsSegwit(address) ? AddressV2Type.p2wpkh : AddressV2Type.p2pkh;
+}
+
+/// One public key format per address type, the same as for derived addresses
+/// (`AddressService.deriveAddress`): the compressed 33-byte key (66 hex) for
+/// P2WPKH and P2PKH, the x-only 32-byte key (64 hex) for P2TR. `compressedHex`
+/// is the compressed key the WIF gives.
+String publicKeyForType(String compressedHex, AddressV2Type type) {
+  if (type == AddressV2Type.p2tr && compressedHex.length == 66) {
+    return compressedHex.substring(2);
+  }
+  return compressedHex;
 }
 
 class AddressV2RepositoryImpl implements AddressV2Repository {
@@ -125,17 +148,30 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
 
           return addresses;
         }),
-      ImportedWIF(address: var address, encryptedWIF: var encryptedWIF) =>
-        TaskEither.right([
-          AddressV2(
-            type: addressIsSegwit(address)
-                ? AddressV2Type.p2wpkh
-                : AddressV2Type.p2pkh,
+      ImportedWIF(
+        address: var address,
+        encryptedWIF: var encryptedWIF,
+        network: var network,
+      ) =>
+        TaskEither<String, List<AddressV2>>.Do(($) async {
+          final type = importedAddressType(address);
+          // dApps read the key from `getAddresses` (e.g. to close the
+          // envelope of a taproot reveal with it), so it is never left empty
+          final publicKey = await $(_importedPublicKey(
             address: address,
-            derivation: WIF(value: encryptedWIF),
-            publicKey: "", // TODO: need to add public key
-          )
-        ])
+            encryptedWIF: encryptedWIF,
+            network: network,
+            type: type,
+          ));
+          return [
+            AddressV2(
+              type: type,
+              address: address,
+              derivation: WIF(value: encryptedWIF),
+              publicKey: publicKey,
+            )
+          ];
+        }),
     };
 
     final result = await task.run();
@@ -150,6 +186,35 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
 
       return AddressIndexSet(map);
     });
+  }
+
+  /// The public key of an imported address, from its WIF decrypted with the
+  /// in-memory key, in the format [publicKeyForType] gives.
+  TaskEither<String, String> _importedPublicKey({
+    required String address,
+    required String encryptedWIF,
+    required Network network,
+    required AddressV2Type type,
+  }) {
+    return _inMemoryKeyRepository
+        .getMapT(
+            onError: (_, __) => "invariant: failed to read in memory key map")
+        .flatMap((keyMap) => TaskEither.fromOption(
+              Option.fromNullable(keyMap[encryptedWIF]),
+              () => "invariant: decryption key not found for address: $address",
+            ))
+        .flatMap((decryptionKey) => _encryptionService.decryptWithKeyT(
+              data: encryptedWIF,
+              key: decryptionKey,
+              onError: (_, __) => "failed to decrypt wif for address: $address",
+            ))
+        .flatMap((wif) => _importedAddressService.getAddressPublicKeyFromWIFT(
+              wif: wif,
+              network: network,
+              onError: (_, __) =>
+                  "failed to get public key for address: $address",
+            ))
+        .map((publicKey) => publicKeyForType(publicKey, type));
   }
 
   // TODO: what is the deal with ths
@@ -183,11 +248,15 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
                                     network: addy.network,
                                     onError: (_, __) =>
                                         "failed to get public key for address: ${addy.address}"))
+                            // typed by its encoding, like the ImportedWIF
+                            // path: the stored type reads a taproot address
+                            // as P2WPKH
                             .map((publicKey) => AddressV2(
-                                publicKey: publicKey,
+                                publicKey: publicKeyForType(publicKey,
+                                    importedAddressType(addy.address)),
                                 address: addy.address,
                                 derivation: WIF(value: addy.encryptedWif),
-                                type: addy.type))))
+                                type: importedAddressType(addy.address)))))
                     .toList())));
 
     final result = await task.run();
