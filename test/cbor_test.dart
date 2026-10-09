@@ -142,6 +142,24 @@ void main() {
     expect(
         cborCompare(BigInt.parse("18446744073709551615"), 1), greaterThan(0));
     expect(cborCompare(<Object?>[1], <Object?>[1]), 0);
+    // arrays and maps of one length by their encodings, byte by byte, not
+    // the shorter encoding first: 81 19 03 e8 before 81 f5
+    expect(cborCompare(<Object?>[1000], <Object?>[true]), lessThan(0));
+    expect(
+        cborCompare(CborMap.from([const MapEntry(0, 1000)]),
+            CborMap.from([const MapEntry(0, true)])),
+        lessThan(0));
+    expect(roundTrip("a2" "81f5" "01" "811903e8" "02"),
+        "a2" "811903e8" "02" "81f5" "01");
+  });
+
+  test("keeps a byte order mark in text, like str::from_utf8", () {
+    expect(cborDecode(h("64efbbbf41")), "\u{FEFF}A");
+    expect(roundTrip("64efbbbf41"), "64efbbbf41");
+    expect(roundTrip("67efbbbfefbbbf42"), "67efbbbfefbbbf42");
+    expect(utf8DecodeKeepingBom(const []), "");
+    expect(() => utf8DecodeKeepingBom(const [0x80]),
+        throwsA(isA<FormatException>()));
   });
 
   test("rejects what serde_cbor rejects", () {

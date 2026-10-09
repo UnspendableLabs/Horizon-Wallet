@@ -199,10 +199,16 @@ ENVELOPES = [
     ("ord_undefined_reads_null", ord_envelope([arr(uint(22), UNDEFINED, NULL)])),
     ("ord_indefinite_lengths", ord_envelope([b"\x9f" + uint(22) + b"\x5f" + bstr(b"ab") + bstr(b"cd") + b"\xff" + b"\x7f" + text("he") + text("llo") + b"\xff" + b"\xbf" + text("k") + uint(1) + b"\xff" + b"\xff"])),
     ("ord_nested_map_sorted_deduplicated", ord_envelope([arr(uint(22), cmap((text("bb"), uint(1)), (text("a"), uint(2)), (uint(10), uint(3)), (nint(-1), uint(4)), (uint(1), uint(5)), (bstr(b"z"), uint(6)), (text("a"), uint(7)), (arr(uint(1)), uint(8)), (TRUE, uint(9)), (NULL, uint(10)), (f64(1.5), uint(11))))])),
+    # arrays and maps of one length sort by their encodings, compared byte by
+    # byte: [1000] (81 19 03 e8) before [true] (81 f5)
+    ("ord_map_keys_of_one_length_by_encoding", ord_envelope([arr(uint(22), cmap((arr(TRUE), uint(1)), (arr(uint(1000)), uint(2)), (cmap((uint(0), TRUE)), uint(3)), (cmap((uint(0), uint(1000))), uint(4))))])),
+    # str::from_utf8 keeps a byte order mark
+    ("ord_text_keeps_bom", ord_envelope([arr(uint(22), text("\ufeffA"), text("\ufeff\ufeffB"), cmap((text("\ufeffk"), uint(1)), (text("k"), uint(2))))])),
     ("ord_type_id_truncated_to_u8", ord_envelope([arr(uint(260), uint(1))])),
     ("ord_negative_type_id_truncated_to_u8", ord_envelope([arr(nint(-252), uint(1))])),
     ("ord_big_type_id_truncated_to_u8", ord_envelope([arr(uint(2**64 - 252), uint(1))])),
     ("ord_invalid_utf8_mime_is_empty", ord_envelope([arr(uint(22), uint(1))], mime=b"\xff\xfe")),
+    ("ord_mime_keeps_bom", ord_envelope([arr(uint(22), uint(1))], mime=b"\xef\xbb\xbftext/plain")),
     ("ord_mime_not_a_push", ord_envelope([arr(uint(22), uint(1))], head=[b"ord", b"\x07", b"xcp", b"\x01", 0x51])),
     # serde_cbor refuses the 128th nested array or map
     ("ord_depth_127_ok", ord_envelope([arr(uint(22), nested(126))])),

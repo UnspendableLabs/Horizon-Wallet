@@ -123,7 +123,7 @@ Uint8List cborEncode(Object? value) {
 
 /// serde_cbor's `Ord for Value`: the smaller major type first, then integers
 /// by magnitude, byte and text strings, arrays and maps by length, strings
-/// lexically, and anything else by its encoding.
+/// lexically, and anything else by its encoding, compared lexically.
 int cborCompare(Object? a, Object? b) {
   final ma = _majorType(a);
   final mb = _majorType(b);
@@ -143,18 +143,36 @@ int cborCompare(Object? a, Object? b) {
     case (Map x, Map y) when x.length != y.length:
       return x.length.compareTo(y.length);
   }
-  return _compareBytes(cborEncode(a), cborEncode(b));
+  return _compareLexically(cborEncode(a), cborEncode(b));
 }
 
 /// Length first, then lexical: the order of serde_cbor for byte and text
 /// strings (a Rust slice comparison once the lengths are equal).
 int _compareBytes(Uint8List a, Uint8List b) {
   if (a.length != b.length) return a.length.compareTo(b.length);
-  for (var i = 0; i < a.length; i++) {
+  return _compareLexically(a, b);
+}
+
+/// A Rust slice comparison: the first differing byte decides, and a prefix
+/// sorts before the longer slice. serde_cbor orders two encodings this way,
+/// so `[1000]` (`81 19 03 e8`) sorts before `[true]` (`81 f5`).
+int _compareLexically(Uint8List a, Uint8List b) {
+  final n = a.length < b.length ? a.length : b.length;
+  for (var i = 0; i < n; i++) {
     if (a[i] != b[i]) return a[i].compareTo(b[i]);
   }
-  return 0;
+  return a.length.compareTo(b.length);
 }
+
+/// Strict UTF-8 decoding that keeps a leading byte order mark, as Rust's
+/// `str::from_utf8` does. Dart's decoder drops it, which would make the
+/// wallet re-encode `EF BB BF 41` as `"A"` where the parser keeps
+/// `"\u{FEFF}A"`. A BOM is only dropped at the very start of the input, so
+/// the bytes are decoded behind an ASCII space that is then removed.
+///
+/// Throws a [FormatException] on invalid UTF-8.
+String utf8DecodeKeepingBom(List<int> bytes) =>
+    utf8.decode([0x20, ...bytes]).substring(1);
 
 // `int` before `double`: on the web an integral double is also an int.
 int _majorType(Object? v) => switch (v) {
@@ -249,7 +267,7 @@ class _Reader {
 
   static String _utf8(Uint8List b) {
     try {
-      return utf8.decode(b);
+      return utf8DecodeKeepingBom(b);
     } on FormatException {
       throw const CborException("invalid UTF-8 in a text string");
     }

@@ -875,7 +875,7 @@ Uint8List? counterpartyMessageFromEnvelope(Uint8List script) {
 /// parser's mime type).
 String _utf8OrEmpty(Uint8List bytes) {
   try {
-    return utf8.decode(bytes);
+    return utf8DecodeKeepingBom(bytes);
   } on FormatException {
     return "";
   }
