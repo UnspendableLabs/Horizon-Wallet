@@ -192,8 +192,21 @@ void main() {
 
   final sourceXOnly = h(source["source_x_only"] as String);
   final commitTxid = source["commit_txid"] as String;
+  final prefixHex = hex.encode(counterpartyPrefix);
   Uint8List envelopeOf(String name) =>
       h(vector(name)["envelope_script"] as String);
+
+  /// `OP_FALSE OP_IF <data> OP_ENDIF <source key> OP_CHECKSIG`
+  Uint8List genericEnvelope(List<int> data) => Uint8List.fromList([
+        0x00,
+        0x63,
+        data.length,
+        ...data,
+        0x68,
+        32,
+        ...sourceXOnly,
+        0xac,
+      ]);
   final arc4Marker = Uint8List.fromList([
     0x6a,
     16,
@@ -286,9 +299,10 @@ void main() {
       final data = await run();
       final reveal = data.counterpartyReveal!;
 
-      // the bytes sent to the node are the message rebuilt from the envelope
+      // the bytes sent to the node are the message rebuilt from the envelope,
+      // behind the CNTRPRTY prefix the node strips
       verify(() => transactionRepository.unpackMessage(
-          datahex: vector("sweep_raw")["message"] as String,
+          datahex: "$prefixHex${vector("sweep_raw")["message"]}",
           httpConfig: any(named: "httpConfig"))).called(1);
       expect(data.tapscriptRefusal, isNull);
       expect(reveal.messageHex, vector("sweep_raw")["message"]);
@@ -343,7 +357,7 @@ void main() {
 
         // whatever the envelope form, the node receives the same message
         verify(() => transactionRepository.unpackMessage(
-            datahex: vector(name)["message"] as String,
+            datahex: "$prefixHex${vector(name)["message"]}",
             httpConfig: any(named: "httpConfig"))).called(1);
         expect(reveal.risk, RevealRisk.normal);
         expect(reveal.requiresAcknowledgement, isFalse);
@@ -418,7 +432,7 @@ void main() {
 
       final reveal = (await run()).counterpartyReveal!;
       verify(() => transactionRepository.unpackMessage(
-          datahex: vector("issuance_raw")["message"] as String,
+          datahex: "$prefixHex${vector("issuance_raw")["message"]}",
           httpConfig: any(named: "httpConfig"))).called(1);
       expect(reveal.leafHashHex,
           hex.encode(tapLeafHash(envelopeOf("issuance_raw"))));
@@ -506,6 +520,26 @@ void main() {
       expect(reveal.decodeError, "invalid asset name");
       expect(reveal.risk, RevealRisk.unrecognized);
       expect(reveal.requiresAcknowledgement, isTrue);
+    });
+
+    test("keeps a leading CNTRPRTY in the message the node decodes", () async {
+      // the parser reads this message from its first byte; the node would
+      // strip the prefix and decode what follows
+      givenPsbt([
+        genericEnvelope([...counterpartyPrefix, 4, 0x78])
+      ]);
+      givenUnpacked(const CounterpartyMessage(
+        messageType: "unknown",
+        messageTypeId: 67,
+        messageData: {"error": "Unknown message type"},
+      ));
+
+      final reveal = (await run()).counterpartyReveal!;
+      verify(() => transactionRepository.unpackMessage(
+          datahex: "$prefixHex${prefixHex}0478",
+          httpConfig: any(named: "httpConfig"))).called(1);
+      expect(reveal.messageHex, "${prefixHex}0478");
+      expect(reveal.risk, RevealRisk.unrecognized);
     });
 
     test("lists each send of an MPMA send", () async {

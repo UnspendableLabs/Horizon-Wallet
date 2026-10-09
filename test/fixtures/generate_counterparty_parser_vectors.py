@@ -221,6 +221,9 @@ ENVELOPES = [
     ("ord_float_type_id_rejected", ord_envelope([arr(f64(22.0), uint(1))])),
     ("ord_empty_array_rejected", ord_envelope([arr()])),
     ("ord_map_without_xcp_rejected", ord_envelope([cmap((text("name"), text("x")))])),
+    # a byte string holding an array is not an array
+    ("ord_byte_string_metadata_rejected", ord_envelope([bstr(arr(uint(22), uint(1)))])),
+    ("ord_map_xcp_byte_string_rejected", ord_envelope([cmap((text("xcp"), bstr(arr(uint(22), uint(1)))))])),
     ("ord_reserved_simple_value_rejected", ord_envelope([arr(uint(22), b"\xf8\x20")])),
     ("ord_unassigned_info_rejected", ord_envelope([arr(uint(22), b"\x1c")])),
 ]

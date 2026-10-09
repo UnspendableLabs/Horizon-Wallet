@@ -160,6 +160,16 @@
    "message": null
   },
   {
+   "name": "ord_byte_string_metadata_rejected",
+   "envelope_script": "0063036f726401070378637001010a746578742f706c61696e010504438216016820c2e75ffa83a8dd813c5dbd9adb4d546d7bbe561dbd5c52d16e25c8465d287837ac",
+   "message": null
+  },
+  {
+   "name": "ord_map_xcp_byte_string_rejected",
+   "envelope_script": "0063036f726401070378637001010a746578742f706c61696e010509a163786370438216016820c2e75ffa83a8dd813c5dbd9adb4d546d7bbe561dbd5c52d16e25c8465d287837ac",
+   "message": null
+  },
+  {
    "name": "ord_reserved_simple_value_rejected",
    "envelope_script": "0063036f726401070378637001010a746578742f706c61696e0105048216f8206820c2e75ffa83a8dd813c5dbd9adb4d546d7bbe561dbd5c52d16e25c8465d287837ac",
    "message": null

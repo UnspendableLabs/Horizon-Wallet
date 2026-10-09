@@ -7,8 +7,9 @@ abstract class TransactionRepository {
   Future<TransactionUnpacked> unpack(
       {required String raw, required HttpConfig httpConfig});
 
-  /// Decodes Counterparty message bytes (hex, with or without the `CNTRPRTY`
-  /// prefix) with the node, keeping the fields of any message type.
+  /// Decodes Counterparty message bytes (hex) with the node, keeping the
+  /// fields of any message type. The node strips a leading `CNTRPRTY` prefix
+  /// before it unpacks the message.
   Future<CounterpartyMessage> unpackMessage(
       {required String datahex, required HttpConfig httpConfig});
   Future<TransactionInfo> getInfo(

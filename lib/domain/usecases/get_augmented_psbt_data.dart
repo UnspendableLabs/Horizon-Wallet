@@ -358,8 +358,12 @@ class GetAugmentedPsbtDataUseCase
         throw const TapscriptException("not a canonical envelope");
       }
       messageHex = hex.encode(bytes);
+      // The node strips a leading CNTRPRTY from the data it unpacks; the
+      // parser does not strip it from the data of an envelope. With the
+      // prefix added, the node reads the message as the parser does.
       message = await _transactionRepository.unpackMessage(
-          datahex: messageHex, httpConfig: params.httpConfig);
+          datahex: hex.encode(counterpartyPrefix) + messageHex,
+          httpConfig: params.httpConfig);
       decodeError = message.unpackError;
     } on TapscriptException catch (e) {
       decodeError = e.message;

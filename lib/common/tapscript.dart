@@ -837,12 +837,14 @@ Uint8List? counterpartyMessageFromEnvelope(Uint8List script) {
     throw TapscriptException(
         "ordinals metadata is not valid CBOR: ${e.message}");
   }
+  // a byte string decodes to a Uint8List, which is a List in Dart but not a
+  // CBOR array to serde_cbor
   List<Object?> fields;
-  if (decoded is List) {
+  if (decoded is List && decoded is! Uint8List) {
     fields = List.of(decoded);
   } else if (decoded is CborMap) {
     final xcp = decoded["xcp"];
-    if (xcp is! List || xcp.isEmpty) {
+    if (xcp is! List || xcp is Uint8List || xcp.isEmpty) {
       throw const TapscriptException(
           "ordinals metadata map has no `xcp` message array");
     }
