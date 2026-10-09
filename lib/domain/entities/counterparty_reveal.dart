@@ -13,19 +13,24 @@ class CounterpartyMessage extends Equatable {
     required this.messageData,
   });
 
+  /// Why the node could not unpack the message, when it could not: it then
+  /// names the message type but returns `{"error": ...}` as its data.
+  String? get unpackError => messageData["error"]?.toString();
+
   @override
   List<Object?> get props => [messageType, messageTypeId, messageData];
 }
 
 /// How much a Counterparty reveal can do once the user signs it.
 enum RevealRisk {
-  /// An ordinary message: shown for information.
+  /// A message that only publishes something from the address: an issuance
+  /// of the address' own asset, a broadcast without a value, a fairminter, a
+  /// cancellation, a BTC payment. Shown for information.
   normal,
 
-  /// A message that moves or exposes the whole address (sweep), transfers or
-  /// resets an asset, opens an order or a dispenser, attaches or detaches
-  /// assets, or publishes a broadcast with a value: needs an explicit
-  /// acknowledgement.
+  /// Anything else: a message that sends, sweeps, destroys, escrows or pays
+  /// out assets of the address, transfers or resets an asset, or publishes a
+  /// broadcast with a value. Needs an explicit acknowledgement.
   high,
 
   /// The message could not be decoded, or the node does not know its type:
@@ -80,7 +85,7 @@ class CounterpartyRevealInfo extends Equatable {
 
   /// The message fields as label/value pairs for display: normalized
   /// quantities replace raw ones, nested objects and nulls are skipped, sweep
-  /// flags are spelled out.
+  /// flags are spelled out, each send of an MPMA send gets its own line.
   List<MapEntry<String, String>> get entries {
     final m = message;
     if (m == null) return const [];
@@ -89,6 +94,12 @@ class CounterpartyRevealInfo extends Equatable {
     for (final key in data.keys) {
       final value = data[key];
       if (value == null) continue;
+      if (key == "sends" && value is List) {
+        for (final send in value.whereType<Map>()) {
+          out.add(MapEntry("send", _describeSend(send)));
+        }
+        continue;
+      }
       if (value is Map || value is List) continue;
       if (key.endsWith("_normalized")) {
         out.add(MapEntry(
@@ -104,6 +115,15 @@ class CounterpartyRevealInfo extends Equatable {
       out.add(MapEntry(_label(key), _truncate(value.toString())));
     }
     return out;
+  }
+
+  static String _describeSend(Map send) {
+    final quantity = send["quantity_normalized"] ?? send["quantity"];
+    final memo = send["memo"];
+    return [
+      "$quantity ${send["asset"]} to ${send["destination"]}",
+      if (memo != null) "memo ${_truncate(memo.toString())}",
+    ].join(", ");
   }
 
   static String _label(String key) => key.replaceAll("_", " ");
@@ -135,10 +155,14 @@ class CounterpartyRevealInfo extends Equatable {
 
 /// Classifies a decoded reveal message. `hasDestination` is true when the
 /// reveal transaction has a Counterparty destination, i.e. an address output
-/// placed before the `OP_RETURN CNTRPRTY` output (the parser ignores address
-/// outputs after the data, beyond the change). The composer never produces
-/// one for a taproot encoding, a hand-built PSBT can; for an issuance the
-/// destination becomes the asset's issuer.
+/// placed before its `CNTRPRTY` output (the parser ignores address outputs
+/// after the data, beyond the change). The composer never produces one for a
+/// taproot encoding, a hand-built PSBT can; for an issuance the destination
+/// becomes the asset's issuer.
+///
+/// Only the message types that cannot take anything from the address are
+/// ordinary; every other type, known or added later, needs the user's
+/// acknowledgement.
 ({RevealRisk risk, String reason}) classifyRevealMessage(
   CounterpartyMessage? message, {
   required bool hasDestination,
@@ -149,14 +173,17 @@ class CounterpartyRevealInfo extends Equatable {
       reason: "The Counterparty message in this reveal is not recognized.",
     );
   }
+  final unpackError = message.unpackError;
+  if (unpackError != null) {
+    return (
+      risk: RevealRisk.unrecognized,
+      reason:
+          "The ${message.messageType} message in this reveal cannot be decoded: $unpackError",
+    );
+  }
+  const normal = (risk: RevealRisk.normal, reason: "");
   final data = message.messageData;
   switch (message.messageType) {
-    case "sweep":
-      return (
-        risk: RevealRisk.high,
-        reason:
-            "A sweep transfers every balance and/or asset ownership of the source address to the destination.",
-      );
     case "issuance":
       if (hasDestination) {
         return (
@@ -171,7 +198,43 @@ class CounterpartyRevealInfo extends Equatable {
           reason: "This issuance resets the asset supply.",
         );
       }
-      return (risk: RevealRisk.normal, reason: "");
+      return normal;
+    case "broadcast":
+      final value = data["value"];
+      if (value == null || (value is num && value == 0)) return normal;
+      return (
+        risk: RevealRisk.high,
+        reason: "A broadcast with a value can settle bets on this feed.",
+      );
+    case "fairminter":
+    case "cancel":
+    case "btcpay":
+    case "dispense":
+      return normal;
+    case "sweep":
+      return (
+        risk: RevealRisk.high,
+        reason:
+            "A sweep transfers every balance and/or asset ownership of the source address to the destination.",
+      );
+    case "send":
+    case "enhanced_send":
+    case "mpma_send":
+      return (
+        risk: RevealRisk.high,
+        reason: "This sends assets from your address.",
+      );
+    case "destroy":
+      return (
+        risk: RevealRisk.high,
+        reason: "This destroys assets of your address for good.",
+      );
+    case "dividend":
+      return (
+        risk: RevealRisk.high,
+        reason:
+            "A dividend pays every holder of the asset out of your address' balance.",
+      );
     case "order":
       return (
         risk: RevealRisk.high,
@@ -184,20 +247,32 @@ class CounterpartyRevealInfo extends Equatable {
       );
     case "attach":
     case "detach":
+    case "utxo":
       return (
         risk: RevealRisk.high,
         reason: "This moves assets between the address and a UTXO.",
       );
-    case "broadcast":
-      final value = data["value"];
-      if (value is num && value != 0) {
-        return (
-          risk: RevealRisk.high,
-          reason: "A broadcast with a value can settle bets on this feed.",
-        );
-      }
-      return (risk: RevealRisk.normal, reason: "");
+    case "fairmint":
+      return (
+        risk: RevealRisk.high,
+        reason: "A fairmint pays the mint price out of your address' balance.",
+      );
+    case "bet":
+      return (
+        risk: RevealRisk.high,
+        reason: "A bet escrows the wager out of your address' balance.",
+      );
+    case "pooldeposit":
+    case "poolwithdraw":
+      return (
+        risk: RevealRisk.high,
+        reason: "This moves assets between your address and a pool.",
+      );
     default:
-      return (risk: RevealRisk.normal, reason: "");
+      return (
+        risk: RevealRisk.high,
+        reason:
+            "A ${message.messageType} message can move or commit assets of your address.",
+      );
   }
 }

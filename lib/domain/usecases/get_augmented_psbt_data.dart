@@ -360,6 +360,7 @@ class GetAugmentedPsbtDataUseCase
       messageHex = hex.encode(bytes);
       message = await _transactionRepository.unpackMessage(
           datahex: messageHex, httpConfig: params.httpConfig);
+      decodeError = message.unpackError;
     } on TapscriptException catch (e) {
       decodeError = e.message;
     } catch (e) {

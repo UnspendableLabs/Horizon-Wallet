@@ -5645,7 +5645,12 @@ class CounterpartyMessageModel {
     return CounterpartyMessageModel(
       messageType: (json["message_type"] ?? "unknown").toString(),
       messageTypeId: typeId is num ? typeId.toInt() : null,
-      messageData: data is Map ? Map<String, dynamic>.from(data) : const {},
+      messageData: switch (data) {
+        Map() => Map<String, dynamic>.from(data),
+        // an MPMA send unpacks to the list of its sends
+        List() => {"sends": data},
+        _ => const {},
+      },
     );
   }
 }

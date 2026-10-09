@@ -493,6 +493,45 @@ void main() {
       expect(reveal.entries, isEmpty);
     });
 
+    test("warns when the node cannot unpack a message of a known type",
+        () async {
+      givenRevealPsbt("issuance_raw");
+      givenUnpacked(const CounterpartyMessage(
+        messageType: "issuance",
+        messageTypeId: 22,
+        messageData: {"error": "invalid asset name"},
+      ));
+
+      final reveal = (await run()).counterpartyReveal!;
+      expect(reveal.decodeError, "invalid asset name");
+      expect(reveal.risk, RevealRisk.unrecognized);
+      expect(reveal.requiresAcknowledgement, isTrue);
+    });
+
+    test("lists each send of an MPMA send", () async {
+      givenRevealPsbt("unknown_type");
+      givenUnpacked(const CounterpartyMessage(
+        messageType: "mpma_send",
+        messageTypeId: 3,
+        messageData: {
+          "sends": [
+            {"asset": "XCP", "destination": "bc1qa", "quantity": 100},
+            {
+              "asset": "PEPE",
+              "destination": "bc1qb",
+              "quantity": 5,
+              "memo": "hi"
+            },
+          ]
+        },
+      ));
+
+      final reveal = (await run()).counterpartyReveal!;
+      expect(reveal.risk, RevealRisk.high);
+      expect(reveal.entries.where((e) => e.key == "send").map((e) => e.value),
+          ["100 XCP to bc1qa", "5 PEPE to bc1qb, memo hi"]);
+    });
+
     test("describes nothing for a PSBT that is not a reveal", () async {
       when(() => bitcoindService.decoderawtransaction(
               raw: any(named: "raw"), httpConfig: any(named: "httpConfig")))
@@ -529,11 +568,29 @@ void main() {
         CounterpartyMessage(
             messageType: type, messageTypeId: 0, messageData: data);
 
-    test("high impact types", () {
-      for (final type in ["sweep", "order", "dispenser", "attach", "detach"]) {
-        expect(classifyRevealMessage(msg(type), hasDestination: false).risk,
-            RevealRisk.high,
-            reason: type);
+    test("anything that can take assets from the address is high impact", () {
+      for (final type in [
+        "sweep",
+        "send",
+        "enhanced_send",
+        "mpma_send",
+        "destroy",
+        "dividend",
+        "order",
+        "dispenser",
+        "attach",
+        "detach",
+        "utxo",
+        "fairmint",
+        "bet",
+        "pooldeposit",
+        "poolwithdraw",
+        // a type added to the protocol later
+        "brand_new_message",
+      ]) {
+        final c = classifyRevealMessage(msg(type), hasDestination: false);
+        expect(c.risk, RevealRisk.high, reason: type);
+        expect(c.reason, isNotEmpty, reason: type);
       }
       expect(
           classifyRevealMessage(msg("broadcast", {"value": 1.5}),
@@ -545,17 +602,15 @@ void main() {
                   hasDestination: false)
               .risk,
           RevealRisk.high);
+      expect(
+          classifyRevealMessage(msg("issuance", {"reset": false}),
+                  hasDestination: true)
+              .risk,
+          RevealRisk.high);
     });
 
     test("ordinary types", () {
-      for (final type in [
-        "enhanced_send",
-        "fairmint",
-        "fairminter",
-        "dividend",
-        "cancel",
-        "destroy"
-      ]) {
+      for (final type in ["fairminter", "cancel", "btcpay", "dispense"]) {
         expect(classifyRevealMessage(msg(type), hasDestination: false).risk,
             RevealRisk.normal,
             reason: type);
@@ -576,6 +631,11 @@ void main() {
       expect(classifyRevealMessage(null, hasDestination: false).risk,
           RevealRisk.unrecognized);
       expect(classifyRevealMessage(msg("unknown"), hasDestination: false).risk,
+          RevealRisk.unrecognized);
+      expect(
+          classifyRevealMessage(msg("issuance", {"error": "bad"}),
+                  hasDestination: false)
+              .risk,
           RevealRisk.unrecognized);
     });
   });
