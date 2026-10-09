@@ -24,13 +24,14 @@ class CounterpartyMessage extends Equatable {
 /// How much a Counterparty reveal can do once the user signs it.
 enum RevealRisk {
   /// A message that only publishes something from the address: an issuance
-  /// of the address' own asset, a broadcast without a value, a fairminter, a
-  /// cancellation, a BTC payment. Shown for information.
+  /// of the address' own asset, a broadcast without a value, a cancellation,
+  /// a BTC payment. Shown for information.
   normal,
 
   /// Anything else: a message that sends, sweeps, destroys, escrows or pays
-  /// out assets of the address, transfers or resets an asset, or publishes a
-  /// broadcast with a value. Needs an explicit acknowledgement.
+  /// out assets of the address, transfers or resets an asset, opens a public
+  /// mint of it, or publishes a broadcast with a value. Needs an explicit
+  /// acknowledgement.
   high,
 
   /// The message could not be decoded, or the node does not know its type:
@@ -258,6 +259,13 @@ class CounterpartyRevealInfo extends Equatable {
         },
       );
     case "fairminter":
+      // fairminter.validate also opens a mint of an existing asset, as long
+      // as the source issued it and it is not locked
+      return (
+        risk: RevealRisk.high,
+        reason:
+            "A fairminter opens a public mint: on an asset you already issued, anyone can then mint new units of it.",
+      );
     case "cancel":
     case "btcpay":
     case "dispense":

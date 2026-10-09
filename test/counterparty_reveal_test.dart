@@ -768,6 +768,8 @@ void main() {
         "detach",
         "utxo",
         "fairmint",
+        // opens a mint of an asset the address already issued as well
+        "fairminter",
         "bet",
         "pooldeposit",
         "poolwithdraw",
@@ -801,7 +803,7 @@ void main() {
     });
 
     test("ordinary types", () {
-      for (final type in ["fairminter", "cancel", "btcpay", "dispense"]) {
+      for (final type in ["cancel", "btcpay", "dispense"]) {
         expect(classifyRevealMessage(msg(type), hasDestination: false).risk,
             RevealRisk.normal,
             reason: type);
