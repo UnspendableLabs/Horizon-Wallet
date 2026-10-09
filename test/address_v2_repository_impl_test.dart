@@ -167,5 +167,23 @@ void main() {
       final addresses = await repository.getAllImported();
       expect(addresses.map((a) => a.publicKey), [compressed, xOnly]);
     });
+
+    test("types an address by its encoding, not by the stored type", () async {
+      // ImportedAddressRepositoryImpl.getAll reads any stored type but p2pkh
+      // as p2wpkh, a taproot one included
+      when(() => importedAddressRepository.getAll()).thenAnswer((_) async => [
+            const ImportedAddress(
+              address:
+                  "bc1pvqks06mnslxdrwf7x6l6s02s92yx5cxt94gg3pw4gtv0455jj6csnc99dt",
+              type: AddressV2Type.p2wpkh,
+              network: Network.mainnet,
+              encryptedWif: "encrypted-wif",
+            ),
+          ]);
+
+      final address = (await repository.getAllImported()).single;
+      expect(address.type, AddressV2Type.p2tr);
+      expect(address.publicKey, xOnly);
+    });
   });
 }

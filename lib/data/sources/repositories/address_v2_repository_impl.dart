@@ -248,12 +248,15 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
                                     network: addy.network,
                                     onError: (_, __) =>
                                         "failed to get public key for address: ${addy.address}"))
+                            // typed by its encoding, like the ImportedWIF
+                            // path: the stored type reads a taproot address
+                            // as P2WPKH
                             .map((publicKey) => AddressV2(
-                                publicKey:
-                                    publicKeyForType(publicKey, addy.type),
+                                publicKey: publicKeyForType(publicKey,
+                                    importedAddressType(addy.address)),
                                 address: addy.address,
                                 derivation: WIF(value: addy.encryptedWif),
-                                type: addy.type))))
+                                type: importedAddressType(addy.address)))))
                     .toList())));
 
     final result = await task.run();
