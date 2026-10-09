@@ -9,6 +9,11 @@
 // Bitcoin (fees paid) but silently ignored by Counterparty, so the wallet
 // checks the leaf it is asked to sign before spending anything on it.
 //
+// Signing such a leaf publishes its message from the source address, so the
+// wallet also reads the transaction the way the parser does (the reveal
+// marker and the data outputs, `counterparty-rs/src/indexer/bitcoin_client.rs`)
+// to show exactly the message the network will parse.
+//
 // Everything here is pure Dart (no JS interop) so it can be unit tested on the
 // VM. The rule mirrors `counterparty-rs/src/reveal.rs`.
 
@@ -33,7 +38,12 @@ const int _op16 = 0x60;
 const int _opIf = 0x63;
 const int _opEndIf = 0x68;
 const int _opReturn = 0x6a;
+const int _opDup = 0x76;
+const int _opEqual = 0x87;
+const int _opEqualVerify = 0x88;
+const int _opHash160 = 0xa9;
 const int _opCheckSig = 0xac;
+const int _opCheckMultiSig = 0xae;
 
 /// `CNTRPRTY`, the prefix of every Counterparty message. The reveal of a
 /// taproot envelope carries an `OP_RETURN CNTRPRTY` output.
@@ -101,8 +111,8 @@ List<ScriptInstruction>? parseScript(Uint8List script) {
       continue;
     }
     if (i + len > script.length) return null;
-    out.add(ScriptInstruction.data(
-        Uint8List.fromList(script.sublist(i, i + len))));
+    out.add(
+        ScriptInstruction.data(Uint8List.fromList(script.sublist(i, i + len))));
     i += len;
   }
   return out;
@@ -160,18 +170,261 @@ bool isP2trScript(Uint8List script) =>
 bool isP2wpkhScript(Uint8List script) =>
     script.length == 22 && script[0] == 0x00 && script[1] == 0x14;
 
-/// Whether `script` is an `OP_RETURN` output whose data starts with
-/// `CNTRPRTY`, i.e. the marker output of a Counterparty taproot reveal.
-bool isCounterpartyRevealOutput(Uint8List script) {
-  if (script.isEmpty || script[0] != _opReturn) return false;
-  final ins = parseScript(Uint8List.fromList(script.sublist(1)));
-  if (ins == null || ins.isEmpty || !ins[0].isPush) return false;
-  final data = ins[0].push!;
-  if (data.length < counterpartyPrefix.length) return false;
-  for (var i = 0; i < counterpartyPrefix.length; i++) {
-    if (data[i] != counterpartyPrefix[i]) return false;
+/// `OP_0 <32-byte script hash>`.
+bool isP2wshScript(Uint8List script) =>
+    script.length == 34 && script[0] == 0x00 && script[1] == 0x20;
+
+/// `OP_HASH160 <20-byte script hash> OP_EQUAL`.
+bool isP2shScript(Uint8List script) =>
+    script.length == 23 &&
+    script[0] == _opHash160 &&
+    script[1] == 0x14 &&
+    script[22] == _opEqual;
+
+/// `OP_DUP OP_HASH160 <20-byte key hash> OP_EQUALVERIFY OP_CHECKSIG`.
+bool isP2pkhScript(Uint8List script) =>
+    script.length == 25 &&
+    script[0] == _opDup &&
+    script[1] == _opHash160 &&
+    script[2] == 0x14 &&
+    script[23] == _opEqualVerify &&
+    script[24] == _opCheckSig;
+
+/// Whether `address` is a taproot (segwit v1, bech32m) address.
+bool isTaprootAddress(String address) {
+  final a = address.toLowerCase();
+  return a.startsWith('bc1p') || a.startsWith('tb1p') || a.startsWith('bcrt1p');
+}
+
+bool _bytesEqual(List<int> a, List<int> b) {
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) return false;
   }
   return true;
+}
+
+bool _startsWith(List<int> bytes, List<int> prefix, [int at = 0]) {
+  if (bytes.length < at + prefix.length) return false;
+  for (var i = 0; i < prefix.length; i++) {
+    if (bytes[at + i] != prefix[i]) return false;
+  }
+  return true;
+}
+
+/// RC4 (ARC4): Counterparty obfuscates the data of an output with the txid of
+/// the transaction's first input. Nothing comes out of an empty key, as in
+/// the parser's `arc4_decrypt`.
+Uint8List arc4(List<int> key, List<int> data) {
+  if (key.isEmpty) return Uint8List(0);
+  final s = List<int>.generate(256, (i) => i);
+  var j = 0;
+  for (var i = 0; i < 256; i++) {
+    j = (j + s[i] + key[i % key.length]) & 0xff;
+    final t = s[i];
+    s[i] = s[j];
+    s[j] = t;
+  }
+  final out = Uint8List(data.length);
+  var i = 0;
+  j = 0;
+  for (var k = 0; k < data.length; k++) {
+    i = (i + 1) & 0xff;
+    j = (j + s[i]) & 0xff;
+    final t = s[i];
+    s[i] = s[j];
+    s[j] = t;
+    out[k] = data[k] ^ s[(s[i] + s[j]) & 0xff];
+  }
+  return out;
+}
+
+/// How the Counterparty parser reads a transaction output.
+enum CounterpartyOutputKind {
+  /// An address output: a destination before the data, change after it.
+  destination,
+
+  /// An output the parser reads Counterparty data from.
+  data,
+
+  /// An output the parser rejects (the whole transaction is then ignored),
+  /// or one a reveal has no reason to carry and the wallet does not accept
+  /// in one: bare multisig and pay-to-pubkey destinations, unknown witness
+  /// versions, non-standard scripts.
+  other,
+}
+
+class CounterpartyOutput {
+  final CounterpartyOutputKind kind;
+
+  /// The data the parser reads, when [kind] is
+  /// [CounterpartyOutputKind.data].
+  final Uint8List? data;
+
+  const CounterpartyOutput._(this.kind, [this.data]);
+
+  static const destination =
+      CounterpartyOutput._(CounterpartyOutputKind.destination);
+  static const other = CounterpartyOutput._(CounterpartyOutputKind.other);
+
+  /// The marker of a reveal: data equal to `CNTRPRTY`, which the parser
+  /// replaces with the message carried by the envelope of input 0.
+  bool get isRevealMarker =>
+      kind == CounterpartyOutputKind.data &&
+      _bytesEqual(data!, counterpartyPrefix);
+}
+
+/// How the Counterparty parser reads the output `script` of a transaction
+/// whose first input spends the transaction `firstInputTxid` (display byte
+/// order, the ARC4 key). Mirrors `parse_vout` in
+/// `counterparty-rs/src/indexer/bitcoin_client.rs`: the `OP_RETURN` data in
+/// clear (`CNTRPRTY` only) or ARC4-obfuscated, and the data hidden in the
+/// keys of an `OP_CHECKSIG` or `OP_CHECKMULTISIG` output.
+CounterpartyOutput classifyCounterpartyOutput(
+    Uint8List script, Uint8List firstInputTxid) {
+  if (script.isNotEmpty && script[0] == _opReturn) {
+    final ins = parseScript(script);
+    if (ins == null || ins.length != 2 || !ins[1].isPush) {
+      return CounterpartyOutput.other;
+    }
+    final pb = ins[1].push!;
+    if (_bytesEqual(pb, counterpartyPrefix)) {
+      return CounterpartyOutput._(
+          CounterpartyOutputKind.data, Uint8List.fromList(counterpartyPrefix));
+    }
+    final clear = arc4(firstInputTxid, pb);
+    if (_startsWith(clear, counterpartyPrefix)) {
+      return CounterpartyOutput._(CounterpartyOutputKind.data,
+          Uint8List.sublistView(clear, counterpartyPrefix.length));
+    }
+    return CounterpartyOutput.other;
+  }
+
+  final ins = parseScript(script);
+  if (ins == null || ins.isEmpty) return CounterpartyOutput.other;
+
+  if (ins.last.opcode == _opCheckSig) {
+    if (ins.length < 3) return CounterpartyOutput.other;
+    final third = ins[2];
+    final pb = third.isPush
+        ? third.push!
+        : Uint8List.fromList([third.opcode == _op1 ? 1 : third.opcode!]);
+    final data = _keyChunkData(arc4(firstInputTxid, pb));
+    if (data != null) {
+      return CounterpartyOutput._(CounterpartyOutputKind.data, data);
+    }
+    return isP2pkhScript(script)
+        ? CounterpartyOutput.destination
+        : CounterpartyOutput.other;
+  }
+
+  if (ins.last.opcode == _opCheckMultiSig) {
+    final keys = _multisigDataKeys(ins);
+    if (keys == null) return CounterpartyOutput.other;
+    final obfuscated = BytesBuilder();
+    // no data in the last key; skip the sign byte and the nonce byte
+    for (final key in keys.take(keys.length - 1)) {
+      if (key.length < 2) return CounterpartyOutput.other;
+      obfuscated.add(Uint8List.sublistView(key, 1, key.length - 1));
+    }
+    final data = _keyChunkData(arc4(firstInputTxid, obfuscated.toBytes()));
+    if (data != null) {
+      return CounterpartyOutput._(CounterpartyOutputKind.data, data);
+    }
+    return CounterpartyOutput.other;
+  }
+
+  if (isP2shScript(script) ||
+      isP2wpkhScript(script) ||
+      isP2wshScript(script) ||
+      isP2trScript(script)) {
+    return CounterpartyOutput.destination;
+  }
+  return CounterpartyOutput.other;
+}
+
+/// The data of a deobfuscated key chunk `<length> CNTRPRTY <data>`, or null
+/// when the chunk carries no Counterparty data.
+Uint8List? _keyChunkData(Uint8List clear) {
+  final n = counterpartyPrefix.length;
+  if (clear.length <= n || !_startsWith(clear, counterpartyPrefix, 1)) {
+    return null;
+  }
+  final length = clear[0] < clear.length - 1 ? clear[0] : clear.length - 1;
+  if (length < n) return Uint8List(0);
+  return Uint8List.sublistView(clear, 1 + n, 1 + length);
+}
+
+/// The keys of an `OP_CHECKMULTISIG` output that may carry Counterparty data,
+/// for the script shapes the parser accepts, or null for any other shape.
+List<Uint8List>? _multisigDataKeys(List<ScriptInstruction> ins) {
+  bool push(int i) => ins[i].isPush;
+  bool m(int i, Set<int> ops) =>
+      ins[i].opcode != null && ops.contains(ins[i].opcode);
+  const op1 = 0x51, op2 = 0x52, op3 = 0x53;
+  if (ins.length == 5) {
+    if ((push(0) && push(1) && push(2) && push(3)) ||
+        (m(0, {op1, op2, op3}) && push(1) && push(2) && m(3, {op2}))) {
+      return [ins[1].push!, ins[2].push!];
+    }
+  }
+  if (ins.length == 6) {
+    if ((push(0) && push(1) && push(2) && push(3) && push(4)) ||
+        (m(0, {op1, op2, op3}) &&
+            push(1) &&
+            push(2) &&
+            push(3) &&
+            m(4, {op3}))) {
+      return [ins[1].push!, ins[2].push!, ins[3].push!];
+    }
+  }
+  return null;
+}
+
+/// Whether some output of the transaction is the `CNTRPRTY` marker of a
+/// reveal, in whichever form the parser recognizes it.
+bool hasCounterpartyRevealMarker(
+        List<Uint8List> outputScripts, Uint8List firstInputTxid) =>
+    outputScripts.any(
+        (s) => classifyCounterpartyOutput(s, firstInputTxid).isRevealMarker);
+
+/// Checks that the outputs of a Counterparty reveal make the parser read the
+/// envelope's message and nothing else, and returns the index of the
+/// `CNTRPRTY` marker output.
+///
+/// The parser concatenates the data of every data output (the marker
+/// standing for the envelope), so any other data output would change the
+/// message: a reveal must have exactly one marker and, besides it, only
+/// address outputs. Every address output before the marker is a Counterparty
+/// destination.
+int checkCounterpartyRevealOutputs(
+    List<Uint8List> outputScripts, Uint8List firstInputTxid) {
+  int? marker;
+  for (var i = 0; i < outputScripts.length; i++) {
+    final output = classifyCounterpartyOutput(outputScripts[i], firstInputTxid);
+    switch (output.kind) {
+      case CounterpartyOutputKind.destination:
+        continue;
+      case CounterpartyOutputKind.other:
+        throw TapscriptException(
+            "output $i of the reveal is not an address output nor its CNTRPRTY marker");
+      case CounterpartyOutputKind.data:
+        if (!output.isRevealMarker) {
+          throw TapscriptException(
+              "output $i carries Counterparty data besides the envelope: the network would not parse the message the wallet shows");
+        }
+        if (marker != null) {
+          throw const TapscriptException(
+              "a Counterparty reveal must have a single CNTRPRTY output");
+        }
+        marker = i;
+    }
+  }
+  if (marker == null) {
+    throw const TapscriptException(
+        "a Counterparty envelope must be revealed with a CNTRPRTY output");
+  }
+  return marker;
 }
 
 /// BIP340/341 tagged hash: `sha256(sha256(tag) || sha256(tag) || data)`.
@@ -189,7 +442,8 @@ Uint8List _compactSize(int n) {
 }
 
 /// `TapLeaf` hash of a script under `leafVersion`.
-Uint8List tapLeafHash(Uint8List script, {int leafVersion = tapscriptLeafVersion}) {
+Uint8List tapLeafHash(Uint8List script,
+    {int leafVersion = tapscriptLeafVersion}) {
   return taggedHash(
       "TapLeaf", [leafVersion, ..._compactSize(script.length), ...script]);
 }
@@ -277,8 +531,8 @@ BigInt _bytesToBigInt(List<int> bytes) {
     [Uint8List? merkleRoot]) {
   final p = liftX(internalKey);
   if (p == null) return null;
-  final t = _bytesToBigInt(
-      taggedHash("TapTweak", [...internalKey, ...?merkleRoot]));
+  final t =
+      _bytesToBigInt(taggedHash("TapTweak", [...internalKey, ...?merkleRoot]));
   if (t >= _secp256k1.n) return null;
   final q = (p + (_secp256k1.G * t))!;
   if (q.isInfinity) return null;
@@ -347,21 +601,32 @@ class TapLeafSigningPlan {
   final int leafIndex;
   final Uint8List script;
   final Uint8List controlBlock;
+  final int leafVersion;
+
+  /// The `TapLeaf` hash of the leaf: the only leaf the wallet signs.
+  final Uint8List leafHash;
   final Uint8List leafKey;
   final RevealSignerKey signerKey;
 
-  /// Whether the transaction is a Counterparty reveal (it carries an
-  /// `OP_RETURN CNTRPRTY` output), in which case the stricter consensus shape
-  /// was enforced.
+  /// Whether the leaf is a canonical Counterparty envelope, so that the
+  /// signature publishes its message: the strict shape of a reveal was
+  /// enforced and the message must be shown before signing.
   final bool isCounterpartyReveal;
+
+  /// The index of the reveal's `CNTRPRTY` output; every output before it is
+  /// a Counterparty destination. Null when not a reveal.
+  final int? markerOutputIndex;
 
   const TapLeafSigningPlan({
     required this.leafIndex,
     required this.script,
     required this.controlBlock,
+    required this.leafVersion,
+    required this.leafHash,
     required this.leafKey,
     required this.signerKey,
     required this.isCounterpartyReveal,
+    required this.markerOutputIndex,
   });
 }
 
@@ -384,57 +649,81 @@ const Set<int> counterpartyRevealSighashTypes = {0x00, 0x01};
 /// Decides how to sign a tapscript input with the wallet key `xOnly`, or
 /// throws a [TapscriptException] explaining why it must not be signed.
 ///
-/// A leaf closed by `<xOnly> OP_CHECKSIG` or `<bip86(xOnly)> OP_CHECKSIG`
-/// (with or without the envelope prefix) is signed only if its control block
-/// commits it to the P2TR output being spent; otherwise the signature could
-/// never be valid.
+/// The plan names a single leaf, closed by `<xOnly> OP_CHECKSIG` or
+/// `<bip86(xOnly)> OP_CHECKSIG` (with or without the envelope prefix), whose
+/// control block commits it to the P2TR output being spent; the wallet signs
+/// that leaf and no other.
 ///
-/// When any output is `OP_RETURN CNTRPRTY` the transaction is a Counterparty
-/// reveal, and the shape `require_reveal_source_signature` demands is also
-/// enforced: exactly one input, tapscript leaf version `0xc0`, a canonical
-/// envelope, and a `SIGHASH_DEFAULT`/`SIGHASH_ALL` signature. A reveal that
-/// fails any of these is valid for Bitcoin but ignored by Counterparty: the
-/// fees would be paid and the message lost.
+/// The parser attributes a reveal to its source when input 0 spends a
+/// canonical envelope closed by a key of that source, whatever else the
+/// transaction holds. So whenever the planned leaf is a canonical envelope,
+/// the transaction is held to the shape `require_reveal_source_signature`
+/// demands, and its outputs to carrying the envelope's message and nothing
+/// else (see [checkCounterpartyRevealOutputs]): exactly one input, tapscript
+/// leaf version `0xc0`, a `SIGHASH_DEFAULT`/`SIGHASH_ALL` signature, and an
+/// envelope closed by the raw key of `xOnly`, or by its BIP86 output key when
+/// `signerIsTaprootAddress` (the only keys Counterparty accepts for the
+/// address). A transaction carrying the reveal marker must have such a leaf.
+/// `firstInputTxid` is the txid of the transaction input 0 spends, in display
+/// byte order: the parser deobfuscates the outputs with it.
 ///
-/// Returns null when the transaction is not a Counterparty reveal and no leaf
-/// has a shape this module knows: other tapscript protocols (Kontor) keep the
-/// previous behaviour, where the PSBT library signs whichever leaf contains
-/// the raw key.
+/// Returns null when no leaf has a shape this module knows: other tapscript
+/// protocols (Kontor) keep the previous behaviour, where the PSBT library
+/// signs whichever leaf contains the raw key.
 TapLeafSigningPlan? planTapLeafSigning({
   required Uint8List xOnly,
+  required bool signerIsTaprootAddress,
   required List<TapLeafScriptEntry> leaves,
   required Uint8List? spentScriptPubKey,
   required List<Uint8List> outputScripts,
+  required Uint8List firstInputTxid,
   required int inputCount,
   required int? inputSighashType,
 }) {
   if (leaves.isEmpty) {
     throw const TapscriptException("input has no tapLeafScript");
   }
-  final isReveal = outputScripts.any(isCounterpartyRevealOutput);
+  final marked = hasCounterpartyRevealMarker(outputScripts, firstInputTxid);
 
   int? chosen;
   Uint8List? chosenKey;
   RevealSignerKey? chosenSigner;
+  var isEnvelope = false;
   for (var i = 0; i < leaves.length; i++) {
-    final key = isReveal
-        ? envelopeLeafKey(leaves[i].script)
-        : leafSignerKey(leaves[i].script);
+    final envelopeKey = envelopeLeafKey(leaves[i].script);
+    final key =
+        envelopeKey ?? (marked ? null : leafSignerKey(leaves[i].script));
     if (key == null) continue;
     final signer = revealSignerKeyFor(leafKey: key, xOnly: xOnly);
     if (signer == null) continue;
+    // for anything but a taproot address, Counterparty takes the address key
+    // only: an envelope closed by its BIP86 key would be ignored
+    if (envelopeKey != null &&
+        signer == RevealSignerKey.tweaked &&
+        !signerIsTaprootAddress) {
+      continue;
+    }
     chosen = i;
     chosenKey = key;
     chosenSigner = signer;
+    isEnvelope = envelopeKey != null;
     break;
   }
   if (chosen == null) {
-    if (!isReveal) return null;
+    if (!marked) return null;
     throw const TapscriptException(
-        "the envelope is not a canonical `OP_FALSE OP_IF ... OP_ENDIF <key> OP_CHECKSIG` leaf closed by this wallet's key; the network would ignore the reveal");
+        "the envelope is not a canonical `OP_FALSE OP_IF ... OP_ENDIF <key> OP_CHECKSIG` leaf closed by this address' key; the network would ignore the reveal");
   }
   final leaf = leaves[chosen];
 
+  final cb = TapControlBlock.parse(leaf.controlBlock);
+  if (cb == null) {
+    throw const TapscriptException("invalid taproot control block");
+  }
+  if (cb.leafVersion != leaf.leafVersion) {
+    throw const TapscriptException(
+        "the leaf version of the tapLeafScript entry differs from its control block");
+  }
   if (spentScriptPubKey == null) {
     throw const TapscriptException(
         "tapscript input without witnessUtxo: cannot check the commitment");
@@ -447,10 +736,9 @@ TapLeafSigningPlan? planTapLeafSigning({
         "the control block does not commit the leaf to the spent output");
   }
 
-  if (isReveal) {
-    final cb = TapControlBlock.parse(leaf.controlBlock)!;
-    if (cb.leafVersion != tapscriptLeafVersion ||
-        leaf.leafVersion != tapscriptLeafVersion) {
+  int? markerOutputIndex;
+  if (isEnvelope) {
+    if (leaf.leafVersion != tapscriptLeafVersion) {
       throw const TapscriptException(
           "a Counterparty reveal must use tapscript leaf version 0xc0");
     }
@@ -463,52 +751,48 @@ TapLeafSigningPlan? planTapLeafSigning({
       throw TapscriptException(
           "a Counterparty reveal must be signed with SIGHASH_DEFAULT or SIGHASH_ALL, not 0x${inputSighashType.toRadixString(16)}");
     }
+    markerOutputIndex =
+        checkCounterpartyRevealOutputs(outputScripts, firstInputTxid);
   }
 
   return TapLeafSigningPlan(
     leafIndex: chosen,
     script: leaf.script,
     controlBlock: leaf.controlBlock,
+    leafVersion: leaf.leafVersion,
+    leafHash: tapLeafHash(leaf.script, leafVersion: leaf.leafVersion),
     leafKey: chosenKey!,
     signerKey: chosenSigner!,
-    isCounterpartyReveal: isReveal,
+    isCounterpartyReveal: isEnvelope,
+    markerOutputIndex: markerOutputIndex,
   );
 }
 
-bool _bytesEqualAscii(Uint8List bytes, String text) {
-  final t = ascii.encode(text);
-  if (bytes.length != t.length) return false;
-  for (var i = 0; i < t.length; i++) {
-    if (bytes[i] != t[i]) return false;
-  }
-  return true;
-}
-
 /// The Counterparty message carried by a canonical envelope, rebuilt the way
-/// the consensus parser does (`counterparty-rs/src/indexer/bitcoin_client.rs`):
+/// the consensus parser does (`extract_data_from_witness` in
+/// `counterparty-rs/src/indexer/bitcoin_client.rs`):
 ///
 /// * generic envelope: the concatenation of every push between `OP_IF` and
 ///   `OP_ENDIF`;
 /// * ordinals envelope, `"ord" 0x07 "xcp" 0x01 mime [0x05 metadata]* OP_0
 ///   content*`: the metadata is a CBOR array `[type_id, fields...]` (or a map
-///   whose `"xcp"` key holds that array), re-encoded as
-///   `type_id || cbor(fields + [mime] + [content])`.
+///   whose `"xcp"` key holds that array), re-encoded with serde_cbor's rules
+///   (see cbor.dart) as `(type_id as u8) || cbor(fields + [mime] + [content])`.
 ///
 /// Returns null when the script is not a canonical envelope and throws a
-/// [TapscriptException] when an ordinals envelope is malformed. The result
-/// has no `CNTRPRTY` prefix, like the `datahex` the node's `unpack` accepts.
+/// [TapscriptException] when the parser would reject the envelope. The result
+/// is the data the parser substitutes for the reveal's `CNTRPRTY` output.
 Uint8List? counterpartyMessageFromEnvelope(Uint8List script) {
   if (envelopeLeafKey(script) == null) return null;
   final ins = parseScript(script)!;
   // between OP_IF and OP_ENDIF <key> OP_CHECKSIG
   final body = ins.sublist(2, ins.length - 3);
 
-  final isOrd = body.length >= 5 &&
+  final isOrd = body.length >= 2 &&
       body[0].isPush &&
-      _bytesEqualAscii(body[0].push!, "ord") &&
+      _bytesEqual(body[0].push!, ascii.encode("ord")) &&
       body[1].isPush &&
-      body[1].push!.length == 1 &&
-      body[1].push![0] == 7;
+      _bytesEqual(body[1].push!, const [7]);
 
   if (!isOrd) {
     final out = BytesBuilder();
@@ -518,9 +802,12 @@ Uint8List? counterpartyMessageFromEnvelope(Uint8List script) {
     return out.toBytes();
   }
 
-  final mime = body[4].isPush
-      ? utf8.decode(body[4].push!, allowMalformed: true)
-      : "";
+  // the parser reads the mime type at the fifth element of the body and the
+  // sections after it, so a shorter body has no metadata
+  if (body.length < 5) {
+    throw const TapscriptException("ordinals envelope without metadata");
+  }
+  final mime = body[4].isPush ? _utf8OrEmpty(body[4].push!) : "";
   final metadata = BytesBuilder();
   final content = BytesBuilder();
   var section = 0; // 0 none, 1 metadata, 2 content
@@ -547,12 +834,13 @@ Uint8List? counterpartyMessageFromEnvelope(Uint8List script) {
   try {
     decoded = cborDecode(metadata.toBytes());
   } on CborException catch (e) {
-    throw TapscriptException("ordinals metadata is not valid CBOR: ${e.message}");
+    throw TapscriptException(
+        "ordinals metadata is not valid CBOR: ${e.message}");
   }
   List<Object?> fields;
   if (decoded is List) {
     fields = List.of(decoded);
-  } else if (decoded is Map) {
+  } else if (decoded is CborMap) {
     final xcp = decoded["xcp"];
     if (xcp is! List || xcp.isEmpty) {
       throw const TapscriptException(
@@ -566,10 +854,29 @@ Uint8List? counterpartyMessageFromEnvelope(Uint8List script) {
     throw const TapscriptException("ordinals metadata array is empty");
   }
   final typeId = fields.removeAt(0);
-  if (typeId is! int || typeId < 0 || typeId > 255) {
+  if (typeId is! int && typeId is! BigInt) {
     throw const TapscriptException("ordinals metadata has no message type id");
   }
   fields.add(mime);
   if (content.isNotEmpty) fields.add(content.toBytes());
-  return Uint8List.fromList([typeId, ...cborEncode(fields)]);
+  // `id as u8`: the low byte of the integer, two's complement
+  final typeByte = ((typeId is BigInt ? typeId : BigInt.from(typeId as int)) &
+          BigInt.from(0xff))
+      .toInt();
+  try {
+    return Uint8List.fromList([typeByte, ...cborEncode(fields)]);
+  } on CborException catch (e) {
+    throw TapscriptException(
+        "cannot re-encode the ordinals metadata: ${e.message}");
+  }
+}
+
+/// The text of a UTF-8 byte string, or "" when it is not valid UTF-8 (the
+/// parser's mime type).
+String _utf8OrEmpty(Uint8List bytes) {
+  try {
+    return utf8.decode(bytes);
+  } on FormatException {
+    return "";
+  }
 }

@@ -255,6 +255,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
         augmentedInputs: data.augmentedInputs,
         augmentedOutputs: data.augmentedOutputs,
         counterpartyReveal: data.counterpartyReveal,
+        tapscriptRefusal: data.tapscriptRefusal,
         isFormDataLoaded: true,
       ));
     });
@@ -283,9 +284,17 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
       return;
     }
 
+    if (state.tapscriptRefusal != null) {
+      emit(state.copyWith(
+          submissionStatus: FormzSubmissionStatus.failure,
+          error: state.tapscriptRefusal));
+      return;
+    }
+
     // Signing the reveal of a Counterparty envelope is the consent to the
     // message it carries: a high-impact or unrecognized message is never
-    // signed without the user's explicit acknowledgement.
+    // signed without the user's explicit acknowledgement, and the signer
+    // signs only the reveal shown here (approvedRevealLeafHashes).
     if (state.revealAcknowledgementPending) {
       emit(state.copyWith(
           submissionStatus: FormzSubmissionStatus.failure,
@@ -327,6 +336,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
               inputPrivateKeyMap: inputPrivateKeyMap,
               httpConfig: httpConfig,
               sighashTypes: sighashTypes,
+              approvedRevealLeafHashes: state.approvedRevealLeafHashes,
               onError: (e) => e.toString())));
       // onError: (e) => "Error signing PSBT")));
 

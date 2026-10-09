@@ -112,6 +112,8 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
           //           .titleMedium!
           //           .copyWith(color: Colors.white)),
           // ),
+          if (state.tapscriptRefusal != null)
+            _buildTapscriptRefusalView(context, state.tapscriptRefusal!),
           if (state.counterpartyReveal != null)
             _buildRevealView(context, state, state.counterpartyReveal!),
           Padding(
@@ -2204,9 +2206,9 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                     variant: HorizonUI.ButtonVariant.white,
                     borderRadius: 10,
                     disabled: state.submissionStatus.isInProgressOrSuccess ||
-                        state.revealAcknowledgementPending,
+                        state.signingBlocked,
                     onPressed: state.submissionStatus.isInProgressOrSuccess ||
-                            state.revealAcknowledgementPending
+                            state.signingBlocked
                         ? null
                         : () => context
                             .read<SignPsbtBloc>()
@@ -2233,8 +2235,45 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
   /// transaction was, so it is shown in full, and a high-impact or
   /// unrecognized message must be acknowledged before the Confirm button
   /// is enabled.
-  Widget _buildRevealView(
-      BuildContext context, SignPsbtState state, CounterpartyRevealInfo reveal) {
+  /// Why the wallet will not sign a tapscript input of this PSBT: shown up
+  /// front, with the Confirm button disabled.
+  Widget _buildTapscriptRefusalView(BuildContext context, String refusal) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: SizedBox(
+        width: double.infinity,
+        child: HorizonUI.HorizonCard(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  AppIcons.warningIcon(color: red1, height: 16, width: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      "The wallet will not sign this transaction",
+                      style: theme.textTheme.labelSmall,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              SelectableText(
+                refusal,
+                style: theme.textTheme.bodySmall?.copyWith(color: red1),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRevealView(BuildContext context, SignPsbtState state,
+      CounterpartyRevealInfo reveal) {
     final theme = Theme.of(context);
     final labelStyle = theme.inputDecorationTheme.hintStyle;
     final valueStyle = theme.textTheme.bodySmall;
@@ -2242,6 +2281,8 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
     final entries = <MapEntry<String, String>>[
       MapEntry("message", reveal.messageTypeLabel),
       MapEntry("source", reveal.sourceAddress),
+      for (final destination in reveal.destinations)
+        MapEntry("destination output", destination),
       ...reveal.entries,
     ];
 
@@ -2251,8 +2292,6 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
             "${reveal.decodeError != null ? " (${reveal.decodeError})" : ""}. "
             "Signing it publishes that message from your address.",
       if (reveal.risk == RevealRisk.high) reveal.riskReason,
-      if (!reveal.sourceKeyMatches)
-        "The envelope is not closed by the key of the address the application asked to sign with.",
     ];
 
     return Padding(

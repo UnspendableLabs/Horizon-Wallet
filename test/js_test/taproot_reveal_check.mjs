@@ -5,6 +5,8 @@
 // Horizon-Market-Client SDK builds (witnessUtxo + tapLeafScript +
 // tapInternalKey + tapMerkleRoot), then checks:
 // - one tapScriptSig for the envelope leaf and no key-path signature,
+// - signTaprootInput signs that leaf alone even when another tapLeafScript
+//   entry holds the same key (signInput would sign both),
 // - the finalized witness is <signature> <envelope> <control block>,
 // - bitcoinjs' script-path sighash equals the one bitcoinutils computed and
 //   both signatures verify against it,
@@ -82,7 +84,8 @@ for (const c of fx.cases) {
   for (const o of unsigned.outs) psbt.addOutput({ script: o.script, value: o.value });
 
   // What the wallet does: ecpair from the source private key, raw key unless
-  // the leaf holds the BIP86 output key, then psbt.signInput(0, signer, [0, 1]).
+  // the leaf holds the BIP86 output key, then
+  // psbt.signTaprootInput(0, signer, <leaf hash>, [0, 1]).
   const priv = B.from(c.source_private_key, "hex");
   const base = ECPair.fromPrivateKey(priv, { network: regtest });
   const xOnly = B.from(base.publicKey).subarray(1);
@@ -94,7 +97,7 @@ for (const c of fx.cases) {
     signerKind = "tweaked";
     if (!leafKey.equals(B.from(signer.publicKey).subarray(1))) throw new Error(`${c.name}: leaf key is neither raw nor tweaked`);
   }
-  psbt.signInput(0, signer, [0x00, 0x01]);
+  psbt.signTaprootInput(0, signer, leafHash, [0x00, 0x01]);
   const tapScriptSig = psbt.data.inputs[0].tapScriptSig;
   if (!tapScriptSig || tapScriptSig.length !== 1) throw new Error(`${c.name}: expected one tapScriptSig`);
   if (!B.from(tapScriptSig[0].leafHash).equals(leafHash)) throw new Error(`${c.name}: tapScriptSig for the wrong leaf`);
@@ -119,4 +122,38 @@ for (const c of fx.cases) {
   results.push({ name: c.name, signer: signerKind, commit_script_pubkey: c.reveal_lock_scripts[0], source_script_pubkey: c.source_script_pubkey, witness, txid: tx.getId(), sighash_type_bytes: witness[0].length / 2 });
   console.log(`${c.name}: signed with ${signerKind} key, witness ok, sighash matches bitcoinutils, txid ${tx.getId()}`);
 }
+// Two leaves closed by the same key and committed by the same output: the
+// wallet shows one envelope, so it must sign that one only.
+{
+  const c = fx.cases.find((k) => k.name === "p2wpkh_source_key");
+  const priv = B.from(c.source_private_key, "hex");
+  const signer = ECPair.fromPrivateKey(priv, { network: regtest });
+  const x = B.from(signer.publicKey).subarray(1);
+  const env = (msg) => B.concat([B.from([0x00, 0x63, msg.length]), B.from(msg), B.from([0x68, 0x20]), x, B.from([0xac])]);
+  const shown = env("CNTRPRTY shown"), hidden = env("CNTRPRTY hidden");
+  const internal = B.from(ECPair.fromPrivateKey(B.alloc(32, 9)).publicKey).subarray(1);
+  const scriptTree = [{ output: shown }, { output: hidden }];
+  const pay = (s) => bitcoinjs.payments.p2tr({ internalPubkey: internal, scriptTree, redeem: { output: s }, network: regtest });
+  const [pShown, pHidden] = [pay(shown), pay(hidden)];
+  const build = () => {
+    const psbt = new bitcoinjs.Psbt({ network: regtest });
+    psbt.addInput({ hash: B.alloc(32, 1), index: 0,
+      witnessUtxo: { script: pShown.output, value: 10000 },
+      tapLeafScript: [
+        { leafVersion: 0xc0, script: shown, controlBlock: pShown.witness[pShown.witness.length - 1] },
+        { leafVersion: 0xc0, script: hidden, controlBlock: pHidden.witness[pHidden.witness.length - 1] },
+      ] });
+    psbt.addOutput({ script: B.from("6a08434e545250525459", "hex"), value: 0 });
+    return psbt;
+  };
+  const all = build();
+  all.signInput(0, signer, [0x00, 0x01]);
+  if (all.data.inputs[0].tapScriptSig.length !== 2) throw new Error("two_leaves: signInput was expected to sign both leaves");
+  const one = build();
+  one.signTaprootInput(0, signer, tapLeafHash(shown), [0x00, 0x01]);
+  const sigs = one.data.inputs[0].tapScriptSig;
+  if (sigs.length !== 1 || !B.from(sigs[0].leafHash).equals(tapLeafHash(shown))) throw new Error("two_leaves: signTaprootInput signed another leaf");
+  console.log("two_leaves: signTaprootInput signs the shown leaf only (signInput would sign both)");
+}
+
 if (outPath) fs.writeFileSync(outPath, JSON.stringify(results, null, 1));

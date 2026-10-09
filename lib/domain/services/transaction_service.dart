@@ -1,3 +1,6 @@
+import "dart:typed_data";
+
+import "package:horizon/common/tapscript.dart";
 import "package:horizon/domain/entities/utxo.dart";
 import "package:horizon/domain/entities/http_config.dart";
 import "package:horizon/domain/entities/bitcoin_tx.dart";
@@ -42,44 +45,81 @@ class MakeBuyPsbtReturn {
   }
 }
 
-/// The output a PSBT input spends, as the PSBT itself describes it in its
-/// `witnessUtxo` field.
-class PsbtInputPrevout {
-  final String scriptPubKeyHex;
-  final int value;
-  final String? address;
+/// One input of a PSBT, as the PSBT itself describes it.
+class PsbtInputDescription {
+  /// The txid of the transaction the input spends, display byte order.
+  final Uint8List prevoutTxid;
 
-  /// The input carries a `tapLeafScript`: it is a taproot script path spend
-  /// (e.g. the reveal of a Counterparty taproot envelope), not a spend of an
-  /// address of the wallet.
-  final bool isTapscriptSpend;
+  /// The output the input spends, from the PSBT's `witnessUtxo`, when it has
+  /// one: its script, value and address.
+  final Uint8List? witnessUtxoScript;
+  final int? witnessUtxoValue;
+  final String? witnessUtxoAddress;
 
-  /// The script of the first `tapLeafScript` entry, hex (the envelope of a
-  /// Counterparty reveal), when there is one.
-  final String? tapLeafScriptHex;
+  /// The `tapLeafScript` entries: a non-empty list makes the input a taproot
+  /// script path spend (e.g. the reveal of a Counterparty taproot envelope).
+  final List<TapLeafScriptEntry> tapLeafScripts;
 
-  const PsbtInputPrevout({
-    required this.scriptPubKeyHex,
-    required this.value,
-    required this.address,
-    required this.isTapscriptSpend,
-    this.tapLeafScriptHex,
+  /// The PSBT's `sighashType` for the input, when set.
+  final int? sighashType;
+
+  const PsbtInputDescription({
+    required this.prevoutTxid,
+    required this.witnessUtxoScript,
+    required this.witnessUtxoValue,
+    required this.witnessUtxoAddress,
+    required this.tapLeafScripts,
+    required this.sighashType,
   });
+}
+
+/// What the wallet reads from a PSBT, without the network, to decide how to
+/// sign its tapscript inputs.
+class PsbtDescription {
+  final List<PsbtInputDescription> inputs;
+  final List<Uint8List> outputScripts;
+
+  const PsbtDescription({required this.inputs, required this.outputScripts});
+
+  /// How the wallet signs the tapscript input `index` with the key `xOnly` of
+  /// the address `signerAddress` ([planTapLeafSigning]). The signing screen
+  /// and the signer both call this on the same PSBT, so the reveal the user
+  /// is shown is the one that gets signed.
+  TapLeafSigningPlan? planTapLeafSigningForInput(
+    int index, {
+    required Uint8List xOnly,
+    required String signerAddress,
+  }) {
+    final input = inputs[index];
+    return planTapLeafSigning(
+      xOnly: xOnly,
+      signerIsTaprootAddress: isTaprootAddress(signerAddress),
+      leaves: input.tapLeafScripts,
+      spentScriptPubKey: input.witnessUtxoScript,
+      outputScripts: outputScripts,
+      firstInputTxid: inputs.first.prevoutTxid,
+      inputCount: inputs.length,
+      inputSighashType: input.sighashType,
+    );
+  }
 }
 
 abstract class TransactionService {
   String finalizePsbtAndExtractTransaction({required String psbtHex});
 
+  /// Signs the inputs of `inputPrivateKeyMap` (input index to the signing
+  /// address and its private key). A leaf that reveals a Counterparty
+  /// message is signed only when its `TapLeaf` hash (hex) is in
+  /// `approvedRevealLeafHashes`: the user was shown that message.
   String signPsbt(String psbtHex, Map<int, (String, String)> inputPrivateKeyMap,
       HttpConfig httpConfig,
-      [List<int>? sighashTypes]);
+      [List<int>? sighashTypes,
+      Set<String> approvedRevealLeafHashes = const {}]);
 
   String psbtToUnsignedTransactionHex(String psbtHex);
 
-  /// One entry per input: the prevout the PSBT embeds in `witnessUtxo`, or
-  /// null when the input has none.
-  List<PsbtInputPrevout?> getPsbtInputPrevouts(
-      String psbtHex, HttpConfig httpConfig);
+  /// The inputs and outputs of a PSBT, as the PSBT describes them.
+  PsbtDescription describePsbt(String psbtHex, HttpConfig httpConfig);
 
   // TODO: this doesn't totally belong here
   String signMessage(String message, String privateKey, HttpConfig httpConfig);
@@ -332,10 +372,12 @@ extension TransactionServiceX on TransactionService {
     required Map<int, (String, String)> inputPrivateKeyMap,
     required HttpConfig httpConfig,
     List<int>? sighashTypes,
+    Set<String> approvedRevealLeafHashes = const {},
     required String Function(Object error) onError,
   }) {
     return Either.tryCatch(
-      () => signPsbt(psbtHex, inputPrivateKeyMap, httpConfig, sighashTypes),
+      () => signPsbt(psbtHex, inputPrivateKeyMap, httpConfig, sighashTypes,
+          approvedRevealLeafHashes),
       (e, _) => onError(e),
     );
   }

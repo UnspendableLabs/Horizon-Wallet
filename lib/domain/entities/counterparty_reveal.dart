@@ -42,8 +42,9 @@ class CounterpartyRevealInfo extends Equatable {
   /// The wallet address whose key closes the envelope (the message source).
   final String sourceAddress;
 
-  /// Whether the envelope key is really a key of [sourceAddress].
-  final bool sourceKeyMatches;
+  /// The `TapLeaf` hash (hex) of the envelope leaf: the wallet signs this
+  /// leaf, and only this one, once the user has seen its message.
+  final String leafHashHex;
 
   /// The message bytes rebuilt from the envelope, hex.
   final String messageHex;
@@ -53,15 +54,20 @@ class CounterpartyRevealInfo extends Equatable {
   /// Why the message could not be decoded, when it could not.
   final String? decodeError;
 
+  /// The Counterparty destinations of the reveal: the addresses of the
+  /// outputs placed before its `CNTRPRTY` output.
+  final List<String> destinations;
+
   final RevealRisk risk;
   final String riskReason;
 
   const CounterpartyRevealInfo({
     required this.sourceAddress,
-    required this.sourceKeyMatches,
+    required this.leafHashHex,
     required this.messageHex,
     required this.message,
     required this.decodeError,
+    required this.destinations,
     required this.risk,
     required this.riskReason,
   });
@@ -85,8 +91,8 @@ class CounterpartyRevealInfo extends Equatable {
       if (value == null) continue;
       if (value is Map || value is List) continue;
       if (key.endsWith("_normalized")) {
-        out.add(MapEntry(_label(key.substring(0, key.length - 11)),
-            value.toString()));
+        out.add(MapEntry(
+            _label(key.substring(0, key.length - 11)), value.toString()));
         continue;
       }
       if (data.containsKey("${key}_normalized")) continue;
@@ -117,10 +123,11 @@ class CounterpartyRevealInfo extends Equatable {
   @override
   List<Object?> get props => [
         sourceAddress,
-        sourceKeyMatches,
+        leafHashHex,
         messageHex,
         message,
         decodeError,
+        destinations,
         risk,
         riskReason,
       ];

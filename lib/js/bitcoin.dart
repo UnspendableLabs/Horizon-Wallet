@@ -192,6 +192,13 @@ extension type Psbt._(JSObject _) implements JSObject {
 
   external void signInput(int inputIndex, Signer keyPair,
       [JSArray<JSNumber>? sighashTypes]);
+
+  /// Signs one leaf of a taproot input: `signInput` would sign every
+  /// `tapLeafScript` entry that contains the signer's key.
+  external void signTaprootInput(
+      int inputIndex, Signer keyPair, Buffer tapLeafHashToSign,
+      [JSArray<JSNumber>? sighashTypes]);
+
   external void updateInput(int index, PsbtInputUpdate patch);
 
   external void finalizeAllInputs();
@@ -212,6 +219,15 @@ extension type Psbt._(JSObject _) implements JSObject {
   int get outputCount => txOutputs.length;
 
   external JSArray<JSAny> get txOutputs;
+
+  /// The inputs and outputs of the unsigned transaction. Not
+  /// `data.globalMap.unsignedTx.ins`/`outs`: that object is bitcoinjs'
+  /// `PsbtTransaction` wrapper, which has neither.
+  @JS('txInputs')
+  external JSArray<TxInput> get unsignedInputs;
+
+  @JS('txOutputs')
+  external JSArray<TxOutput> get unsignedOutputs;
 
   @JS('__CACHE')
   external PsbtCache get cache;

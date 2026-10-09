@@ -665,15 +665,18 @@ class TransactionServiceWeb implements TransactionService {
     Map<int, (String, String)> inputPrivateKeyMap,
     HttpConfig httpConfig, [
     List<int>? sighashTypes,
+    Set<String> approvedRevealLeafHashes = const {},
   ]) {
     final psbt = bitcoin.Psbt.fromHex(psbtHex);
     final inputs = psbt.data.inputs;
+    // read once, and only for a PSBT with a tapscript input
+    PsbtDescription? description;
 
     final sigTypes = sighashTypes?.map((e) => e.toJS).toList().toJS;
 
     for (final entry in inputPrivateKeyMap.entries) {
       final index = entry.key;
-      final (pubHexMaybe, privHex) = entry.value;
+      final (signerAddress, privHex) = entry.value;
 
       final privBuf =
           Buffer.from(Uint8List.fromList(conv.hex.decode(privHex)).toJS);
@@ -684,6 +687,26 @@ class TransactionServiceWeb implements TransactionService {
 
       final hasLeaf =
           inp.tapLeafScript != null && inp.tapLeafScript!.length > 0;
+
+      // p2tr script path spend, e.g. the reveal of a Counterparty taproot
+      // envelope. Checked first: bitcoinjs signs an input with a
+      // tapLeafScript as taproot even without tapInternalKey or a P2TR
+      // witnessUtxo.
+      if (hasLeaf) {
+        _signTapLeaf(
+          psbt: psbt,
+          index: index,
+          description: description ??= _describePsbt(psbt, httpConfig),
+          signerAddress: signerAddress,
+          privBuf: privBuf,
+          baseSigner: baseSigner,
+          sigTypes: sigTypes,
+          approvedRevealLeafHashes: approvedRevealLeafHashes,
+          httpConfig: httpConfig,
+        );
+        continue;
+      }
+
       final hasTik = inp.tapInternalKey != null;
       final witnessScript = inp.witnessUtxo?.script.toDart;
       final isTaprootByScript =
@@ -692,22 +715,6 @@ class TransactionServiceWeb implements TransactionService {
 
       if (!isTaproot) {
         psbt.signInput(index, baseSigner, sigTypes);
-        continue;
-      }
-
-      if (hasLeaf) {
-        // p2tr script path spend, e.g. the reveal of a Counterparty taproot
-        // envelope: the leaf is checked before it is signed (tapscript.dart)
-        // and signed with the raw key, or the BIP86-tweaked key when the
-        // leaf was closed with the output key.
-        final signer = _tapLeafSigner(
-          psbt: psbt,
-          input: inp,
-          privBuf: privBuf,
-          baseSigner: baseSigner,
-          httpConfig: httpConfig,
-        );
-        psbt.signInput(index, signer, sigTypes);
         continue;
       }
 
@@ -740,75 +747,102 @@ class TransactionServiceWeb implements TransactionService {
     return psbt.toHex();
   }
 
-  /// The key pair a tapscript input must be signed with, once the leaf has
-  /// passed the checks of [planTapLeafSigning]: the source key itself, or its
-  /// BIP86-tweaked key when the envelope was closed with the P2TR output key.
-  /// Throws a [TapscriptException] when the input must not be signed.
-  ecpair.ECPairInterface _tapLeafSigner({
+  /// Signs the tapscript input `index` once [planTapLeafSigning] has checked
+  /// its leaf, with the source key itself or its BIP86-tweaked key when the
+  /// envelope was closed with the P2TR output key, and signs that leaf only.
+  /// A leaf that reveals a Counterparty message is signed only when the user
+  /// was shown it (`approvedRevealLeafHashes`). Throws a
+  /// [TapscriptException] when the input must not be signed.
+  void _signTapLeaf({
     required bitcoin.Psbt psbt,
-    required bitcoin.PsbtInputData input,
+    required int index,
+    required PsbtDescription description,
+    required String signerAddress,
     required Buffer privBuf,
     required ecpair.ECPairInterface baseSigner,
+    required JSArray<JSNumber>? sigTypes,
+    required Set<String> approvedRevealLeafHashes,
     required HttpConfig httpConfig,
   }) {
-    final leaves = input.tapLeafScript!.toDart
-        .map((leaf) => TapLeafScriptEntry(
-              leafVersion: leaf.leafVersion,
-              script: leaf.script.toDart,
-              controlBlock: leaf.controlBlock.toDart,
-            ))
-        .toList();
-    final outputScripts = psbt.data.globalMap.unsignedTx.outs.toDart
-        .map((out) => out.script.toDart)
-        .toList();
     final pub33 = baseSigner.publicKey.toDart;
-
-    final plan = planTapLeafSigning(
+    final plan = description.planTapLeafSigningForInput(
+      index,
       xOnly: Uint8List.fromList(pub33.sublist(1)),
-      leaves: leaves,
-      spentScriptPubKey: input.witnessUtxo?.script.toDart,
-      outputScripts: outputScripts,
-      inputCount: psbt.inputCount,
-      inputSighashType: input.sighashType,
+      signerAddress: signerAddress,
     );
 
-    return switch (plan?.signerKey) {
-      // not a Counterparty reveal and no leaf of a known shape: as before,
-      // bitcoinjs signs the leaf that contains the raw key, if any
-      null => baseSigner,
+    if (plan == null) {
+      // not a Counterparty envelope and no leaf of a known shape: as before,
+      // bitcoinjs signs the leaves that contain the raw key, if any
+      psbt.signInput(index, baseSigner, sigTypes);
+      return;
+    }
+
+    if (plan.isCounterpartyReveal &&
+        !approvedRevealLeafHashes.contains(conv.hex.encode(plan.leafHash))) {
+      throw const TapscriptException(
+          "the Counterparty message this reveal carries was not shown before signing");
+    }
+
+    final signer = switch (plan.signerKey) {
       RevealSignerKey.raw => baseSigner,
       RevealSignerKey.tweaked => ecpairFactory.fromPrivateKey(
           taprootTweakPrivKey(privBuf, baseSigner),
           httpConfig.network.toJS,
         ),
     };
+    psbt.signTaprootInput(
+        index, signer, Buffer.from(plan.leafHash.toJS), sigTypes);
   }
 
   @override
-  List<PsbtInputPrevout?> getPsbtInputPrevouts(
-      String psbtHex, HttpConfig httpConfig) {
-    final psbt = bitcoin.Psbt.fromHex(psbtHex);
-    return psbt.data.inputs.toDart.map((input) {
-      final witnessUtxo = input.witnessUtxo;
-      if (witnessUtxo == null) return null;
-      final script = witnessUtxo.script.toDart;
-      String? address;
+  PsbtDescription describePsbt(String psbtHex, HttpConfig httpConfig) =>
+      _describePsbt(bitcoin.Psbt.fromHex(psbtHex), httpConfig);
+
+  PsbtDescription _describePsbt(bitcoin.Psbt psbt, HttpConfig httpConfig) {
+    final txInputs = psbt.unsignedInputs.toDart;
+    final inputs = psbt.data.inputs.toDart;
+    return PsbtDescription(
+      inputs: [
+        for (var i = 0; i < inputs.length; i++)
+          _describeInput(inputs[i], txInputs[i], httpConfig),
+      ],
+      outputScripts: [
+        for (final output in psbt.unsignedOutputs.toDart)
+          Uint8List.fromList(output.script.toDart),
+      ],
+    );
+  }
+
+  PsbtInputDescription _describeInput(bitcoin.PsbtInputData input,
+      bitcoin.TxInput txInput, HttpConfig httpConfig) {
+    final witnessUtxo = input.witnessUtxo;
+    final script = witnessUtxo?.script.toDart;
+    String? address;
+    if (script != null) {
       try {
         address = bitcoin.Address.fromOutputScript(
             script.toJS, httpConfig.network.toJS);
       } catch (_) {
         address = null;
       }
-      final leaves = input.tapLeafScript?.toDart ?? const [];
-      return PsbtInputPrevout(
-        scriptPubKeyHex: conv.hex.encode(script),
-        value: witnessUtxo.value,
-        address: address,
-        isTapscriptSpend: leaves.isNotEmpty,
-        tapLeafScriptHex:
-            leaves.isEmpty ? null : conv.hex.encode(leaves.first.script.toDart),
-      );
-    }).toList();
+    }
+    final leaves = input.tapLeafScript?.toDart ?? const [];
+    return PsbtInputDescription(
+      prevoutTxid: Uint8List.fromList(txInput.hash.toDart.reversed.toList()),
+      witnessUtxoScript: script,
+      witnessUtxoValue: witnessUtxo?.value,
+      witnessUtxoAddress: address,
+      tapLeafScripts: [
+        for (final leaf in leaves)
+          TapLeafScriptEntry(
+            leafVersion: leaf.leafVersion,
+            script: leaf.script.toDart,
+            controlBlock: leaf.controlBlock.toDart,
+          ),
+      ],
+      sighashType: input.sighashType,
+    );
   }
 
   @override
