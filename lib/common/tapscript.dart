@@ -798,11 +798,12 @@ class EnvelopeMessage {
   /// The mime type of an ordinals envelope, null for a generic envelope.
   final String? mimeType;
 
-  /// [bytes] with [content] replaced by an empty byte string: the field keeps
-  /// its place and every other field its encoding, so the message unpacks to
-  /// the same fields with an empty description. [bytes] itself when there is
-  /// no content.
-  final Uint8List bytesWithoutContent;
+  /// [bytes] with [content] replaced by an empty byte string, when the node
+  /// reads the content as the description of the message
+  /// ([_contentIsDescription]): the field keeps its place and every other
+  /// field its encoding, so the message unpacks to the same fields with an
+  /// empty description. Null otherwise, and when there is no content.
+  final Uint8List? bytesWithoutContent;
 
   const EnvelopeMessage({
     required this.bytes,
@@ -832,10 +833,7 @@ EnvelopeMessage? counterpartyEnvelopeMessage(Uint8List script) {
     }
     final bytes = out.toBytes();
     return EnvelopeMessage(
-        bytes: bytes,
-        content: null,
-        mimeType: null,
-        bytesWithoutContent: bytes);
+        bytes: bytes, content: null, mimeType: null, bytesWithoutContent: null);
   }
 
   // the parser reads the mime type at the fifth element of the body and the
@@ -910,17 +908,49 @@ EnvelopeMessage? counterpartyEnvelopeMessage(Uint8List script) {
       bytes: bytes,
       content: contentBytes,
       mimeType: mime,
-      bytesWithoutContent: contentBytes == null
-          ? bytes
-          : Uint8List.fromList([
+      bytesWithoutContent: contentBytes != null &&
+              _contentIsDescription(typeByte, [...fields, contentBytes])
+          ? Uint8List.fromList([
               typeByte,
               ...cborEncode([...fields, Uint8List(0)])
-            ]),
+            ])
+          : null,
     );
   } on CborException catch (e) {
     throw TapscriptException(
         "cannot re-encode the ordinals metadata: ${e.message}");
   }
+}
+
+/// Whether the node unpacks the ordinals message of type `typeByte` whose
+/// CBOR array is `fields` (the mime type and the content last) with the
+/// content as the description of a fixed tuple, so that every other field
+/// reads the same whatever the content:
+///
+/// * issuance (`issuance.unpack`): 7 fields, or 9 for a subasset whose
+///   compacted longname `expand_subasset_longname` takes (bytes, 200 at
+///   most);
+/// * broadcast (`broadcast.load_cbor`): 5 fields;
+/// * fairminter (`fairminter.unpack_new`): 19 fields, or 21 with a pool.
+///
+/// Any other type reads its message by position (a dispenser, a destroy...),
+/// and another field count sends these three back to the legacy decoding of
+/// the raw bytes: there, the content moves the other fields. Nested fields
+/// are refused as well: none of these messages has one, and cbor2 then reads
+/// the array exactly as serde_cbor wrote it.
+bool _contentIsDescription(int typeByte, List<Object?> fields) {
+  if (fields.any((f) => (f is List && f is! Uint8List) || f is CborMap)) {
+    return false;
+  }
+  return switch (typeByte) {
+    20 || 22 => fields.length == 7,
+    21 || 23 => fields.length == 9 &&
+        fields[6] is Uint8List &&
+        (fields[6] as Uint8List).length <= 200,
+    30 => fields.length == 5,
+    90 => fields.length == 19 || fields.length == 21,
+    _ => false,
+  };
 }
 
 /// The text of a UTF-8 byte string, or "" when it is not valid UTF-8 (the

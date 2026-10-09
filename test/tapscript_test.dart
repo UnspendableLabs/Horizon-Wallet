@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:horizon/common/cbor.dart';
 import 'package:horizon/common/tapscript.dart';
 
 Uint8List h(String s) => Uint8List.fromList(hex.decode(s));
@@ -411,18 +412,126 @@ void main() {
             .cast<Map<String, dynamic>>()
             .firstWhere((v) => v["name"] == name);
 
+    String push(List<int> data) => hex.encode([
+          if (data.length < 0x4c)
+            data.length
+          else if (data.length < 0x100) ...[0x4c, data.length],
+          ...data,
+        ]);
+
+    /// An ordinals envelope of the CBOR `metadata` ([type_id, fields...])
+    /// and a content of 100 bytes.
+    EnvelopeMessage ordinals(List<Object?> metadata) =>
+        counterpartyEnvelopeMessage(h("0063"
+            "036f7264"
+            "0107"
+            "03786370"
+            "0101"
+            "${push(ascii.encode("image/png"))}"
+            "0105"
+            "${push(cborEncode(metadata))}"
+            "00"
+            "${push(List.filled(100, 0xab))}"
+            "68"
+            "20${parserVectors["envelope_key"]}"
+            "ac"))!;
+
     test("keeps the content of an ordinals envelope apart", () {
       final v = envelope("ord_with_content");
       final message = counterpartyEnvelopeMessage(h(v["envelope_script"]))!;
       expect(hex.encode(message.bytes), v["message"]);
       expect(utf8.decode(message.content!), "hello world");
       expect(message.mimeType, "text/plain");
-      // [5, "text/plain", h''] after the type byte: the content field keeps
-      // its place, empty
-      expect(hex.encode(message.bytesWithoutContent),
-          "16" "83" "05" "6a746578742f706c61696e" "40");
       expect(hex.encode(message.bytes),
           startsWith("16" "83" "05" "6a746578742f706c61696e" "4b"));
+      // an issuance of three fields: the node falls back to the legacy
+      // decoding of the raw bytes, which the content moves
+      expect(message.bytesWithoutContent, isNull);
+    });
+
+    test("replaces the content where the node reads it as the description", () {
+      // [22, 1000, 100, true, false, false]: an issuance, then the mime type
+      // and the content
+      final message = ordinals([22, 1000, 100, true, false, false]);
+      // the content field keeps its place, empty
+      expect(hex.encode(message.bytesWithoutContent!),
+          "16" "87" "1903e8" "1864" "f5" "f4" "f4" "69696d6167652f706e67" "40");
+      expect(
+          hex.encode(message.bytes),
+          startsWith("16"
+              "87"
+              "1903e8"
+              "1864"
+              "f5"
+              "f4"
+              "f4"
+              "69696d6167652f706e67"
+              "5864"));
+
+      for (final metadata in [
+        [20, 1000, 100, true, false, false],
+        // a subasset, its compacted longname
+        [
+          21,
+          1000,
+          100,
+          true,
+          false,
+          false,
+          3,
+          Uint8List.fromList([1, 2, 3])
+        ],
+        [
+          23,
+          1000,
+          100,
+          true,
+          false,
+          false,
+          3,
+          Uint8List.fromList([1, 2, 3])
+        ],
+        // a broadcast: timestamp, value, fee fraction
+        [30, 1700000000, null, 0],
+        // a fairminter, without and with a pool
+        [90, ...List.filled(17, 0)],
+        [90, ...List.filled(19, 0)],
+      ]) {
+        expect(ordinals(metadata).bytesWithoutContent, isNotNull,
+            reason: "$metadata");
+      }
+    });
+
+    test("keeps the content where it would move the other fields", () {
+      for (final metadata in [
+        // types read by position: a dispenser, a destroy, an order
+        [12, 1, 2, 3, 4, 0],
+        [110, 1, 2],
+        [10, 1, 2, 3, 4, 5, 6],
+        // a field count the node takes for the legacy format
+        [22, 1000, 100, true, false],
+        [22, 1000, 100, true, false, false, 0],
+        [30, 1700000000, null, 0, 0],
+        // a fairminter whose content is not the description
+        [90, ...List.filled(18, 0)],
+        [90, ...List.filled(20, 0)],
+        // a compacted subasset longname expand_subasset_longname refuses
+        [21, 1000, 100, true, false, false, 3, 7],
+        [21, 1000, 100, true, false, false, 201, Uint8List(201)],
+        // a nested field
+        [
+          22,
+          1000,
+          100,
+          true,
+          false,
+          [false]
+        ],
+      ]) {
+        final message = ordinals(metadata);
+        expect(message.content, isNotNull, reason: "$metadata");
+        expect(message.bytesWithoutContent, isNull, reason: "$metadata");
+      }
     });
 
     test("leaves the message whole without content", () {
@@ -431,7 +540,7 @@ void main() {
         final message = counterpartyEnvelopeMessage(h(v["envelope_script"]))!;
         expect(hex.encode(message.bytes), v["message"]);
         expect(message.content, isNull);
-        expect(message.bytesWithoutContent, message.bytes);
+        expect(message.bytesWithoutContent, isNull);
       }
       expect(
           counterpartyEnvelopeMessage(h(

@@ -600,9 +600,9 @@ void main() {
       final message = counterpartyEnvelopeMessage(envelope)!;
       // the content field keeps its place, empty
       verify(() => transactionRepository.unpackMessage(
-          datahex: "$prefixHex${hex.encode(message.bytesWithoutContent)}",
+          datahex: "$prefixHex${hex.encode(message.bytesWithoutContent!)}",
           httpConfig: any(named: "httpConfig"))).called(1);
-      expect(hex.encode(message.bytesWithoutContent), endsWith("40"));
+      expect(hex.encode(message.bytesWithoutContent!), endsWith("40"));
       // the message shown and signed is the whole one
       expect(reveal.messageHex, hex.encode(message.bytes));
       expect(message.bytes.length, greaterThan(10000));
@@ -611,6 +611,33 @@ void main() {
       expect(Map.fromEntries(reveal.entries)["description"],
           "image/png, 10000 bytes, too long to decode: not shown");
       expect(reveal.risk, RevealRisk.normal);
+    });
+
+    test("decodes a long message of another type whole or not at all",
+        () async {
+      // [12, 1, 2, 3, 4, 0]: a dispenser reads its fields by position, so
+      // leaving the content out would move them
+      givenPsbt([
+        envelopeWith([
+          ascii.encode("ord"),
+          [7],
+          ascii.encode("xcp"),
+          [1],
+          ascii.encode("image/png"),
+          [5],
+          h("86" "0c" "01" "02" "03" "04" "00"),
+          0x00,
+          List.filled(10000, 0xab),
+        ])
+      ]);
+
+      final reveal = (await run()).counterpartyReveal!;
+      verifyNever(() => transactionRepository.unpackMessage(
+          datahex: any(named: "datahex"),
+          httpConfig: any(named: "httpConfig")));
+      expect(reveal.omittedContent, isNull);
+      expect(reveal.decodeError, contains("too long"));
+      expect(reveal.risk, RevealRisk.unrecognized);
     });
 
     test("keeps a text content the node would not decode", () async {

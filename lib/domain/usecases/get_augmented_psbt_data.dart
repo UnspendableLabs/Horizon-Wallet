@@ -365,15 +365,17 @@ class GetAugmentedPsbtDataUseCase
         throw const TapscriptException("not a canonical envelope");
       }
       messageHex = hex.encode(envelope.bytes);
-      // The content of an ordinals envelope, the inscription itself, fills a
-      // single field of the message: when it makes the message too long for
-      // the node's URL, the node decodes every other field without it.
+      // The content of an ordinals envelope, the inscription itself, is the
+      // description of an issuance, a broadcast or a fairminter: when it
+      // makes the message too long for the node's URL, the node decodes
+      // every other field without it. Any other message is decoded whole.
       var toUnpack = envelope.bytes;
       final content = envelope.content;
+      final withoutContent = envelope.bytesWithoutContent;
       if (toUnpack.length > _maxUnpackedMessageLength &&
-          content != null &&
-          _nodeDecodesContent(content, envelope.mimeType!)) {
-        toUnpack = envelope.bytesWithoutContent;
+          withoutContent != null &&
+          _nodeDecodesContent(content!, envelope.mimeType!)) {
+        toUnpack = withoutContent;
         omittedContent = OmittedContent(
             length: content.length, mimeType: envelope.mimeType!);
       }
