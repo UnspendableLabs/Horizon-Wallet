@@ -13,8 +13,34 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 /// The event is scrubbed through its wire format: what gets sanitized is
 /// exactly what would have been sent.
 SentryEvent sanitizeSentryEvent(SentryEvent event) {
-  final sanitized = sanitizeTelemetryValue(event.toJson()) as Map;
-  return SentryEvent.fromJson(Map<String, dynamic>.from(sanitized));
+  final json = event.toJson();
+  final request = json['request'];
+  if (request is Map) {
+    json['request'] = _withoutUrlArguments(request);
+  }
+  return SentryEvent.fromJson(
+    Map<String, dynamic>.from(sanitizeTelemetryValue(json) as Map),
+  );
+}
+
+/// [request] without the arguments of its URL.
+///
+/// On web the request is the page URL. The extension hands the wallet a
+/// request in its query (`?action=signMessage:ext,…`) whose arguments carry
+/// the PSBT or the message to sign, written as is, so the query string is
+/// dropped rather than scrubbed: no pattern can tell where a message ends.
+/// The fragment is the app's route under the hash URL strategy and is kept,
+/// up to a query of its own.
+Map<String, dynamic> _withoutUrlArguments(Map request) {
+  final scrubbed = Map<String, dynamic>.from(request)..remove('query_string');
+  final fragment = scrubbed.remove('fragment');
+  if (fragment is String) {
+    final route = fragment.split('?').first;
+    if (route.isNotEmpty) {
+      scrubbed['fragment'] = route;
+    }
+  }
+  return scrubbed;
 }
 
 Breadcrumb? sanitizeSentryBreadcrumb(Breadcrumb? breadcrumb) {
@@ -31,7 +57,8 @@ Breadcrumb? sanitizeSentryBreadcrumb(Breadcrumb? breadcrumb) {
   );
 }
 
-/// Drops any transaction still carrying wallet secrets.
+/// Drops any transaction still carrying wallet secrets once its request has
+/// lost the arguments of its URL, as an event's does.
 ///
 /// A transaction's spans are rebuilt from its tracer on every `copyWith`, and
 /// `SentrySpanContext.description` is final, so span descriptions — the field
@@ -39,8 +66,16 @@ Breadcrumb? sanitizeSentryBreadcrumb(Breadcrumb? breadcrumb) {
 /// Nothing in the app currently starts a transaction, so this costs nothing
 /// today; it exists so that wiring up tracing later cannot leak silently.
 SentryTransaction? sanitizeSentryTransaction(SentryTransaction transaction) {
-  if (containsWalletSecret(transaction.toJson())) {
+  final request = transaction.request;
+  final scrubbed = request == null
+      ? transaction
+      : transaction.copyWith(
+          request: SentryRequest.fromJson(
+            _withoutUrlArguments(request.toJson()),
+          ),
+        );
+  if (containsWalletSecret(scrubbed.toJson())) {
     return null;
   }
-  return transaction;
+  return scrubbed;
 }

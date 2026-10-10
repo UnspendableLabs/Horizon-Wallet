@@ -90,6 +90,7 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
   final String currentAddress;
 
   Timer? _timer;
+  bool _isFetching = false;
 
   BalancesBloc({
     required this.balanceRepository,
@@ -120,6 +121,16 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
   }
 
   Future<void> _onFetch(event, emit) async {
+    if (_isFetching) return;
+    _isFetching = true;
+    try {
+      await _fetchBalances(emit);
+    } finally {
+      _isFetching = false;
+    }
+  }
+
+  Future<void> _fetchBalances(Emitter<BalancesState> emit) async {
     // emit loading if initial
     // emit reloading if complete
 
