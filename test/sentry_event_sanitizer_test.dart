@@ -1,6 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:horizon/core/logging/sentry_event_sanitizer.dart';
 import 'package:horizon/core/logging/sentry_sanitizer.dart';
+// SentryTransaction can only be built from a tracer, which the SDK keeps
+// internal.
+// ignore: depend_on_referenced_packages, implementation_imports
+import 'package:sentry/src/sentry_tracer.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 class WalletException implements Exception {
@@ -80,6 +84,69 @@ void main() {
     expect(request.fragment, isNull);
     expect(request.url, 'https://wallet.test/index.html');
     expect(request.method, 'GET');
+  });
+
+  test('keeps the route the fragment of the page URL holds', () {
+    // Under the hash URL strategy the fragment is the screen's route.
+    SentryRequest requestFor(String fragment) => sanitizeSentryEvent(
+          SentryEvent(
+            request: SentryRequest(
+              url: 'https://wallet.test/',
+              fragment: fragment,
+            ),
+          ),
+        ).request!;
+
+    expect(requestFor('/compose/send').fragment, '/compose/send');
+    expect(
+      requestFor("/dashboard?action=signMessage:ext,1,req,I'm,$address")
+          .fragment,
+      '/dashboard',
+    );
+    expect(
+      requestFor('/address/$address').fragment,
+      '/address/$redactedWalletAddress',
+    );
+  });
+
+  group('sanitizeSentryTransaction', () {
+    SentryTransaction transactionWith({
+      required SentryRequest request,
+      Map<String, String>? tags,
+    }) {
+      final hub = Hub(SentryOptions(dsn: 'https://key@sentry.test/1'));
+      return SentryTransaction(
+        SentryTracer(SentryTransactionContext('send', 'ui.action'), hub),
+        request: request,
+        tags: tags,
+      );
+    }
+
+    test('drops the arguments of the page URL rather than the transaction', () {
+      final sanitized = sanitizeSentryTransaction(
+        transactionWith(
+          request: SentryRequest(
+            url: 'https://wallet.test/',
+            queryString: 'action=signPsbt%3Aext%2C1%2Creq%2CcHNidP8B',
+            fragment: "/dashboard?action=signMessage:ext,1,req,I'm,$address",
+          ),
+        ),
+      );
+
+      expect(sanitized, isNotNull);
+      expect(sanitized!.request!.queryString, isNull);
+      expect(sanitized.request!.fragment, '/dashboard');
+      expect(sanitized.request!.url, 'https://wallet.test/');
+    });
+
+    test('drops a transaction still carrying a wallet secret', () {
+      final transaction = transactionWith(
+        request: SentryRequest(url: 'https://wallet.test/'),
+        tags: const {'lastAddress': address},
+      );
+
+      expect(sanitizeSentryTransaction(transaction), isNull);
+    });
   });
 
   test('preserves the event id and other structural fields', () {
