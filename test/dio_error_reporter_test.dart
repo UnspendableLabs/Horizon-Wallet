@@ -132,4 +132,41 @@ void main() {
       'https://api.example.test/v2/assets/XCP?y&verbose',
     );
   });
+
+  test('reports nothing of a query value that has no name', () {
+    final errorService = MockErrorService();
+    // A path parameter is not encoded, so a bare value can come in through
+    // it as a query segment without `=`.
+    final request = RequestOptions(
+      method: 'GET',
+      baseUrl: 'https://api.example.test/v2',
+      path: '/bitcoin/transactions/decode?0200000001aabbccddeeff',
+      queryParameters: {'verbose': true},
+    );
+    final error = DioException.badResponse(
+      statusCode: 500,
+      requestOptions: request,
+      response: Response(requestOptions: request, statusCode: 500),
+    );
+
+    reportDioErrorOnce(
+      error: error,
+      retryCount: 0,
+      appVersion: '1.7.11',
+      errorService: errorService,
+    );
+
+    final captured = verify(
+      () => errorService.captureException(
+        captureAny(),
+        stackTrace: any(named: 'stackTrace'),
+        message: captureAny(named: 'message'),
+        context: captureAny(named: 'context'),
+      ),
+    ).captured;
+    expect(
+      (captured[2] as Map)['url'],
+      'https://api.example.test/v2/bitcoin/transactions/decode?verbose',
+    );
+  });
 }

@@ -51,13 +51,15 @@ void reportDioErrorOnce({
 
 /// [uri] with its query cut down to the parameter names. Query values carry
 /// signed transactions, PSBTs, UTXO sets and address lists; dropping all of
-/// them cannot miss a new one the way a list of sensitive names can.
+/// them cannot miss a new one the way a list of sensitive names can. A
+/// segment without `=` is a value with no name, so it is dropped whole.
 ///
 /// The names are kept as written: decoding them throws on an escape that is
 /// not UTF-8, and the error being reported would then never reach the caller.
 String _endpointOf(Uri uri) {
   final names = {
-    for (final parameter in uri.query.split('&')) parameter.split('=').first,
+    for (final parameter in uri.query.split('&'))
+      if (parameter.contains('=')) parameter.split('=').first,
   }..remove('');
   return Uri(
     scheme: uri.scheme,
