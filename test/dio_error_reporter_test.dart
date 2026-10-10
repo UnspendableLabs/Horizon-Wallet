@@ -95,4 +95,41 @@ void main() {
     );
     expect((captured[2] as Map)['url'], endpoint);
   });
+
+  test('reports a query that does not decode', () {
+    final errorService = MockErrorService();
+    // A path parameter is not encoded, so a query can come in through it,
+    // with an escape that is not UTF-8.
+    final request = RequestOptions(
+      method: 'GET',
+      baseUrl: 'https://api.example.test/v2',
+      path: '/assets/XCP?y=%FF',
+      queryParameters: {'verbose': true},
+    );
+    final error = DioException.badResponse(
+      statusCode: 500,
+      requestOptions: request,
+      response: Response(requestOptions: request, statusCode: 500),
+    );
+
+    reportDioErrorOnce(
+      error: error,
+      retryCount: 0,
+      appVersion: '1.7.11',
+      errorService: errorService,
+    );
+
+    final captured = verify(
+      () => errorService.captureException(
+        captureAny(),
+        stackTrace: any(named: 'stackTrace'),
+        message: captureAny(named: 'message'),
+        context: captureAny(named: 'context'),
+      ),
+    ).captured;
+    expect(
+      (captured[2] as Map)['url'],
+      'https://api.example.test/v2/assets/XCP?y&verbose',
+    );
+  });
 }
