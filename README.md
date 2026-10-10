@@ -90,6 +90,20 @@ To run locally on the web:
 
 - run with `flutter test` or `flutter test test/target_file.dart`
 
+### Network read recovery
+
+Use Flutter 3.35.4 (the version pinned in CI) and the committed dependency lockfile.
+`network_retry.dart` retries only allowlisted read-only GETs on connection/receive
+timeouts, connection failures, or HTTP 429/502/503/504, using each client's existing
+finite retry count and delays. Counterparty compose endpoints use GET too and are
+deliberately excluded, as are authentication, POST/broadcast and unknown routes.
+Explicit retry opt-out and cancellation remain terminal. A recovered request is
+not reported; an exhausted failure is reported once with the existing redacted
+diagnostics. There is no alternate host or stale-balance fallback.
+
+Test with `flutter test test/network_retry_test.dart`. Never simulate a service
+outage in production to test retries.
+
 #### integration_test
 
 1. set up your env

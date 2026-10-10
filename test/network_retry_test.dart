@@ -90,8 +90,32 @@ void main() {
   tearDown(() => dio.close(force: true));
 
   group('retry policy', () {
+    test('matches only explicit read paths, with or without a v2 prefix', () {
+      for (final path in [
+        '/v2/addresses/public/fairminters?verbose=true',
+        '/addresses/balances?addresses=public',
+        '/v2/addresses/events?limit=1000',
+        '/address/public',
+        '/address/public/txs/chain/last',
+        'https://mempool.space/api/v1/fees/recommended',
+      ]) {
+        expect(isRetryableNetworkRead(RequestOptions(path: path)), isTrue,
+            reason: path);
+      }
+      for (final path in [
+        '/v2/addresses/public/compose/send',
+        '/v2/utxos/outpoint/compose/detach',
+        '/v2/addresses/public/balances/compose/send',
+        '/address/public/unknown',
+        '/authentication',
+      ]) {
+        expect(isRetryableNetworkRead(RequestOptions(path: path)), isFalse,
+            reason: path);
+      }
+    });
+
     test('retries transient transport failures', () {
-      final request = RequestOptions(path: '/');
+      final request = RequestOptions(path: '/blocks/tip/height');
       for (final type in [
         DioExceptionType.connectionTimeout,
         DioExceptionType.receiveTimeout,
@@ -116,6 +140,63 @@ void main() {
 
       await expectLater(dio.get('/'), throwsA(isA<DioException>()));
 
+      expect(adapter.requests, hasLength(1));
+    });
+
+    for (final status in [429, 502, 503, 504]) {
+      test('recovers a read after HTTP $status', () async {
+        final adapter = FailingAdapter(1, statusCode: status);
+        dio.httpClientAdapter = adapter;
+        expect((await dio.get<String>('/v2/addresses/events')).data, 'ok');
+        expect(adapter.requests, hasLength(2));
+        verifyNothingReported();
+      });
+    }
+
+    test('exhausted 503 reads report once within the retry limit', () async {
+      final adapter = FailingAdapter(alwaysFails, statusCode: 503);
+      dio.httpClientAdapter = adapter;
+      await expectLater(
+          dio.get('/address/public/utxo'), throwsA(isA<DioException>()));
+      expect(adapter.requests, hasLength(3));
+      expect(reportedContexts(), hasLength(1));
+    });
+
+    for (final status in [400, 401, 403, 404, 500]) {
+      test('does not retry permanent/unclassified HTTP $status', () async {
+        final adapter = FailingAdapter(alwaysFails, statusCode: status);
+        dio.httpClientAdapter = adapter;
+        await expectLater(
+            dio.get('/addresses/events'), throwsA(isA<DioException>()));
+        expect(adapter.requests, hasLength(1));
+      });
+    }
+
+    test('never replays compose, authentication, unknown GETs or POSTs',
+        () async {
+      for (final path in [
+        '/v2/addresses/public/compose/send',
+        '/login',
+        '/unknown'
+      ]) {
+        final adapter = FailingAdapter(alwaysFails);
+        dio.httpClientAdapter = adapter;
+        await expectLater(dio.get(path), throwsA(isA<DioException>()));
+        expect(adapter.requests, hasLength(1));
+      }
+      final adapter = FailingAdapter(alwaysFails);
+      dio.httpClientAdapter = adapter;
+      await expectLater(
+          dio.post('/addresses/events'), throwsA(isA<DioException>()));
+      expect(adapter.requests, hasLength(1));
+    });
+
+    test('explicit retry opt-out also applies to eligible 503 reads', () async {
+      final adapter = FailingAdapter(alwaysFails, statusCode: 503);
+      dio.httpClientAdapter = adapter;
+      await expectLater(
+          dio.get('/addresses/events', options: Options()..disableRetry = true),
+          throwsA(isA<DioException>()));
       expect(adapter.requests, hasLength(1));
     });
   });
@@ -192,7 +273,7 @@ void main() {
       dio.httpClientAdapter = adapter;
       final token = CancelToken();
 
-      final pending = dio.get('/', cancelToken: token);
+      final pending = dio.get('/addresses/events', cancelToken: token);
       await Future<void>.delayed(const Duration(milliseconds: 20));
       token.cancel();
 
