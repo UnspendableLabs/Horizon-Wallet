@@ -14,6 +14,8 @@ const _transactionPayloadKeys = {
   'unsignedtx',
   'signedtransaction',
   'unsignedtransaction',
+  'signedtransactionhex',
+  'unsignedtransactionhex',
   'rawtransaction',
   'rawtx',
   'txhex',
@@ -22,6 +24,9 @@ const _transactionPayloadKeys = {
   'psbt',
   'psbthex',
   'psbtbase64',
+  'signedpsbt',
+  'unsignedpsbt',
+  'signedpsbthex',
 };
 
 bool _isTransactionPayloadKey(Object? key) => _transactionPayloadKeys.contains(

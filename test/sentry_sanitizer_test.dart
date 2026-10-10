@@ -195,6 +195,24 @@ void main() {
       });
     });
 
+    test('redacts the PSBT fields of a sign request', () {
+      final result = sanitizeTelemetryValue({
+        'unsignedPsbt': '70736274ff01',
+        'signedPsbt': '70736274ff02',
+        'signedPsbtHex': '70736274ff02',
+        'unsignedTransactionHex': '0200000001aabbccdd',
+        'url': '/sign?signedPsbt=70736274ff02&tabId=1',
+      }) as Map;
+
+      expect(result, {
+        'unsignedPsbt': redactedTransactionPayload,
+        'signedPsbt': redactedTransactionPayload,
+        'signedPsbtHex': redactedTransactionPayload,
+        'unsignedTransactionHex': redactedTransactionPayload,
+        'url': '/sign?signedPsbt=$redactedTransactionPayload&tabId=1',
+      });
+    });
+
     test('keeps a missing payload missing', () {
       final result = sanitizeTelemetryValue({'psbt': null}) as Map;
 
