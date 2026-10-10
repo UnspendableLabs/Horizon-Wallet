@@ -39,9 +39,10 @@ bool _isUnredactedPayload(Object? key, Object? value) =>
 /// `;`, `"` or `}` that follows it.
 final _namedValuePattern = RegExp(r'\b([A-Za-z_]\w*)=([A-Za-z0-9+/=%:,]+)');
 
-/// The extension hands the wallet a request as `?action=<verb>,<args>`, and on
-/// web the page URL rides along with every event. The arguments carry the PSBT
-/// or the message to sign, so only the verb is kept.
+/// The extension hands the wallet a request as `?action=<verb>,<args>`. The
+/// arguments carry the PSBT or the message to sign, so only the verb is kept
+/// wherever the request turns up in text. The page URL itself is dropped from
+/// events in `sanitizeSentryEvent`.
 final _walletRequestPattern = RegExp(
   r'''\b(action=[a-z_]*(?:(?::|%(?:25)?3a)[a-z]+)?)([^&\s#"']*)''',
   caseSensitive: false,

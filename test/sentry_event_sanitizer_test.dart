@@ -59,28 +59,27 @@ void main() {
     expect(serialized, contains(redactedWalletAddress));
   });
 
-  test('keeps only the verb of a wallet request in the page URL', () {
+  test('drops the query string and fragment of the page URL', () {
     // On web, Sentry fills the request from window.location, split into its
-    // query string and fragment.
+    // query string and fragment. The extension writes the message to sign
+    // into the fragment as is.
     const args = '1,req,cHNidP8BAHECAAAAAQ,eyJ9';
     final event = SentryEvent(
       request: SentryRequest(
-        url: 'https://wallet.test/',
+        url: 'https://wallet.test/index.html',
+        method: 'GET',
         queryString: 'action=signPsbt%3Aext%2C${Uri.encodeComponent(args)}',
-        fragment: '/dashboard?action=signPsbt:ext,$args',
+        fragment: "?action=signMessage:ext,1,req,I'm signing & my nonce,"
+            '$address',
       ),
     );
 
     final request = sanitizeSentryEvent(event).request!;
 
-    expect(
-      request.queryString,
-      'action=signPsbt%3Aext$redactedWalletRequest',
-    );
-    expect(
-      request.fragment,
-      '/dashboard?action=signPsbt:ext$redactedWalletRequest',
-    );
+    expect(request.queryString, isNull);
+    expect(request.fragment, isNull);
+    expect(request.url, 'https://wallet.test/index.html');
+    expect(request.method, 'GET');
   });
 
   test('preserves the event id and other structural fields', () {

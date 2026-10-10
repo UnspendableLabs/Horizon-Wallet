@@ -12,9 +12,23 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 ///
 /// The event is scrubbed through its wire format: what gets sanitized is
 /// exactly what would have been sent.
+///
+/// On web the request is the page URL. The extension hands the wallet a
+/// request in it (`#?action=signMessage:ext,…`) whose arguments carry the
+/// PSBT or the message to sign, written as is, so the query string and the
+/// fragment are dropped rather than scrubbed: no pattern can tell where a
+/// message ends.
 SentryEvent sanitizeSentryEvent(SentryEvent event) {
-  final sanitized = sanitizeTelemetryValue(event.toJson()) as Map;
-  return SentryEvent.fromJson(Map<String, dynamic>.from(sanitized));
+  final sanitized = Map<String, dynamic>.from(
+    sanitizeTelemetryValue(event.toJson()) as Map,
+  );
+  final request = sanitized['request'];
+  if (request is Map) {
+    sanitized['request'] = Map<String, dynamic>.from(request)
+      ..remove('query_string')
+      ..remove('fragment');
+  }
+  return SentryEvent.fromJson(sanitized);
 }
 
 Breadcrumb? sanitizeSentryBreadcrumb(Breadcrumb? breadcrumb) {
