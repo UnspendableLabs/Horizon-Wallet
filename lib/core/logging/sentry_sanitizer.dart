@@ -4,12 +4,14 @@ const redactedPrivateKey = '[private-key-redacted]';
 
 const redactedTransactionPayload = '[transaction-payload-redacted]';
 final _transactionQueryPattern = RegExp(
-  r'((?:signedhex|unsignedhex|tx_hex|psbt_hex|psbt_base64|psbt)=)[^&\s#]+',
+  r'((?:signedhex|unsignedhex|rawtransaction|rawtx|tx_hex|psbt_hex|psbt_base64|psbt)=)[^&\s#]+',
   caseSensitive: false,
 );
 const _transactionPayloadKeys = {
   'signedhex',
   'unsignedhex',
+  'rawtransaction',
+  'rawtx',
   'tx_hex',
   'psbt_hex',
   'psbt_base64',
