@@ -1,22 +1,57 @@
 const redactedWalletAddress = '[wallet-address-redacted]';
 const redactedExtendedKey = '[extended-key-redacted]';
 const redactedPrivateKey = '[private-key-redacted]';
-
 const redactedTransactionPayload = '[transaction-payload-redacted]';
-final _transactionQueryPattern = RegExp(
-  r'((?:signedhex|unsignedhex|rawtransaction|rawtx|tx_hex|psbt_hex|psbt_base64|psbt)=)[^&\s#]+',
-  caseSensitive: false,
-);
+const redactedWalletRequest = '[wallet-request-redacted]';
+
+/// Fields that carry a transaction, a PSBT or the inputs it spends. Names are
+/// compared lowercased and without underscores, so `tx_hex`, `txHex` and
+/// `TXHEX` are one field. The value is redacted; the name is kept.
 const _transactionPayloadKeys = {
   'signedhex',
   'unsignedhex',
+  'signedtx',
+  'unsignedtx',
+  'signedtransaction',
+  'unsignedtransaction',
   'rawtransaction',
   'rawtx',
-  'tx_hex',
-  'psbt_hex',
-  'psbt_base64',
+  'txhex',
+  'datahex',
+  'inputsset',
   'psbt',
+  'psbthex',
+  'psbtbase64',
 };
+
+bool _isTransactionPayloadKey(Object? key) => _transactionPayloadKeys.contains(
+      key.toString().toLowerCase().replaceAll('_', ''),
+    );
+
+/// Whether [value], filed under [key], is a payload still to be redacted.
+bool _isUnredactedPayload(Object? key, Object? value) =>
+    value != null &&
+    value != redactedTransactionPayload &&
+    _isTransactionPayloadKey(key);
+
+/// A `name=value` pair. The value stops at anything a hex, base64 or
+/// percent-encoded payload cannot contain, so a redaction never swallows the
+/// `;`, `"` or `}` that follows it.
+final _namedValuePattern = RegExp(r'\b([A-Za-z_]\w*)=([A-Za-z0-9+/=%:,]+)');
+
+/// The extension hands the wallet a request as `?action=<verb>,<args>`, and on
+/// web the page URL rides along with every event. The arguments carry the PSBT
+/// or the message to sign, so only the verb is kept.
+final _walletRequestPattern = RegExp(
+  r'''\b(action=[a-z_]*(?:(?::|%(?:25)?3a)[a-z]+)?)([^&\s#"']*)''',
+  caseSensitive: false,
+);
+
+/// A percent escape right before a secret, such as the `%2C` between the
+/// addresses of an encoded list, delimits the secret rather than being part
+/// of it. It is matched and kept so the secret is read from the character
+/// after it.
+const _percentEscape = '(%[0-9A-Fa-f]{2})?';
 
 const _base58 = r'[1-9A-HJ-NP-Za-km-z]';
 
@@ -33,35 +68,52 @@ const _base58 = r'[1-9A-HJ-NP-Za-km-z]';
 /// length is hexadecimal only with vanishing probability.
 final _secretPatterns = <RegExp, String>{
   // Bech32 / bech32m: mainnet, testnet, signet and regtest.
-  RegExp(r'(?:bc1|tb1|bcrt1)[0-9a-z]{11,71}', caseSensitive: false):
-      redactedWalletAddress,
+  RegExp(
+    '$_percentEscape(?:bc1|tb1|bcrt1)[0-9a-z]{11,71}',
+    caseSensitive: false,
+  ): redactedWalletAddress,
   // Extended keys, BIP32 and the SLIP-132 variants: 111 Base58 characters.
-  RegExp('(?:[xyzvutYZVU]pub|[xyzvutYZVU]prv)$_base58{107}'):
+  RegExp('$_percentEscape(?:[xyzvutYZVU]pub|[xyzvutYZVU]prv)$_base58{107}'):
       redactedExtendedKey,
   // WIF private keys: 51 characters uncompressed, 52 compressed.
-  RegExp('(?:[59]$_base58{50}|[KLc]$_base58{51})'): redactedPrivateKey,
+  RegExp('$_percentEscape(?:[59]$_base58{50}|[KLc]$_base58{51})'):
+      redactedPrivateKey,
   // Base58Check addresses: P2PKH (1, m, n) and P2SH (3, 2).
-  RegExp('[123mn]$_base58{25,62}'): redactedWalletAddress,
+  RegExp('$_percentEscape[123mn]$_base58{25,62}'): redactedWalletAddress,
 };
 
 String sanitizeTelemetryText(String value) {
-  var sanitized = value.replaceAllMapped(_transactionQueryPattern,
-      (match) => (match.group(1) ?? '') + redactedTransactionPayload);
+  var sanitized = value
+      .replaceAllMapped(
+        _walletRequestPattern,
+        (match) =>
+            match[2]!.isEmpty ? match[0]! : '${match[1]}$redactedWalletRequest',
+      )
+      .replaceAllMapped(
+        _namedValuePattern,
+        (match) => _isTransactionPayloadKey(match[1])
+            ? '${match[1]}=$redactedTransactionPayload'
+            : match[0]!,
+      );
   for (final entry in _secretPatterns.entries) {
     final source = sanitized;
     sanitized = source.replaceAllMapped(entry.key, (match) {
-      final matched = match.group(0)!;
-      if (_isInsideLongerToken(source, match) || _isHexadecimal(matched)) {
-        return matched;
+      final escape = match[1] ?? '';
+      final secret = match[0]!.substring(escape.length);
+      if (_isInsideLongerToken(source, match) || _isHexadecimal(secret)) {
+        return match[0]!;
       }
-      return entry.value;
+      return escape + entry.value;
     });
   }
   return sanitized;
 }
 
+/// Whether a secret match runs into the characters around it. A percent
+/// escape matched in front of it counts as a delimiter.
 bool _isInsideLongerToken(String value, Match match) {
-  final startsInsideToken = match.start > 0 &&
+  final startsInsideToken = match[1] == null &&
+      match.start > 0 &&
       _isAsciiLetterOrDigit(value.codeUnitAt(match.start - 1));
   final endsInsideToken = match.end < value.length &&
       _isAsciiLetterOrDigit(value.codeUnitAt(match.end));
@@ -98,7 +150,7 @@ dynamic sanitizeTelemetryValue(dynamic value) {
     return value.map(
       (key, nestedValue) => MapEntry(
         sanitizeTelemetryText(key.toString()),
-        _transactionPayloadKeys.contains(key.toString().toLowerCase())
+        _isUnredactedPayload(key, nestedValue)
             ? redactedTransactionPayload
             : sanitizeTelemetryValue(nestedValue),
       ),
@@ -125,8 +177,7 @@ bool containsWalletSecret(dynamic value) {
   if (value is Map) {
     return value.entries.any(
       (entry) =>
-          _transactionPayloadKeys
-              .contains(entry.key.toString().toLowerCase()) ||
+          _isUnredactedPayload(entry.key, entry.value) ||
           containsWalletSecret(entry.key.toString()) ||
           containsWalletSecret(entry.value),
     );

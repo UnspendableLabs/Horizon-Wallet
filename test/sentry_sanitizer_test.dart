@@ -73,6 +73,73 @@ void main() {
       expect(info, contains('rawtransaction=$redactedTransactionPayload'));
     });
 
+    test('redacts payload fields whatever their case or underscores', () {
+      final result = sanitizeTelemetryText(
+        'txHex=0200aa&psbtBase64=cHNidP8B%2B%3D&inputs_set=ab%3A0%2Ccd%3A1',
+      );
+
+      expect(
+        result,
+        'txHex=$redactedTransactionPayload'
+        '&psbtBase64=$redactedTransactionPayload'
+        '&inputs_set=$redactedTransactionPayload',
+      );
+    });
+
+    test('leaves fields that only contain a payload name intact', () {
+      const value = 'GET /v2/assets?is_psbt=true&has_rawtx=1&psbtcount=2';
+
+      expect(sanitizeTelemetryText(value), value);
+    });
+
+    test('stops a redacted payload at the end of its value', () {
+      expect(
+        sanitizeTelemetryText('rawtx=0200aa;status=offline'),
+        'rawtx=$redactedTransactionPayload;status=offline',
+      );
+      expect(
+        sanitizeTelemetryText('{"url":"/tx?signedhex=0200aa","status":500}'),
+        '{"url":"/tx?signedhex=$redactedTransactionPayload","status":500}',
+      );
+    });
+
+    test('redacts addresses and keys after a percent-encoded delimiter', () {
+      const segwit = 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh';
+      const legacy = '1BoatSLRHtKNngkdXEeobR76b53LETtpyT';
+      const wif = 'L1aW4aubDFB7yfras2S1mN3bqg9nwySY8nkoLmJebSLD5BWv3ENZ';
+
+      final result = sanitizeTelemetryText(
+        '/balances?addresses=$segwit%2C$segwit%2c$legacy&keys=%5B$wif%5D',
+      );
+
+      expect(
+        result,
+        '/balances?addresses=$redactedWalletAddress%2C$redactedWalletAddress'
+        '%2c$redactedWalletAddress&keys=%5B$redactedPrivateKey%5D',
+      );
+    });
+
+    test('keeps only the verb of a wallet request', () {
+      expect(
+        sanitizeTelemetryText(
+          'https://wallet.test/?action=signPsbt%3Aext%2C1%2Creq%2CcHNidP8BAHEC%2B%2F%3D%2CeyJ9',
+        ),
+        'https://wallet.test/?action=signPsbt%3Aext$redactedWalletRequest',
+      );
+      expect(
+        sanitizeTelemetryText(
+          '#/dashboard?action=signMessage:ext,1,req,hello,1BoatSLRHtKNngkdXEeobR76b53LETtpyT&tab=2',
+        ),
+        '#/dashboard?action=signMessage:ext$redactedWalletRequest&tab=2',
+      );
+    });
+
+    test('leaves an API action field intact', () {
+      const value = '{"action": "issuance fee", "action=": 1}';
+
+      expect(sanitizeTelemetryText(value), value);
+    });
+
     test('leaves transaction hashes and ordinary text intact', () {
       const value =
           'GET /tx/4d3f43a4e365968b2cbbf64347b62564928cf4b590cb9f14d5c01710c86c33a5';
@@ -91,30 +158,49 @@ void main() {
     });
 
     test('is idempotent', () {
-      const message = 'sent to 1BoatSLRHtKNngkdXEeobR76b53LETtpyT';
+      const messages = [
+        'sent to 1BoatSLRHtKNngkdXEeobR76b53LETtpyT',
+        '/?action=signPsbt%3Aext%2C1%2Creq%2CcHNidP8B&signedhex=0200aa'
+            '&addresses=%2Cbc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+      ];
 
-      final once = sanitizeTelemetryText(message);
+      for (final message in messages) {
+        final once = sanitizeTelemetryText(message);
 
-      expect(sanitizeTelemetryText(once), once);
+        expect(sanitizeTelemetryText(once), once);
+      }
     });
   });
 
-  test('redacts payload fields in nested telemetry maps', () {
-    final result = sanitizeTelemetryValue({
-      'request': {
-        'signedhex': 'deadbeef',
-        'psbt_hex': '70736274',
-        'rawTransaction': '0200000001aabbccdd',
-        'txid': 'public-id'
-      },
-    }) as Map;
-    expect(result['request']['signedhex'], redactedTransactionPayload);
-    expect(result['request']['psbt_hex'], redactedTransactionPayload);
-    expect(result['request']['rawTransaction'], redactedTransactionPayload);
-    expect(result['request']['txid'], 'public-id');
-  });
-
   group('sanitizeTelemetryValue', () {
+    test('redacts payload fields in nested telemetry maps', () {
+      final result = sanitizeTelemetryValue({
+        'request': {
+          'signedhex': 'deadbeef',
+          'psbt_hex': '70736274',
+          'rawTransaction': '0200000001aabbccdd',
+          'txHex': '0200000001aabbccdd',
+          'psbtBase64': 'cHNidP8B',
+          'txid': 'public-id',
+        },
+      }) as Map;
+
+      expect(result['request'], {
+        'signedhex': redactedTransactionPayload,
+        'psbt_hex': redactedTransactionPayload,
+        'rawTransaction': redactedTransactionPayload,
+        'txHex': redactedTransactionPayload,
+        'psbtBase64': redactedTransactionPayload,
+        'txid': 'public-id',
+      });
+    });
+
+    test('keeps a missing payload missing', () {
+      final result = sanitizeTelemetryValue({'psbt': null}) as Map;
+
+      expect(result['psbt'], isNull);
+    });
+
     test('recursively sanitizes breadcrumb context', () {
       const address = 'tb1qfmw0p58g4w7m9s3e7nqlk0c4xv2z8r6t5y3u2i';
 
@@ -161,6 +247,16 @@ void main() {
           containsWalletSecret({'url': '/transactions/info?rawtransaction=02'}),
           isTrue);
       expect(containsWalletSecret({'txid': 'public-id'}), isFalse);
+    });
+
+    test('accepts payload fields that are missing or already redacted', () {
+      final sanitized = sanitizeTelemetryValue({
+        'psbt': 'cHNidP8B',
+        'url': '/broadcast?signedhex=deadbeef',
+      });
+
+      expect(containsWalletSecret({'psbt': null}), isFalse);
+      expect(containsWalletSecret(sanitized), isFalse);
     });
 
     test('accepts a payload with nothing to redact', () {

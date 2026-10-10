@@ -59,6 +59,30 @@ void main() {
     expect(serialized, contains(redactedWalletAddress));
   });
 
+  test('keeps only the verb of a wallet request in the page URL', () {
+    // On web, Sentry fills the request from window.location, split into its
+    // query string and fragment.
+    const args = '1,req,cHNidP8BAHECAAAAAQ,eyJ9';
+    final event = SentryEvent(
+      request: SentryRequest(
+        url: 'https://wallet.test/',
+        queryString: 'action=signPsbt%3Aext%2C${Uri.encodeComponent(args)}',
+        fragment: '/dashboard?action=signPsbt:ext,$args',
+      ),
+    );
+
+    final request = sanitizeSentryEvent(event).request!;
+
+    expect(
+      request.queryString,
+      'action=signPsbt%3Aext$redactedWalletRequest',
+    );
+    expect(
+      request.fragment,
+      '/dashboard?action=signPsbt:ext$redactedWalletRequest',
+    );
+  });
+
   test('preserves the event id and other structural fields', () {
     final event = SentryEvent(
       release: 'horizon@1.7.11+1',
