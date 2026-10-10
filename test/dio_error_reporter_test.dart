@@ -53,4 +53,46 @@ void main() {
       isNot(contains('1BoatSLRHtKNngkdXEeobR76b53LETtpyT')),
     );
   });
+
+  test('reports query parameter names without their values', () {
+    final errorService = MockErrorService();
+    final request = RequestOptions(
+      method: 'POST',
+      baseUrl: 'https://api.example.test:4000/v2',
+      path: '/bitcoin/transactions',
+      queryParameters: {
+        'signedhex': '0200000001aabbccdd',
+        'inputs_set': 'aabb:0,ccdd:1',
+        'verbose': true,
+      },
+    );
+    final error = DioException.badResponse(
+      statusCode: 500,
+      requestOptions: request,
+      response: Response(requestOptions: request, statusCode: 500),
+    );
+
+    reportDioErrorOnce(
+      error: error,
+      retryCount: 0,
+      appVersion: '1.7.11',
+      errorService: errorService,
+    );
+
+    final captured = verify(
+      () => errorService.captureException(
+        captureAny(),
+        stackTrace: any(named: 'stackTrace'),
+        message: captureAny(named: 'message'),
+        context: captureAny(named: 'context'),
+      ),
+    ).captured;
+    const endpoint = 'https://api.example.test:4000/v2/bitcoin/transactions'
+        '?signedhex&inputs_set&verbose';
+    expect(
+      captured[1],
+      'NetworkRequestException: badResponse: POST $endpoint (500)',
+    );
+    expect((captured[2] as Map)['url'], endpoint);
+  });
 }

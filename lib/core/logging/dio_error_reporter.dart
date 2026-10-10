@@ -28,7 +28,7 @@ void reportDioErrorOnce({
   request.extra[_sentryReportedKey] = true;
 
   final statusCode = error.response?.statusCode;
-  final safeUri = sanitizeTelemetryText(request.uri.toString());
+  final safeUri = sanitizeTelemetryText(_endpointOf(request.uri));
   final status = statusCode?.toString() ?? 'connection_failed';
   final exception = NetworkRequestException(
     '${error.type.name}: ${request.method} $safeUri ($status)',
@@ -47,4 +47,18 @@ void reportDioErrorOnce({
       'appVersion': appVersion,
     },
   );
+}
+
+/// [uri] with its query cut down to the parameter names. Query values carry
+/// signed transactions, PSBTs, UTXO sets and address lists; dropping all of
+/// them cannot miss a new one the way a list of sensitive names can.
+String _endpointOf(Uri uri) {
+  final names = uri.queryParametersAll.keys;
+  return Uri(
+    scheme: uri.scheme,
+    host: uri.hasAuthority ? uri.host : null,
+    port: uri.hasPort ? uri.port : null,
+    path: uri.path,
+    query: names.isEmpty ? null : names.join('&'),
+  ).toString();
 }
