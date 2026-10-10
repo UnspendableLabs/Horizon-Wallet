@@ -30,7 +30,7 @@ class ErrorServiceImpl implements ErrorService {
       _isInitialized = true;
       logger.info('Sentry initialized successfully');
     } catch (e, stack) {
-      logger.error('Failed to initialize Sentry', e as Error, stack);
+      logger.error('Failed to initialize Sentry', e is Error ? e : null, stack);
     }
   }
 
@@ -55,7 +55,7 @@ class ErrorServiceImpl implements ErrorService {
       );
       logger.info('Breadcrumb error added to Sentry');
     } catch (e) {
-      logger.error('Failed to add breadcrumb to Sentry', e as Error);
+      logger.error('Failed to add breadcrumb to Sentry', e is Error ? e : null);
     }
 
     try {
@@ -65,7 +65,8 @@ class ErrorServiceImpl implements ErrorService {
       );
       logger.info('Exception captured in Sentry: ${result.toString()}');
     } catch (e) {
-      logger.error('Failed to capture exception in Sentry', e as Error);
+      logger.error(
+          'Failed to capture exception in Sentry', e is Error ? e : null);
     }
   }
 
@@ -89,7 +90,7 @@ class ErrorServiceImpl implements ErrorService {
       );
       logger.info('Breadcrumb added to Sentry');
     } catch (e) {
-      logger.error('Failed to add breadcrumb to Sentry', e as Error);
+      logger.error('Failed to add breadcrumb to Sentry', e is Error ? e : null);
     }
   }
 }

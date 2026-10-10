@@ -117,7 +117,8 @@ class TransactionServiceNative implements TransactionService {
   @override
   String signPsbt(String psbtHex, Map<int, String> inputPrivateKeyMap,
       HttpConfig httpConfig,
-      [List<int>? sighashTypes]) {
+      [List<int>? sighashTypes,
+      Set<String> approvedRevealLeafHashes = const {}]) {
     _unimplemented('signPsbt');
     // final psbt = Psbt.fromHex(psbtHex);
     // final builder = PsbtBuilderV0(psbt);
@@ -151,6 +152,11 @@ class TransactionServiceNative implements TransactionService {
     // final builder = PsbtBuilderV0(psbt);
     //
     // return builder.buildUnsignedTransaction().toHex();
+  }
+
+  @override
+  PsbtDescription describePsbt(String psbtHex, HttpConfig httpConfig) {
+    _unimplemented('describePsbt');
   }
 
   @override

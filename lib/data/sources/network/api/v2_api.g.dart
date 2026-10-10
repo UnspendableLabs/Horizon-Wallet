@@ -5275,6 +5275,38 @@ class _V2Api implements V2Api {
   }
 
   @override
+  Future<Response<CounterpartyMessageModel>> unpackCounterpartyMessage(
+      String datahex) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'datahex': datahex};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<Response<CounterpartyMessageModel>>(
+      Options(method: 'GET', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/transactions/unpack?verbose=true',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<CounterpartyMessageModel> _value;
+    try {
+      _value = Response<CounterpartyMessageModel>.fromJson(
+        _result.data!,
+        (json) =>
+            CounterpartyMessageModel.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
   Future<Response<TransactionUnpackedVerbose>> unpackTransactionVerbose(
     String datahex, [
     int? blockIndex,

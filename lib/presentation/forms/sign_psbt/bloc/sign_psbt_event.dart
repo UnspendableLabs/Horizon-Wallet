@@ -8,3 +8,10 @@ class PasswordChanged extends SignPsbtEvent {
 }
 
 class SignPsbtSubmitted extends SignPsbtEvent {}
+
+/// The user ticked (or unticked) the acknowledgement of the Counterparty
+/// message a reveal carries.
+class RevealAcknowledgementChanged extends SignPsbtEvent {
+  final bool acknowledged;
+  RevealAcknowledgementChanged(this.acknowledged);
+}

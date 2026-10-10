@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 
+import 'package:horizon/domain/entities/counterparty_reveal.dart';
 import 'package:horizon/domain/entities/extension_rpc.dart';
 import 'package:horizon/domain/entities/network.dart';
 import 'package:horizon/domain/entities/psbt_type.dart';
@@ -111,6 +112,10 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
           //           .titleMedium!
           //           .copyWith(color: Colors.white)),
           // ),
+          if (state.tapscriptRefusal != null)
+            _buildTapscriptRefusalView(context, state.tapscriptRefusal!),
+          if (state.counterpartyReveal != null)
+            _buildRevealView(context, state, state.counterpartyReveal!),
           Padding(
               padding: const EdgeInsets.only(bottom: 8.0, top: 12),
               child: switch (state.psbtSummaryViewModel) {
@@ -2200,8 +2205,10 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                   child: HorizonUI.HorizonButton(
                     variant: HorizonUI.ButtonVariant.white,
                     borderRadius: 10,
-                    disabled: state.submissionStatus.isInProgressOrSuccess,
-                    onPressed: state.submissionStatus.isInProgressOrSuccess
+                    disabled: state.submissionStatus.isInProgressOrSuccess ||
+                        state.signingBlocked,
+                    onPressed: state.submissionStatus.isInProgressOrSuccess ||
+                            state.signingBlocked
                         ? null
                         : () => context
                             .read<SignPsbtBloc>()
@@ -2219,6 +2226,148 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
           // Status/Error Message
         ]));
       }),
+    );
+  }
+
+  /// The Counterparty message a reveal PSBT carries, decoded by the node.
+  /// Signing the reveal is the consent to this message (protocol change
+  /// `require_reveal_source_signature`), whatever the dApp said the
+  /// transaction was, so it is shown in full, and a high-impact or
+  /// unrecognized message must be acknowledged before the Confirm button
+  /// is enabled.
+  /// Why the wallet will not sign a tapscript input of this PSBT: shown up
+  /// front, with the Confirm button disabled.
+  Widget _buildTapscriptRefusalView(BuildContext context, String refusal) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: SizedBox(
+        width: double.infinity,
+        child: HorizonUI.HorizonCard(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  AppIcons.warningIcon(color: red1, height: 16, width: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      "The wallet will not sign this transaction",
+                      style: theme.textTheme.labelSmall,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              SelectableText(
+                refusal,
+                style: theme.textTheme.bodySmall?.copyWith(color: red1),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRevealView(BuildContext context, SignPsbtState state,
+      CounterpartyRevealInfo reveal) {
+    final theme = Theme.of(context);
+    final labelStyle = theme.inputDecorationTheme.hintStyle;
+    final valueStyle = theme.textTheme.bodySmall;
+
+    final entries = <MapEntry<String, String>>[
+      MapEntry("message", reveal.messageTypeLabel),
+      MapEntry("source", reveal.sourceAddress),
+      for (final destination in reveal.destinations)
+        MapEntry("destination output", destination),
+      ...reveal.entries,
+    ];
+
+    final warnings = <String>[
+      if (reveal.risk == RevealRisk.unrecognized)
+        "This reveal carries a Counterparty message the wallet cannot decode"
+            "${reveal.decodeError != null ? " (${reveal.decodeError})" : ""}. "
+            "Signing it publishes that message from your address.",
+      if (reveal.risk == RevealRisk.high) reveal.riskReason,
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: SizedBox(
+        width: double.infinity,
+        child: HorizonUI.HorizonCard(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  AppIcons.warningIcon(
+                      color: warnings.isEmpty ? violet : red1,
+                      height: 16,
+                      width: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      "Counterparty message in this reveal",
+                      style: theme.textTheme.labelSmall,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                "Your signature publishes this message from your address. Check it matches what you intend to do.",
+                style: valueStyle,
+              ),
+              const SizedBox(height: 8),
+              ...entries.map((entry) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(entry.key, style: labelStyle),
+                        SelectableText(entry.value, style: valueStyle),
+                      ],
+                    ),
+                  )),
+              for (final warning in warnings)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    warning,
+                    style: valueStyle?.copyWith(color: red1),
+                  ),
+                ),
+              if (reveal.requiresAcknowledgement)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Row(
+                    children: [
+                      Checkbox(
+                        value: state.revealAcknowledged,
+                        onChanged: (value) => context
+                            .read<SignPsbtBloc>()
+                            .add(RevealAcknowledgementChanged(value ?? false)),
+                      ),
+                      Expanded(
+                        child: Text(
+                          reveal.risk == RevealRisk.unrecognized
+                              ? "I understand that I am signing a Counterparty message the wallet cannot describe."
+                              : "I understand what this ${reveal.messageTypeLabel} does and want to sign it.",
+                          style: valueStyle,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
