@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import "package:equatable/equatable.dart";
+import 'package:horizon/core/logging/network_error_diagnostics.dart';
 import 'package:horizon/data/sources/repositories/network_error_helpers.dart';
 import 'package:horizon/domain/entities/compose_fn.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
@@ -75,8 +76,9 @@ class ComposeTransactionUseCase {
           await composeFn(feeRate, inputsSetForTx, params, httpConfig);
       return finalTx;
     } on DioException catch (e) {
-      if (e.response?.data != null && e.response?.data["error"] != null) {
-        throw Exception(e.response?.data["error"]);
+      final apiError = apiErrorMessage(e.response?.data);
+      if (apiError != null) {
+        throw Exception(apiError);
       } else {
         rethrow;
       }

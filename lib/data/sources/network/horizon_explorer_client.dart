@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'dart:convert';
+import 'package:horizon/core/logging/network_error_diagnostics.dart';
 import 'package:horizon/data/sources/network/atomic_swap_quantity_converter.dart';
 import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:horizon/domain/entities/asset_search_result.dart';
@@ -461,8 +462,9 @@ class HorizonExplorerApi {
       final res = await _api._createSwap(body);
       return res;
     } on DioException catch (e) {
-      if (e.response?.data != null && e.response?.data["error"] != null) {
-        throw Exception(e.response?.data["error"]);
+      final apiError = apiErrorMessage(e.response?.data);
+      if (apiError != null) {
+        throw Exception(apiError);
       } else {
         rethrow;
       }
@@ -501,8 +503,9 @@ class HorizonExplorerApi {
     try {
       return await _api._atomicSwapBuy(ids.join(","), body);
     } on DioException catch (e) {
-      if (e.response?.data != null && e.response?.data["error"] != null) {
-        throw Exception(e.response?.data["error"]);
+      final apiError = apiErrorMessage(e.response?.data);
+      if (apiError != null) {
+        throw Exception(apiError);
       } else {
         rethrow;
       }
