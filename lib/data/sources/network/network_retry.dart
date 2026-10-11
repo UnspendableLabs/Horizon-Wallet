@@ -3,12 +3,28 @@ import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:horizon/core/logging/dio_error_reporter.dart';
 import 'package:horizon/domain/services/error_service.dart';
 
-/// Only transport-level failures are worth retrying. HTTP responses, including
-/// 400s, are deterministic answers from the server and would not change.
+/// Every GET is a read and may be replayed, except compose. Compose has no
+/// side effects, but it is the one GET that does real work on the node and can
+/// outlast the receive timeout, so a replay would pile a second compose onto a
+/// node that is already struggling; the user retries it from the form instead.
+/// The XCP fee estimates under the compose routes are plain lookups and stay
+/// retryable. Writes, that is the POST broadcast, are never replayed.
+bool isRetryableNetworkRead(RequestOptions request) {
+  if (request.method.toUpperCase() != 'GET') return false;
+  final path = request.uri.path;
+  return !path.contains('/compose/') || path.endsWith('/estimatexcpfees');
+}
+
+/// Caller cancellation, TLS failures and validation/auth errors are terminal.
+/// Temporary service responses share the existing bounded retry count/delays;
+/// no new client or fallback host is introduced.
 bool isTransientNetworkFailure(DioException error) =>
-    error.type == DioExceptionType.connectionTimeout ||
-    error.type == DioExceptionType.receiveTimeout ||
-    error.type == DioExceptionType.connectionError;
+    isRetryableNetworkRead(error.requestOptions) &&
+    (error.type == DioExceptionType.connectionTimeout ||
+        error.type == DioExceptionType.receiveTimeout ||
+        error.type == DioExceptionType.connectionError ||
+        (error.type == DioExceptionType.badResponse &&
+            const {429, 502, 503, 504}.contains(error.response?.statusCode)));
 
 /// A 404 is an expected answer (asset lookups on user-typed names fail by
 /// design) and cancelled requests were abandoned by the user, so neither is

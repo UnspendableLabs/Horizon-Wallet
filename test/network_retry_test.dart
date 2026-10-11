@@ -90,8 +90,54 @@ void main() {
   tearDown(() => dio.close(force: true));
 
   group('retry policy', () {
+    test('replays every read under its real base, never compose or a write',
+        () {
+      // Paths as the clients request them, resolved against the configured
+      // bases: Counterparty under /v2 (testnet4 adds a trailing slash), Esplora
+      // at the root, mempool.space as a full URL.
+      const counterparty = 'https://testnet4.counterparty.io:44000/v2/';
+      const esplora = 'https://api.unspendablelabs.com:3000';
+      RequestOptions get(String base, String path) =>
+          RequestOptions(baseUrl: base, path: path);
+
+      for (final request in [
+        get(counterparty, '/addresses/public/balances?verbose=true'),
+        get(counterparty, '/addresses/events?limit=1000'),
+        get(counterparty, '/addresses/public/dispensers'),
+        get(counterparty, '/addresses/public/orders?verbose=true'),
+        get(counterparty, '/addresses/public/transactions'),
+        get(counterparty, '/transactions/info?verbose=true'),
+        get(counterparty, '/transactions/unpack?verbose=true'),
+        get(counterparty, '/bitcoin/transactions/decode'),
+        get(counterparty, '/blocks/last'),
+        get(counterparty, '/'),
+        get(counterparty, '/addresses/public/compose/dividend/estimatexcpfees'),
+        get(esplora, '/address/public'),
+        get(esplora, '/address/public/txs/chain/last'),
+        get(esplora, '/blocks/tip/height'),
+        get(esplora, 'https://mempool.space/api/v1/fees/recommended'),
+      ]) {
+        expect(isRetryableNetworkRead(request), isTrue,
+            reason: request.uri.toString());
+      }
+
+      for (final request in [
+        get(counterparty, '/addresses/public/compose/send?verbose=true'),
+        get(counterparty, '/addresses/public/compose/attach?verbose=true'),
+        get(counterparty, '/utxos/outpoint/compose/detach?verbose=true'),
+        RequestOptions(
+          baseUrl: counterparty,
+          path: '/bitcoin/transactions',
+          method: 'POST',
+        ),
+      ]) {
+        expect(isRetryableNetworkRead(request), isFalse,
+            reason: request.uri.toString());
+      }
+    });
+
     test('retries transient transport failures', () {
-      final request = RequestOptions(path: '/');
+      final request = RequestOptions(path: '/blocks/tip/height');
       for (final type in [
         DioExceptionType.connectionTimeout,
         DioExceptionType.receiveTimeout,
@@ -116,6 +162,58 @@ void main() {
 
       await expectLater(dio.get('/'), throwsA(isA<DioException>()));
 
+      expect(adapter.requests, hasLength(1));
+    });
+
+    for (final status in [429, 502, 503, 504]) {
+      test('recovers a read after HTTP $status', () async {
+        final adapter = FailingAdapter(1, statusCode: status);
+        dio.httpClientAdapter = adapter;
+        expect((await dio.get<String>('/v2/addresses/events')).data, 'ok');
+        expect(adapter.requests, hasLength(2));
+        verifyNothingReported();
+      });
+    }
+
+    test('exhausted 503 reads report once within the retry limit', () async {
+      final adapter = FailingAdapter(alwaysFails, statusCode: 503);
+      dio.httpClientAdapter = adapter;
+      await expectLater(
+          dio.get('/address/public/utxo'), throwsA(isA<DioException>()));
+      expect(adapter.requests, hasLength(3));
+      expect(reportedContexts(), hasLength(1));
+    });
+
+    for (final status in [400, 401, 403, 404, 500]) {
+      test('does not retry permanent/unclassified HTTP $status', () async {
+        final adapter = FailingAdapter(alwaysFails, statusCode: status);
+        dio.httpClientAdapter = adapter;
+        await expectLater(
+            dio.get('/addresses/events'), throwsA(isA<DioException>()));
+        expect(adapter.requests, hasLength(1));
+      });
+    }
+
+    test('never replays compose or a POST', () async {
+      var adapter = FailingAdapter(alwaysFails);
+      dio.httpClientAdapter = adapter;
+      await expectLater(dio.get('/v2/addresses/public/compose/send'),
+          throwsA(isA<DioException>()));
+      expect(adapter.requests, hasLength(1));
+
+      adapter = FailingAdapter(alwaysFails);
+      dio.httpClientAdapter = adapter;
+      await expectLater(
+          dio.post('/v2/bitcoin/transactions'), throwsA(isA<DioException>()));
+      expect(adapter.requests, hasLength(1));
+    });
+
+    test('explicit retry opt-out also applies to eligible 503 reads', () async {
+      final adapter = FailingAdapter(alwaysFails, statusCode: 503);
+      dio.httpClientAdapter = adapter;
+      await expectLater(
+          dio.get('/addresses/events', options: Options()..disableRetry = true),
+          throwsA(isA<DioException>()));
       expect(adapter.requests, hasLength(1));
     });
   });
@@ -192,7 +290,7 @@ void main() {
       dio.httpClientAdapter = adapter;
       final token = CancelToken();
 
-      final pending = dio.get('/', cancelToken: token);
+      final pending = dio.get('/addresses/events', cancelToken: token);
       await Future<void>.delayed(const Duration(milliseconds: 20));
       token.cancel();
 

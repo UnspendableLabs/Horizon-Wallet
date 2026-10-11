@@ -90,6 +90,15 @@ To run locally on the web:
 
 - run with `flutter test` or `flutter test test/target_file.dart`
 
+### Network read recovery
+
+`network_retry.dart` replays a GET on a connection or receive timeout, a
+connection failure, or an HTTP 429/502/503/504, within each client's finite retry
+count and delays. Compose endpoints and writes (the POST broadcast) are never
+replayed; an explicit retry opt-out and a cancellation stay terminal. A recovered
+request is not reported, an exhausted one is reported once with the existing
+redacted diagnostics. Test with `flutter test test/network_retry_test.dart`.
+
 ### Send-form balances
 
 The send form resolves the selected asset from the current loaded balance state
