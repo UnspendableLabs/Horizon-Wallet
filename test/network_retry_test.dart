@@ -90,27 +90,49 @@ void main() {
   tearDown(() => dio.close(force: true));
 
   group('retry policy', () {
-    test('matches only explicit read paths, with or without a v2 prefix', () {
-      for (final path in [
-        '/v2/addresses/public/fairminters?verbose=true',
-        '/addresses/balances?addresses=public',
-        '/v2/addresses/events?limit=1000',
-        '/address/public',
-        '/address/public/txs/chain/last',
-        'https://mempool.space/api/v1/fees/recommended',
+    test('replays every read under its real base, never compose or a write',
+        () {
+      // Paths as the clients request them, resolved against the configured
+      // bases: Counterparty under /v2 (testnet4 adds a trailing slash), Esplora
+      // at the root, mempool.space as a full URL.
+      const counterparty = 'https://testnet4.counterparty.io:44000/v2/';
+      const esplora = 'https://api.unspendablelabs.com:3000';
+      RequestOptions get(String base, String path) =>
+          RequestOptions(baseUrl: base, path: path);
+
+      for (final request in [
+        get(counterparty, '/addresses/public/balances?verbose=true'),
+        get(counterparty, '/addresses/events?limit=1000'),
+        get(counterparty, '/addresses/public/dispensers'),
+        get(counterparty, '/addresses/public/orders?verbose=true'),
+        get(counterparty, '/addresses/public/transactions'),
+        get(counterparty, '/transactions/info?verbose=true'),
+        get(counterparty, '/transactions/unpack?verbose=true'),
+        get(counterparty, '/bitcoin/transactions/decode'),
+        get(counterparty, '/blocks/last'),
+        get(counterparty, '/'),
+        get(counterparty, '/addresses/public/compose/dividend/estimatexcpfees'),
+        get(esplora, '/address/public'),
+        get(esplora, '/address/public/txs/chain/last'),
+        get(esplora, '/blocks/tip/height'),
+        get(esplora, 'https://mempool.space/api/v1/fees/recommended'),
       ]) {
-        expect(isRetryableNetworkRead(RequestOptions(path: path)), isTrue,
-            reason: path);
+        expect(isRetryableNetworkRead(request), isTrue,
+            reason: request.uri.toString());
       }
-      for (final path in [
-        '/v2/addresses/public/compose/send',
-        '/v2/utxos/outpoint/compose/detach',
-        '/v2/addresses/public/balances/compose/send',
-        '/address/public/unknown',
-        '/authentication',
+
+      for (final request in [
+        get(counterparty, '/addresses/public/compose/send?verbose=true'),
+        get(counterparty, '/addresses/public/compose/attach?verbose=true'),
+        get(counterparty, '/utxos/outpoint/compose/detach?verbose=true'),
+        RequestOptions(
+          baseUrl: counterparty,
+          path: '/bitcoin/transactions',
+          method: 'POST',
+        ),
       ]) {
-        expect(isRetryableNetworkRead(RequestOptions(path: path)), isFalse,
-            reason: path);
+        expect(isRetryableNetworkRead(request), isFalse,
+            reason: request.uri.toString());
       }
     });
 
@@ -172,22 +194,17 @@ void main() {
       });
     }
 
-    test('never replays compose, authentication, unknown GETs or POSTs',
-        () async {
-      for (final path in [
-        '/v2/addresses/public/compose/send',
-        '/login',
-        '/unknown'
-      ]) {
-        final adapter = FailingAdapter(alwaysFails);
-        dio.httpClientAdapter = adapter;
-        await expectLater(dio.get(path), throwsA(isA<DioException>()));
-        expect(adapter.requests, hasLength(1));
-      }
-      final adapter = FailingAdapter(alwaysFails);
+    test('never replays compose or a POST', () async {
+      var adapter = FailingAdapter(alwaysFails);
+      dio.httpClientAdapter = adapter;
+      await expectLater(dio.get('/v2/addresses/public/compose/send'),
+          throwsA(isA<DioException>()));
+      expect(adapter.requests, hasLength(1));
+
+      adapter = FailingAdapter(alwaysFails);
       dio.httpClientAdapter = adapter;
       await expectLater(
-          dio.post('/addresses/events'), throwsA(isA<DioException>()));
+          dio.post('/v2/bitcoin/transactions'), throwsA(isA<DioException>()));
       expect(adapter.requests, hasLength(1));
     });
 

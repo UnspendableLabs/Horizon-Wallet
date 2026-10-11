@@ -3,30 +3,21 @@ import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:horizon/core/logging/dio_error_reporter.dart';
 import 'package:horizon/domain/services/error_service.dart';
 
-/// Only known read endpoints may be replayed. Counterparty compose uses GET
-/// too, so the HTTP method alone is not a sufficient safety boundary.
+/// Every GET is a read and may be replayed, except compose. Compose has no
+/// side effects, but it is the one GET that does real work on the node and can
+/// outlast the receive timeout, so a replay would pile a second compose onto a
+/// node that is already struggling; the user retries it from the form instead.
+/// The XCP fee estimates under the compose routes are plain lookups and stay
+/// retryable. Writes, that is the POST broadcast, are never replayed.
 bool isRetryableNetworkRead(RequestOptions request) {
   if (request.method.toUpperCase() != 'GET') return false;
-  final path = request.uri.path.replaceFirst(RegExp(r'^/v2(?=/|$)'), '');
-  return path == '/blocks/tip/height' ||
-      path == '/fee-estimates' ||
-      path == '/api/v1/fees/recommended' ||
-      path == '/bitcoin/estimatesmartfee' ||
-      RegExp(r'^/address/[^/]+(?:/utxo|/txs(?:/mempool|/chain(?:/[^/]+)?)?)?$')
-          .hasMatch(path) ||
-      RegExp(r'^/tx/[^/]+(?:/hex)?$').hasMatch(path) ||
-      RegExp(r'^/addresses/(?:balances|events|mempool|transactions)$')
-          .hasMatch(path) ||
-      RegExp(r'^/addresses/[^/]+/(?:balances(?:/[^/]+)?|fairminters|assets/owned)$')
-          .hasMatch(path) ||
-      RegExp(r'^/assets/[^/]+$').hasMatch(path) ||
-      RegExp(r'^/utxos/[^/]+/balances$').hasMatch(path) ||
-      RegExp(r'^/bitcoin/addresses(?:/[^/]+)?/utxos$').hasMatch(path);
+  final path = request.uri.path;
+  return !path.contains('/compose/') || path.endsWith('/estimatexcpfees');
 }
 
-/// Caller cancellation, TLS failures, validation/auth errors and unknown GET
-/// endpoints are terminal. Temporary service responses share the existing
-/// bounded retry count/delays; no new client or fallback host is introduced.
+/// Caller cancellation, TLS failures and validation/auth errors are terminal.
+/// Temporary service responses share the existing bounded retry count/delays;
+/// no new client or fallback host is introduced.
 bool isTransientNetworkFailure(DioException error) =>
     isRetryableNetworkRead(error.requestOptions) &&
     (error.type == DioExceptionType.connectionTimeout ||
