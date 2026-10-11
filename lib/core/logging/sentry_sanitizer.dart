@@ -6,13 +6,30 @@ final _bitcoinAddressPattern = RegExp(
 );
 
 const redactedWalletAddress = '[wallet-address-redacted]';
+const redactedTransactionPayload = '[transaction-payload-redacted]';
+final _transactionQueryPattern = RegExp(
+  r'((?:signedhex|unsignedhex|rawtransaction|rawtx|tx_hex|psbt_hex|psbt_base64|psbt)=)[^&\s#]+',
+  caseSensitive: false,
+);
+const _transactionPayloadKeys = {
+  'signedhex',
+  'unsignedhex',
+  'rawtransaction',
+  'rawtx',
+  'tx_hex',
+  'psbt_hex',
+  'psbt_base64',
+  'psbt',
+};
 
 String sanitizeTelemetryText(String value) {
-  return value.replaceAllMapped(_bitcoinAddressPattern, (match) {
+  final safe = value.replaceAllMapped(_transactionQueryPattern,
+      (match) => (match.group(1) ?? '') + redactedTransactionPayload);
+  return safe.replaceAllMapped(_bitcoinAddressPattern, (match) {
     final startsInsideToken = match.start > 0 &&
-        _isAsciiLetterOrDigit(value.codeUnitAt(match.start - 1));
-    final endsInsideToken = match.end < value.length &&
-        _isAsciiLetterOrDigit(value.codeUnitAt(match.end));
+        _isAsciiLetterOrDigit(safe.codeUnitAt(match.start - 1));
+    final endsInsideToken = match.end < safe.length &&
+        _isAsciiLetterOrDigit(safe.codeUnitAt(match.end));
     if (startsInsideToken || endsInsideToken) {
       return match.group(0)!;
     }
@@ -38,7 +55,10 @@ Map<String, dynamic> sanitizeTelemetryMap(Map<dynamic, dynamic> value) {
   for (final entry in value.entries) {
     final key =
         _uniqueKey(sanitized, sanitizeTelemetryText(entry.key.toString()));
-    sanitized[key] = sanitizeTelemetryValue(entry.value);
+    sanitized[key] =
+        _transactionPayloadKeys.contains(entry.key.toString().toLowerCase())
+            ? redactedTransactionPayload
+            : sanitizeTelemetryValue(entry.value);
   }
   return sanitized;
 }
@@ -87,15 +107,12 @@ SentryEvent sanitizeSentryEvent(SentryEvent event) {
   final request = event.request;
 
   return event.copyWith(
-    message: message == null
-        ? null
-        : message.copyWith(
-            formatted: sanitizeTelemetryText(message.formatted),
-            template: sanitizeNullableTelemetryText(message.template),
-            params: message.params
-                ?.map(sanitizeTelemetryValue)
-                .toList(growable: false),
-          ),
+    message: message?.copyWith(
+      formatted: sanitizeTelemetryText(message.formatted),
+      template: sanitizeNullableTelemetryText(message.template),
+      params:
+          message.params?.map(sanitizeTelemetryValue).toList(growable: false),
+    ),
     exceptions: event.exceptions
         ?.map((exception) => exception.copyWith(
               value: sanitizeNullableTelemetryText(exception.value),
@@ -107,14 +124,12 @@ SentryEvent sanitizeSentryEvent(SentryEvent event) {
               data: sanitizeNullableTelemetryMap(breadcrumb.data),
             ))
         .toList(growable: false),
-    request: request == null
-        ? null
-        : request.copyWith(
-            url: sanitizeNullableTelemetryText(request.url),
-            queryString: sanitizeNullableTelemetryText(request.queryString),
-            fragment: sanitizeNullableTelemetryText(request.fragment),
-            data: sanitizeTelemetryValue(request.data),
-          ),
+    request: request?.copyWith(
+      url: sanitizeNullableTelemetryText(request.url),
+      queryString: sanitizeNullableTelemetryText(request.queryString),
+      fragment: sanitizeNullableTelemetryText(request.fragment),
+      data: sanitizeTelemetryValue(request.data),
+    ),
     culprit: sanitizeNullableTelemetryText(event.culprit),
     transaction: sanitizeNullableTelemetryText(event.transaction),
   );

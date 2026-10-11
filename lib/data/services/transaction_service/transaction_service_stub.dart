@@ -11,12 +11,17 @@ class TransactionServiceStub implements TransactionService {
   @override
   String signPsbt(String psbtHex, Map<int, String> inputPrivateKeyMap,
           HttpConfig config,
-          [List<int>? sighashTypes]) =>
+          [List<int>? sighashTypes,
+          Set<String> approvedRevealLeafHashes = const {}]) =>
       _unsupported('signPsbt');
 
   @override
   String psbtToUnsignedTransactionHex(String psbtHex) =>
       _unsupported('psbtToUnsignedTransactionHex');
+
+  @override
+  PsbtDescription describePsbt(String psbtHex, HttpConfig httpConfig) =>
+      _unsupported('describePsbt');
 
   @override
   String signMessage(String message, String privateKey, HttpConfig config) =>
