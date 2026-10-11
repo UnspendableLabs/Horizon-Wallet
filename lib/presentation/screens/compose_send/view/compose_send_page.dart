@@ -98,8 +98,14 @@ class ComposeSendPageState extends State<ComposeSendPage> {
   TextEditingController assetController = TextEditingController();
 
   String? asset;
-  Balance? balance_;
   bool _submitted = false;
+
+  Balance? _selectedBalance(ComposeSendState state) =>
+      state.balancesState.maybeWhen(
+        success: (balances) =>
+            _getBalanceForSelectedAsset(balances, asset ?? ''),
+        orElse: () => null,
+      );
 
   @override
   void initState() {
@@ -111,7 +117,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
     }
   }
 
-  String _formatMaxValue(ComposeSendState state, int maxValue, String? asset) {
+  String? _formatMaxValue(ComposeSendState state, int maxValue, String? asset) {
     // You may need to adjust this based on your asset's divisibility
     final balance = _getBalanceForSelectedAsset(
         state.balancesState.maybeWhen(
@@ -120,7 +126,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         ),
         asset ?? '');
     if (balance == null) {
-      throw Exception("invariant: No balance found for asset $asset");
+      return null;
     }
 
     String maxQuantityNormalized = quantityToQuantityNormalizedString(
@@ -149,7 +155,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
                   _formatMaxValue(state, maxValue, state.asset);
 
               if (formattedValue != quantityController.text) {
-                quantityController.text = formattedValue;
+                quantityController.text = formattedValue ?? '';
               }
             }
           }
@@ -202,17 +208,11 @@ class ComposeSendPageState extends State<ComposeSendPage> {
     setState(() {
       _submitted = true;
     });
-    if (formKey.currentState!.validate()) {
-      Balance? balance = balance_;
-
-      if (asset == null) {
-        throw Exception("no asset selected");
-      }
-
-      if (balance == null) {
-        throw Exception("invariant: No balance found for asset: $asset");
-      }
-
+    // MAX and restored inputs set controller.text without onChanged. Resolve
+    // from the current loaded balances, never from a previous typing callback.
+    final state = context.read<ComposeSendBloc>().state;
+    final balance = _selectedBalance(state);
+    if (formKey.currentState!.validate() && balance != null && asset != null) {
       int quantity = getQuantityForDivisibility(
           divisible: balance.assetInfo.divisible,
           inputQuantity: quantityController.text);
@@ -232,6 +232,18 @@ class ComposeSendPageState extends State<ComposeSendPage> {
       ComposeSendState state, bool loading, GlobalKey<FormState> formKey) {
     final width = MediaQuery.of(context).size.width;
     return [
+      if (_submitted && _selectedBalance(state) == null) ...[
+        const Text(
+            'Balance unavailable for the selected asset. Refresh balances and try again.'),
+        TextButton(
+          onPressed: loading
+              ? null
+              : () => context.read<ComposeSendBloc>().add(
+                  AsyncFormDependenciesRequested(
+                      currentAddress: widget.address)),
+          child: const Text('Refresh balances'),
+        ),
+      ],
       HorizonUI.HorizonTextFormField(
         enabled: false,
         controller: fromAddressController,
@@ -299,7 +311,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         );
       }
 
-      Balance? balance = balance_ ??
+      Balance? balance =
           _getBalanceForSelectedAsset(balances, asset ?? balances[0].asset);
 
       if (balance == null) {
@@ -321,9 +333,6 @@ class ComposeSendPageState extends State<ComposeSendPage> {
           controller: quantityController,
           enabled: !loading,
           onChanged: (value) {
-            setState(() {
-              balance_ = balance;
-            });
             context.read<ComposeSendBloc>().add(ChangeQuantity(value: value));
           },
           label: 'Quantity',
@@ -335,12 +344,17 @@ class ComposeSendPageState extends State<ComposeSendPage> {
           keyboardType: const TextInputType.numberWithOptions(
               decimal: true, signed: false),
           validator: (value) {
+            final currentBalance =
+                _selectedBalance(context.read<ComposeSendBloc>().state);
+            if (currentBalance == null) {
+              return 'Balance unavailable. Refresh balances before sending.';
+            }
             if (value == null || value.isEmpty) {
               return 'Please enter a quantity';
             }
             if (value != '.') {
               Decimal input = Decimal.parse(value);
-              Decimal max = Decimal.parse(balance?.quantityNormalized ?? '0');
+              Decimal max = Decimal.parse(currentBalance.quantityNormalized);
               if (input > max) {
                 return "quantity exceeds max";
               }
@@ -428,10 +442,11 @@ class ComposeSendPageState extends State<ComposeSendPage> {
 
           // Use a post-frame callback to set the asset state
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (asset == null) {
+            if (mounted && asset == null) {
               setState(() {
                 asset = balances[0].asset;
               });
+              context.read<ComposeSendBloc>().add(ChangeAsset(asset: asset!));
             }
           });
           return SizedBox(
@@ -442,17 +457,15 @@ class ComposeSendPageState extends State<ComposeSendPage> {
               balances: balances,
               controller: assetController,
               onSelected: (String? value) {
-                Balance? balance =
-                    _getBalanceForSelectedAsset(balances, value!);
+                if (value == null) return;
+                Balance? balance = _getBalanceForSelectedAsset(balances, value);
 
                 if (balance == null) {
-                  throw Exception(
-                      "invariant: No balance found for asset: $value");
+                  return;
                 }
 
                 setState(() {
                   asset = value;
-                  balance_ = balance;
                   quantityController.text = '';
                 });
 
