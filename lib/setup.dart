@@ -1,3 +1,4 @@
+import 'package:horizon/core/logging/network_error_diagnostics.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
@@ -619,11 +620,10 @@ class TimeoutInterceptor extends Interceptor {
     if (err.type == DioExceptionType.connectionTimeout ||
         err.type == DioExceptionType.receiveTimeout ||
         err.type == DioExceptionType.sendTimeout) {
-      const timeoutDuration = Duration(seconds: 15);
       final formattedError = CustomDioException(
         requestOptions: err.requestOptions,
         error:
-            'Timeout (${timeoutDuration.inSeconds}s) — Request Failed \n ${err.response?.data?['error']}',
+            '${configuredTimeoutLabel(err)} — Request Failed \n ${apiErrorMessage(err.response?.data) ?? ''}',
         type: DioExceptionType.connectionTimeout,
         response: err.response,
       );
@@ -644,7 +644,7 @@ class ConnectionErrorInterceptor extends Interceptor {
       final formattedError = CustomDioException(
         requestOptions: err.requestOptions,
         error:
-            'Connection Error — Request Failed ${err.response?.data?['error'] != null ? "\n\n ${err.response?.data?['error']}" : ""}',
+            'Connection Error — Request Failed ${apiErrorMessage(err.response?.data) != null ? "\n\n ${apiErrorMessage(err.response?.data)}" : ""}',
         type: DioExceptionType.connectionError,
         response: err.response,
       );
@@ -663,9 +663,7 @@ class BadResponseInterceptor extends Interceptor {
     if (err.type == DioExceptionType.badResponse) {
       final formattedError = CustomDioException(
         requestOptions: err.requestOptions,
-        error: err.response?.data?['error'] != null
-            ? "${err.response?.data?['error']}"
-            : "Bad Response",
+        error: apiErrorMessage(err.response?.data) ?? "Bad Response",
         type: DioExceptionType.badResponse,
         response: err.response,
       );
@@ -686,7 +684,7 @@ class BadCertificateInterceptor extends Interceptor {
       final formattedError = CustomDioException(
         requestOptions: err.requestOptions,
         error:
-            'Bad Certificate — Request Failed ${err.response?.data?['error'] != null ? "\n\n ${err.response?.data?['error']}" : ""}',
+            'Bad Certificate — Request Failed ${apiErrorMessage(err.response?.data) != null ? "\n\n ${apiErrorMessage(err.response?.data)}" : ""}',
         type: DioExceptionType.badCertificate,
         response: err.response,
       );
