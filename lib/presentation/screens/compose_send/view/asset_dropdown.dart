@@ -100,14 +100,17 @@ class _AssetDropdownState extends State<AssetDropdown> {
   }
 
   String _getDisplayString(String? asset) {
-    if (asset == null) return orderedBalances[0].asset;
-    final balance = orderedBalances.firstWhere((b) => b.asset == asset);
+    if (asset == null) return orderedBalances.firstOrNull?.asset ?? '';
+    final balance = orderedBalances.firstWhereOrNull((b) => b.asset == asset);
+    // A refresh can remove the previously selected asset. Keep its label so
+    // the send form can explain/revalidate it, rather than throwing in build.
+    if (balance == null) return asset;
     return displayAssetName(balance.asset, balance.assetInfo.assetLongname);
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentAsset = widget.asset ?? orderedBalances[0].asset;
+    final currentAsset = widget.asset ?? orderedBalances.firstOrNull?.asset;
     return HorizonUI.HorizonSearchableDropdownMenu<String>(
       enabled: !widget.loading,
       label: widget.label ?? 'Asset',

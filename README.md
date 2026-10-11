@@ -99,6 +99,19 @@ replayed; an explicit retry opt-out and a cancellation stay terminal. A recovere
 request is not reported, an exhausted one is reported once with the existing
 redacted diagnostics. Test with `flutter test test/network_retry_test.dart`.
 
+### Send-form balances
+
+The send form resolves the selected asset from the current loaded balance state
+both when validating and submitting. MAX/restored controller values do not require
+a typing callback to establish a balance. Missing, loading or changed balances
+block submission and offer a refresh instead of throwing an invariant exception;
+unavailable data is never treated as a zero balance or a cached spend allowance.
+The composer still performs its normal funding/transaction validation.
+
+Run `flutter test test/compose_send_page_test.dart` with Flutter 3.35.4, the version
+pinned in CI. This covers programmatic/MAX quantities, missing balances, changed
+amounts, refresh and late MAX results.
+
 #### integration_test
 
 1. set up your env
