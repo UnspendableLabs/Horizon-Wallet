@@ -25,27 +25,36 @@ class _SatsToUsdDisplayState extends State<SatsToUsdDisplay> {
   final _priceService = GetIt.I<MempoolPriceService>();
   StreamSubscription<int>? _subscription;
   int? _currentPrice;
+  String? _priceEndpoint;
 
   @override
   void initState() {
     super.initState();
     _currentPrice = _priceService.lastPrice;
+    // One stream subscription belongs to this widget's entire lifetime.
+    _subscription = _priceService.priceStream.listen((price) {
+      if (mounted) setState(() => _currentPrice = price);
+    });
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
+    if (_priceEndpoint == session.httpConfig.mempoolSpaceApi) return;
+
+    if (_priceEndpoint != null) {
+      _priceService.stopListening();
+      _priceEndpoint = null;
+    }
     _priceService.startListening(httpConfig: session.httpConfig);
-    _subscription = _priceService.priceStream.listen((price) {
-      setState(() => _currentPrice = price);
-    });
+    _priceEndpoint = session.httpConfig.mempoolSpaceApi;
   }
 
   @override
   void dispose() {
     _subscription?.cancel();
-    _priceService.stopListening();
+    if (_priceEndpoint != null) _priceService.stopListening();
     super.dispose();
   }
 
