@@ -31,8 +31,11 @@ function sendMessageToBackground(message) {
   }
 }
 
-chrome.runtime.onMessage.addListener((message) => {
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   window.postMessage(message, window.location.origin);
+  // chrome_extension's sendMessage wrapper requires a non-null response.
+  // This acknowledges forwarding only; the dApp still receives the RPC payload.
+  sendResponse({ received: true });
 });
 
 function forwardDomEventToBackground({ payload, method }) {
