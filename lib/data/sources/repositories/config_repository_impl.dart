@@ -4,7 +4,7 @@ import 'package:pub_semver/pub_semver.dart';
 
 class ConfigImpl implements Config {
   @override
-  Version get version => Version.parse('2.3.2');
+  Version get version => Version.parse('2.3.3');
 
   @override
   String get versionInfoEndpoint {
