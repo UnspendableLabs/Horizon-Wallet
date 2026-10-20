@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
@@ -34,23 +35,30 @@ class ResetBloc extends Bloc<ResetEvent, ResetState> {
     required this.cacheProvider,
     required this.kvService,
   }) : super(const ResetState()) {
-    on<ResetEvent>(_onReset);
+    on<ResetEvent>(_onReset, transformer: droppable());
   }
 
-  void _onReset(ResetEvent event, Emitter emit) async {
+  Future<void> _onReset(ResetEvent event, Emitter<ResetState> emit) async {
     logger.d('Reset event received');
-    await walletRepository.deleteAllWallets();
-    await accountRepository.deleteAllAccounts();
-    await addressRepository.deleteAllAddresses();
-    await importedAddressRepository.deleteAllImportedAddresses();
+    emit(ResetState(resetState: Resetting()));
+    try {
+      await walletRepository.deleteAllWallets();
+      await accountRepository.deleteAllAccounts();
+      await addressRepository.deleteAllAddresses();
+      await importedAddressRepository.deleteAllImportedAddresses();
 
-    // logout effects
-    await inMemoryKeyRepository.delete();
-    await kvService.delete(key: kInactivityDeadlineKey);
+      // logout effects
+      await inMemoryKeyRepository.delete();
+      await kvService.delete(key: kInactivityDeadlineKey);
 
-    cacheProvider.removeAll();
+      await cacheProvider.removeAll();
 
-    analyticsService.reset();
+      analyticsService.reset();
+    } catch (error, stackTrace) {
+      addError(error, stackTrace);
+      emit(ResetState(resetState: ResetFailed()));
+      return;
+    }
 
     logger.d('emit reset state');
     emit(ResetState(resetState: Out()));

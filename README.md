@@ -112,6 +112,22 @@ Run `flutter test test/compose_send_page_test.dart` with Flutter 3.35.4, the ver
 pinned in CI. This covers programmatic/MAX quantities, missing balances, changed
 amounts, refresh and late MAX results.
 
+### Reset-wallet lifecycle
+
+The reset dialog owns its `ResetBloc`; the dashboard header does not. Removing
+the header must not close a controller still used by an open modal. Dismissal
+before confirmation deletes nothing, and reopening creates a fresh controller.
+The acknowledgement and exact `RESET WALLET` confirmation remain required.
+
+After confirmation, reset runs once at a time and the modal stays open until
+local data and settings deletion finishes. Success dismisses the modal and
+returns to onboarding. A storage failure is shown without claiming success;
+some local data may already have been deleted, so retry completes the cleanup.
+This is local wallet deletion, not an on-chain transaction.
+
+Run `flutter test test/reset_dialog_lifecycle_test.dart` with Flutter 3.35.4.
+All storage is mocked; these tests must never use a real wallet or private keys.
+
 #### integration_test
 
 1. set up your env

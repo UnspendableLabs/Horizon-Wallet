@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/reset/reset_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/reset/reset_event.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/reset/reset_state.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
 
@@ -31,9 +32,9 @@ class _ResetDialogState extends State<ResetDialog> {
   Widget build(BuildContext context) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final isSmallScreen = MediaQuery.of(context).size.width < 400;
-    final state = context.watch<ResetBloc>().state;
-
-    return HorizonUI.HorizonDialog(
+    final resetState = context.watch<ResetBloc>().state.resetState;
+    final isResetting = resetState is Resetting;
+    final dialog = HorizonUI.HorizonDialog(
         onBackButtonPressed: () {
           GoRouter.of(context).pop();
         },
@@ -163,6 +164,12 @@ class _ResetDialogState extends State<ResetDialog> {
                       ],
                     ),
                   const SizedBox(height: 16),
+                  if (resetState is ResetFailed)
+                    const Text(
+                      'Wallet reset could not finish. Some local data may '
+                      'already be deleted. Please retry to finish the reset.',
+                      style: TextStyle(color: redErrorText),
+                    ),
                   BackContinueButtons(
                     isDarkMode: isDarkTheme,
                     isSmallScreenWidth: isSmallScreen,
@@ -170,7 +177,8 @@ class _ResetDialogState extends State<ResetDialog> {
                       GoRouter.of(context).pop();
                     },
                     backButtonText: 'CANCEL',
-                    continueButtonText: 'RESET WALLET',
+                    continueButtonText:
+                        isResetting ? 'RESETTING…' : 'RESET WALLET',
                     onPressedContinue: () {
                       if (resetConfirmationController.text == 'RESET WALLET') {
                         context.read<ResetBloc>().add(ResetEvent());
@@ -184,5 +192,12 @@ class _ResetDialogState extends State<ResetDialog> {
                   ),
                 ],
               ));
+    return PopScope(
+      canPop: !isResetting,
+      child: AbsorbPointer(
+        absorbing: isResetting,
+        child: dialog,
+      ),
+    );
   }
 }
