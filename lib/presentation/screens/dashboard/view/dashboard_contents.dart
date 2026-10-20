@@ -486,157 +486,160 @@ class HorizonAppBarContent extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                BlocProvider(
-                  create: (context) => ResetBloc(
-                    kvService: GetIt.I.get<SecureKVService>(),
-                    inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
-                    walletRepository: GetIt.I.get<WalletRepository>(),
-                    accountRepository: GetIt.I.get<AccountRepository>(),
-                    addressRepository: GetIt.I.get<AddressRepository>(),
-                    importedAddressRepository:
-                        GetIt.I.get<ImportedAddressRepository>(),
-                    cacheProvider: GetIt.I.get<CacheProvider>(),
-                    analyticsService: GetIt.I.get<AnalyticsService>(),
-                  ),
-                  child: BlocConsumer<ResetBloc, ResetState>(
-                    listener: (context, state) {
-                      if (state.resetState is Out) {
-                        final session = context.read<SessionStateCubit>();
-                        session.onOnboarding();
-                      }
-                    },
-                    builder: (context, state) => Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: isDarkTheme
-                              ? darkNavyDarkTheme
-                              : lightBlueLightTheme,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: noBackgroundColor),
-                        ),
-                        child: PopupMenuButton<String>(
-                          position: PopupMenuPosition.under,
-                          icon: Icon(
-                            Icons.settings,
-                            size: 20,
-                            color: isDarkTheme
-                                ? mainTextGrey
-                                : royalBlueLightTheme,
-                          ),
-                          onSelected: (value) {
-                            switch (value) {
-                              case 'lock_screen':
-                                context.read<SessionStateCubit>().onLogout();
-                                return;
-                              case 'reset':
-                                HorizonUI.HorizonDialog.show(
-                                    context: context,
-                                    body: BlocProvider.value(
-                                      value:
-                                          BlocProvider.of<ResetBloc>(context),
-                                      child: const ResetDialog(),
-                                    ));
-                              case 'import_address_pk':
-                                HorizonUI.HorizonDialog.show(
-                                  context: context,
-                                  body: Builder(builder: (context) {
-                                    final bloc =
-                                        context.watch<ImportAddressPkBloc>();
+                Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color:
+                          isDarkTheme ? darkNavyDarkTheme : lightBlueLightTheme,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: noBackgroundColor),
+                    ),
+                    child: PopupMenuButton<String>(
+                      position: PopupMenuPosition.under,
+                      icon: Icon(
+                        Icons.settings,
+                        size: 20,
+                        color: isDarkTheme ? mainTextGrey : royalBlueLightTheme,
+                      ),
+                      onSelected: (value) {
+                        switch (value) {
+                          case 'lock_screen':
+                            context.read<SessionStateCubit>().onLogout();
+                            return;
+                          case 'reset':
+                            HorizonUI.HorizonDialog.show(
+                                context: context,
+                                // Use the explicit Cancel buttons, so a reset
+                                // cannot be dismissed midway through deletion.
+                                dismissible: false,
+                                // The modal outlives the header that opens
+                                // it, so it must own its reset controller.
+                                body: BlocProvider(
+                                  create: (_) => ResetBloc(
+                                    kvService: GetIt.I<SecureKVService>(),
+                                    inMemoryKeyRepository:
+                                        GetIt.I<InMemoryKeyRepository>(),
+                                    walletRepository:
+                                        GetIt.I<WalletRepository>(),
+                                    accountRepository:
+                                        GetIt.I<AccountRepository>(),
+                                    addressRepository:
+                                        GetIt.I<AddressRepository>(),
+                                    importedAddressRepository:
+                                        GetIt.I<ImportedAddressRepository>(),
+                                    cacheProvider: GetIt.I<CacheProvider>(),
+                                    analyticsService:
+                                        GetIt.I<AnalyticsService>(),
+                                  ),
+                                  child: BlocListener<ResetBloc, ResetState>(
+                                    listener: (dialogContext, state) {
+                                      if (state.resetState is Out) {
+                                        Navigator.of(dialogContext).pop();
+                                        session.onOnboarding();
+                                      }
+                                    },
+                                    child: const ResetDialog(),
+                                  ),
+                                ));
+                          case 'import_address_pk':
+                            HorizonUI.HorizonDialog.show(
+                              context: context,
+                              body: Builder(builder: (context) {
+                                final bloc =
+                                    context.watch<ImportAddressPkBloc>();
 
-                                    final cb = switch (bloc.state) {
-                                      ImportAddressPkStep2() => () {
-                                          bloc.add(ResetForm());
-                                        },
-                                      _ => () {
-                                          Navigator.of(context).pop();
-                                        },
-                                    };
+                                final cb = switch (bloc.state) {
+                                  ImportAddressPkStep2() => () {
+                                      bloc.add(ResetForm());
+                                    },
+                                  _ => () {
+                                      Navigator.of(context).pop();
+                                    },
+                                };
 
-                                    return HorizonUI.HorizonDialog(
-                                      onBackButtonPressed: cb,
-                                      title: "Import address private key",
-                                      body: const Padding(
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: 16.0),
-                                        child: ImportAddressPkForm(),
-                                      ),
-                                    );
-                                  }),
+                                return HorizonUI.HorizonDialog(
+                                  onBackButtonPressed: cb,
+                                  title: "Import address private key",
+                                  body: const Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 16.0),
+                                    child: ImportAddressPkForm(),
+                                  ),
                                 );
-                              case 'view_address_pk':
-                                HorizonUI.HorizonDialog.show(
-                                    context: context,
-                                    body: HorizonUI.HorizonDialog(
-                                      includeBackButton: false,
-                                      includeCloseButton: true,
-                                      title: "View address private key",
-                                      body: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 16.0),
-                                        child: ViewAddressPkFormWrapper(
-                                            address: address!),
-                                      ),
-                                    ));
-                              case 'view_seed_phrase':
-                                HorizonUI.HorizonDialog.show(
-                                    context: context,
-                                    body: const HorizonUI.HorizonDialog(
-                                      includeBackButton: false,
-                                      includeCloseButton: true,
-                                      title: "View wallet seed phrase",
-                                      body: Padding(
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: 16.0),
-                                        child: ViewSeedPhraseFormWrapper(),
-                                      ),
-                                    ));
-                              case 'settings':
-                                context.go("/settings");
-                            }
-                          },
-                          itemBuilder: (BuildContext context) =>
-                              <PopupMenuEntry<String>>[
-                            const PopupMenuItem<String>(
-                              value: 'settings',
-                              child: Text('Settings'),
-                            ),
-                            PopupMenuItem<String>(
-                              value: 'view_current_address_in_explorer',
-                              child: Link(
-                                  display: const Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text('View address in explorer'),
-                                        Icon(Icons.open_in_new, size: 16)
-                                      ]),
-                                  href: addressURL),
-                            ),
-                            const PopupMenuItem<String>(
-                              value: 'view_seed_phrase',
-                              child: Text('View wallet seed phrase'),
-                            ),
-                            const PopupMenuItem<String>(
-                              value: 'import_address_pk',
-                              child: Text('Import new address private key'),
-                            ),
-                            const PopupMenuItem<String>(
-                              value: 'view_address_pk',
-                              child: Text('View current address private key'),
-                            ),
-                            const PopupMenuItem<String>(
-                              value: 'reset',
-                              child: Text('Reset wallet'),
-                            ),
-                            const PopupMenuItem<String>(
-                              value: 'lock_screen',
-                              child: Text('Lock Screen'),
-                            ),
-                          ],
-                        )),
-                  ),
-                ),
+                              }),
+                            );
+                          case 'view_address_pk':
+                            HorizonUI.HorizonDialog.show(
+                                context: context,
+                                body: HorizonUI.HorizonDialog(
+                                  includeBackButton: false,
+                                  includeCloseButton: true,
+                                  title: "View address private key",
+                                  body: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16.0),
+                                    child: ViewAddressPkFormWrapper(
+                                        address: address!),
+                                  ),
+                                ));
+                          case 'view_seed_phrase':
+                            HorizonUI.HorizonDialog.show(
+                                context: context,
+                                body: const HorizonUI.HorizonDialog(
+                                  includeBackButton: false,
+                                  includeCloseButton: true,
+                                  title: "View wallet seed phrase",
+                                  body: Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 16.0),
+                                    child: ViewSeedPhraseFormWrapper(),
+                                  ),
+                                ));
+                          case 'settings':
+                            context.go("/settings");
+                        }
+                      },
+                      itemBuilder: (BuildContext context) =>
+                          <PopupMenuEntry<String>>[
+                        const PopupMenuItem<String>(
+                          value: 'settings',
+                          child: Text('Settings'),
+                        ),
+                        PopupMenuItem<String>(
+                          value: 'view_current_address_in_explorer',
+                          child: Link(
+                              display: const Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('View address in explorer'),
+                                    Icon(Icons.open_in_new, size: 16)
+                                  ]),
+                              href: addressURL),
+                        ),
+                        const PopupMenuItem<String>(
+                          value: 'view_seed_phrase',
+                          child: Text('View wallet seed phrase'),
+                        ),
+                        const PopupMenuItem<String>(
+                          value: 'import_address_pk',
+                          child: Text('Import new address private key'),
+                        ),
+                        const PopupMenuItem<String>(
+                          value: 'view_address_pk',
+                          child: Text('View current address private key'),
+                        ),
+                        const PopupMenuItem<String>(
+                          value: 'reset',
+                          child: Text('Reset wallet'),
+                        ),
+                        const PopupMenuItem<String>(
+                          value: 'lock_screen',
+                          child: Text('Lock Screen'),
+                        ),
+                      ],
+                    )),
               ],
             ),
           ],

@@ -200,12 +200,15 @@ class HorizonDialog extends StatelessWidget {
   static void show({
     required BuildContext context,
     required Widget body,
+    bool dismissible = true,
   }) {
     final screenWidth = MediaQuery.of(context).size.width;
 
     if (screenWidth < 768) {
       showModalBottomSheet(
         context: context,
+        isDismissible: dismissible,
+        enableDrag: dismissible,
         isScrollControlled: true, // Allows full-screen height
         builder: (BuildContext context) {
           return body;
@@ -214,6 +217,7 @@ class HorizonDialog extends StatelessWidget {
     } else {
       showDialog(
         context: context,
+        barrierDismissible: dismissible,
         builder: (BuildContext context) {
           return body;
         },

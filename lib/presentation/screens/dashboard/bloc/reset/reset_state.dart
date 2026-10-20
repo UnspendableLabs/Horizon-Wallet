@@ -13,4 +13,8 @@ abstract class LoggedInOrOut {}
 
 class In extends LoggedInOrOut {}
 
+class Resetting extends LoggedInOrOut {}
+
+class ResetFailed extends LoggedInOrOut {}
+
 class Out extends LoggedInOrOut {}
