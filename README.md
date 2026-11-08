@@ -8,6 +8,36 @@ A wallet for XCP and bitcoin. Supports loading seed phrases from Freewallet and 
 - Dart SDK https://dart.dev/get-dart
 - Chrome or Chromium browser
 
+## Releasing fixes to extension users
+
+A merged PR or a successful Vercel deployment does **not** publish a Chrome
+extension update. Track review, build, store submission and published version
+separately in the release PR.
+
+Before publishing:
+
+1. Choose the reviewed commit and record its SHA. Keep `pubspec.yaml` and
+   `web/manifest.json` release versions aligned and newer than the store version.
+2. Run tests and build from a clean checkout with the agreed Flutter SDK and
+   locked dependencies. Do not silently ship dependency changes from a local
+   SDK workaround.
+3. Use `dart run tool/build_extension.dart` for the Chromium release build.
+   Explicitly set the intended production Sentry configuration and provide
+   source-map upload credentials securely. Verify the upload actually succeeded:
+   the build script can otherwise skip it with a warning. Never put credentials
+   in the release notes or artifact.
+4. Load the exact `build/web` artifact in a clean browser profile with a test
+   wallet. Exercise import, account switching, balances and connection to Market.
+   Check error reporting against the matching release. Do not use customer keys.
+5. Verify source maps are absent from the distributed artifact. Record the
+   artifact checksum; the authorized publisher submits that same artifact.
+6. After store approval, install/update from the store and verify its displayed
+   version and critical flows. Record the published version and time. Compare
+   Sentry events by release; errors from an older installed version are not proof
+   that the new release regressed.
+
+Do not mark a user-facing extension fix deployed until step 6 is verified.
+
 ## Getting Started
 
 To run locally on the web:

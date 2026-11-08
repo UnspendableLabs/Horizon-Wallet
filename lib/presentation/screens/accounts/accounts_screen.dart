@@ -136,6 +136,7 @@ class AccountsScreen extends StatelessWidget {
                       context
                           .read<SessionStateCubit>()
                           .onAccountChanged(account, () {
+                        if (!context.mounted) return;
                         context.go("/");
                       });
 
